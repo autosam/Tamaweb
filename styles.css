@@ -1,0 +1,21 @@
+body {
+    background-color: black;
+    min-height: 100vh;
+    margin: 0;
+    color: white;
+}
+.graphics-wrapper{
+    width: 100%;
+    max-width: 200px;
+}
+.graphics-canvas {
+    background-color: white;
+    image-rendering: pixelated;
+    width: 100%;
+}
+.root {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
