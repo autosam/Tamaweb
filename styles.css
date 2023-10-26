@@ -1,3 +1,10 @@
+@font-face {
+    font-family: 'Pixel';
+    src: url('resources/font/PixelifySans-VariableFont_wght.ttf');
+}
+html {
+    font-family: 'Pixel';
+}
 body {
     background-color: black;
     min-height: 100vh;
@@ -6,7 +13,8 @@ body {
 }
 .graphics-wrapper{
     width: 100%;
-    max-width: 200px;
+    max-width: 400px;
+    position: relative;
 }
 .graphics-canvas {
     background-color: white;
@@ -18,4 +26,34 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+.gameplay-main-buttons {
+    display: flex;
+    flex-direction: row;
+}
+.gameplay-main-buttons > button {
+    flex-grow: 1;
+}
+.generic-list-container {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    top: 0px;
+    left: 0px;
+}
+.list-item {
+    all: unset;
+    height: 40px;
+    color: black;
+    font-family: sans-serif;
+    padding: 10px 20px;
+    border-bottom: 1px solid gray;
+    cursor: pointer;
+    font-family: 'Pixel';
+}
+button {
+    font-family: 'Pixel';
 }

@@ -5,31 +5,13 @@ let App = {
 
         Object2d.setDrawer(App.drawer);
 
-        // let player = new Object2d({
-        //     img: "resources/img/character/default/sprite.png",
-        //     spritesheet: {
-        //         cellNumber: 0,
-        //         cellSize: 32,
-        //         rows: 4,
-        //         columns: 4,
-        //     },
-        //     x: '50%',
-        //     y: '50%',
-        //     onDraw: function(){
-        //         this.behavior();
-        //     },
-        //     _x: 0, _y: 0,
-        //     behavior: function(){
-        //         let speed = 0.01;
-        //         this._x = (this._x + speed * App.deltaTime) % 100;
-        //         // this._y = (this._x + speed * App.deltaTime) % 100;
-        //         this.x = `${this._x}%`;
-        //         // this.y = `${this._y}%`;
-        //     }
-        // });
+        App.background = new Object2d({
+            img: "resources/img/background/house/01.jpg",
+            x: 0, y: 0, width: 100, height: 100
+        })
 
-        let pet = new Pet({
-            img: "resources/img/character/default/sprite.png",
+        App.pet = new Pet({
+            img: "resources/img/character/sonic.png",
             spritesheet: {
                 cellNumber: 0,
                 cellSize: 32,
@@ -50,6 +32,64 @@ let App = {
             update(0);
         }
     },
+    handlers: {
+        open_food_list: function(){
+            App.displayList([
+                {
+                    name: 'Orange',
+                    onclick: () => {
+                        App.pet.stats.current_hunger += 25;
+                        App.pet.stopMove();
+                        App.pet.triggerScriptedState('eating', 4000, null, true, () => {
+                            App.pet.triggerScriptedState('cheering', 3000, null, true);
+                        });
+                    }
+                },
+            ])
+        }
+    },
+    displayList: function(listItems){
+        /*
+            listItems:
+
+            [
+                {
+                    name: 'item',
+                    onclick: fn(){}
+                }
+            ]
+        */
+
+        listItems.push({
+            name: 'BACK',
+            onclick: () => {
+                return false;
+            }
+        })
+
+        let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
+
+        list.close = function(){
+            list.remove();
+        }
+
+        listItems.forEach(item => {
+            let button = document.createElement('button');
+                button.className = 'list-item';
+                button.innerHTML = item.name;
+                button.onclick = () => {
+                    let result = item.onclick();
+                    if(!result){
+                        list.close();
+                    }
+                };
+            list.appendChild(button);
+        });
+
+        document.querySelector('.screen-wrapper').appendChild(list);
+
+        return list;
+    }
 }
 
 class Drawer {
@@ -84,60 +124,51 @@ class Drawer {
             if (object.additionalX) x += object.additionalX;
             if (object.additionalY) y += object.additionalY;
 
-            // if(object.inverted){
-            //     this.context.save();
-            //     this.context.scale(1, -1);
-            // }
-
-            // if(object.spritesheet){
-            //     this.context.drawImage(
-            //         object.image, 
-            //         (object.spritesheet.cellNumber % object.spritesheet.rows) * object.spritesheet.cellSize, 
-            //         Math.floor(object.spritesheet.cellNumber / object.spritesheet.columns) * object.spritesheet.cellSize, 
-            //         object.spritesheet.cellSize, 
-            //         object.spritesheet.cellSize, 
-            //         x, 
-            //         y, 
-            //         object.spritesheet.cellSize, 
-            //         object.spritesheet.cellSize
-            //     );
-            // } else {
-            //     this.context.drawImage(object.image, object.x, object.y, object.width || object.image.width, object.height || object.image.height);
-            // }
-
-            // if(object.inverted){
-            //     this.context.restore();
-            // }
-
-            let cellNumber = object.spritesheet.cellNumber - 1;
+            // fixes blurriness on some frames
+            y = Math.round(y);
+            x = Math.round(x);
 
             if (object.inverted) {
                 this.context.save();
                 this.context.scale(-1, 1);
-                this.context.drawImage(
-                    object.image,
-                    (cellNumber % object.spritesheet.rows) * object.spritesheet.cellSize,
-                    Math.floor(cellNumber / object.spritesheet.columns) * object.spritesheet.cellSize,
-                    object.spritesheet.cellSize,
-                    object.spritesheet.cellSize,
-                    -x - object.spritesheet.cellSize,
-                    y,
-                    object.spritesheet.cellSize,
-                    object.spritesheet.cellSize
-                );
+                if(object.spritesheet){
+                    let cellNumber = object.spritesheet.cellNumber - 1;
+                    this.context.drawImage(
+                        object.image,
+                        (cellNumber % object.spritesheet.rows) * object.spritesheet.cellSize,
+                        Math.floor(cellNumber / object.spritesheet.columns) * object.spritesheet.cellSize,
+                        object.spritesheet.cellSize,
+                        object.spritesheet.cellSize,
+                        -x - object.spritesheet.cellSize,
+                        y,
+                        object.spritesheet.cellSize,
+                        object.spritesheet.cellSize
+                    );
+                }
                 this.context.restore();
             } else {
-                this.context.drawImage(
-                    object.image,
-                    (cellNumber % object.spritesheet.rows) * object.spritesheet.cellSize,
-                    Math.floor(cellNumber / object.spritesheet.columns) * object.spritesheet.cellSize,
-                    object.spritesheet.cellSize,
-                    object.spritesheet.cellSize,
-                    x,
-                    y,
-                    object.spritesheet.cellSize,
-                    object.spritesheet.cellSize
-                );
+                if(object.spritesheet){
+                    let cellNumber = object.spritesheet.cellNumber - 1;
+                    this.context.drawImage(
+                        object.image,
+                        (cellNumber % object.spritesheet.rows) * object.spritesheet.cellSize,
+                        Math.floor(cellNumber / object.spritesheet.columns) * object.spritesheet.cellSize,
+                        object.spritesheet.cellSize,
+                        object.spritesheet.cellSize,
+                        x,
+                        y,
+                        object.spritesheet.cellSize,
+                        object.spritesheet.cellSize
+                    );
+                } else {
+                    this.context.drawImage(
+                        object.image,
+                        x,
+                        y,
+                        object.width || object.image.width,
+                        object.height || object.image.height
+                    )
+                }
             }
 
             if (object.onLateDraw !== undefined)
@@ -238,6 +269,16 @@ class Pet extends Object2d {
             start: 6,
             end: 7,
             frameTime: 500
+        },
+        eating: {
+            start: 9,
+            end: 11,
+            frameTime: 250
+        },
+        cheering: {
+            start: 2,
+            end: 4,
+            frameTime: 250,
         }
     }
     stats = {
@@ -328,10 +369,14 @@ class Pet extends Object2d {
 
         if(this.stats.current_hunger < this.stats.hunger_min_desire){
             this.addMoodlet('hungry');
+        } else {
+            this.removeMoodlet('hungry');
         }
 
         if(this.stats.current_sleep < this.stats.sleep_min_desire){
             this.addMoodlet('sleepy');
+        } else {
+            this.removeMoodlet('sleepy');
         }
     }
     addMoodlet(mood){
@@ -348,14 +393,16 @@ class Pet extends Object2d {
     hasMoodlet(mood){
         return this.activeMoodlets.indexOf(mood) >= 0;
     }
-    triggerScriptedState(state, length, cooldown){
-        if(this.scriptedEventTime){
-            return; // already during scripted event
-        }
-
-        if(this.scriptedEventCooldowns[state]){
-            if(this.scriptedEventCooldowns[state] > App.lastTime){
-                return;
+    triggerScriptedState(state, length, cooldown, forced, onEndFn){
+        if(!forced){
+            if(this.scriptedEventTime){
+                return; // already during scripted event
+            }
+    
+            if(this.scriptedEventCooldowns[state]){
+                if(this.scriptedEventCooldowns[state] > App.lastTime){
+                    return;
+                }
             }
         }
 
@@ -364,6 +411,7 @@ class Pet extends Object2d {
         }
 
         this.scriptedEventTime = App.lastTime + length;
+        this.scriptedEventOnEndFn = onEndFn;
         this.setState(state);
         console.log("Scripted State: ", state);
     }
@@ -380,6 +428,11 @@ class Pet extends Object2d {
         if(this.scriptedEventTime){
             if(this.scriptedEventTime < App.lastTime){ // ending scripted event time
                 this.scriptedEventTime = null;
+                if(this.scriptedEventOnEndFn) {
+                    this.scriptedEventOnEndFn();
+                    this.scriptedEventOnEndFn = null;
+                    return;
+                }
             } else {
                 return;
             }
@@ -421,7 +474,7 @@ class Pet extends Object2d {
         }
 
         if (App.lastTime > this.nextRandomTargetSelect) {
-            this.targetX = this.drawer.getRelativePositionX(50) + random(-50, 50);
+            this.targetX = this.drawer.getRelativePositionX(50) + random(-50, 25);
             this.nextRandomTargetSelect = 0;
         }
     }

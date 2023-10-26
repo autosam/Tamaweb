@@ -10,7 +10,20 @@
     <div style="position: absolute;" id="debug">DEBUG</div>
     <div class="root">
         <div class="graphics-wrapper">
-            <canvas class="graphics-canvas" width="200" height="100"></canvas>
+            <div class="screen-wrapper">
+                <canvas class="graphics-canvas" width="100" height="100"></canvas>
+            </div>
+            <div class="gameplay-main-buttons">
+                <button onclick="App.handlers.open_food_list()">FOOD</button>
+                <button>SLEEP</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- cloneables -->
+    <div style="display: none;" class="cloneables">
+        <div class="generic-list-container">
+
         </div>
     </div>
     
