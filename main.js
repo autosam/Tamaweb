@@ -1,17 +1,47 @@
 let App = {
     deltaTime: 0, lastTime: 0,
-    init: function () {
+    async init () {
         App.drawer = new Drawer(document.querySelector('.graphics-canvas'));
 
         Object2d.setDrawer(App.drawer);
 
+        let forPreload = [
+            "resources/img/background/house/01.jpg",
+            "resources/img/background/house/kitchen_01.png",
+            "resources/img/item/foods.png",
+            "resources/img/character/sonic.png",
+        ]
+        let preloadedResources = await this.preloadImages(forPreload);
+
+        this.preloadedResources = {};
+        preloadedResources.forEach((resource, i) => {
+            // let name = forPreload[i].slice(forPreload[i].lastIndexOf('/') + 1);
+            let name = forPreload[i];
+            this.preloadedResources[name] = resource;
+        });
+
+        console.log(this.preloadedResources);
+
         App.background = new Object2d({
-            img: "resources/img/background/house/01.jpg",
-            x: 0, y: 0, width: 100, height: 100
+            // img: "resources/img/background/house/01.jpg",
+            image: App.preloadedResources["resources/img/background/house/01.jpg"],
+            x: 0, y: 0, width: 100, height: 100,
+        })
+
+        App.foods = new Object2d({
+            image: App.preloadedResources["resources/img/item/foods.png"],
+            x: 10, y: 10,
+            spritesheet: {
+                cellNumber: 11,
+                cellSize: 16,
+                rows: 4,
+                columns: 4
+            },
+            hidden: true,
         })
 
         App.pet = new Pet({
-            img: "resources/img/character/sonic.png",
+            image: App.preloadedResources["resources/img/character/sonic.png"],
             spritesheet: {
                 cellNumber: 0,
                 cellSize: 32,
@@ -32,36 +62,104 @@ let App = {
             update(0);
         }
     },
+    preloadImages: function(urls) {
+        const promises = urls.map((url) => {
+            return new Promise((resolve, reject) => {
+                const image = new Image();
+    
+                image.src = url;
+    
+                image.onload = () => resolve(image);
+                image.onerror = () => reject(`Image failed to load: ${url}`);
+            });
+        });
+    
+        return Promise.all(promises);
+    },
     handlers: {
+        open_stats: function(){
+            let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
+            
+            list.innerHTML = `
+                <b>HUNGER:</b> ${App.createProgressbar( App.pet.stats.current_hunger / App.pet.stats.max_hunger * 100 ).node.outerHTML}
+                <br>
+                <b>SLEEP:</b> ${App.createProgressbar( App.pet.stats.current_sleep / App.pet.stats.max_sleep * 100 ).node.outerHTML}
+            `;
+
+            let backBtn = document.createElement('button');
+                backBtn.className = 'list-item back-btn';
+                backBtn.innerHTML = 'BACK';
+                backBtn.onclick = () => {
+                    list.remove();
+                };
+
+            list.appendChild(backBtn);
+
+            document.querySelector('.screen-wrapper').appendChild(list);
+        },
         open_food_list: function(){
-            App.displayList([
-                {
-                    name: 'Orange',
+            let list = [];
+            for(let food of Object.keys(App.defintions.food)){
+                list.push({
+                    name: food.toUpperCase(),
                     onclick: () => {
-                        App.pet.stats.current_hunger += 25;
-                        App.pet.stopMove();
-                        App.pet.triggerScriptedState('eating', 4000, null, true, () => {
-                            App.pet.triggerScriptedState('cheering', 3000, null, true);
-                        });
+                        // App.foods.hidden = false;
+                        // App.foods.x = App.pet.x - 10;
+                        // App.foods.y = App.pet.y - 10;
+                        // App.foods.spritesheet.cellNumber = App.defintions.food[food].sprite;
+                        
+                        // App.pet.inverted = false;
+                        // App.pet.stats.current_hunger += App.defintions.food[food].value;
+                        // App.pet.stopMove();
+                        // App.pet.triggerScriptedState('eating', 4000, null, true, () => {
+                        //     App.pet.triggerScriptedState('cheering', 3000, null, true);
+                        //     App.foods.hidden = true;
+                        // });
+                        App.pet.feed(App.defintions.food[food].sprite, App.defintions.food[food].value);
                     }
-                },
-            ])
+                })
+            }
+
+            App.displayList(list);
+        },
+        sleep: function(){
+            App.pet.isSleeping = true;
+        }
+    },
+    defintions: {
+        food: {
+            "slice of pizza": {
+                sprite: 11,
+                value: 15,
+            },
+            "carrot": {
+                sprite: 2,
+                value: 5
+            },
+            "hamburger": {
+                sprite: 9,
+                value: 15
+            }
+        }
+    },
+    createProgressbar: function(percent){
+        let progressbar = document.querySelector('.cloneables .progressbar').cloneNode(true);
+
+        let rod = progressbar.querySelector('.progressbar-rod');
+
+        rod.style.width = `${percent}%`;
+
+        return {
+            node: progressbar,
+            setPercent: function(percent){
+                rod.style.width = `${percent}%`;
+            }
         }
     },
     displayList: function(listItems){
-        /*
-            listItems:
-
-            [
-                {
-                    name: 'item',
-                    onclick: fn(){}
-                }
-            ]
-        */
-
         listItems.push({
             name: 'BACK',
+            class: 'back-btn',
             onclick: () => {
                 return false;
             }
@@ -75,7 +173,7 @@ let App = {
 
         listItems.forEach(item => {
             let button = document.createElement('button');
-                button.className = 'list-item';
+                button.className = 'list-item ' + (item.class ? item.class : '');
                 button.innerHTML = item.name;
                 button.onclick = () => {
                     let result = item.onclick();
@@ -106,6 +204,8 @@ class Drawer {
     draw() {
         this.clear();
         this.objects.forEach(object => {
+            if(object.hidden) return;
+
             if (object.onDraw !== undefined)
                 object.onDraw();
 
@@ -215,10 +315,18 @@ class Object2d {
         }
 
         // initializing
-        this.image = new Image();
-        this.image.src = config.img;
+        if(!this.image){
+            this.image = new Image();
+            this.image.src = config.img;
+        }
 
         this.id = this.drawer.addObject(this);
+    }
+    setImg(img){ // this one gets image url
+        this.image.src = img;
+    }
+    setImage(image){ // this one gets img object (presume preloadedResource)
+        this.image = image;
     }
     static setDrawer(drawer) {
         Object2d.defaultDrawer = drawer;
@@ -227,8 +335,9 @@ class Object2d {
 
 class Pet extends Object2d {
     // basic init
+    defaultElevation = -20;
     y = '100%';
-    additionalY = -17;
+    additionalY = this.defaultElevation;
     animation = {
         currentFrame: 0,
         nextFrameTime: 0,
@@ -279,6 +388,16 @@ class Pet extends Object2d {
             start: 2,
             end: 4,
             frameTime: 250,
+        },
+        refuse: {
+            start: 8,
+            end: 9,
+            frameTime: 300
+        },
+        sleeping: {
+            start: 15,
+            end: 16,
+            frameTime: 1000,
         }
     }
     stats = {
@@ -289,12 +408,14 @@ class Pet extends Object2d {
         max_sleep: 100,
         sleep_satisfaction: 70,
         sleep_min_desire: 20,
-        wander_min: 1,
-        wander_max: 5,
         hunger_depletion_rate: 0.09,
+        light_sleepiness: 0.01,
         sleep_depletion_rate: 0.06,
+        sleep_replenish_rate: 0.1,
         activity_sleep_depletion: 0.3,
         activity_hunger_depletion: 0.5,
+        wander_min: 1,
+        wander_max: 5,
 
         // current
         current_hunger: 40 || 80,
@@ -310,6 +431,49 @@ class Pet extends Object2d {
         this.stateManager();
         this.animationHandler();
     }
+    switchScene(scene){
+        // todo: not hardcode these values,
+        // instead it should be defined on the scene
+        // so that every scene can have it's own values
+        switch(scene){
+            case 'house':
+                App.background.setImg('resources/img/background/house/01.jpg');
+                this.y = '100%';
+                break;
+            case 'kitchen':
+                App.background.setImg('resources/img/background/house/kitchen_01.png');
+                App.foods.x = 40;
+                App.foods.y = 58;
+                this.x = 62;
+                this.y = 74;
+                break;
+        }
+    }
+    feed(foodSpriteCellNumber, value){
+        this.stopMove();
+
+        if(this.hasMoodlet('full')){
+            this.triggerScriptedState('refuse', 2000, null, true);
+            this.switchScene('house');
+            App.foods.hidden = true;
+            return;
+        }
+
+        App.foods.hidden = false;
+        App.foods.spritesheet.cellNumber = foodSpriteCellNumber;
+        
+        this.inverted = false;
+        this.stats.current_hunger += value;
+
+        this.switchScene('kitchen');
+
+        this.triggerScriptedState('eating', 4000, null, true, () => {
+            this.triggerScriptedState('cheering', 2000, null, true, () => {
+                this.switchScene('house');
+            });
+            App.foods.hidden = true;
+        });        
+    }
     think(){
         if(!this.nextThinkTime){
             this.nextThinkTime = App.lastTime + 500;
@@ -322,6 +486,9 @@ class Pet extends Object2d {
 
         // thinking
         this.statsManager();
+
+        if(this.state == 'sleeping') 
+            return;
 
         if(!this.scriptedEventTime){
             this.wander();
@@ -345,38 +512,68 @@ class Pet extends Object2d {
         }
     }
     statsManager(){
-        document.querySelector('#debug').innerHTML = `
+        let stats = this.stats;
+        /*
             Hunger: ${this.stats.current_hunger}
             <br>
             Sleep: ${this.stats.current_sleep}
             <br>
+        */
+        document.querySelector('#debug').innerHTML = `
+        Hunger: ${this.stats.current_hunger}
+        <br>
+        Sleep: ${this.stats.current_sleep}
+        <br>
             State: ${this.state}
             <br>
             Mood: ${this.activeMoodlets.join(' - ') || "normal"}
         `;
 
-        this.stats.current_hunger -= this.stats.hunger_depletion_rate;
-        if(this.stats.current_hunger <= 0){
-            this.stats.current_hunger = 0;
+        let hunger_depletion_rate = stats.hunger_depletion_rate;
+        let sleep_depletion_rate = stats.sleep_depletion_rate;
+
+        if(this.state == 'sleeping'){
+            hunger_depletion_rate = 0;
+            sleep_depletion_rate = -stats.sleep_replenish_rate;
+        }
+
+        stats.current_hunger = clamp(stats.current_hunger, 0, stats.max_hunger);
+        stats.current_sleep = clamp(stats.current_sleep, 0, stats.max_sleep);
+
+        stats.current_hunger -= hunger_depletion_rate;
+        if(stats.current_hunger <= 0){
+            stats.current_hunger = 0;
             console.log('dead?');
         }
 
-        this.stats.current_sleep -= this.stats.sleep_depletion_rate;
-        if(this.stats.current_sleep <= 0){
-            this.stats.current_sleep = 0;
-            console.log('fell sleep?');
+        stats.current_sleep -= sleep_depletion_rate;
+        if(stats.current_sleep <= 0){
+            stats.current_sleep = 0;
+            this.isSleeping = true;
         }
 
-        if(this.stats.current_hunger < this.stats.hunger_min_desire){
-            this.addMoodlet('hungry');
+        this.triggerMoodlet(
+            stats.current_hunger,
+            stats.hunger_min_desire, 'hungry',
+            stats.hunger_satisfaction, 'full'
+        );
+        this.triggerMoodlet(
+            stats.current_sleep,
+            stats.sleep_min_desire, 'sleepy',
+            stats.sleep_satisfaction, 'rested'
+        );
+    }
+    triggerMoodlet(current, min, minName, max, maxName){
+        if(current < min){
+            this.addMoodlet(minName);
         } else {
-            this.removeMoodlet('hungry');
+            this.removeMoodlet(minName);
         }
 
-        if(this.stats.current_sleep < this.stats.sleep_min_desire){
-            this.addMoodlet('sleepy');
+        if(current > max){
+            this.addMoodlet(maxName);
         } else {
-            this.removeMoodlet('sleepy');
+            this.removeMoodlet(maxName);
         }
     }
     addMoodlet(mood){
@@ -430,15 +627,22 @@ class Pet extends Object2d {
                 this.scriptedEventTime = null;
                 if(this.scriptedEventOnEndFn) {
                     this.scriptedEventOnEndFn();
-                    this.scriptedEventOnEndFn = null;
                     return;
                 }
             } else {
                 return;
             }
         }
-
-        if(this.isMoving)
+        
+        if(this.isSleeping){
+            if(this.stats.current_sleep >= this.stats.max_sleep || (this.hasMoodlet('rested') && Math.random() < this.stats.light_sleepiness)){
+                this.isSleeping = false;
+                return;
+            }
+            this.stopMove();
+            this.setState('sleeping');  
+        }
+        else if(this.isMoving)
             this.setState('moving');
         else {
             if(this.hasMoodlet('hungry' || this.hasMoodlet('sleepy')))
