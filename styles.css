@@ -42,7 +42,7 @@ body {
 .gameplay-main-buttons > button {
     flex-grow: 1;
 }
-.gameplay-main-buttons.disabled {
+.gameplay-main-buttons > button.disabled {
     filter: grayscale();
     pointer-events: none;
 }
@@ -95,6 +95,9 @@ button {
     align-items: center;
     height: 100%;
     text-align: center;
+}
+.hidden {
+    display: none !important;
 }
 
 .progressbar-background {

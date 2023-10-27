@@ -143,6 +143,7 @@ let App = {
                 };
 
             list.appendChild(backBtn);
+            list.style['z-index'] = 3;
 
             document.querySelector('.screen-wrapper').appendChild(list);
         },
@@ -285,11 +286,17 @@ let App = {
         }
     },
     toggleGameplayControls: function(state){
-        let gameplayButtons = document.querySelector('.gameplay-main-buttons');
+        let gameplayButtons = [...document.querySelectorAll('.main-action-icon')];
         if(!state){
-            gameplayButtons.classList.add('disabled');
+            // gameplayButtons.classList.add('disabled');
+            gameplayButtons.forEach(btn => {
+                if(btn.id == 'stats') return;
+                btn.classList.add('disabled');
+            })
         } else {
-            gameplayButtons.classList.remove('disabled');
+            gameplayButtons.forEach(btn => {
+                btn.classList.remove('disabled');
+            })
         }
     },
     createProgressbar: function(percent){

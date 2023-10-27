@@ -137,6 +137,7 @@ class Pet extends Object2d {
     }
     sleep(){
         if(this.isSleeping) return;
+        this.stopMove();
         if(this.hasMoodlet('rested')){
             this.playRefuseAnimation();
             return;
