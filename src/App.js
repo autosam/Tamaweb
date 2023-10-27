@@ -348,8 +348,10 @@ let App = {
         setCookie('pet', App.pet.serializeStats(), 365);
     },
     load: function(){
+        let pet = getCookie('pet');
+            pet = pet ? JSON.parse(pet) : {};
         return {
-            pet: JSON.parse(getCookie('pet')),
+            pet,
         }
     }
 }
