@@ -69,6 +69,9 @@ let App = {
         window.onbeforeunload = function(){
             App.save();
         }
+        setInterval(() => {
+            App.save();
+        }, 5000);
     },
     preloadImages: function(urls) {
         const promises = urls.map((url) => {
@@ -88,33 +91,33 @@ let App = {
         food: {
             "bread": {
                 sprite: 1,
-                hunger_replenish: 5,
+                hunger_replenish: 15,
                 fun_replenish: 0,
-                price: 5,
+                price: 3,
             },
             "slice of pizza": {
                 sprite: 10,
                 hunger_replenish: 15,
-                fun_replenish: 10,
-                price: 10,
+                fun_replenish: 5,
+                price: 5,
             },
             "carrot": {
                 sprite: 2,
-                hunger_replenish: 5,
+                hunger_replenish: 10,
                 fun_replenish: 1,
                 price: 2,
             },
             "hamburger": {
                 sprite: 9,
-                hunger_replenish: 15,
-                fun_replenish: 8,
-                price: 7,
+                hunger_replenish: 40,
+                fun_replenish: 10,
+                price: 15,
             },
             "broccoli": {
                 sprite: 5,
-                hunger_replenish: 7,
+                hunger_replenish: 15,
                 fun_replenish: 0,
-                price: 2,
+                price: 3,
             }
         }
     },
@@ -188,63 +191,7 @@ let App = {
                         App.pet.switchScene('park');
                         App.pet.triggerScriptedState('moving', 1000, null, true, () => {
                             App.pet.switchScene('house');
-                            dis([
-                                {
-                                    name: 'play game',
-                                    onclick: () => {
-                                        App.pet.switchScene('park');
-                                        App.toggleGameplayControls(false);
-                                        let randomPet = new Pet({
-                                            img: "resources/img/character/sonic.png",
-                                            spritesheet: {
-                                                cellNumber: 0,
-                                                cellSize: 32,
-                                                rows: 4,
-                                                columns: 4,
-                                            }
-                                        });
-                                        randomPet.stopMove();
-                                        randomPet.triggerScriptedState('eating', 5000, null, true);
-                                        randomPet.x = 20;
-                                        randomPet.inverted = true;
-
-                                        App.pet.x = 80 - App.pet.spritesheet.cellSize;
-                                        App.pet.inverted = false;
-                                        App.pet.stopMove();
-                                        App.pet.triggerScriptedState('eating', 5000, null, true, () => {
-                                            App.drawer.removeObject(randomPet);
-                                            App.pet.x = '50%';
-                                            if(Math.random() > 0.5){ // win
-                                                let winningGold = 25;
-                                                App.pet.stats.gold += winningGold;
-                                                App.pet.stats.current_fun += 35;
-                                                App.pet.playCheeringAnimation(() => {
-                                                    App.displayPopup(`You've won $${winningGold}`);
-                                                    App.toggleGameplayControls(true);
-                                                    App.pet.switchScene('house');
-                                                });
-                                            } else {
-                                                App.pet.playAngryAnimation(() => {
-                                                    App.displayPopup(`You've lost!`);
-                                                    App.pet.stats.current_fun -= 15;
-                                                    App.toggleGameplayControls(true);
-                                                    App.pet.switchScene('house');
-                                                });
-                                            }
-                                        });
-                                        
-                                        return false;
-                                    }
-                                },
-                                {
-                                    name: 'buy groceries',
-                                    onclick: () => {
-                                        App.handlers.open_food_list(true);
-                                        return true;
-                                    }
-                                },
-
-                            ])
+                            App.handlers.open_mall_activity_list();
                         }, Pet.scriptedEventDrivers.movingOut.bind({pet: App.pet}));
                     }
                 },
@@ -254,7 +201,7 @@ let App = {
                         App.pet.switchScene('park');
                         App.toggleGameplayControls(false);
                         let randomPet = new Pet({
-                            img: "resources/img/character/sonic.png",
+                            img: "resources/img/character/red_sonic.png",
                             spritesheet: {
                                 cellNumber: 0,
                                 cellSize: 32,
@@ -272,6 +219,66 @@ let App = {
                     }
                 }
             ])
+        },
+        open_mall_activity_list: function(){
+            App.displayList([
+                {
+                    name: 'play game',
+                    onclick: () => {
+                        App.pet.switchScene('park');
+                        App.toggleGameplayControls(false);
+                        let randomPet = new Pet({
+                            img: "resources/img/character/red_sonic.png",
+                            spritesheet: {
+                                cellNumber: 0,
+                                cellSize: 32,
+                                rows: 4,
+                                columns: 4,
+                            }
+                        });
+                        randomPet.stopMove();
+                        randomPet.triggerScriptedState('eating', 5000, null, true);
+                        randomPet.x = 20;
+                        randomPet.inverted = true;
+
+                        App.pet.x = 80 - App.pet.spritesheet.cellSize;
+                        App.pet.inverted = false;
+                        App.pet.stopMove();
+                        App.pet.triggerScriptedState('eating', 5000, null, true, () => {
+                            App.drawer.removeObject(randomPet);
+                            App.pet.x = '50%';
+                            if(Math.random() > 0.5){ // win
+                                let winningGold = 25;
+                                App.pet.stats.gold += winningGold;
+                                App.pet.stats.current_fun += 35;
+                                App.pet.playCheeringAnimation(() => {
+                                    App.displayPopup(`You've won $${winningGold}`);
+                                    App.toggleGameplayControls(true);
+                                    App.pet.switchScene('house');
+                                    App.handlers.open_mall_activity_list();
+                                });
+                            } else {
+                                App.pet.playAngryAnimation(() => {
+                                    App.displayPopup(`You've lost!`);
+                                    App.pet.stats.current_fun -= 15;
+                                    App.toggleGameplayControls(true);
+                                    App.pet.switchScene('house');
+                                    App.handlers.open_mall_activity_list();
+                                });
+                            }
+                        });
+                        
+                        return false;
+                    }
+                },
+                {
+                    name: 'buy groceries',
+                    onclick: () => {
+                        App.handlers.open_food_list(true);
+                        return true;
+                    }
+                },
+            ]);
         },
         sleep: function(){
             App.pet.sleep();
@@ -338,6 +345,7 @@ let App = {
                     ${content}
                 </div>
             `;
+        list.style['z-index'] = 3;
         setTimeout(() => {
             list.remove();
         }, ms || 1000);

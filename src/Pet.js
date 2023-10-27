@@ -367,12 +367,14 @@ class Pet extends Object2d {
         }
         
         if(this.isSleeping){
-            if(this.stats.current_sleep >= this.stats.max_sleep || (this.hasMoodlet('rested') && Math.random() < this.stats.light_sleepiness)){
+            if(this.stats.current_sleep >= this.stats.max_sleep || (this.hasMoodlet('rested') && Math.random() < this.stats.light_sleepiness * 0.01)){
                 this.isSleeping = false;
+                App.toggleGameplayControls(true);
                 return;
             }
             this.stopMove();
             this.setState('sleeping');  
+            App.toggleGameplayControls(false);
         }
         else if(this.isMoving)
             this.setState('moving');
