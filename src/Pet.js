@@ -71,13 +71,13 @@ class Pet extends Object2d {
         max_hunger: 100,
         hunger_satisfaction: 80, // note: when reaching this they won't want anymore food
         hunger_min_desire: 40, // note: when below this number they desire it
-        hunger_depletion_rate: 0.04,
+        hunger_depletion_rate: 0.01,
         activity_hunger_depletion: 0.5,
         // sleep
         max_sleep: 100,
         sleep_satisfaction: 70,
         sleep_min_desire: 20,
-        sleep_depletion_rate: 0.01,
+        sleep_depletion_rate: 0.002,
         sleep_replenish_rate: 0.1,
         light_sleepiness: 0.01,
         activity_sleep_depletion: 0.3,
@@ -85,7 +85,7 @@ class Pet extends Object2d {
         max_fun: 100,
         fun_min_desire: 35,
         fun_satisfaction: 70,
-        fun_depletion_rate: 0.06,
+        fun_depletion_rate: 0.05,
         // wander
         wander_min: 1,
         wander_max: 5,
@@ -94,6 +94,15 @@ class Pet extends Object2d {
         current_hunger: 40 || 80,
         current_sleep: 70,
         current_fun: 10,
+
+        // gold
+        gold: 10,
+    }
+
+    inventory = {
+        food: {
+            'bread': 1,
+        }
     }
 
     onLateDraw() {
@@ -126,11 +135,19 @@ class Pet extends Object2d {
                 break;
         }
     }
+    sleep(){
+        if(this.isSleeping) return;
+        if(this.hasMoodlet('rested')){
+            this.playRefuseAnimation();
+            return;
+        }
+        this.isSleeping = true;
+    }
     feed(foodSpriteCellNumber, value){
         this.stopMove();
 
         if(this.hasMoodlet('full')){
-            this.triggerScriptedState('refuse', 2000, null, true);
+            this.playRefuseAnimation();
             this.switchScene('house');
             App.foods.hidden = true;
             return;
@@ -157,6 +174,16 @@ class Pet extends Object2d {
     }
     playCheeringAnimation(onEndFn){
         this.triggerScriptedState('cheering', 2000, null, true, () => {
+            if(onEndFn) onEndFn();
+        });
+    }
+    playRefuseAnimation(onEndFn){
+        this.triggerScriptedState('refuse', 2000, null, true, () => {
+            if(onEndFn) onEndFn();
+        });
+    }
+    playAngryAnimation(onEndFn){
+        this.triggerScriptedState('angry', 2000, null, true, () => {
             if(onEndFn) onEndFn();
         });
     }
@@ -315,21 +342,6 @@ class Pet extends Object2d {
         this.setState(state);
         console.log("Scripted State: ", state);
     }
-    scriptedEventDrivers = {
-        playing: function(){
-            this.setState('moving');
-
-            if(this.playing_current_target_x === undefined){
-                this.playing_current_target_x = true;
-                this.targetX = 0;
-            }
-
-            if(this.x == this.targetX){
-                if(this.targetX == 0) this.targetX = 100 - this.spritesheet.cellSize;
-                else this.targetX = 0;
-            }
-        },
-    }
     setState(newState){
         if(newState != this.state){
             this.animation.currentFrame = 0;
@@ -432,5 +444,30 @@ class Pet extends Object2d {
             this.x = this.x - this.stats.speed * App.deltaTime;
         }
         this.inverted = false;
+    }
+
+    static scriptedEventDrivers = {
+        playing: function(start){
+            this.pet.setState('moving');
+
+            if(this.playing_current_target_x === undefined){
+                this.playing_current_target_x = true;
+                this.pet.targetX = 0;
+            }
+
+            if(this.pet.x == this.pet.targetX){
+                if(this.pet.targetX == 0) this.pet.targetX = 100 - this.pet.spritesheet.cellSize;
+                else this.pet.targetX = 0;
+            }
+        },
+        movingOut: function(start){
+            this.pet.setState('moving');
+
+            if(this.moving_init_done === undefined){
+                this.moving_init_done = true;
+                this.pet.x = 0;
+                this.pet.targetX = -20;
+            }
+        }
     }
 }

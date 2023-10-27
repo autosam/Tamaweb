@@ -13,6 +13,7 @@ body {
     min-height: 100vh;
     margin: 0;
     color: white;
+    overflow: hidden;
 }
 .graphics-wrapper{
     width: 100%;
@@ -35,10 +36,15 @@ body {
 .gameplay-main-buttons {
     display: flex;
     flex-direction: row;
-    height: 30px;
+    flex-wrap: wrap;
+    height: auto;
 }
 .gameplay-main-buttons > button {
     flex-grow: 1;
+}
+.gameplay-main-buttons.disabled {
+    filter: grayscale();
+    pointer-events: none;
 }
 .generic-list-container {
     position: absolute;
@@ -51,6 +57,7 @@ body {
     left: 0px;
     color: black;
     overflow: auto;
+    z-index: 2;
 }
 .list-item {
     all: unset;
@@ -64,12 +71,30 @@ body {
     flex-shrink: 0;
     text-transform: uppercase;
 }
+.inner-padding {
+    padding: 10px 20px;
+}
 button {
     font-family: 'Pixel';
     cursor: pointer;
 }
 .back-btn {
     margin-top: auto;
+    border-bottom: none;
+}
+.disabled {
+    color: gray;
+}
+.uppercase {
+    text-transform: uppercase;
+}
+.flex-center {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    text-align: center;
 }
 
 .progressbar-background {
@@ -91,6 +116,21 @@ button {
     border: 1px solid white;
     background-color: black;
     cursor: pointer;
+    min-height: 30px;
+}
+
+.main-action-icon{
+    all: unset;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.382);
+    height: 30px;
+    /* filter: grayscale(); */
+    z-index: 1;
+    cursor: pointer;
+}
+.main-action-icon:hover {
+    filter: none;
+    background-color: rgba(0, 0, 0, 0.544);
 }
 
 .background-canvas {
