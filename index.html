@@ -9,14 +9,16 @@
 <body>
     <div style="position: absolute;" id="debug">DEBUG</div>
     <div class="root">
+        <canvas class="background-canvas" width="100" height="100"></canvas>
         <div class="graphics-wrapper">
             <div class="screen-wrapper">
                 <canvas class="graphics-canvas" width="100" height="100"></canvas>
             </div>
             <div class="gameplay-main-buttons">
-                <button onclick="App.handlers.open_stats()">STATS</button>
-                <button onclick="App.handlers.open_food_list()">FOOD</button>
-                <button onclick="App.handlers.sleep()">SLEEP</button>
+                <button class="btn" onclick="App.handlers.open_stats()">STATS</button>
+                <button class="btn" onclick="App.handlers.open_food_list()">FOOD</button>
+                <button class="btn" onclick="App.handlers.open_activity_list()">ACTIVITY</button>
+                <!-- <button onclick="App.handlers.sleep()">SLEEP</button> -->
             </div>
         </div>
     </div>
@@ -38,8 +40,12 @@
         </div>
     </div>
     
-    <script src="jquery-3.7.1.min.js"></script>
-    <script src="utils.js"></script>
-    <script src="main.js"></script>
+    <script src="src/libs/jquery-3.7.1.min.js"></script>
+    <script src="src/Utils.js"></script>
+    <script src="src/Drawer.js"></script>
+    <script src="src/Object2d.js"></script>
+    <script src="src/Pet.js"></script>
+    <script src="src/App.js"></script>
+    <script src="src/Main.js"></script>
 </body>
 </html>
