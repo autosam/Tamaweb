@@ -445,6 +445,18 @@ class Pet extends Object2d {
         }
         this.inverted = false;
     }
+    serializeStats(){
+        let s = {
+            stats: this.stats,
+            inventory: this.inventory,
+        }
+        return JSON.stringify(s);
+    }
+    loadStats(json){
+        for (let key of Object.keys(json)) {
+            this[key] = json[key];
+        }
+    }
 
     static scriptedEventDrivers = {
         playing: function(start){

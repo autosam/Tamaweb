@@ -5,6 +5,10 @@ let App = {
 
         Object2d.setDrawer(App.drawer);
 
+        let loadedData = this.load();
+
+        console.log({loadedData});
+
         let forPreload = [
             "resources/img/background/house/01.jpg",
             "resources/img/background/house/kitchen_01.png",
@@ -47,6 +51,7 @@ let App = {
                 columns: 4,
             },
         });
+        App.pet.loadStats(loadedData.pet);
 
         window.onload = function () {
             function update(time) {
@@ -59,6 +64,10 @@ let App = {
             }
 
             update(0);
+        }
+
+        window.onbeforeunload = function(){
+            App.save();
         }
     },
     preloadImages: function(urls) {
@@ -334,5 +343,13 @@ let App = {
         }, ms || 1000);
         document.querySelector('.screen-wrapper').appendChild(list);
         return list;
+    },
+    save: function(){
+        setCookie('pet', App.pet.serializeStats(), 365);
+    },
+    load: function(){
+        return {
+            pet: JSON.parse(getCookie('pet')),
+        }
     }
 }
