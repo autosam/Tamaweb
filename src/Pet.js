@@ -24,6 +24,11 @@ class Pet extends Object2d {
             end: 5,
             frameTime: 500,
         },
+        idle_side_uncomfortable: {
+            start: 12,
+            end: 13,
+            frameTime: 1000,
+        },
         moving: {
             start: 10,
             end: 12,
@@ -35,7 +40,7 @@ class Pet extends Object2d {
             frameTime: 300
         },
         uncomfortable: {
-            start: 5,
+            start: 4,
             end: 6,
             frameTime: 500
         },
@@ -45,8 +50,8 @@ class Pet extends Object2d {
             frameTime: 500
         },
         eating: {
-            start: 9,
-            end: 11,
+            start: 14,
+            end: 16,
             frameTime: 250
         },
         cheering: {
@@ -60,8 +65,8 @@ class Pet extends Object2d {
             frameTime: 300
         },
         sleeping: {
-            start: 15,
-            end: 16,
+            start: 16,
+            end: 17,
             frameTime: 1000,
         }
     }
@@ -86,9 +91,9 @@ class Pet extends Object2d {
         fun_min_desire: 35,
         fun_satisfaction: 70,
         fun_depletion_rate: 0.05,
-        // wander
-        wander_min: 1,
-        wander_max: 5,
+        // wander (sec)
+        wander_min: 1.5,
+        wander_max: 8,
 
         // current
         current_hunger: 40 || 80,
@@ -102,6 +107,7 @@ class Pet extends Object2d {
     inventory = {
         food: {
             'bread': 1,
+            'slice of pizza': 3,
         }
     }
 
@@ -119,6 +125,7 @@ class Pet extends Object2d {
         // instead it should be defined on the scene
         // so that every scene can have it's own values
         this.y = '100%';
+        this.x = '50%';
         switch(scene){
             case 'house':
                 App.background.setImg('resources/img/background/house/01.jpg');
@@ -380,10 +387,16 @@ class Pet extends Object2d {
         else if(this.isMoving)
             this.setState('moving');
         else {
-            if(this.hasMoodlet('hungry') || this.hasMoodlet('sleepy') || this.hasMoodlet('bored'))
-                this.setState('idle_uncomfortable');
-            else
-                this.setState('idle');
+            if(this.state.indexOf('idle') == -1){
+                if(this.hasMoodlet('hungry') || this.hasMoodlet('sleepy') || this.hasMoodlet('bored')){
+                    if(random(0, 1))
+                        this.setState('idle_uncomfortable');
+                    else 
+                        this.setState('idle_side_uncomfortable');
+                }
+                else
+                    this.setState('idle');
+            }
         }
     }
     animationHandler(){

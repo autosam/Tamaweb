@@ -9,7 +9,7 @@ html {
     font-family: 'Pixel';
 }
 body {
-    background-color: black;
+    background-color: #282830;
     min-height: 100vh;
     margin: 0;
     color: white;
@@ -73,6 +73,78 @@ body {
 }
 .inner-padding {
     padding: 10px 20px;
+}
+.generic-slider-container {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background: white;
+    display: flex;
+    top: 0px;
+    left: 0px;
+    color: black;
+    z-index: 2;
+    align-items: center;
+    overflow: hidden;
+    flex-direction: column;
+}
+.generic-slider-container .main-container {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+}
+.generic-slider-container .actions-container {
+    display: flex;
+    justify-content: space-between;
+    width: calc(100% - 10px);
+    padding-bottom: 5px;
+}
+.generic-slider-container .content {
+    text-align: -webkit-center;
+}
+.slide-btn {
+    height: 100%;
+    display: inline-flex;
+    align-items: center;
+    font-weight: bold;
+}
+.slide-left {
+    padding-left: 10px;
+}
+.slide-right {
+    padding-right: 10px;
+}
+.slider-item {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+}
+@keyframes slider-item-anim-in-left {
+    from {
+        transform: translateX(-200px);
+    }
+}
+@keyframes slider-item-anim-in-right {
+    from {
+        transform: translateX(200px);
+    }
+}
+@keyframes slider-item-anim-out-left {
+    to {
+        transform: translateX(-200px);
+    }
+}
+@keyframes slider-item-anim-out-right {
+    to {
+        transform: translateX(200px);
+    }
+}
+button {
+    appearance: none;
+    all: unset;
 }
 button {
     font-family: 'Pixel';
@@ -143,4 +215,33 @@ button {
     width: 80vw;
     height: 50vh;
     filter: blur(100px);
+    display: none;
+}
+
+.screen-shell {
+    position: absolute;
+    image-rendering: pixelated;
+    z-index: 5;
+    scale: 3;
+    top: calc(50% - 99px);
+}
+
+/* battle */
+.battle-participant-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 5px;
+}
+.battle-participant-status-wrapper {
+    width: 100%;
+}
+
+.w-btn {
+    outline: 1px dashed black;
+    padding: 0px 5px;
+}
+.w-btn:hover {
+    outline-offset: 1px;
 }

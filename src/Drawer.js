@@ -2,6 +2,13 @@ class Drawer {
     constructor(canvas) {
         this.canvas = canvas;
         this.context = canvas.getContext('2d');
+        this.context.fillStyle = 'white';
+        this.context.font = '8px Calibri';
+
+        this.context.msImageSmoothingEnabled = false;
+        this.context.mozImageSmoothingEnabled = false;
+        this.context.webkitImageSmoothingEnabled = false;
+        this.context.imageSmoothingEnabled = false;
         // this.bounds = canvas.getBoundingClientRect();
         this.bounds = {
             width: this.canvas.width,
@@ -9,9 +16,11 @@ class Drawer {
         }
         this.objects = [];
     }
-    draw() {
-        this.clear();
-        this.objects.forEach(object => {
+    draw(objects, skipClear) {
+        if(!skipClear) this.clear();
+        if(!objects) objects = this.objects;
+
+        objects.forEach(object => {
             if(!object || object.hidden) return;
 
             if (object.onDraw !== undefined)
@@ -36,52 +45,73 @@ class Drawer {
             y = Math.round(y);
             x = Math.round(x);
 
-            if (object.inverted) {
-                this.context.save();
-                this.context.scale(-1, 1);
-                if(object.spritesheet){
-                    let cellNumber = object.spritesheet.cellNumber - 1;
-                    this.context.drawImage(
-                        object.image,
-                        (cellNumber % object.spritesheet.rows) * object.spritesheet.cellSize,
-                        Math.floor(cellNumber / object.spritesheet.columns) * object.spritesheet.cellSize,
-                        object.spritesheet.cellSize,
-                        object.spritesheet.cellSize,
-                        -x - object.spritesheet.cellSize,
-                        y,
-                        object.spritesheet.cellSize,
-                        object.spritesheet.cellSize
-                    );
-                }
-                this.context.restore();
-            } else {
-                if(object.spritesheet){
-                    let cellNumber = object.spritesheet.cellNumber - 1;
-                    this.context.drawImage(
-                        object.image,
-                        (cellNumber % object.spritesheet.rows) * object.spritesheet.cellSize,
-                        Math.floor(cellNumber / object.spritesheet.columns) * object.spritesheet.cellSize,
-                        object.spritesheet.cellSize,
-                        object.spritesheet.cellSize,
-                        x,
-                        y,
-                        object.spritesheet.cellSize,
-                        object.spritesheet.cellSize
-                    );
+            if (object.image){
+                if (object.inverted) {
+                    this.context.save();
+                    this.context.scale(-1, 1);
+                    if(object.spritesheet){
+                        let cellNumber = object.spritesheet.cellNumber - 1;
+                        this.context.drawImage(
+                            object.image,
+                            (cellNumber % object.spritesheet.rows) * object.spritesheet.cellSize,
+                            Math.floor(cellNumber / object.spritesheet.columns) * object.spritesheet.cellSize,
+                            object.spritesheet.cellSize,
+                            object.spritesheet.cellSize,
+                            -x - object.spritesheet.cellSize,
+                            y,
+                            object.spritesheet.cellSize,
+                            object.spritesheet.cellSize
+                        );
+                    }
+                    this.context.restore();
                 } else {
-                    this.context.drawImage(
-                        object.image,
-                        x,
-                        y,
-                        object.width || object.image.width,
-                        object.height || object.image.height
-                    )
+                    if(object.spritesheet){
+                        let cellNumber = object.spritesheet.cellNumber - 1;
+                        this.context.drawImage(
+                            object.image,
+                            (cellNumber % object.spritesheet.rows) * object.spritesheet.cellSize,
+                            Math.floor(cellNumber / object.spritesheet.columns) * object.spritesheet.cellSize,
+                            object.spritesheet.cellSize,
+                            object.spritesheet.cellSize,
+                            x,
+                            y,
+                            object.spritesheet.cellSize,
+                            object.spritesheet.cellSize
+                        );
+                    } else {
+                        this.context.drawImage(
+                            object.image,
+                            x,
+                            y,
+                            object.width || object.image.width,
+                            object.height || object.image.height
+                        )
+                    }
                 }
+            }
+
+            if (object.text){
+                this.context.fillText(object.text, x, y);
             }
 
             if (object.onLateDraw !== undefined)
                 object.onLateDraw();
         })
+    }
+    pixelate(){
+        let w = this.bounds.width * 0.4,
+            h = this.bounds.height * 0.4;
+        this.context.drawImage(this.canvas, 0, 0, w, h);
+        this.context.drawImage(this.canvas, 0, 0, w, h, 0, 0, this.bounds.width, this.bounds.height);
+    }
+    drawImmediate(entity){
+        if(entity.image){
+            let img = new Image();
+                img.src = entity.image;
+                entity.image = img;
+        }
+        
+        this.draw([entity], true);
     }
     clear() {
         this.context.clearRect(0, 0, this.bounds.width, this.bounds.height);

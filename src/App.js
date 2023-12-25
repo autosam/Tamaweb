@@ -14,6 +14,8 @@ let App = {
             "resources/img/background/house/kitchen_01.png",
             "resources/img/item/foods.png",
             "resources/img/character/sonic.png",
+            "resources/img/character/chara_195b.png",
+            "resources/img/character/chara_189b.png",
         ]
         let preloadedResources = await this.preloadImages(forPreload);
 
@@ -27,7 +29,7 @@ let App = {
         App.background = new Object2d({
             // img: "resources/img/background/house/01.jpg",
             image: App.preloadedResources["resources/img/background/house/01.jpg"],
-            x: 0, y: 0, width: 100, height: 100,
+            x: 0, y: 0, width: 96, height: 96,
         })
 
         App.foods = new Object2d({
@@ -43,7 +45,7 @@ let App = {
         })
 
         App.pet = new Pet({
-            image: App.preloadedResources["resources/img/character/sonic.png"],
+            image: App.preloadedResources["resources/img/character/chara_189b.png"],
             spritesheet: {
                 cellNumber: 0,
                 cellSize: 32,
@@ -51,19 +53,20 @@ let App = {
                 columns: 4,
             },
         });
-        App.pet.loadStats(loadedData.pet);
+        // App.pet.loadStats(loadedData.pet);
 
         window.onload = function () {
-            function update(time) {
-                App.deltaTime = time - App.lastTime;
-                App.lastTime = time;
+            // function update(time) {
+            //     App.deltaTime = time - App.lastTime;
+            //     App.lastTime = time;
 
-                App.drawer.draw(App.deltaTime);
-                requestAnimationFrame(update);
-                document.querySelector('.background-canvas').getContext('2d').drawImage(App.drawer.canvas, 0, 0);
-            }
+            //     App.drawer.draw(App.deltaTime);
+            //     requestAnimationFrame(update);
+            //     // document.querySelector('.background-canvas').getContext('2d').drawImage(App.drawer.canvas, 0, 0);
+            // }
 
-            update(0);
+            // update(0);
+            App.onFrameUpdate(0);
         }
 
         window.onbeforeunload = function(){
@@ -72,6 +75,16 @@ let App = {
         setInterval(() => {
             App.save();
         }, 5000);
+    },
+    onFrameUpdate: function(time){
+        App.deltaTime = time - App.lastTime;
+        App.lastTime = time;
+
+        App.drawer.draw();
+        // App.drawer.pixelate();
+        // App.drawUI();
+        requestAnimationFrame(App.onFrameUpdate);
+        // document.querySelector('.background-canvas').getContext('2d').drawImage(App.drawer.canvas, 0, 0);
     },
     preloadImages: function(urls) {
         const promises = urls.map((url) => {
@@ -94,6 +107,7 @@ let App = {
                 hunger_replenish: 15,
                 fun_replenish: 0,
                 price: 3,
+                sprite: 1,
             },
             "slice of pizza": {
                 sprite: 10,
@@ -147,8 +161,9 @@ let App = {
 
             document.querySelector('.screen-wrapper').appendChild(list);
         },
-        open_food_list: function(buyMode){
+        open_food_list: function(buyMode, activeIndex){
             let list = [];
+            let sliderInstance;
             for(let food of Object.keys(App.defintions.food)){
                 // check if current pet has this food on its inventory
                 if(!App.pet.inventory.food[food] && !buyMode){
@@ -156,7 +171,7 @@ let App = {
                 }
                 let current = App.defintions.food[food];
                 list.push({
-                    name: `${food.toUpperCase()} (x${App.pet.inventory.food[food] || 0}) ${buyMode ? ` - $${current.price}` : ''}`,
+                    name: `<c-sprite width="16" height="16" index="${current.sprite - 1}" src="resources/img/item/foods.png"></c-sprite>${food.toUpperCase()} (x${App.pet.inventory.food[food] || 0}) ${buyMode ? ` - $${current.price}` : ''}`,
                     onclick: (btn, list) => {
                         if(buyMode){
                             if(App.pet.stats.gold < current.price){
@@ -170,8 +185,8 @@ let App = {
                                 App.pet.inventory.food[food] += 1;
                             }
                             // console.log(list.scrollTop);
-                            let nList = App.handlers.open_food_list(true);
-                                nList.scrollTop = list.scrollTop;
+                            let nList = App.handlers.open_food_list(true, sliderInstance?.getCurrentIndex());
+                                // nList.scrollTop = list.scrollTop;
                             return false;
                         }
                         App.pet.inventory.food[food] -= 1;
@@ -181,6 +196,8 @@ let App = {
                 })
             }
 
+            sliderInstance = App.displaySlider(list, activeIndex);
+            return sliderInstance;
             return App.displayList(list);
         },
         open_activity_list: function(){
@@ -281,6 +298,9 @@ let App = {
                 },
             ]);
         },
+        open_battle_screen: function(){
+            Battle.start();
+        },
         sleep: function(){
             App.pet.sleep();
         }
@@ -345,6 +365,65 @@ let App = {
 
         return list;
     },
+    displaySlider: function(listItems, activeIndex){
+        let list = document.querySelector('.cloneables .generic-slider-container').cloneNode(true);
+
+        let maxIndex = listItems.length,
+            currentIndex = activeIndex || 0,
+            contentElement = list.querySelector('.content'),
+            acceptBtn = list.querySelector('.accept-btn'),
+            cancelBtn = list.querySelector('.cancel-btn');
+
+        list.close = function(){
+            list.remove();
+        }
+
+        list.getCurrentIndex = () => currentIndex;
+
+        cancelBtn.onclick = () => {
+            list.close();
+        }
+
+        changeIndex = diff => {
+            if(!diff) diff = 0;
+            currentIndex += diff;
+            if(currentIndex >= maxIndex) currentIndex = 0;
+            else if(currentIndex < 0) currentIndex = maxIndex - 1;
+
+            let item = listItems[currentIndex];
+            let button = document.createElement('div');
+                button.className = 'slider-item' + (item.class ? item.class : '');
+                button.innerHTML = item.name;
+                button.setAttribute('data-index', currentIndex);
+                acceptBtn.onclick = () => {
+                    let result = item.onclick(button, list);
+                    if(!result){
+                        list.close();
+                    }
+                };
+            
+            let animationStart = diff < 0 ? 'slider-item-anim-in-right' : 'slider-item-anim-in-left';
+            button.style.animation = `${diff ? animationStart : ''} 0.1s linear forwards`;
+
+            contentElement.innerHTML = '';
+            contentElement.appendChild(button);
+        }
+
+        list.querySelector('.slide-left').onclick = () => {
+            contentElement.querySelector('.slider-item').style.animation = 'slider-item-anim-out-left 0.1s linear forwards';
+            setTimeout(() => changeIndex(-1), 150);
+        }
+        list.querySelector('.slide-right').onclick = () => {
+            contentElement.querySelector('.slider-item').style.animation = 'slider-item-anim-out-right 0.1s linear forwards';
+            setTimeout(() => changeIndex(1), 150);
+        }
+
+        changeIndex();
+
+        document.querySelector('.screen-wrapper').appendChild(list);
+
+        return list;
+    },
     displayPopup: function(content, ms){
         let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
             list.innerHTML = `
@@ -358,6 +437,16 @@ let App = {
         }, ms || 1000);
         document.querySelector('.screen-wrapper').appendChild(list);
         return list;
+    },
+    drawUI: function(){
+        App.drawer.drawImmediate({
+            x: 5,
+            y: 50,
+            width: 25,
+            height: 25,
+            // image: "resources/img/background/house/kitchen_01.png",
+            text: 'HEY',
+        })
     },
     save: function(){
         setCookie('pet', App.pet.serializeStats(), 365);
