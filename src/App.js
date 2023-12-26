@@ -107,7 +107,6 @@ let App = {
                 hunger_replenish: 15,
                 fun_replenish: 0,
                 price: 3,
-                sprite: 1,
             },
             "slice of pizza": {
                 sprite: 10,
@@ -171,7 +170,7 @@ let App = {
                 }
                 let current = App.defintions.food[food];
                 list.push({
-                    name: `<c-sprite width="16" height="16" index="${current.sprite - 1}" src="resources/img/item/foods.png"></c-sprite>${food.toUpperCase()} (x${App.pet.inventory.food[food] || 0}) ${buyMode ? ` - $${current.price}` : ''}`,
+                    name: `<c-sprite width="16" height="16" index="${(current.sprite - 1)}" src="resources/img/item/foods.png"></c-sprite>${food.toUpperCase()} (x${App.pet.inventory.food[food] || 0}) ${buyMode ? ` - $${current.price}` : ''}`,
                     onclick: (btn, list) => {
                         if(buyMode){
                             if(App.pet.stats.gold < current.price){
@@ -196,7 +195,12 @@ let App = {
                 })
             }
 
-            sliderInstance = App.displaySlider(list, activeIndex);
+            if(!list.length){
+                App.displayPopup(`You don't have any food, purchase some from the mall`, 2000);
+                return;
+            }
+
+            sliderInstance = App.displaySlider(list, activeIndex, {accept: buyMode ? 'Purchase' : 'Eat'});
             return sliderInstance;
             return App.displayList(list);
         },
@@ -365,7 +369,7 @@ let App = {
 
         return list;
     },
-    displaySlider: function(listItems, activeIndex){
+    displaySlider: function(listItems, activeIndex, options){
         let list = document.querySelector('.cloneables .generic-slider-container').cloneNode(true);
 
         let maxIndex = listItems.length,
@@ -377,6 +381,9 @@ let App = {
         list.close = function(){
             list.remove();
         }
+
+        cancelBtn.innerHTML = options?.cancel || 'Back';
+        acceptBtn.innerHTML = options?.accept || 'Accept';
 
         list.getCurrentIndex = () => currentIndex;
 
