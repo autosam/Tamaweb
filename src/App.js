@@ -54,7 +54,7 @@ let App = {
                 columns: 4,
             },
         });
-        // App.pet.loadStats(loadedData.pet);
+        App.pet.loadStats(loadedData.pet);
 
         window.onload = function () {
             // function update(time) {

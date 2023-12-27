@@ -80,8 +80,8 @@ class Pet extends Object2d {
             },
         },
         refuse: {
-            start: 8,
-            end: 9,
+            start: 4,
+            end: 7,
             frameTime: 300,
             sound: {
                 file: 'refuse.ogg',
