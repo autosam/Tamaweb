@@ -32,7 +32,11 @@ class Pet extends Object2d {
         moving: {
             start: 10,
             end: 12,
-            frameTime: 100
+            frameTime: 100,
+            // sound: {
+            //     file: 'walk_01.ogg',
+            //     interval: 2,
+            // },
         },
         sitting: {
             start: 14,
@@ -42,27 +46,47 @@ class Pet extends Object2d {
         uncomfortable: {
             start: 4,
             end: 6,
-            frameTime: 500
+            frameTime: 500,
+            sound: {
+                file: 'sad.ogg',
+                interval: 2,
+            },
         },
         angry: {
             start: 6,
             end: 7,
-            frameTime: 500
+            frameTime: 500,
+            sound: {
+                file: 'angry.ogg',
+                interval: 2,
+            },
         },
         eating: {
             start: 14,
             end: 16,
-            frameTime: 250
+            frameTime: 250,
+            sound: {
+                file: 'eat.ogg',
+                interval: 2,
+            },
         },
         cheering: {
             start: 2,
             end: 4,
             frameTime: 250,
+            sound: {
+                file: 'cheer.ogg',
+                interval: 2,
+            },
         },
         refuse: {
             start: 8,
             end: 9,
-            frameTime: 300
+            frameTime: 300,
+            sound: {
+                file: 'refuse.ogg',
+                interval: 2,
+            },
         },
         sleeping: {
             start: 16,
@@ -158,7 +182,7 @@ class Pet extends Object2d {
             this.playRefuseAnimation();
             this.switchScene('house');
             App.foods.hidden = true;
-            return;
+            return false;
         }
 
         App.foods.hidden = false;
@@ -173,6 +197,8 @@ class Pet extends Object2d {
             this.playCheeringAnimationIfTrue(this.hasMoodlet('full'), () => this.switchScene('house'));
             App.foods.hidden = true;
         });
+
+        return true;
     }
     playCheeringAnimationIfTrue(requirement, onEndFn){
         if(requirement)
@@ -413,6 +439,13 @@ class Pet extends Object2d {
             this.spritesheet.cellNumber = set.start + this.animation.currentFrame;
 
             // document.querySelector('#debug').innerHTML = this.animation.currentFrame;
+            if(set.sound){
+                if(!set.sound._counter) set.sound._counter = 0;
+                if(++set.sound._counter == set.sound.interval){
+                    set.sound._counter = 0;
+                    App.playSound(`resources/sounds/${set.sound.file}`);
+                }
+            }
         }
     }
     nextRandomTargetSelect = 1;

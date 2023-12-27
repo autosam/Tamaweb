@@ -1,7 +1,8 @@
 let App = {
     deltaTime: 0, lastTime: 0,
     async init () {
-        App.drawer = new Drawer(document.querySelector('.graphics-canvas'));
+        this.initSound();
+        this.drawer = new Drawer(document.querySelector('.graphics-canvas'));
 
         Object2d.setDrawer(App.drawer);
 
@@ -170,7 +171,7 @@ let App = {
                 }
                 let current = App.defintions.food[food];
                 list.push({
-                    name: `<c-sprite width="16" height="16" index="${(current.sprite - 1)}" src="resources/img/item/foods.png"></c-sprite>${food.toUpperCase()} (x${App.pet.inventory.food[food] || 0}) ${buyMode ? ` - $${current.price}` : ''}`,
+                    name: `<c-sprite width="16" height="16" index="${(current.sprite - 1)}" src="resources/img/item/foods.png"></c-sprite> ${food.toUpperCase()} (x${App.pet.inventory.food[food] || 0}) ${buyMode ? ` - $${current.price}` : ''}`,
                     onclick: (btn, list) => {
                         if(buyMode){
                             if(App.pet.stats.gold < current.price){
@@ -188,9 +189,11 @@ let App = {
                                 // nList.scrollTop = list.scrollTop;
                             return false;
                         }
-                        App.pet.inventory.food[food] -= 1;
-                        App.pet.feed(current.sprite, current.hunger_replenish);
-                        App.pet.stats.current_fun += current.fun_replenish;
+                        let ateFood = App.pet.feed(current.sprite, current.hunger_replenish);
+                        if(ateFood) {
+                            App.pet.inventory.food[food] -= 1;
+                            App.pet.stats.current_fun += current.fun_replenish;
+                        }
                     }
                 })
             }
@@ -454,6 +457,33 @@ let App = {
             // image: "resources/img/background/house/kitchen_01.png",
             text: 'HEY',
         })
+    },
+    initSound: function(){
+        this.audioChannelIsBusy = false;
+        this.audioElement = new Audio();
+        this.audioElement.volume = 0.5;
+        this.audioElement.addEventListener('ended', () => {
+            this.audioElement.currentTime = 0;
+            this.audioChannelIsBusy = false;
+        });
+
+        // button click event
+        document.addEventListener('click', (e) => {
+            if(e.target.nodeName.toLowerCase() === 'button'){
+                if(e.target.classList.contains('back-btn') || e.target.textContent.toLowerCase() == 'back')
+                    this.playSound(`resources/sounds/ui_click_02.ogg`, true);
+                else
+                    this.playSound(`resources/sounds/ui_click_01.ogg`, true);
+            }
+        })
+    },
+    playSound: function(path, force){
+        if(this.audioChannelIsBusy && !force) return false;
+
+        if(this.audioElement.src != path)
+            this.audioElement.src = path;
+        this.audioElement.play();
+        this.audioChannelIsBusy = true;
     },
     save: function(){
         setCookie('pet', App.pet.serializeStats(), 365);
