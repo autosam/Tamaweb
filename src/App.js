@@ -14,10 +14,9 @@ let App = {
             "resources/img/background/house/01.jpg",
             "resources/img/background/house/kitchen_01.png",
             "resources/img/item/foods.png",
-            "resources/img/character/sonic.png",
-            "resources/img/character/chara_195b.png",
-            "resources/img/character/chara_189b.png",
-        ]
+            ...PET_CHARACTERS,
+        ];
+        
         let preloadedResources = await this.preloadImages(forPreload);
 
         this.preloadedResources = {};
@@ -45,16 +44,13 @@ let App = {
             hidden: true,
         })
 
-        App.pet = new Pet({
-            image: App.preloadedResources["resources/img/character/chara_189b.png"],
-            spritesheet: {
-                cellNumber: 0,
-                cellSize: 32,
-                rows: 4,
-                columns: 4,
-            },
-        });
-        App.pet.loadStats(loadedData.pet);
+        App.petDefinition = new PetDefinition({
+            name: 'pet',
+            sprite: "resources/img/character/chara_189b.png",
+        }).loadStats(loadedData.pet);
+
+        App.pet = new Pet(App.petDefinition);
+        // App.pet.loadStats(loadedData.pet);
 
         window.onload = function () {
             // function update(time) {
@@ -135,10 +131,32 @@ let App = {
             }
         }
     },
+    getRandomPetDef: function(){
+        let pet = new PetDefinition({
+            name: getRandomName(),
+            sprite: randomFromArray(PET_CHARACTERS),
+        });
+        pet.setStats({
+            current_hunger: 100,
+            current_sleep: 100,
+            current_fun: 100
+        });
+        return pet;
+    },
     handlers: {
         open_stats: function(){
             let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
             
+            // list.innerHTML = `
+            // <div class="inner-padding">
+            //     <b>GOLD:</b> $${App.pet.stats.gold}
+            //     <br>
+            //     <b>HUNGER:</b> ${App.createProgressbar( App.pet.stats.current_hunger / App.pet.stats.max_hunger * 100 ).node.outerHTML}
+            //     <b>SLEEP:</b> ${App.createProgressbar( App.pet.stats.current_sleep / App.pet.stats.max_sleep * 100 ).node.outerHTML}
+            //     <b>FUN:</b> ${App.createProgressbar( App.pet.stats.current_fun / App.pet.stats.max_fun * 100 ).node.outerHTML}
+            // </div>
+            // `;
+
             list.innerHTML = `
             <div class="inner-padding">
                 <b>GOLD:</b> $${App.pet.stats.gold}
@@ -222,28 +240,90 @@ let App = {
                 },
                 {
                     name: 'park',
+                    onclick: () => { // going to park with random pet
+                        App.handlers.go_to_park();
+                    }
+                },
+                {
+                    name: 'friends',
                     onclick: () => {
-                        App.pet.switchScene('park');
-                        App.toggleGameplayControls(false);
-                        let randomPet = new Pet({
-                            img: "resources/img/character/red_sonic.png",
-                            spritesheet: {
-                                cellNumber: 0,
-                                cellSize: 32,
-                                rows: 4,
-                                columns: 4,
+                        // App.displayPopup('To be implemented...', 1000);
+                        App.handlers.open_friends_list();
+                        return true;
+                    }
+                },
+                {
+                    name: 'baby sitter',
+                    onclick: () => {
+                        App.displayPopup('To be implemented...', 1000);
+                        return true;
+                    }
+                },
+            ])
+        },
+        open_friends_list: function(){
+            if(!App.petDefinition.friends.length){
+                App.displayPopup(`You don't have any friends right now`, 2000);
+                return;
+            }
+
+            App.displayList(App.petDefinition.friends.map((friendDef, index) => {
+                const name = friendDef.name || 'Unknown';
+                const icon = `<c-sprite width="20" height="20" index="0" src="${friendDef.sprite}" pos-x="6" pos-y="4" style="margin-right: 10px; object-position: -6px -4px;"></c-sprite>`;
+                return {
+                    name: icon + name,
+                    onclick: () => {
+                        let friendsList = App.displayList([
+                            {
+                                name: 'park',
+                                onclick: () => {
+                                    App.closeAllDisplays();
+                                    App.handlers.go_to_park(friendDef);
+                                }
+                            },
+                            {
+                                name: 'unfriend',
+                                onclick: () => {
+                                    App.displayPrompt(`Are you sure you want to unfriend ${name}?`, [
+                                        {
+                                            name: 'yes',
+                                            onclick: () => {
+                                                App.petDefinition.friends.splice(index, 1);
+                                                friendsList.close();
+                                                App.handlers.open_friends_list();   
+                                            }
+                                        },
+                                        {
+                                            name: 'no',
+                                            onclick: () => { }
+                                        }
+                                    ]);
+                                    return true;
+                                }
                             }
-                        });
-                        App.pet.triggerScriptedState('playing', 10000, null, true, () => {
-                            App.pet.stats.current_fun += 40;
-                            App.pet.statsManager();
-                            App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => App.pet.switchScene('house'));
-                            App.drawer.removeObject(randomPet);
-                            App.toggleGameplayControls(true);
-                        }, Pet.scriptedEventDrivers.playing.bind({pet: App.pet}));
+                        ]);
+                        return true;
                     }
                 }
-            ])
+            }));
+        },
+        go_to_park: function(otherPetDef){
+            if(!otherPetDef){
+                otherPetDef = App.getRandomPetDef();
+            }
+            App.pet.switchScene('park');
+            App.toggleGameplayControls(false);
+            let otherPet = new Pet(otherPetDef);
+            if(App.petDefinition.friends.indexOf(otherPetDef) === -1){ 
+                App.petDefinition.friends.push(otherPetDef);
+            }
+            App.pet.triggerScriptedState('playing', 10000, null, true, () => {
+                App.pet.stats.current_fun += 40;
+                App.pet.statsManager();
+                App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => App.pet.switchScene('house'));
+                App.drawer.removeObject(otherPet);
+                App.toggleGameplayControls(true);
+            }, Pet.scriptedEventDrivers.playing.bind({pet: App.pet}));
         },
         open_mall_activity_list: function(){
             App.displayList([
@@ -340,6 +420,13 @@ let App = {
             }
         }
     },
+    closeAllDisplays: function(){
+        [...document.querySelectorAll('.display')].forEach(display => {
+            if(!display.closest('.cloneables')){
+                display.close();
+            }
+        });
+    },
     displayList: function(listItems){
         listItems.push({
             name: 'BACK',
@@ -428,6 +515,11 @@ let App = {
             setTimeout(() => changeIndex(1), 150);
         }
 
+        if(maxIndex === 1){
+            list.querySelector('.slide-left').classList.add('disabled');
+            list.querySelector('.slide-right').classList.add('disabled');
+        }
+
         changeIndex();
 
         document.querySelector('.screen-wrapper').appendChild(list);
@@ -441,10 +533,38 @@ let App = {
                     ${content}
                 </div>
             `;
-        list.style['z-index'] = 3;
+            list.style['z-index'] = 3;
         setTimeout(() => {
             list.remove();
         }, ms || 1000);
+        document.querySelector('.screen-wrapper').appendChild(list);
+        return list;
+    },
+    displayPrompt: function(text, buttons){
+        let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
+            list.innerHTML = `
+                <div class="inner-padding uppercase flex-center">
+                    ${text}
+                </div>
+                <div class="buttons-container"></div>
+            `;
+            list.style['z-index'] = 3;
+            
+            list.close = function(){
+                list.remove();
+            }
+
+        const btnContainer = list.querySelector('.buttons-container');
+        buttons.forEach(def => {
+            const btn = document.createElement('button');
+            btn.innerHTML = def.name;
+            btn.className = 'list-item';
+            btn.onclick = () => {
+                if(!def.onclick()) list.close();
+            }
+            btnContainer.appendChild(btn);
+        });
+
         document.querySelector('.screen-wrapper').appendChild(list);
         return list;
     },
@@ -486,10 +606,11 @@ let App = {
         this.audioChannelIsBusy = true;
     },
     save: function(){
-        setCookie('pet', App.pet.serializeStats(), 365);
+        // setCookie('pet', App.pet.serializeStats(), 365);
+        localStorage.setItem('pet', App.pet.serializeStats());
     },
     load: function(){
-        let pet = getCookie('pet');
+        let pet = localStorage.getItem('pet');
             pet = pet ? JSON.parse(pet) : {};
         return {
             pet,

@@ -4,6 +4,8 @@
 }
 * {
     -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-drag: none;
 }
 html {
     font-family: 'Pixel';
@@ -70,6 +72,11 @@ body {
     cursor: pointer;
     flex-shrink: 0;
     text-transform: uppercase;
+    display: flex;
+    align-items: center;
+}
+.list-item:last-of-type {
+    border-bottom: none;
 }
 .inner-padding {
     padding: 10px 20px;
@@ -142,6 +149,11 @@ body {
         transform: translateX(200px);
     }
 }
+.buttons-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 button {
     appearance: none;
     all: unset;
@@ -153,9 +165,11 @@ button {
 .back-btn {
     margin-top: auto;
     border-bottom: none;
+    font-weight: bold;
 }
 .disabled {
     color: gray;
+    pointer-events: none;
 }
 .uppercase {
     text-transform: uppercase;
@@ -241,6 +255,7 @@ button {
 .w-btn {
     outline: 1px dashed black;
     padding: 0px 5px;
+    text-transform: uppercase;
 }
 .w-btn:hover {
     outline-offset: 1px;

@@ -12,6 +12,18 @@ class Pet extends Object2d {
     state = 'idle';
     activeMoodlets = [];
 
+    constructor(petDefinition){
+        const config = {
+            image: App.preloadedResources[petDefinition.sprite],
+            spritesheet: petDefinition.spritesheet,
+        };
+        super(config);
+
+        this.petDefinition = petDefinition;
+        this.stats = this.petDefinition.stats;
+        this.inventory = this.petDefinition.inventory;
+    }
+
     // metadata
     animations = {
         idle: {
@@ -94,46 +106,45 @@ class Pet extends Object2d {
             frameTime: 1000,
         }
     }
-    stats = {
-        speed: 0.01,
-        // hunger
-        max_hunger: 100,
-        hunger_satisfaction: 80, // note: when reaching this they won't want anymore food
-        hunger_min_desire: 40, // note: when below this number they desire it
-        hunger_depletion_rate: 0.01,
-        activity_hunger_depletion: 0.5,
-        // sleep
-        max_sleep: 100,
-        sleep_satisfaction: 70,
-        sleep_min_desire: 20,
-        sleep_depletion_rate: 0.002,
-        sleep_replenish_rate: 0.1,
-        light_sleepiness: 0.01,
-        activity_sleep_depletion: 0.3,
-        // fun
-        max_fun: 100,
-        fun_min_desire: 35,
-        fun_satisfaction: 70,
-        fun_depletion_rate: 0.05,
-        // wander (sec)
-        wander_min: 1.5,
-        wander_max: 8,
+    // stats = {
+    //     speed: 0.01,
+    //     // hunger
+    //     max_hunger: 100,
+    //     hunger_satisfaction: 80, // note: when reaching this they won't want anymore food
+    //     hunger_min_desire: 40, // note: when below this number they desire it
+    //     hunger_depletion_rate: 0.01,
+    //     activity_hunger_depletion: 0.5,
+    //     // sleep
+    //     max_sleep: 100,
+    //     sleep_satisfaction: 70,
+    //     sleep_min_desire: 20,
+    //     sleep_depletion_rate: 0.002,
+    //     sleep_replenish_rate: 0.1,
+    //     light_sleepiness: 0.01,
+    //     activity_sleep_depletion: 0.3,
+    //     // fun
+    //     max_fun: 100,
+    //     fun_min_desire: 35,
+    //     fun_satisfaction: 70,
+    //     fun_depletion_rate: 0.05,
+    //     // wander (sec)
+    //     wander_min: 1.5,
+    //     wander_max: 8,
 
-        // current
-        current_hunger: 40 || 80,
-        current_sleep: 70,
-        current_fun: 10,
+    //     // current
+    //     current_hunger: 40 || 80,
+    //     current_sleep: 70,
+    //     current_fun: 10,
 
-        // gold
-        gold: 10,
-    }
-
-    inventory = {
-        food: {
-            'bread': 1,
-            'slice of pizza': 3,
-        }
-    }
+    //     // gold
+    //     gold: 10,
+    // }
+    // inventory = {
+    //     food: {
+    //         'bread': 1,
+    //         'slice of pizza': 3,
+    //     }
+    // }
 
     onLateDraw() {
         this.behavior();
@@ -495,16 +506,10 @@ class Pet extends Object2d {
         this.inverted = false;
     }
     serializeStats(){
-        let s = {
-            stats: this.stats,
-            inventory: this.inventory,
-        }
-        return JSON.stringify(s);
+        return this.petDefinition.serializeStats();
     }
     loadStats(json){
-        for (let key of Object.keys(json)) {
-            this[key] = json[key];
-        }
+        this.petDefinition.loadStats(json);
     }
 
     static scriptedEventDrivers = {

@@ -37,7 +37,7 @@
                 <button class="main-action-icon" id="stats" onclick="App.handlers.open_stats()">📊</button>
                 <button class="main-action-icon" id="food" onclick="App.handlers.open_food_list()">🍕</button>
                 <button class="main-action-icon" id="activities" onclick="App.handlers.open_activity_list()">🛣️</button>
-                <button class="main-action-icon" id="activities" onclick="App.handlers.open_battle_screen()">⚔️</button>
+                <!-- <button class="main-action-icon" id="activities" onclick="App.handlers.open_battle_screen()">⚔️</button> -->
                 <button class="main-action-icon" id="sleep" onclick="App.handlers.sleep()">💤</button>
             </div>
         </div>
@@ -47,12 +47,12 @@
 
     <!-- cloneables -->
     <div style="display: none;" class="cloneables">
-        <div class="generic-list-container">
+        <div class="generic-list-container display">
 
         </div>
 
 
-        <div class="generic-slider-container">
+        <div class="generic-slider-container display">
             <div class="main-container">
                 <button class="slide-btn slide-left"> < </button>
                 <div class="content"></div>
@@ -72,7 +72,11 @@
             </div>
         </div>
     </div>
-    
+
+    <!-- data & resources -->
+    <script src="resources/data/CharacterDefinitions.js"></script>
+
+    <!-- scripts -->
     <script src="src/libs/jquery-3.7.1.min.js"></script>
     <script src="src/Utils.js"></script>
     <script src="src/Drawer.js"></script>
@@ -80,6 +84,7 @@
     <script src="src/Pet.js"></script>
     <script src="src/BattleManager.js"></script>
     <script src="src/App.js"></script>
+    <script src="src/PetDefinition.js"></script>
     <script src="src/Main.js"></script>
 </body>
 </html>
