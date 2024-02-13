@@ -269,7 +269,7 @@ let App = {
 
             App.displayList(App.petDefinition.friends.map((friendDef, index) => {
                 const name = friendDef.name || 'Unknown';
-                const icon = `<c-sprite width="20" height="20" index="0" src="${friendDef.sprite}" pos-x="6" pos-y="4" style="margin-right: 10px; object-position: -6px -4px;"></c-sprite>`;
+                const icon = `<c-sprite width="20" height="20" index="0" src="${friendDef.sprite}" pos-x="6" pos-y="4" style="margin-right: 10px;"></c-sprite>`;
                 return {
                     name: icon + name,
                     onclick: () => {
