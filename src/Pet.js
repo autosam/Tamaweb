@@ -22,89 +22,7 @@ class Pet extends Object2d {
         this.petDefinition = petDefinition;
         this.stats = this.petDefinition.stats;
         this.inventory = this.petDefinition.inventory;
-    }
-
-    // metadata
-    animations = {
-        idle: {
-            start: 1,
-            end: 2,
-            frameTime: 500
-        },
-        idle_uncomfortable: {
-            start: 4,
-            end: 5,
-            frameTime: 500,
-        },
-        idle_side_uncomfortable: {
-            start: 12,
-            end: 13,
-            frameTime: 1000,
-        },
-        moving: {
-            start: 10,
-            end: 12,
-            frameTime: 100,
-            // sound: {
-            //     file: 'walk_01.ogg',
-            //     interval: 2,
-            // },
-        },
-        sitting: {
-            start: 14,
-            end: 16,
-            frameTime: 300
-        },
-        uncomfortable: {
-            start: 4,
-            end: 6,
-            frameTime: 500,
-            sound: {
-                file: 'sad.ogg',
-                interval: 2,
-            },
-        },
-        angry: {
-            start: 6,
-            end: 7,
-            frameTime: 500,
-            sound: {
-                file: 'angry.ogg',
-                interval: 2,
-            },
-        },
-        eating: {
-            start: 14,
-            end: 16,
-            frameTime: 250,
-            sound: {
-                file: 'eat.ogg',
-                interval: 2,
-            },
-        },
-        cheering: {
-            start: 2,
-            end: 4,
-            frameTime: 250,
-            sound: {
-                file: 'cheer.ogg',
-                interval: 2,
-            },
-        },
-        refuse: {
-            start: 4,
-            end: 7,
-            frameTime: 300,
-            sound: {
-                file: 'refuse.ogg',
-                interval: 2,
-            },
-        },
-        sleeping: {
-            start: 16,
-            end: 17,
-            frameTime: 1000,
-        }
+        this.animations = this.petDefinition.animations;
     }
 
     onLateDraw() {
@@ -357,17 +275,21 @@ class Pet extends Object2d {
             this.state = newState;
         }
     }
+    stopScriptedState(){
+        this.stopMove();
+        this.scriptedEventTime = null;
+        if(this.scriptedEventOnEndFn) {
+            this.scriptedEventOnEndFn();
+            return true;
+        }
+        return false;
+    }
     stateManager(){
         if(this.scriptedEventTime){
             if(this.scriptedEventTime < App.lastTime){ // ending scripted event time
-                this.stopMove();
-                this.scriptedEventTime = null;
-                if(this.scriptedEventOnEndFn) {
-                    this.scriptedEventOnEndFn();
-                    return;
-                }
+                if(this.stopScriptedState()) return;
             } else { // during scripted event
-                if(this.scriptedEventDriverFn) this.scriptedEventDriverFn();
+                if(this.scriptedEventDriverFn) this.scriptedEventDriverFn(this);
                 return;
             }
         }

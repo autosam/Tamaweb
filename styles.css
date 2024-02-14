@@ -154,6 +154,33 @@ body {
     flex-direction: column;
     align-items: center;
 }
+.generic-grid-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    background: linear-gradient(0deg, #9f00ff, #00c4ff);
+}
+.grid-item {
+    width: 50%;
+    height: 50%;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-size: x-large;
+    filter: grayscale(1) brightness(1.2) contrast(1);
+    color: white;
+}
+.grid-item:before {
+    position: absolute;
+    width: 70px;
+    height: 70px;
+    content: "";
+    background: rgba(0, 0, 0, 0.151);
+    z-index: -1;
+    border-radius: 100px;
+}
 button {
     appearance: none;
     all: unset;
