@@ -1,5 +1,5 @@
 let App = {
-    deltaTime: 0, lastTime: 0,
+    deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0},
     async init () {
         this.initSound();
         this.drawer = new Drawer(document.querySelector('.graphics-canvas'));
@@ -69,6 +69,20 @@ let App = {
         window.onbeforeunload = function(){
             App.save();
         }
+
+        // mouse pos on canvas
+        document.addEventListener('mousemove', (evt) => {
+            var rect = App.drawer.canvas.getBoundingClientRect();
+            let x = evt.clientX - rect.left, y = evt.clientY - rect.top;
+            if(x < 0) x = 0;
+            if(x > rect.width) x = rect.width;
+            if(y < 0) y = 0;
+            if(y > rect.height) y = rect.height;
+
+            App.mouse = { x: x / 2, y: y / 2 };
+        })
+
+        // saver
         setInterval(() => {
             App.save();
         }, 5000);
@@ -328,52 +342,10 @@ let App = {
         open_mall_activity_list: function(){
             App.displayList([
                 {
-                    name: 'play game',
+                    name: 'game center',
                     onclick: () => {
-                        App.pet.switchScene('park');
-                        App.toggleGameplayControls(false);
-                        let randomPet = new Pet({
-                            img: "resources/img/character/red_sonic.png",
-                            spritesheet: {
-                                cellNumber: 0,
-                                cellSize: 32,
-                                rows: 4,
-                                columns: 4,
-                            }
-                        });
-                        randomPet.stopMove();
-                        randomPet.triggerScriptedState('eating', 5000, null, true);
-                        randomPet.x = 20;
-                        randomPet.inverted = true;
-
-                        App.pet.x = 80 - App.pet.spritesheet.cellSize;
-                        App.pet.inverted = false;
-                        App.pet.stopMove();
-                        App.pet.triggerScriptedState('eating', 5000, null, true, () => {
-                            App.drawer.removeObject(randomPet);
-                            App.pet.x = '50%';
-                            if(Math.random() > 0.5){ // win
-                                let winningGold = 25;
-                                App.pet.stats.gold += winningGold;
-                                App.pet.stats.current_fun += 35;
-                                App.pet.playCheeringAnimation(() => {
-                                    App.displayPopup(`You've won $${winningGold}`);
-                                    App.toggleGameplayControls(true);
-                                    App.pet.switchScene('house');
-                                    App.handlers.open_mall_activity_list();
-                                });
-                            } else {
-                                App.pet.playAngryAnimation(() => {
-                                    App.displayPopup(`You've lost!`);
-                                    App.pet.stats.current_fun -= 15;
-                                    App.toggleGameplayControls(true);
-                                    App.pet.switchScene('house');
-                                    App.handlers.open_mall_activity_list();
-                                });
-                            }
-                        });
-                        
-                        return false;
+                        App.handlers.open_game_list();
+                        return true;
                     }
                 },
                 {
@@ -381,6 +353,22 @@ let App = {
                     onclick: () => {
                         App.handlers.open_food_list(true);
                         return true;
+                    }
+                },
+            ]);
+        },
+        open_game_list: function(){
+            App.displayList([
+                {
+                    name: 'park game',
+                    onclick: () => {
+                        return Games.parkRngGame();
+                    }
+                },
+                {
+                    name: 'guess game (wip)',
+                    onclick: () => {
+                        return Games.guessGame();
                     }
                 },
             ]);
@@ -427,11 +415,12 @@ let App = {
             }
         });
     },
-    displayList: function(listItems){
+    displayList: function(listItems, backFn){
         listItems.push({
             name: 'BACK',
             class: 'back-btn',
             onclick: () => {
+                if(backFn) backFn();
                 return false;
             }
         })
