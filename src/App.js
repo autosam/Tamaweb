@@ -1,24 +1,32 @@
 let App = {
     deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0},
+    settings: {
+        screenSize: 1,
+    },
     async init () {
+        // init
         this.initSound();
         this.drawer = new Drawer(document.querySelector('.graphics-canvas'));
-
         Object2d.setDrawer(App.drawer);
 
+        // load data
         let loadedData = this.load();
-
         console.log({loadedData});
 
+        // handle settings
+        if(loadedData.settings){
+            Object.assign(this.settings, loadedData.settings);
+        }
+        this.applySettings();
+
+        // handle preloading
         let forPreload = [
             "resources/img/background/house/01.jpg",
             "resources/img/background/house/kitchen_01.png",
             "resources/img/item/foods.png",
             ...PET_CHARACTERS,
         ];
-        
         let preloadedResources = await this.preloadImages(forPreload);
-
         this.preloadedResources = {};
         preloadedResources.forEach((resource, i) => {
             // let name = forPreload[i].slice(forPreload[i].lastIndexOf('/') + 1);
@@ -26,12 +34,12 @@ let App = {
             this.preloadedResources[name] = resource;
         });
 
+        // creating game objects
         App.background = new Object2d({
             // img: "resources/img/background/house/01.jpg",
             image: App.preloadedResources["resources/img/background/house/01.jpg"],
             x: 0, y: 0, width: 96, height: 96,
         })
-
         App.foods = new Object2d({
             image: App.preloadedResources["resources/img/item/foods.png"],
             x: 10, y: 10,
@@ -43,15 +51,14 @@ let App = {
             },
             hidden: true,
         })
-
         App.petDefinition = new PetDefinition({
             name: 'pet',
             sprite: "resources/img/character/chara_189b.png",
         }).loadStats(loadedData.pet);
-
         App.pet = new Pet(App.petDefinition);
         // App.pet.loadStats(loadedData.pet);
 
+        // entries
         window.onload = function () {
             // function update(time) {
             //     App.deltaTime = time - App.lastTime;
@@ -65,7 +72,6 @@ let App = {
             // update(0);
             App.onFrameUpdate(0);
         }
-
         window.onbeforeunload = function(){
             App.save();
         }
@@ -86,6 +92,10 @@ let App = {
         setInterval(() => {
             App.save();
         }, 5000);
+    },
+    applySettings: function(){
+        // screen size
+        document.querySelector('.graphics-wrapper').style.scale = this.settings.screenSize;
     },
     onFrameUpdate: function(time){
         App.deltaTime = time - App.lastTime;
@@ -184,7 +194,33 @@ let App = {
                     onclick: () => {
                         App.handlers.sleep();
                     }
-                },          
+                },
+                {
+                    name: '⚙️',
+                    onclick: () => {
+                        App.handlers.open_settings();
+                    }
+                }, 
+            ])
+        },
+        open_settings: function(){
+            App.displayList([
+                {
+                    name: '+ screen size',
+                    onclick: () => {
+                        App.settings.screenSize += 0.1;
+                        App.applySettings();
+                        return true;
+                    }
+                },
+                {
+                    name: '- screen size',
+                    onclick: () => {
+                        App.settings.screenSize -= 0.1;
+                        App.applySettings();
+                        return true;
+                    }
+                },
             ])
         },
         open_stats: function(){
@@ -667,12 +703,16 @@ let App = {
     save: function(){
         // setCookie('pet', App.pet.serializeStats(), 365);
         localStorage.setItem('pet', App.pet.serializeStats());
+        localStorage.setItem('settings', JSON.stringify(App.settings));
     },
     load: function(){
         let pet = localStorage.getItem('pet');
             pet = pet ? JSON.parse(pet) : {};
+
+        let settings = localStorage.getItem('settings');
+            settings = settings ? JSON.parse(settings) : null;
         return {
-            pet,
+            pet, settings
         }
     }
 }
