@@ -53,7 +53,7 @@ let App = {
         })
         App.petDefinition = new PetDefinition({
             name: 'pet',
-            sprite: "resources/img/character/chara_189b.png",
+            sprite: randomFromArray(PET_CHARACTERS)
         }).loadStats(loadedData.pet);
         App.pet = new Pet(App.petDefinition);
         // App.pet.loadStats(loadedData.pet);
@@ -204,7 +204,7 @@ let App = {
             ])
         },
         open_settings: function(){
-            App.displayList([
+            const settings = App.displayList([
                 {
                     name: '+ screen size',
                     onclick: () => {
@@ -221,6 +221,27 @@ let App = {
                         return true;
                     }
                 },
+                {
+                    name: 'reset save data',
+                    onclick: () => {
+                        App.displayPrompt('Are you sure you want to delete your save game?', [
+                            {
+                                name: 'yes',
+                                onclick: () => {
+                                    App.save = () => {};
+                                    localStorage.clear();
+                                    location.reload();
+                                    return false;
+                                }
+                            },
+                            {
+                                name: 'no',
+                                onclick: () => { }
+                            }
+                        ])
+                        return true;
+                    }
+                }
             ])
         },
         open_stats: function(){
