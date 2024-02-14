@@ -280,13 +280,14 @@ class Pet extends Object2d {
         this.scriptedEventTime = null;
         if(this.scriptedEventOnEndFn) {
             this.scriptedEventOnEndFn();
-            return;
+            return true;
         }
+        return false;
     }
     stateManager(){
         if(this.scriptedEventTime){
             if(this.scriptedEventTime < App.lastTime){ // ending scripted event time
-                this.stopScriptedState();
+                if(this.stopScriptedState()) return;
             } else { // during scripted event
                 if(this.scriptedEventDriverFn) this.scriptedEventDriverFn(this);
                 return;

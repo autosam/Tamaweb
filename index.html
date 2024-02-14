@@ -13,7 +13,7 @@
         <!-- <img src="resources/img/ui/Front.png" class="screen-shell"></img> -->
         <div class="graphics-wrapper">
             <div class="screen-wrapper">
-                <canvas class="graphics-canvas" width="96" height="96"></canvas>
+                <canvas style="cursor: pointer;" onclick="App.handlers.open_main_menu()" class="graphics-canvas" width="96" height="96"></canvas>
             </div>
 
             <!-- battle screen -->
@@ -33,7 +33,7 @@
             </div>
 
             <!-- gameplay buttons -->
-            <div class="gameplay-main-buttons">
+            <div class="gameplay-main-buttons hidden">
                 <button class="main-action-icon" id="stats" onclick="App.handlers.open_stats()">📊</button>
                 <button class="main-action-icon" id="food" onclick="App.handlers.open_food_list()">🍕</button>
                 <button class="main-action-icon" id="activities" onclick="App.handlers.open_activity_list()">🛣️</button>
@@ -62,6 +62,10 @@
                 <button class="cancel-btn w-btn">CANCEL</button>
                 <button class="accept-btn w-btn">ACCEPT</button>
             </div>
+        </div>
+
+        <div class="generic-list-container generic-grid-container display">
+            
         </div>
 
         <div class="progressbar">

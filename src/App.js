@@ -158,6 +158,35 @@ let App = {
         return pet;
     },
     handlers: {
+        open_main_menu: function(){
+            if(App.disableGameplayControls) return;
+            App.displayGrid([
+                {
+                    name: '📊',
+                    onclick: () => {
+                        App.handlers.open_stats();
+                    }
+                },
+                {
+                    name: '🍴',
+                    onclick: () => {
+                        App.handlers.open_food_list();
+                    }
+                },
+                {
+                    name: '🛣️',
+                    onclick: () => {
+                        App.handlers.open_activity_list();
+                    }
+                },
+                {
+                    name: '💤',
+                    onclick: () => {
+                        App.handlers.sleep();
+                    }
+                },          
+            ])
+        },
         open_stats: function(){
             let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
             
@@ -332,6 +361,7 @@ let App = {
                 App.petDefinition.friends.push(otherPetDef);
             }
             App.pet.triggerScriptedState('playing', 10000, null, true, () => {
+                App.pet.x = '50%';
                 App.pet.stats.current_fun += 40;
                 App.pet.statsManager();
                 App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => App.pet.switchScene('house'));
@@ -381,6 +411,13 @@ let App = {
         }
     },
     toggleGameplayControls: function(state){
+        App.disableGameplayControls = !state;
+        if(App.disableGameplayControls){
+            App.drawer.canvas.style.cursor = 'not-allowed';
+        } else {
+            App.drawer.canvas.style.cursor = 'pointer';
+        }
+        return;
         let gameplayButtons = [...document.querySelectorAll('.main-action-icon')];
         if(!state){
             // gameplayButtons.classList.add('disabled');
@@ -434,6 +471,38 @@ let App = {
         listItems.forEach(item => {
             let button = document.createElement('button');
                 button.className = 'list-item ' + (item.class ? item.class : '');
+                button.innerHTML = item.name;
+                button.onclick = () => {
+                    let result = item.onclick(button, list);
+                    if(!result){
+                        list.close();
+                    }
+                };
+            list.appendChild(button);
+        });
+
+        document.querySelector('.screen-wrapper').appendChild(list);
+
+        return list;
+    },
+    displayGrid: function(listItems){
+        listItems.push({
+            name: '<',
+            class: 'back-btn',
+            onclick: () => {
+                return false;
+            }
+        })
+
+        let list = document.querySelector('.cloneables .generic-grid-container').cloneNode(true);
+
+        list.close = function(){
+            list.remove();
+        }
+
+        listItems.forEach(item => {
+            let button = document.createElement('button');
+                button.className = 'grid-item ' + (item.class ? item.class : '');
                 button.innerHTML = item.name;
                 button.onclick = () => {
                     let result = item.onclick(button, list);
