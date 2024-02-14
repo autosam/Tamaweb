@@ -1,3 +1,6 @@
+:root {
+    --container-background: linear-gradient(0deg, #ff8100, #ff00c6);
+}
 @font-face {
     font-family: 'Pixel';
     src: url('resources/font/PixelifySans-VariableFont_wght.ttf');
@@ -60,6 +63,7 @@ body {
     color: black;
     overflow: auto;
     z-index: 2;
+    background: var(--container-background);
 }
 .list-item {
     all: unset;
@@ -77,6 +81,22 @@ body {
 }
 .list-item:last-of-type {
     border-bottom: none;
+}
+.list-item {
+    border: 0;
+    position: relative;
+    height: 22px;
+}
+.list-item:before {
+    width: 10px;
+    height: 80%;
+    background: white;
+    content: "";
+    position: absolute;
+    left: 5px;
+    width: calc(100% - 10px);
+    z-index: -1;
+    border-radius: 20px;
 }
 .inner-padding {
     padding: 10px 20px;
@@ -158,7 +178,7 @@ body {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    background: linear-gradient(0deg, #9f00ff, #00c4ff);
+    background: var(--container-background);
 }
 .grid-item {
     width: 50%;
@@ -168,16 +188,17 @@ body {
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    font-size: x-large;
-    filter: grayscale(1) brightness(1.2) contrast(1);
-    color: white;
+    font-size: xx-large;
+    /* filter: grayscale(1) brightness(1.2) contrast(1); */
+    text-shadow: 0 0 2px black;
+    color: rgb(0, 0, 0);
 }
 .grid-item:before {
     position: absolute;
     width: 70px;
     height: 70px;
     content: "";
-    background: rgba(0, 0, 0, 0.151);
+    background: rgba(255, 255, 255, 0.9);
     z-index: -1;
     border-radius: 100px;
 }
@@ -264,7 +285,7 @@ button {
     image-rendering: pixelated;
     z-index: 5;
     scale: 3;
-    top: calc(50% - 99px);
+    top: calc(50% - 85px);
 }
 
 /* battle */

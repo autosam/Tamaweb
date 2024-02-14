@@ -310,13 +310,13 @@ let App = {
                 return;
             }
 
-            App.displayList(App.petDefinition.friends.map((friendDef, index) => {
+            const friendsList = App.displayList(App.petDefinition.friends.map((friendDef, index) => {
                 const name = friendDef.name || 'Unknown';
                 const icon = `<c-sprite width="20" height="20" index="0" src="${friendDef.sprite}" pos-x="6" pos-y="4" style="margin-right: 10px;"></c-sprite>`;
                 return {
                     name: icon + name,
                     onclick: () => {
-                        let friendsList = App.displayList([
+                        const friendActivitiesList = App.displayList([
                             {
                                 name: 'park',
                                 onclick: () => {
@@ -331,9 +331,10 @@ let App = {
                                         {
                                             name: 'yes',
                                             onclick: () => {
-                                                App.petDefinition.friends.splice(index, 1);
                                                 friendsList.close();
-                                                App.handlers.open_friends_list();   
+                                                friendActivitiesList.close();
+                                                App.petDefinition.friends.splice(index, 1);
+                                                App.handlers.open_friends_list();
                                             }
                                         },
                                         {
