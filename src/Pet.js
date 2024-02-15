@@ -66,14 +66,24 @@ class Pet extends Object2d {
         }
         this.isSleeping = true;
     }
-    feed(foodSpriteCellNumber, value){
+    feed(foodSpriteCellNumber, value, type){
+        const me = this;
+
+        if(!type) type = 'food';
+
         this.stopMove();
 
-        if(this.hasMoodlet('full')){
-            this.playRefuseAnimation();
+        function refuse(){
+            me.playRefuseAnimation();
             App.setScene(App.scene.home);
             App.foods.hidden = true;
             return false;
+        }
+
+        switch(type){
+            case "food": 
+                if(this.hasMoodlet('full')) return refuse();
+                break;
         }
 
         App.foods.hidden = false;
@@ -85,7 +95,14 @@ class Pet extends Object2d {
         App.setScene(App.scene.kitchen);
 
         this.triggerScriptedState('eating', 4000, null, true, () => {
-            this.playCheeringAnimationIfTrue(this.hasMoodlet('full'), () => App.setScene(App.scene.home));
+            switch(type){
+                case "food":
+                    this.playCheeringAnimationIfTrue(this.hasMoodlet('full'), () => App.setScene(App.scene.home));
+                    break;
+                case "med":
+                    this.playCheeringAnimationIfTrue(this.hasMoodlet('healthy'), () => App.setScene(App.scene.home));
+                    break;
+            }
             App.foods.hidden = true;
         });
 
@@ -149,7 +166,9 @@ class Pet extends Object2d {
             }
         }
     }
-    statsManager(){
+    statsManager(isOfflineProgression){
+        if(this !== App.pet) return; // not the main pet
+
         let stats = this.stats;
         /*
             Hunger: ${this.stats.current_hunger}
@@ -167,10 +186,16 @@ class Pet extends Object2d {
             Mood: ${this.activeMoodlets.join(' - ') || "normal"}
         `;
 
-        let hunger_depletion_rate = stats.hunger_depletion_rate;
-        let sleep_depletion_rate = stats.sleep_depletion_rate;
-        let fun_depletion_rate = stats.fun_depletion_rate;
-        let bladder_depletion_rate = stats.bladder_depletion_rate;
+        let depletion_mult = 1;
+        if(isOfflineProgression){
+            depletion_mult = 0.2;
+        }
+
+        let hunger_depletion_rate = stats.hunger_depletion_rate * depletion_mult;
+        let sleep_depletion_rate = stats.sleep_depletion_rate * depletion_mult;
+        let fun_depletion_rate = stats.fun_depletion_rate * depletion_mult;
+        let bladder_depletion_rate = stats.bladder_depletion_rate * depletion_mult;
+        let health_depletion_rate = stats.healt_depletion_rate * depletion_mult;
 
         // sleeping case
         if(this.state == 'sleeping'){
@@ -184,6 +209,7 @@ class Pet extends Object2d {
         stats.current_sleep = clamp(stats.current_sleep, 0, stats.max_sleep);
         stats.current_fun = clamp(stats.current_fun, 0, stats.max_fun);
         stats.current_bladder = clamp(stats.current_bladder, 0, stats.max_bladder);
+        stats.current_health = clamp(stats.current_health, 0, stats.max_health);
 
         // depletion
         stats.current_hunger -= hunger_depletion_rate;
@@ -204,8 +230,20 @@ class Pet extends Object2d {
         stats.current_bladder -= bladder_depletion_rate;
         if(stats.current_bladder <= 0){
             stats.current_bladder = stats.max_bladder;
-            App.poop.hidden = false;
+            this.stats.has_poop_out = true;
             console.log('pooping myself');
+        }
+        if(this.stats.has_poop_out){
+            App.poop.hidden = false;
+        } else {
+            App.poop.hidden = true;
+        }
+        if(this.stats.has_poop_out){ // gradually decrease health if poop is nearby
+            stats.current_health -= health_depletion_rate * stats.health_depletion_mult;
+        }
+        if(stats.current_health <= 0){
+            stats.current_health = 0;
+            console.log('dead of sickness?');
         }
 
         // moodlets
@@ -223,6 +261,11 @@ class Pet extends Object2d {
             stats.current_fun,
             stats.fun_min_desire, 'bored',
             stats.fun_satisfaction, 'amused'
+        );
+        this.triggerMoodlet(
+            stats.current_health,
+            stats.max_health * 0.25, 'sick',
+            stats.max_health * 0.8, 'healthy'
         );
     }
     triggerMoodlet(current, min, minName, max, maxName){
@@ -317,7 +360,7 @@ class Pet extends Object2d {
             this.setState('moving');
         else {
             if(this.state.indexOf('idle') == -1){
-                if(this.hasMoodlet('hungry') || this.hasMoodlet('sleepy') || this.hasMoodlet('bored')){
+                if(this.hasMoodlet('hungry') || this.hasMoodlet('sleepy') || this.hasMoodlet('bored') || this.hasMoodlet('sick')){
                     if(random(0, 1))
                         this.setState('idle_uncomfortable');
                     else 

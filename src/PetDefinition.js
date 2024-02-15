@@ -14,6 +14,11 @@ class PetDefinition {
             end: 2,
             frameTime: 500
         },
+        idle_side: {
+            start: 11,
+            end: 12,
+            frameTime: 500
+        },
         idle_uncomfortable: {
             start: 4,
             end: 5,
@@ -65,6 +70,11 @@ class PetDefinition {
                 interval: 2,
             },
         },
+        shocked: {
+            start: 7,
+            end: 8,
+            frameTime: 250,
+        },
         cheering: {
             start: 2,
             end: 4,
@@ -113,6 +123,9 @@ class PetDefinition {
         // bladder
         max_bladder: 100,
         bladder_depletion_rate: 0.08,
+        // health
+        max_health: 100,
+        health_depletion_mult: 0.5, // from 0 to 1, 0 means immune to all health risks
 
         // wander (sec)
         wander_min: 1.5,
@@ -123,6 +136,7 @@ class PetDefinition {
         current_sleep: 70,
         current_fun: 10,
         current_bladder: 10,
+        current_health: 50,
 
         test: 999,
 
@@ -153,6 +167,8 @@ class PetDefinition {
                     current_fun: this.stats.current_fun,
                     current_hunger: this.stats.current_hunger,
                     current_sleep: this.stats.current_sleep,
+                    current_health: this.stats.current_health,
+                    has_poop_out: this.stats.has_poop_out,
                 }
                 return;
             }
@@ -169,9 +185,30 @@ class PetDefinition {
                 this[serializable] = json[serializable];
             }
         });
+
+        // changing psuedo pet defs to real ones
+        if(this.friends.length) {
+            this.friends = this.friends.map(friend => new PetDefinition(friend));
+        }
+
         return this;
     }
     setStats(stats){
         Object.assign(this.stats, stats);
+    }
+
+    increaseFriendship(value){
+        if(!value) value = random(5, 10);
+
+        if(!this.stats.player_friendship) this.stats.player_friendship = value;
+        else this.stats.player_friendship += value;
+
+        this.stats.player_friendship = clamp(this.stats.player_friendship, 1, 100);
+    }
+
+    getFriendship(){
+        if(!this.stats.player_friendship)
+            this.increaseFriendship(random(2, 8));
+        return this.stats.player_friendship;
     }
 }

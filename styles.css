@@ -1,5 +1,6 @@
 :root {
-    --container-background: linear-gradient(0deg, #ff8100, #ff00c6);
+    /* --container-background: linear-gradient(0deg, #ff8100, #ff00c6); */
+    --container-background: linear-gradient(0deg, #ffcf9d, #ffb1ee)
 }
 @font-face {
     font-family: 'Pixel';
@@ -193,7 +194,7 @@ body {
     flex-direction: column;
     font-size: xx-large;
     /* filter: grayscale(1) brightness(1.2) contrast(1); */
-    text-shadow: 0 0 2px black;
+    text-shadow: 0 0 1px black;
     color: rgb(0, 0, 0);
 }
 .grid-item:before {
@@ -207,7 +208,7 @@ body {
 }
 .grid-item:hover:before {
     background-color: white;
-    outline: 5px solid rgba(0, 0, 0, 0.164);
+    outline: 5px solid rgba(255, 255, 255, 0.164);
 }
 button {
     appearance: none;

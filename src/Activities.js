@@ -1,7 +1,77 @@
 class Activities {
+    static inviteDoctorVisit(){
+        App.setScene(App.scene.home);
+        App.toggleGameplayControls(false);
+        let otherPetDef = new PetDefinition({
+            sprite: 'resources/img/character/chara_291b.png',
+        })
+        let otherPet = new Pet(otherPetDef);
+
+        otherPet.stopMove();
+        otherPet.x = '100%';
+        App.pet.stopMove();
+        App.pet.x = 20;
+
+        function task_otherPetMoveIn(){
+            otherPet.triggerScriptedState('moving', App.INF, null, true);
+            otherPet.targetX = 80 - otherPet.spritesheet.cellSize;
+            App.pet.triggerScriptedState('idle', 3000, null, true, () => {
+                otherPet.stopScriptedState();
+                task_visiting();
+            })
+        }
+
+        function task_visiting(){
+            otherPet.x = 80 - otherPet.spritesheet.cellSize;
+            App.pet.x = 20;
+
+            otherPet.stopMove();
+            App.pet.stopMove();
+
+            App.pet.inverted = true;
+
+            otherPet.triggerScriptedState('eating', App.INF);
+            App.pet.triggerScriptedState('eating', 8000, null, true, () => {
+                otherPet.stopScriptedState();
+                task_otherPetMoveOut();
+            });
+        }
+
+        function task_otherPetMoveOut(){
+            otherPet.triggerScriptedState('moving', App.INF);
+            otherPet.targetX = 120;
+            App.pet.inverted = true;
+            App.pet.triggerScriptedState('idle_side', 3000, null, true, () => {
+                otherPet.stopScriptedState();
+                App.pet.x = '50%';
+                // App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => App.setScene(App.scene.home));
+
+                let health = App.pet.stats.current_health;
+
+                let state = 'very healthy';
+                if(health <= App.pet.stats.max_health * 0.20) state = 'very sick';
+                else if(health <= App.pet.stats.max_health * 0.45) state = 'sick';
+                else if(health <= App.pet.stats.max_health * 0.75) state = 'healthy'
+
+                if(state == 'very sick' || state == 'sick'){
+                    App.pet.triggerScriptedState('shocked', 2000, false, true, () => {
+                        App.displayPopup(`${App.pet.petDefinition.name} is ${state}`, 5000);
+                    })
+                } else {
+                    App.pet.triggerScriptedState('cheering', 2000, false, true, () => {
+                        App.displayPopup(`${App.pet.petDefinition.name} is ${state}`, 5000);
+                    })
+                }
+
+                App.drawer.removeObject(otherPet);
+                App.toggleGameplayControls(true);
+            });
+        }
+
+        task_otherPetMoveIn();
+    }
     static goToMall(){
         App.setScene(App.scene.mallWalkway);
-        console.log(App.currentScene);
         App.pet.triggerScriptedState('moving', 1000, null, true, () => {
             App.setScene(App.scene.home);
             App.handlers.open_mall_activity_list();
@@ -11,6 +81,8 @@ class Activities {
         App.setScene(App.scene.home);
         App.toggleGameplayControls(false);
         let otherPet = new Pet(otherPetDef);
+        
+        otherPetDef.increaseFriendship(8);
 
         otherPet.stopMove();
         otherPet.x = '100%';
@@ -69,9 +141,10 @@ class Activities {
         let otherPet;
         if(otherPetDef){
             otherPet = new Pet(otherPetDef);
-            if(App.petDefinition.friends.indexOf(otherPetDef) === -1){ 
+            if(App.petDefinition.friends.indexOf(otherPetDef) === -1){ // new friend
                 App.petDefinition.friends.push(otherPetDef);
             }
+            otherPetDef.increaseFriendship();
         }
         App.pet.triggerScriptedState('playing', 10000, null, true, () => {
             App.pet.x = '50%';

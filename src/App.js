@@ -23,6 +23,7 @@ let App = {
         let forPreload = [
             ...SPRITES,
             ...PET_CHARACTERS,
+            ...NPC_CHARACTERS,
         ];
         let preloadedResources = await this.preloadImages(forPreload);
         this.preloadedResources = {};
@@ -108,6 +109,10 @@ let App = {
         App.deltaTime = time - App.lastTime;
         App.lastTime = time;
 
+        if(App.deltaTime > 5000){
+            // alert('YOOOOOOOOO came back from offline?');
+        }
+
         requestAnimationFrame(App.onFrameUpdate);
         
         App.fpsCurrentTime = Date.now();
@@ -142,32 +147,45 @@ let App = {
                 sprite: 1,
                 hunger_replenish: 15,
                 fun_replenish: 0,
+                health_replenish: 2,
                 price: 3,
             },
             "slice of pizza": {
                 sprite: 10,
                 hunger_replenish: 15,
                 fun_replenish: 5,
+                health_replenish: -5,
                 price: 5,
             },
             "carrot": {
                 sprite: 2,
                 hunger_replenish: 10,
                 fun_replenish: 1,
+                health_replenish: 5,
                 price: 2,
             },
             "hamburger": {
                 sprite: 9,
                 hunger_replenish: 40,
                 fun_replenish: 10,
+                health_replenish: -20,
                 price: 15,
             },
             "broccoli": {
                 sprite: 5,
                 hunger_replenish: 15,
                 fun_replenish: 0,
+                health_replenish: 10,
                 price: 3,
-            }
+            },
+            "medicine": {
+                sprite: 13,
+                hunger_replenish: 0,
+                fun_replenish: -20,
+                health_replenish: 999,
+                price: 20,
+                type: 'med',
+            },
         }
     },
     scene: {
@@ -175,10 +193,13 @@ let App = {
             image: 'resources/img/background/house/02.png',
             petX: '50%', petY: '100%',
             onLoad: () => {
-
+                if(App.poop._shouldNotBeHidden){
+                    App.poop.hidden = false;
+                }
             },
             onUnload: () => {
-                
+                App.poop._shouldNotBeHidden = !App.poop.hidden;
+                App.poop.hidden = true;
             }
         }),
         kitchen: new Scene({
@@ -251,7 +272,7 @@ let App = {
                     }
                 },
                 {
-                    name: '📲',
+                    name: '🚪',
                     onclick: () => {
                         App.handlers.open_activity_list();
                     }
@@ -286,6 +307,14 @@ let App = {
                         App.settings.screenSize -= 0.1;
                         App.applySettings();
                         return true;
+                    }
+                },
+                {
+                    name: 'set pet name',
+                    onclick: () => {
+                        App.pet.petDefinition.name = prompt(`Enter your pet's name:`, App.pet.petDefinition.name) || App.pet.petDefinition.name;
+                        App.save();
+                        App.displayPopup(`Name set to "${App.pet.petDefinition.name}"`)
                     }
                 },
                 {
@@ -374,10 +403,14 @@ let App = {
                                 // nList.scrollTop = list.scrollTop;
                             return false;
                         }
-                        let ateFood = App.pet.feed(current.sprite, current.hunger_replenish);
+                        let ateFood = App.pet.feed(current.sprite, current.hunger_replenish, current.type);
                         if(ateFood) {
                             App.pet.inventory.food[food] -= 1;
                             App.pet.stats.current_fun += current.fun_replenish;
+                            if(App.pet.hasMoodlet('healthy') && current.type === 'med')
+                                App.pet.stats.current_health = App.pet.stats.current_health * 0.6;
+                            else
+                                App.pet.stats.current_health += current.health_replenish;
                         }
                     }
                 })
@@ -393,8 +426,7 @@ let App = {
             return App.displayList(list);
         },
         open_activity_list: function(){
-            let dis = App.displayList;
-            return dis([
+            return App.displayList([
                 {
                     name: 'mall',
                     onclick: () => {
@@ -422,6 +454,13 @@ let App = {
                         return true;
                     }
                 },
+                {
+                    name: 'doctor visit',
+                    onclick: () => {
+                        // App.displayPopup(`${App.pet.stats.current_health}`, 1000);
+                        Activities.inviteDoctorVisit();
+                    }
+                }
             ])
         },
         open_friends_list: function(){
@@ -437,6 +476,42 @@ let App = {
                     name: icon + name,
                     onclick: () => {
                         const friendActivitiesList = App.displayList([
+                            {
+                                name: 'info',
+                                onclick: () => {
+                                    let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
+            
+                                    // list.innerHTML = `
+                                    // <div class="inner-padding">
+                                    //     <b>GOLD:</b> $${App.pet.stats.gold}
+                                    //     <br>
+                                    //     <b>HUNGER:</b> ${App.createProgressbar( App.pet.stats.current_hunger / App.pet.stats.max_hunger * 100 ).node.outerHTML}
+                                    //     <b>SLEEP:</b> ${App.createProgressbar( App.pet.stats.current_sleep / App.pet.stats.max_sleep * 100 ).node.outerHTML}
+                                    //     <b>FUN:</b> ${App.createProgressbar( App.pet.stats.current_fun / App.pet.stats.max_fun * 100 ).node.outerHTML}
+                                    // </div>
+                                    // `;
+                        
+                                    list.innerHTML = `
+                                    <div class="inner-padding uppercase">
+                                        ${icon} ${friendDef.name}
+                                        <br>
+                                        <b>Friendship:</b> ${App.createProgressbar( friendDef.getFriendship() / 100 * 100 ).node.outerHTML}
+                                    </div>
+                                    `;
+                        
+                                    let backBtn = document.createElement('button');
+                                        backBtn.className = 'list-item back-btn';
+                                        backBtn.innerHTML = 'BACK';
+                                        backBtn.onclick = () => {
+                                            list.remove();
+                                        };
+                        
+                                    list.appendChild(backBtn);
+                                    list.style['z-index'] = 3;
+                        
+                                    document.querySelector('.screen-wrapper').appendChild(list);
+                                }
+                            },
                             {
                                 name: 'park',
                                 onclick: () => {
@@ -454,7 +529,7 @@ let App = {
                             {
                                 name: 'unfriend',
                                 onclick: () => {
-                                    App.displayPrompt(`Are you sure you want to unfriend ${name}?`, [
+                                    App.displayPrompt(`Are you sure you want to unfriend ${icon} ${name}?`, [
                                         {
                                             name: 'yes',
                                             onclick: () => {
@@ -535,6 +610,9 @@ let App = {
                         App.drawer.removeObject(this);
                         App.toggleGameplayControls(true);
                         App.pet.x = '50%';
+                        // App.poop.hidden = true;
+                        App.pet.playCheeringAnimationIfTrue(App.pet.stats.has_poop_out, () => {});
+                        App.pet.stats.has_poop_out = false;
                         App.poop.hidden = true;
                     }
                 }

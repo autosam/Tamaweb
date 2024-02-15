@@ -274,7 +274,6 @@ const PET_CHARACTERS = [
     "resources/img/character/chara_288b.png",
     "resources/img/character/chara_289b.png",
     "resources/img/character/chara_290b.png",
-    "resources/img/character/chara_291b.png",
     "resources/img/character/chara_292b.png",
     "resources/img/character/chara_293b.png",
     "resources/img/character/chara_294b.png",
@@ -369,3 +368,7 @@ const PET_CHARACTERS = [
     "resources/img/character/chara_383b.png",
     "resources/img/character/chara_384b.png",
 ];
+
+const NPC_CHARACTERS = [
+    "resources/img/character/chara_291b.png",
+]
