@@ -1,5 +1,5 @@
 let App = {
-    deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0},
+    INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0},
     settings: {
         screenSize: 1,
     },
@@ -21,9 +21,7 @@ let App = {
 
         // handle preloading
         let forPreload = [
-            "resources/img/background/house/01.jpg",
-            "resources/img/background/house/kitchen_01.png",
-            "resources/img/item/foods.png",
+            ...SPRITES,
             ...PET_CHARACTERS,
         ];
         let preloadedResources = await this.preloadImages(forPreload);
@@ -56,6 +54,7 @@ let App = {
             sprite: randomFromArray(PET_CHARACTERS)
         }).loadStats(loadedData.pet);
         App.pet = new Pet(App.petDefinition);
+        App.setScene(App.scene.home);
         // App.pet.loadStats(loadedData.pet);
 
         // entries
@@ -70,6 +69,10 @@ let App = {
             // }
 
             // update(0);
+            App.targetFps = 60;
+            App.fpsInterval = 1000 / App.targetFps;
+            App.fpsLastTime = Date.now();
+            App.fpsStartTime = App.fpsLastTime;
             App.onFrameUpdate(0);
         }
         window.onbeforeunload = function(){
@@ -95,16 +98,24 @@ let App = {
     },
     applySettings: function(){
         // screen size
-        document.querySelector('.graphics-wrapper').style.scale = this.settings.screenSize;
+        document.querySelector('.graphics-wrapper').style.transform = `scale(${this.settings.screenSize})`;
     },
     onFrameUpdate: function(time){
         App.deltaTime = time - App.lastTime;
         App.lastTime = time;
 
-        App.drawer.draw();
+        requestAnimationFrame(App.onFrameUpdate);
+        
+        App.fpsCurrentTime = Date.now();
+        App.fpsElapsedTime = App.fpsCurrentTime - App.fpsLastTime;
+
+        if(App.fpsElapsedTime > App.fpsInterval){
+            App.fpsLastTime = App.fpsCurrentTime - (App.fpsElapsedTime % App.fpsInterval);
+            App.drawer.draw();
+        }
+
         // App.drawer.pixelate();
         // App.drawUI();
-        requestAnimationFrame(App.onFrameUpdate);
         // document.querySelector('.background-canvas').getContext('2d').drawImage(App.drawer.canvas, 0, 0);
     },
     preloadImages: function(urls) {
@@ -155,6 +166,26 @@ let App = {
             }
         }
     },
+    scene: {
+        home: new Scene({
+            image: 'resources/img/background/house/02.png'
+        }),
+        kitchen: new Scene({
+            image: 'resources/img/background/house/kitchen_01.png',
+            foodsX: 40, foodsY: 58,
+            petX: 62, petY: 74,
+        }),
+        park: new Scene({
+            image: 'resources/img/background/outside/park_01.png',
+        })
+    },
+    setScene(scene){
+        App.pet.x = scene.petX || '50%';
+        App.pet.y = scene.petY || '100%';
+        if(scene.foodsX) App.foods.x = scene.foodsX;
+        if(scene.foodsY) App.foods.y = scene.foodsY;
+        App.background.setImg(scene.image);
+    },
     getRandomPetDef: function(){
         let pet = new PetDefinition({
             name: getRandomName(),
@@ -170,6 +201,7 @@ let App = {
     handlers: {
         open_main_menu: function(){
             if(App.disableGameplayControls) return;
+            App.playSound(`resources/sounds/ui_click_01.ogg`, true);
             App.displayGrid([
                 {
                     name: '📊',
@@ -184,15 +216,27 @@ let App = {
                     }
                 },
                 {
-                    name: '🛣️',
+                    name: '🛁',
+                    onclick: () => {
+                        App.handlers.clean();
+                    }
+                },
+                {
+                    name: '🛏️',
+                    onclick: () => {
+                        App.handlers.sleep();
+                    }
+                },
+                {
+                    name: '📲',
                     onclick: () => {
                         App.handlers.open_activity_list();
                     }
                 },
                 {
-                    name: '💤',
+                    name: '💓',
                     onclick: () => {
-                        App.handlers.sleep();
+                        App.handlers.open_friends_list();
                     }
                 },
                 {
@@ -331,9 +375,9 @@ let App = {
                 {
                     name: 'mall',
                     onclick: () => {
-                        App.pet.switchScene('park');
+                        App.setScene(App.scene.park);
                         App.pet.triggerScriptedState('moving', 1000, null, true, () => {
-                            App.pet.switchScene('house');
+                            App.setScene(App.scene.home);
                             App.handlers.open_mall_activity_list();
                         }, Pet.scriptedEventDrivers.movingOut.bind({pet: App.pet}));
                     }
@@ -382,6 +426,13 @@ let App = {
                                 }
                             },
                             {
+                                name: 'invite',
+                                onclick: () => {
+                                    App.closeAllDisplays();
+                                    App.handlers.house_play(friendDef);
+                                }
+                            },
+                            {
                                 name: 'unfriend',
                                 onclick: () => {
                                     App.displayPrompt(`Are you sure you want to unfriend ${name}?`, [
@@ -412,7 +463,7 @@ let App = {
             if(!otherPetDef){
                 otherPetDef = App.getRandomPetDef();
             }
-            App.pet.switchScene('park');
+            App.setScene(App.scene.park);
             App.toggleGameplayControls(false);
             let otherPet = new Pet(otherPetDef);
             if(App.petDefinition.friends.indexOf(otherPetDef) === -1){ 
@@ -422,10 +473,60 @@ let App = {
                 App.pet.x = '50%';
                 App.pet.stats.current_fun += 40;
                 App.pet.statsManager();
-                App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => App.pet.switchScene('house'));
+                App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => App.setScene(App.scene.home));
                 App.drawer.removeObject(otherPet);
                 App.toggleGameplayControls(true);
             }, Pet.scriptedEventDrivers.playing.bind({pet: App.pet}));
+        },
+        house_play: function(otherPetDef){
+            App.setScene(App.scene.home);
+            App.toggleGameplayControls(false);
+            let otherPet = new Pet(otherPetDef);
+
+            otherPet.stopMove();
+            otherPet.x = '100%';
+            App.pet.stopMove();
+            App.pet.x = 20;
+
+            function task_otherPetMoveIn(){
+                otherPet.triggerScriptedState('moving', App.INF, null, true);
+                otherPet.targetX = 80 - otherPet.spritesheet.cellSize;
+                App.pet.triggerScriptedState('idle', 3000, null, true, () => {
+                    otherPet.stopScriptedState();
+                    task_playing();
+                })
+            }
+
+            function task_playing(){
+                otherPet.x = 80 - otherPet.spritesheet.cellSize;
+                App.pet.x = 20;
+    
+                otherPet.stopMove();
+                App.pet.stopMove();
+
+                otherPet.triggerScriptedState('cheering', App.INF);
+                App.pet.triggerScriptedState('cheering', 5000, null, true, () => {
+                    otherPet.stopScriptedState();
+                    task_otherPetMoveOut();
+                });
+            }
+
+            function task_otherPetMoveOut(){
+                otherPet.triggerScriptedState('moving', App.INF);
+                otherPet.targetX = 120;
+                App.pet.inverted = true;
+                App.pet.triggerScriptedState('idle_side_uncomfortable', 3000, null, true, () => {
+                    otherPet.stopScriptedState();
+                    App.pet.x = '50%';
+                    App.pet.stats.current_fun += 55;
+                    App.pet.statsManager();
+                    App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => App.setScene(App.scene.home));
+                    App.drawer.removeObject(otherPet);
+                    App.toggleGameplayControls(true);
+                });
+            }
+
+            task_otherPetMoveIn();
         },
         open_mall_activity_list: function(){
             App.displayList([
@@ -466,7 +567,10 @@ let App = {
         },
         sleep: function(){
             App.pet.sleep();
-        }
+        },
+        clean: function(){
+
+        },
     },
     toggleGameplayControls: function(state){
         App.disableGameplayControls = !state;
@@ -529,6 +633,7 @@ let App = {
         listItems.forEach(item => {
             let button = document.createElement('button');
                 button.className = 'list-item ' + (item.class ? item.class : '');
+                // '⤳ ' + 
                 button.innerHTML = item.name;
                 button.onclick = () => {
                     let result = item.onclick(button, list);
@@ -545,7 +650,7 @@ let App = {
     },
     displayGrid: function(listItems){
         listItems.push({
-            name: '<',
+            name: '⬅️',
             class: 'back-btn',
             onclick: () => {
                 return false;
@@ -652,7 +757,7 @@ let App = {
             list.style['z-index'] = 3;
         setTimeout(() => {
             list.remove();
-        }, ms || 1000);
+        }, ms || 2000);
         document.querySelector('.screen-wrapper').appendChild(list);
         return list;
     },

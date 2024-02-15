@@ -1,10 +1,14 @@
 class Games {
     static parkRngGame(){
         App.closeAllDisplays();
-        App.pet.switchScene('park');
+        App.setScene(App.scene.park);
         App.toggleGameplayControls(false);
 
-        const randomPetRef = App.getRandomPetDef();
+        // const randomPetRef = App.getRandomPetDef();
+        const randomPetRef = new PetDefinition({
+            name: 'park_game_npc',
+            sprite: 'resources/img/character/chara_175b.png',
+        });
         const randomPet = new Pet(randomPetRef);
         randomPet.stopMove();
         randomPet.triggerScriptedState('eating', 5000, null, true);
@@ -24,7 +28,7 @@ class Games {
                 App.pet.playCheeringAnimation(() => {
                     App.displayPopup(`You've won $${winningGold}`);
                     App.toggleGameplayControls(true);
-                    App.pet.switchScene('house');
+                    App.setScene(App.scene.home);
                     App.handlers.open_mall_activity_list();
                 });
             } else {
@@ -32,7 +36,7 @@ class Games {
                     App.displayPopup(`You've lost!`);
                     App.pet.stats.current_fun -= 15;
                     App.toggleGameplayControls(true);
-                    App.pet.switchScene('house');
+                    App.setScene(App.scene.home);
                     App.handlers.open_mall_activity_list();
                 });
             }
@@ -42,7 +46,7 @@ class Games {
     }
     static guessGame(){
         App.closeAllDisplays();
-        App.pet.switchScene('park');
+        App.setScene(App.scene.park);
         App.toggleGameplayControls(false);
         
         App.pet.x = '50%';

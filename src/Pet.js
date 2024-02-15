@@ -34,7 +34,7 @@ class Pet extends Object2d {
         this.stateManager();
         this.animationHandler();
     }
-    switchScene(scene){
+    _switchScene(scene){
         // todo: not hardcode these values,
         // instead it should be defined on the scene
         // so that every scene can have it's own values
@@ -71,7 +71,7 @@ class Pet extends Object2d {
 
         if(this.hasMoodlet('full')){
             this.playRefuseAnimation();
-            this.switchScene('house');
+            App.setScene(App.scene.home);
             App.foods.hidden = true;
             return false;
         }
@@ -82,10 +82,10 @@ class Pet extends Object2d {
         this.inverted = false;
         this.stats.current_hunger += value;
 
-        this.switchScene('kitchen');
+        App.setScene(App.scene.kitchen);
 
         this.triggerScriptedState('eating', 4000, null, true, () => {
-            this.playCheeringAnimationIfTrue(this.hasMoodlet('full'), () => this.switchScene('house'));
+            this.playCheeringAnimationIfTrue(this.hasMoodlet('full'), () => App.setScene(App.scene.home));
             App.foods.hidden = true;
         });
 
@@ -265,7 +265,7 @@ class Pet extends Object2d {
         this.scriptedEventOnEndFn = onEndFn;
         this.scriptedEventDriverFn = driverFn;
         this.setState(state);
-        console.log("Scripted State: ", state);
+        // console.log("Scripted State: ", state);
     }
     setState(newState){
         if(newState != this.state){
@@ -418,6 +418,6 @@ class Pet extends Object2d {
                 this.pet.x = 0;
                 this.pet.targetX = -20;
             }
-        }
+        },
     }
 }
