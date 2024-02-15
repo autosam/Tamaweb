@@ -1,16 +1,22 @@
 class Activities {
     static officeWork(){
         App.setScene(App.scene.office);
+
         App.toggleGameplayControls(false, () => {
             App.pet.stopScriptedState();
         });
+
+        let laptop = new Object2d({
+            img: "resources/img/misc/laptop.png",
+            x: '70%', y: '50%',
+        });
         App.pet.stopMove();
         App.pet.inverted = true;
-        // App.pet.x =             petX: '70%', petY: '80%',
-        App.pet.x = '35%';
-        App.pet.y = '90%';
+        App.pet.x = '50%';
+        App.pet.y = '60%';
         let startTime = Date.now();
         App.pet.triggerScriptedState('eating', 200000, false, true, () => {
+            App.drawer.removeObject(laptop);
             let elapsedTime = Math.round((Date.now() - startTime) / 1000);
             App.displayPopup(`${App.petDefinition.name} worked for ${elapsedTime} seconds`, 2500, () => {
                 let moneyMade = 0;
@@ -213,14 +219,14 @@ class Activities {
                 App.pet.stats.gold += winningGold;
                 App.pet.stats.current_fun += 35;
                 App.pet.playCheeringAnimation(() => {
-                    App.displayPopup(`You've won $${winningGold}`);
+                    App.displayPopup(`${App.petDefinition.name} won $${winningGold}`);
                     App.toggleGameplayControls(true);
                     App.setScene(App.scene.home);
                     App.handlers.open_mall_activity_list();
                 });
             } else {
                 App.pet.playAngryAnimation(() => {
-                    App.displayPopup(`You've lost!`);
+                    App.displayPopup(`${App.petDefinition.name} lost!`);
                     App.pet.stats.current_fun -= 15;
                     App.toggleGameplayControls(true);
                     App.setScene(App.scene.home);

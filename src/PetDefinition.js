@@ -83,6 +83,13 @@ class PetDefinition {
                 file: 'cheer.ogg',
                 interval: 2,
             },
+            objects: [
+                {
+                    img: 'resources/img/misc/happy_icon.png',
+                    x: 10, y: 10,
+                    interval: 2,
+                }
+            ]
         },
         refuse: {
             start: 4,
@@ -140,6 +147,9 @@ class PetDefinition {
 
         // gold
         gold: 10,
+
+        // other status effects
+        is_sleeping: false,
     }
     friends = [];
     inventory = {
@@ -168,6 +178,7 @@ class PetDefinition {
                     current_sleep: this.stats.current_sleep,
                     current_health: this.stats.current_health,
                     has_poop_out: this.stats.has_poop_out,
+                    is_sleeping: this.stats.is_sleeping
                 }
                 return;
             }

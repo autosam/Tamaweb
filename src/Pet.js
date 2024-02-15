@@ -11,6 +11,7 @@ class Pet extends Object2d {
     scriptedEventCooldowns = {};
     state = 'idle';
     activeMoodlets = [];
+    animObjectsQueue = [];
 
     constructor(petDefinition){
         const config = {
@@ -29,6 +30,8 @@ class Pet extends Object2d {
         this.behavior();
     }
     behavior() {
+        this.isMainPet = this === App.pet;
+
         this.think();
         this.moveToTarget();
         this.stateManager();
@@ -57,14 +60,14 @@ class Pet extends Object2d {
         }
     }
     sleep(){
-        if(this.isSleeping) return;
+        if(this.stats.is_sleeping) return;
         this.stopMove();
         this.x = '50%';
         if(this.hasMoodlet('rested')){
             this.playRefuseAnimation();
             return;
         }
-        this.isSleeping = true;
+        this.stats.is_sleeping = true;
     }
     feed(foodSpriteCellNumber, value, type){
         const me = this;
@@ -97,7 +100,10 @@ class Pet extends Object2d {
         this.triggerScriptedState('eating', 4000, null, true, () => {
             switch(type){
                 case "food":
-                    this.playCheeringAnimationIfTrue(this.hasMoodlet('full'), () => App.setScene(App.scene.home));
+                    this.playCheeringAnimationIfTrue(this.hasMoodlet('full'), () =>{
+                        App.handlers.open_food_list();
+                        App.setScene(App.scene.home);
+                    });
                     break;
                 case "med":
                     this.playCheeringAnimationIfTrue(this.hasMoodlet('healthy'), () => App.setScene(App.scene.home));
@@ -112,19 +118,22 @@ class Pet extends Object2d {
         if(requirement)
             this.playCheeringAnimation(onEndFn);
         else
-            onEndFn();
+            if(onEndFn) onEndFn();
     }
     playCheeringAnimation(onEndFn){
+        this.stopMove();
         this.triggerScriptedState('cheering', 2000, null, true, () => {
             if(onEndFn) onEndFn();
         });
     }
     playRefuseAnimation(onEndFn){
+        this.stopMove();
         this.triggerScriptedState('refuse', 2000, null, true, () => {
             if(onEndFn) onEndFn();
         });
     }
     playAngryAnimation(onEndFn){
+        this.stopMove();
         this.triggerScriptedState('angry', 2000, null, true, () => {
             if(onEndFn) onEndFn();
         });
@@ -167,7 +176,7 @@ class Pet extends Object2d {
         }
     }
     statsManager(isOfflineProgression){
-        if(this !== App.pet) return; // not the main pet
+        if(!this.isMainPet) return;
 
         let stats = this.stats;
         /*
@@ -201,6 +210,7 @@ class Pet extends Object2d {
         if(this.state == 'sleeping'){
             fun_depletion_rate = 0;
             hunger_depletion_rate = 0;
+            health_depletion_rate = 0;
             sleep_depletion_rate = -stats.sleep_replenish_rate;
         }
 
@@ -220,7 +230,7 @@ class Pet extends Object2d {
         stats.current_sleep -= sleep_depletion_rate;
         if(stats.current_sleep <= 0){
             stats.current_sleep = 0;
-            this.isSleeping = true;
+            this.stats.is_sleeping = true;
         }
         stats.current_fun -= fun_depletion_rate;
         if(stats.current_fun <= 0){
@@ -345,16 +355,28 @@ class Pet extends Object2d {
                 return;
             }
         }
-        
-        if(this.isSleeping){
+
+        if(this.isMainPet){
+            App.darkOverlay.hidden = !this.stats.is_sleeping;
+        }
+
+        if(this.stats.is_sleeping){
             if(this.stats.current_sleep >= this.stats.max_sleep || (this.hasMoodlet('rested') && Math.random() < this.stats.light_sleepiness * 0.01)){
-                this.isSleeping = false;
+                this.stats.is_sleeping = false;
                 App.toggleGameplayControls(true);
                 return;
             }
             this.stopMove();
             this.setState('sleeping');  
-            App.toggleGameplayControls(false);
+            App.toggleGameplayControls(false, () => {
+                this.stats.is_sleeping = false;
+                App.toggleGameplayControls(true);
+                if(!this.hasMoodlet('rested')){
+                    App.pet.triggerScriptedState('uncomfortable', 3000);
+                } else {
+                    App.pet.playCheeringAnimation();
+                }
+            });
         }
         else if(this.isMoving)
             this.setState('moving');
@@ -372,6 +394,8 @@ class Pet extends Object2d {
         }
     }
     animationHandler(){
+        const me = this;
+
         if(!this.animation.set) return;
 
         let set = this.animation.set;
@@ -379,6 +403,17 @@ class Pet extends Object2d {
         let frameRound = set.end - set.start;
 
         if(this.animation.nextFrameTime < App.lastTime){ // go to next frame
+
+            if(this.animObjectsQueue.length){
+                this.animObjectsQueue.forEach(obj => {
+                    if(obj._lives && obj._lives > 0){
+                        obj._lives --;
+                        return;
+                    }
+                    App.drawer.removeObject(obj);
+                })
+            }
+
             this.animation.nextFrameTime = App.lastTime + set.frameTime;
 
             this.animation.currentFrame = (this.animation.currentFrame + 1) % frameRound;
@@ -391,6 +426,17 @@ class Pet extends Object2d {
                     set.sound._counter = 0;
                     App.playSound(`resources/sounds/${set.sound.file}`);
                 }
+            }
+
+            if(set.objects){
+                set.objects.forEach(objectDef => {
+                    if(!objectDef._counter) objectDef._counter = 0;
+                    if(++objectDef._counter == objectDef.interval){
+                        objectDef._counter = 0;
+                        let object = new Object2d(objectDef);
+                        me.animObjectsQueue.push(object);
+                    }
+                })
             }
         }
     }

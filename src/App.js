@@ -55,11 +55,15 @@ let App = {
             hidden: true,
         })
         App.petDefinition = new PetDefinition({
-            name: 'pet',
-            sprite: randomFromArray(PET_CHARACTERS)
+            name: getRandomName(),
+            sprite: randomFromArray(PET_CHARACTERS),
         }).loadStats(loadedData.pet);
         App.pet = new Pet(App.petDefinition);
         App.setScene(App.scene.home);
+        App.darkOverlay = new Object2d({
+            img: "resources/img/background/house/dark_overlay.png",
+            hidden: true,
+        })
         // App.pet.loadStats(loadedData.pet);
 
         // entries
@@ -212,15 +216,6 @@ let App = {
         }),
         office: new Scene({
             image: 'resources/img/background/house/office_01.png',
-            onLoad: () => {
-                this.laptop = new Object2d({
-                    img: "resources/img/misc/laptop.png",
-                    x: '55%', y: '80%',
-                });
-            },
-            onUnload: () => {
-                App.drawer.removeObject(this.laptop);
-            }
         })
     },
     setScene(scene){
@@ -254,7 +249,10 @@ let App = {
     handlers: {
         open_main_menu: function(){
             if(App.disableGameplayControls) {
-                if(App.gameplayControlsOverwrite) App.gameplayControlsOverwrite();
+                if(App.gameplayControlsOverwrite) {
+                    App.gameplayControlsOverwrite();
+                    App.playSound(`resources/sounds/ui_click_01.ogg`, true);
+                }
                 return;
             }
             App.playSound(`resources/sounds/ui_click_01.ogg`, true);
@@ -491,7 +489,7 @@ let App = {
         },
         open_friends_list: function(){
             if(!App.petDefinition.friends.length){
-                App.displayPopup(`You don't have any friends right now`, 2000);
+                App.displayPopup(`${App.petDefinition.name} doesn't have any friends right now`, 2000);
                 return;
             }
 
@@ -609,7 +607,7 @@ let App = {
                 {
                     name: 'guess game (wip)',
                     onclick: () => {
-                        return Activities.guessGame();
+                        // return Activities.guessGame();
                     }
                 },
             ]);
@@ -671,14 +669,25 @@ let App = {
     createProgressbar: function(percent){
         let progressbar = document.querySelector('.cloneables .progressbar').cloneNode(true);
 
-        let rod = progressbar.querySelector('.progressbar-rod');
+        let rod = progressbar.querySelector('.progressbar-rod'), background = progressbar.querySelector('.progressbar-background');
+
+        let colors = {
+            green: ['#00ff3978', '#2f793f'],
+            red: ['#ff000075', '#ff0000'],
+            yellow: ['#ffcd71b0', '#ffcd71']
+        }
 
         function setPercent(percent){
             rod.style.width = `${percent}%`;
-            let color = 'linear-gradient(90deg, #00ff3978, #2f793f)';
-            if(percent < 30) color = 'linear-gradient(90deg, #ff000075, #ff0000)';
-            else if(percent < 60) color = 'linear-gradient(90deg, #ffcd71b0, #ffcd71)';
-            rod.style.background = color;
+            
+            let colorSet = colors.green;
+            if(percent < 30) colorSet = colors.red;
+            else if(percent < 60) colorSet = colors.yellow;
+            
+            let rodColor = `linear-gradient(90deg, ${colorSet[0]}, ${colorSet[1]})`;
+            rod.style.background = rodColor;
+
+            background.style.background = `repeating-linear-gradient(90deg, ${colorSet[1]} 5px, transparent 8px)`;
         }
 
         setPercent(percent);
