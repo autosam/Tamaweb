@@ -310,6 +310,14 @@ let App = {
                     }
                 },
                 {
+                    name: 'reset screen size',
+                    onclick: () => {
+                        App.settings.screenSize = 1;
+                        App.applySettings();
+                        return true;
+                    }
+                },
+                {
                     name: 'set pet name',
                     onclick: () => {
                         App.pet.petDefinition.name = prompt(`Enter your pet's name:`, App.pet.petDefinition.name) || App.pet.petDefinition.name;

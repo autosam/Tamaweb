@@ -16,15 +16,20 @@ html {
 }
 body {
     background-color: #282830;
+    background-color: navajowhite;
     min-height: 100vh;
     margin: 0;
     color: white;
     overflow: hidden;
 }
-.graphics-wrapper{
+.graphics-wrapper {
     width: 100%;
     max-width: 200px;
     position: relative;
+    outline: 5px solid #00000040;
+    border-radius: 5px;
+    box-shadow: 8px 20px 20px 3px #00000040;
+    overflow: hidden;
 }
 .graphics-canvas {
     background-color: rgb(0, 0, 0);
