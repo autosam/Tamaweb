@@ -261,6 +261,7 @@ button {
 .progressbar-rod {
     background-color: rgb(0, 0, 0);
     height: 100%;
+    border-right: 5px solid white;
 }
 
 .btn {

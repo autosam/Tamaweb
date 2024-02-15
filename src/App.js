@@ -335,6 +335,15 @@ let App = {
                         App.displayPopup(`Name set to "${App.pet.petDefinition.name}"`)
                     }
                 },
+                // {
+                //     name: 'set pet def',
+                //     onclick: () => {
+                //         // "resources/img/character/chara_246b.png"
+                //         App.pet.petDefinition.sprite = prompt(`Enter character's id:`, App.pet.petDefinition.sprite) || App.pet.petDefinition.sprite;
+                //         App.save();
+                //         location.reload();
+                //     }
+                // },
                 {
                     name: 'reset save data',
                     onclick: () => {
@@ -687,7 +696,7 @@ let App = {
             let rodColor = `linear-gradient(90deg, ${colorSet[0]}, ${colorSet[1]})`;
             rod.style.background = rodColor;
 
-            background.style.background = `repeating-linear-gradient(90deg, ${colorSet[1]} 5px, transparent 8px)`;
+            background.style.background = `repeating-linear-gradient(90deg, ${colorSet[1]} 5px, transparent, transparent 10px)`;
         }
 
         setPercent(percent);
