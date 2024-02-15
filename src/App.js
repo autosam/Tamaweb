@@ -35,8 +35,7 @@ let App = {
         // creating game objects
         App.background = new Object2d({
             // img: "resources/img/background/house/01.jpg",
-            image: App.preloadedResources["resources/img/background/house/01.jpg"],
-            x: 0, y: 0, width: 96, height: 96,
+            image: null, x: 0, y: 0, width: 96, height: 96,
         })
         App.foods = new Object2d({
             image: App.preloadedResources["resources/img/item/foods.png"],
@@ -47,6 +46,11 @@ let App = {
                 rows: 4,
                 columns: 4
             },
+            hidden: true,
+        })
+        App.poop = new Object2d({
+            image: App.preloadedResources["resources/img/misc/poop.png"],
+            x: '80%', y: '80%',
             hidden: true,
         })
         App.petDefinition = new PetDefinition({
@@ -168,7 +172,14 @@ let App = {
     },
     scene: {
         home: new Scene({
-            image: 'resources/img/background/house/02.png'
+            image: 'resources/img/background/house/02.png',
+            petX: '50%', petY: '100%',
+            onLoad: () => {
+
+            },
+            onUnload: () => {
+                
+            }
         }),
         kitchen: new Scene({
             image: 'resources/img/background/house/kitchen_01.png',
@@ -176,15 +187,27 @@ let App = {
             petX: 62, petY: 74,
         }),
         park: new Scene({
-            image: 'resources/img/background/outside/park_01.png',
-        })
+            image: 'resources/img/background/outside/park_02.png',
+        }),
+        mallWalkway: new Scene({
+            image: 'resources/img/background/outside/mall_walkway.png'
+        }),
     },
     setScene(scene){
+        if(App.currentScene && App.currentScene.onUnload){
+            App.currentScene.onUnload(scene);
+        }
+
+        App.currentScene = scene;
         App.pet.x = scene.petX || '50%';
         App.pet.y = scene.petY || '100%';
         if(scene.foodsX) App.foods.x = scene.foodsX;
         if(scene.foodsY) App.foods.y = scene.foodsY;
         App.background.setImg(scene.image);
+
+        if(scene.onLoad){
+            scene.onLoad();
+        }
     },
     getRandomPetDef: function(){
         let pet = new PetDefinition({
@@ -375,17 +398,13 @@ let App = {
                 {
                     name: 'mall',
                     onclick: () => {
-                        App.setScene(App.scene.park);
-                        App.pet.triggerScriptedState('moving', 1000, null, true, () => {
-                            App.setScene(App.scene.home);
-                            App.handlers.open_mall_activity_list();
-                        }, Pet.scriptedEventDrivers.movingOut.bind({pet: App.pet}));
+                        Activities.goToMall();
                     }
                 },
                 {
                     name: 'park',
                     onclick: () => { // going to park with random pet
-                        App.handlers.go_to_park();
+                        Activities.goToPark();
                     }
                 },
                 {
@@ -422,14 +441,14 @@ let App = {
                                 name: 'park',
                                 onclick: () => {
                                     App.closeAllDisplays();
-                                    App.handlers.go_to_park(friendDef);
+                                    Activities.goToPark(friendDef);
                                 }
                             },
                             {
                                 name: 'invite',
                                 onclick: () => {
                                     App.closeAllDisplays();
-                                    App.handlers.house_play(friendDef);
+                                    Activities.inviteHousePlay(friendDef);
                                 }
                             },
                             {
@@ -459,75 +478,6 @@ let App = {
                 }
             }));
         },
-        go_to_park: function(otherPetDef){
-            if(!otherPetDef){
-                otherPetDef = App.getRandomPetDef();
-            }
-            App.setScene(App.scene.park);
-            App.toggleGameplayControls(false);
-            let otherPet = new Pet(otherPetDef);
-            if(App.petDefinition.friends.indexOf(otherPetDef) === -1){ 
-                App.petDefinition.friends.push(otherPetDef);
-            }
-            App.pet.triggerScriptedState('playing', 10000, null, true, () => {
-                App.pet.x = '50%';
-                App.pet.stats.current_fun += 40;
-                App.pet.statsManager();
-                App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => App.setScene(App.scene.home));
-                App.drawer.removeObject(otherPet);
-                App.toggleGameplayControls(true);
-            }, Pet.scriptedEventDrivers.playing.bind({pet: App.pet}));
-        },
-        house_play: function(otherPetDef){
-            App.setScene(App.scene.home);
-            App.toggleGameplayControls(false);
-            let otherPet = new Pet(otherPetDef);
-
-            otherPet.stopMove();
-            otherPet.x = '100%';
-            App.pet.stopMove();
-            App.pet.x = 20;
-
-            function task_otherPetMoveIn(){
-                otherPet.triggerScriptedState('moving', App.INF, null, true);
-                otherPet.targetX = 80 - otherPet.spritesheet.cellSize;
-                App.pet.triggerScriptedState('idle', 3000, null, true, () => {
-                    otherPet.stopScriptedState();
-                    task_playing();
-                })
-            }
-
-            function task_playing(){
-                otherPet.x = 80 - otherPet.spritesheet.cellSize;
-                App.pet.x = 20;
-    
-                otherPet.stopMove();
-                App.pet.stopMove();
-
-                otherPet.triggerScriptedState('cheering', App.INF);
-                App.pet.triggerScriptedState('cheering', 5000, null, true, () => {
-                    otherPet.stopScriptedState();
-                    task_otherPetMoveOut();
-                });
-            }
-
-            function task_otherPetMoveOut(){
-                otherPet.triggerScriptedState('moving', App.INF);
-                otherPet.targetX = 120;
-                App.pet.inverted = true;
-                App.pet.triggerScriptedState('idle_side_uncomfortable', 3000, null, true, () => {
-                    otherPet.stopScriptedState();
-                    App.pet.x = '50%';
-                    App.pet.stats.current_fun += 55;
-                    App.pet.statsManager();
-                    App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => App.setScene(App.scene.home));
-                    App.drawer.removeObject(otherPet);
-                    App.toggleGameplayControls(true);
-                });
-            }
-
-            task_otherPetMoveIn();
-        },
         open_mall_activity_list: function(){
             App.displayList([
                 {
@@ -551,13 +501,13 @@ let App = {
                 {
                     name: 'park game',
                     onclick: () => {
-                        return Games.parkRngGame();
+                        return Activities.parkRngGame();
                     }
                 },
                 {
                     name: 'guess game (wip)',
                     onclick: () => {
-                        return Games.guessGame();
+                        return Activities.guessGame();
                     }
                 },
             ]);
@@ -569,7 +519,26 @@ let App = {
             App.pet.sleep();
         },
         clean: function(){
-
+            App.pet.stopMove();
+            App.pet.triggerScriptedState('idle', App.INF, false, true);
+            App.pet.x = 20;
+            App.toggleGameplayControls(false);
+            const mop = new Object2d({
+                image: App.preloadedResources["resources/img/misc/cleaner.png"],
+                x: 0,
+                y: -100,
+                width: 96, height: 96,
+                onDraw: function(){
+                    this.y += 1;
+                    if(this.y >= 50){
+                        App.pet.stopScriptedState();
+                        App.drawer.removeObject(this);
+                        App.toggleGameplayControls(true);
+                        App.pet.x = '50%';
+                        App.poop.hidden = true;
+                    }
+                }
+            })
         },
     },
     toggleGameplayControls: function(state){

@@ -170,6 +170,7 @@ class Pet extends Object2d {
         let hunger_depletion_rate = stats.hunger_depletion_rate;
         let sleep_depletion_rate = stats.sleep_depletion_rate;
         let fun_depletion_rate = stats.fun_depletion_rate;
+        let bladder_depletion_rate = stats.bladder_depletion_rate;
 
         // sleeping case
         if(this.state == 'sleeping'){
@@ -182,6 +183,7 @@ class Pet extends Object2d {
         stats.current_hunger = clamp(stats.current_hunger, 0, stats.max_hunger);
         stats.current_sleep = clamp(stats.current_sleep, 0, stats.max_sleep);
         stats.current_fun = clamp(stats.current_fun, 0, stats.max_fun);
+        stats.current_bladder = clamp(stats.current_bladder, 0, stats.max_bladder);
 
         // depletion
         stats.current_hunger -= hunger_depletion_rate;
@@ -198,6 +200,12 @@ class Pet extends Object2d {
         if(stats.current_fun <= 0){
             stats.current_fun = 0;
             console.log('All my friends no fun?');
+        }
+        stats.current_bladder -= bladder_depletion_rate;
+        if(stats.current_bladder <= 0){
+            stats.current_bladder = stats.max_bladder;
+            App.poop.hidden = false;
+            console.log('pooping myself');
         }
 
         // moodlets

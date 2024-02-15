@@ -110,6 +110,10 @@ class PetDefinition {
         fun_min_desire: 35,
         fun_satisfaction: 70,
         fun_depletion_rate: 0.05,
+        // bladder
+        max_bladder: 100,
+        bladder_depletion_rate: 0.08,
+
         // wander (sec)
         wander_min: 1.5,
         wander_max: 8,
@@ -118,6 +122,9 @@ class PetDefinition {
         current_hunger: 40 || 80,
         current_sleep: 70,
         current_fun: 10,
+        current_bladder: 10,
+
+        test: 999,
 
         // gold
         gold: 10,
@@ -135,19 +142,33 @@ class PetDefinition {
             Object.assign(this, config);
         }
     }
-
+    
+    serializables = [ 'name', 'stats', 'inventory', 'friends', 'sprite' ];
     serializeStats(){
-        let s = {
-            name: this.name,
-            stats: this.stats,
-            inventory: this.inventory,
-            friends: this.friends,
-            sprite: this.sprite,
-        }
+        let s = {};
+        this.serializables.forEach(serializable => {
+            if(serializable === 'stats'){
+                s['stats'] = { // todo: for testing, might want to revert
+                    current_bladder: this.stats.current_bladder,
+                    current_fun: this.stats.current_fun,
+                    current_hunger: this.stats.current_hunger,
+                    current_sleep: this.stats.current_sleep,
+                }
+                return;
+            }
+            s[serializable] = this[serializable];
+        });
         return JSON.stringify(s);
     }
     loadStats(json){
-        Object.assign(this, json);
+        this.serializables.forEach(serializable => {
+            if(!json[serializable]) return;
+            if(typeof this[serializable] === 'object'){
+                Object.assign(this[serializable], json[serializable]);
+            } else {
+                this[serializable] = json[serializable];
+            }
+        });
         return this;
     }
     setStats(stats){
