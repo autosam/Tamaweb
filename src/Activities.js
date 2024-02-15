@@ -1,4 +1,35 @@
 class Activities {
+    static officeWork(){
+        App.setScene(App.scene.office);
+        App.toggleGameplayControls(false, () => {
+            App.pet.stopScriptedState();
+        });
+        App.pet.stopMove();
+        App.pet.inverted = true;
+        // App.pet.x =             petX: '70%', petY: '80%',
+        App.pet.x = '35%';
+        App.pet.y = '90%';
+        let startTime = Date.now();
+        App.pet.triggerScriptedState('eating', 200000, false, true, () => {
+            let elapsedTime = Math.round((Date.now() - startTime) / 1000);
+            App.displayPopup(`${App.petDefinition.name} worked for ${elapsedTime} seconds`, 2500, () => {
+                let moneyMade = 0;
+                if(elapsedTime > 10){
+                    moneyMade = Math.round(elapsedTime / 3);
+                    App.pet.stats.gold += moneyMade;
+                }
+                App.displayPrompt(`${App.petDefinition.name} made $${moneyMade}`, [
+                    {
+                        name: 'ok',
+                        onclick: () => {
+                            App.setScene(App.scene.home);
+                        }
+                    }
+                ]);
+            });
+            App.toggleGameplayControls(true);
+        })
+    }
     static inviteDoctorVisit(){
         App.setScene(App.scene.home);
         App.toggleGameplayControls(false);

@@ -138,8 +138,6 @@ class PetDefinition {
         current_bladder: 10,
         current_health: 50,
 
-        test: 999,
-
         // gold
         gold: 10,
     }
@@ -163,6 +161,7 @@ class PetDefinition {
         this.serializables.forEach(serializable => {
             if(serializable === 'stats'){
                 s['stats'] = { // todo: for testing, might want to revert
+                    gold: this.stats.gold,
                     current_bladder: this.stats.current_bladder,
                     current_fun: this.stats.current_fun,
                     current_hunger: this.stats.current_hunger,

@@ -21,7 +21,7 @@ class Drawer {
         if(!objects) objects = this.objects;
 
         objects.forEach(object => {
-            if(!object || object.hidden) return;
+            if(!object || object.hidden || object.absHidden) return;
 
             if (object.onDraw !== undefined)
                 object.onDraw();

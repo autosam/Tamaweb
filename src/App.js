@@ -193,13 +193,10 @@ let App = {
             image: 'resources/img/background/house/02.png',
             petX: '50%', petY: '100%',
             onLoad: () => {
-                if(App.poop._shouldNotBeHidden){
-                    App.poop.hidden = false;
-                }
+                App.poop.absHidden = false;
             },
             onUnload: () => {
-                App.poop._shouldNotBeHidden = !App.poop.hidden;
-                App.poop.hidden = true;
+                App.poop.absHidden = true;
             }
         }),
         kitchen: new Scene({
@@ -213,6 +210,18 @@ let App = {
         mallWalkway: new Scene({
             image: 'resources/img/background/outside/mall_walkway.png'
         }),
+        office: new Scene({
+            image: 'resources/img/background/house/office_01.png',
+            onLoad: () => {
+                this.laptop = new Object2d({
+                    img: "resources/img/misc/laptop.png",
+                    x: '55%', y: '80%',
+                });
+            },
+            onUnload: () => {
+                App.drawer.removeObject(this.laptop);
+            }
+        })
     },
     setScene(scene){
         if(App.currentScene && App.currentScene.onUnload){
@@ -244,7 +253,10 @@ let App = {
     },
     handlers: {
         open_main_menu: function(){
-            if(App.disableGameplayControls) return;
+            if(App.disableGameplayControls) {
+                if(App.gameplayControlsOverwrite) App.gameplayControlsOverwrite();
+                return;
+            }
             App.playSound(`resources/sounds/ui_click_01.ogg`, true);
             App.displayGrid([
                 {
@@ -456,6 +468,12 @@ let App = {
                     }
                 },
                 {
+                    name: 'work',
+                    onclick: () => {
+                        Activities.officeWork();
+                    }
+                },
+                {
                     name: 'baby sitter',
                     onclick: () => {
                         App.displayPopup('To be implemented...', 1000);
@@ -518,6 +536,7 @@ let App = {
                                     list.style['z-index'] = 3;
                         
                                     document.querySelector('.screen-wrapper').appendChild(list);
+                                    return true;
                                 }
                             },
                             {
@@ -627,9 +646,10 @@ let App = {
             })
         },
     },
-    toggleGameplayControls: function(state){
+    toggleGameplayControls: function(state, onclick){
         App.disableGameplayControls = !state;
-        if(App.disableGameplayControls){
+        App.gameplayControlsOverwrite = onclick;
+        if(App.disableGameplayControls && !onclick){
             App.drawer.canvas.style.cursor = 'not-allowed';
         } else {
             App.drawer.canvas.style.cursor = 'pointer';
@@ -653,13 +673,19 @@ let App = {
 
         let rod = progressbar.querySelector('.progressbar-rod');
 
-        rod.style.width = `${percent}%`;
+        function setPercent(percent){
+            rod.style.width = `${percent}%`;
+            let color = 'linear-gradient(90deg, #00ff3978, #2f793f)';
+            if(percent < 30) color = 'linear-gradient(90deg, #ff000075, #ff0000)';
+            else if(percent < 60) color = 'linear-gradient(90deg, #ffcd71b0, #ffcd71)';
+            rod.style.background = color;
+        }
+
+        setPercent(percent);
 
         return {
             node: progressbar,
-            setPercent: function(percent){
-                rod.style.width = `${percent}%`;
-            }
+            setPercent
         }
     },
     closeAllDisplays: function(){
@@ -802,7 +828,7 @@ let App = {
 
         return list;
     },
-    displayPopup: function(content, ms){
+    displayPopup: function(content, ms, onEndFn){
         let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
             list.innerHTML = `
                 <div class="inner-padding uppercase flex-center">
@@ -812,6 +838,9 @@ let App = {
             list.style['z-index'] = 3;
         setTimeout(() => {
             list.remove();
+            if(onEndFn){
+                onEndFn();
+            }
         }, ms || 2000);
         document.querySelector('.screen-wrapper').appendChild(list);
         return list;

@@ -247,6 +247,10 @@ button {
     display: none !important;
 }
 
+.progressbar {
+    border-radius: 5px;
+    overflow: hidden;
+}
 .progressbar-background {
     /* background-color: rgb(193, 193, 193); */
     width: 100%;
@@ -254,7 +258,6 @@ button {
     /* padding: 5px; */
     background: repeating-linear-gradient(90deg, black 5px, transparent 8px);
 }
-
 .progressbar-rod {
     background-color: rgb(0, 0, 0);
     height: 100%;
