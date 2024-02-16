@@ -48,7 +48,7 @@ class Pet extends Object2d {
 
         if(!this.eggObject){
             this.eggStartTime = Date.now();
-            this.hatchTime = this.eggStartTime + random(45000, 70000);
+            this.hatchTime = this.eggStartTime + random(20000, 60000);
             this.eggObject = new Object2d({
                 img: 'resources/img/misc/egg.png',
                 x: '50%', 
