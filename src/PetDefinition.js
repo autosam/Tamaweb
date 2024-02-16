@@ -75,6 +75,11 @@ class PetDefinition {
             end: 8,
             frameTime: 250,
         },
+        blush: {
+            start: 8,
+            end: 9,
+            frameTime: 250,
+        },
         cheering: {
             start: 2,
             end: 4,
@@ -166,6 +171,9 @@ class PetDefinition {
         food: {
             'bread': 1,
             'slice of pizza': 3,
+        },
+        item: {
+
         }
     }
 

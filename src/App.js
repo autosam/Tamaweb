@@ -82,7 +82,7 @@ let App = {
 
 
             if(awaySeconds > 2){
-                App.displayPrompt(`Welcome back!\n<b>${App.petDefinition.name}</b> missed you in those <b>${message}</b> you were away.`, [
+                App.displayPrompt(`Welcome back!\n<b>${App.petDefinition.name}</b> missed you in those <b>${message}</b> you were away`, [
                     {
                         name: 'ok',
                         onclick: () => {}
@@ -215,6 +215,53 @@ let App = {
                 price: 20,
                 type: 'med',
             },
+        },
+        item: {
+            "foxy": {
+                sprite: 1,
+                fun_replenish: 20,
+                price: 50,
+                interaction_time: 12000,
+                interruptable: true,
+            },
+            "dumble": {
+                sprite: 2,
+                fun_replenish: 10,
+                price: 100
+            },
+            "music player": {
+                sprite: 3,
+                fun_replenish: 20,
+                price: 65
+            },
+            "ball": {
+                sprite: 4,
+                fun_replenish: 30,
+                price: 35,
+                interaction_time: 100000,
+                interruptable: true,
+            },
+            "smartphone": {
+                sprite: 5,
+                fun_replenish: 80,
+                price: 350,
+                interaction_time: 100000,
+                interruptable: true,
+            },
+            "magazine": {
+                sprite: 6,
+                fun_replenish: 10,
+                price: 20,
+                interaction_time: 60000,
+                interruptable: true,
+            },
+            "microphone": {
+                sprite: 7,
+                fun_replenish: 20,
+                price: 75,
+                interaction_time: 60000,
+                interruptable: true,
+            },   
         }
     },
     scene: {
@@ -310,6 +357,12 @@ let App = {
                     name: '🚪',
                     onclick: () => {
                         App.handlers.open_activity_list();
+                    }
+                },
+                {
+                    name: '📦',
+                    onclick: () => {
+                        App.handlers.open_item_list();
                     }
                 },
                 {
@@ -477,6 +530,59 @@ let App = {
             return sliderInstance;
             return App.displayList(list);
         },
+        open_item_list: function(buyMode, activeIndex){
+            let list = [];
+            let sliderInstance;
+            for(let item of Object.keys(App.defintions.item)){
+                // check if current pet has this item on its inventory
+                if(!App.pet.inventory.item[item] && !buyMode){
+                    continue;
+                }
+                let current = App.defintions.item[item];
+                list.push({
+                    name: `<c-sprite width="22" height="22" index="${(current.sprite - 1)}" src="resources/img/item/items.png"></c-sprite> ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) ${buyMode ? ` - $${current.price}` : ''}`,
+                    onclick: (btn, list) => {
+                        if(buyMode){
+                            if(App.pet.stats.gold < current.price){
+                                App.displayPopup(`Don't have enough gold!`);
+                                return true;
+                            }
+                            App.pet.stats.gold -= current.price;
+                            if(!App.pet.inventory.item[item]){
+                                App.pet.inventory.item[item] = 1;
+                            } else {
+                                App.pet.inventory.item[item] += 1;
+                            }
+                            // console.log(list.scrollTop);
+                            let nList = App.handlers.open_item_list(true, sliderInstance?.getCurrentIndex());
+                                // nList.scrollTop = list.scrollTop;
+                            return false;
+                        }
+
+                        App.pet.useItem({...current, name: item});
+
+                        // let useditem = App.pet.feed(current.sprite, current.hunger_replenish, current.type);
+                        // if(useditem) {
+                        //     App.pet.inventory.item[item] -= 1;
+                        //     App.pet.stats.current_fun += current.fun_replenish;
+                        //     if(App.pet.hasMoodlet('healthy') && current.type === 'med')
+                        //         App.pet.stats.current_health = App.pet.stats.current_health * 0.6;
+                        //     else
+                        //         App.pet.stats.current_health += current.health_replenish;
+                        // }
+                    }
+                })
+            }
+
+            if(!list.length){
+                App.displayPopup(`You don't have any items, purchase some from the mall`, 2000);
+                return;
+            }
+
+            sliderInstance = App.displaySlider(list, activeIndex, {accept: buyMode ? 'Purchase' : 'Use'});
+            return sliderInstance;
+            return App.displayList(list);
+        },
         open_activity_list: function(){
             return App.displayList([
                 {
@@ -625,6 +731,13 @@ let App = {
                     name: 'buy groceries',
                     onclick: () => {
                         App.handlers.open_food_list(true);
+                        return true;
+                    }
+                },
+                {
+                    name: 'buy items',
+                    onclick: () => {
+                        App.handlers.open_item_list(true);
                         return true;
                     }
                 },
