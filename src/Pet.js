@@ -268,7 +268,7 @@ class Pet extends Object2d {
 
         let depletion_mult = 1, offlineAndIsNight = false;
         if(isOfflineProgression){
-            depletion_mult = 0.4;
+            depletion_mult = 0.5;
 
             if(hour && (hour >= 22 || hour < 9)){
                 offlineAndIsNight = true;
