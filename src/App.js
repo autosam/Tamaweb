@@ -530,7 +530,7 @@ let App = {
             return sliderInstance;
             return App.displayList(list);
         },
-        open_item_list: function(buyMode, activeIndex){
+        open_item_list: function(buyMode, activeIndex, customPayload){
             let list = [];
             let sliderInstance;
             for(let item of Object.keys(App.defintions.item)){
@@ -559,6 +559,9 @@ let App = {
                             return false;
                         }
 
+                        if(customPayload){
+                            return customPayload({...current, name: item});
+                        }
                         App.pet.useItem({...current, name: item});
 
                         // let useditem = App.pet.feed(current.sprite, current.hunger_replenish, current.type);
@@ -689,6 +692,29 @@ let App = {
                                 onclick: () => {
                                     App.closeAllDisplays();
                                     Activities.inviteHousePlay(friendDef);
+                                }
+                            },
+                            {
+                                name: 'gift',
+                                onclick: () => {
+                                    App.displayPrompt(`Are you sure you want to give gift to ${icon} ${name}?`, [
+                                        {
+                                            name: 'yes',
+                                            onclick: () => {
+                                                App.closeAllDisplays();
+                                                App.handlers.open_item_list(null, null, (item) => {
+                                                    App.pet.inventory.item[item.name] -= 1;
+                                                    friendDef.increaseFriendship(Math.floor(item.price / 2.7));
+                                                    Activities.inviteGiveGift(friendDef);
+                                                })
+                                            }
+                                        },
+                                        {
+                                            name: 'no',
+                                            onclick: () => { }
+                                        }
+                                    ]);
+                                    return true;
                                 }
                             },
                             {
