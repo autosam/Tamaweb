@@ -165,6 +165,8 @@ class PetDefinition {
 
         // other status effects
         is_sleeping: false,
+        has_poop_out: false,
+        is_egg: false,
     }
     friends = [];
     inventory = {
@@ -196,7 +198,8 @@ class PetDefinition {
                     current_sleep: this.stats.current_sleep,
                     current_health: this.stats.current_health,
                     has_poop_out: this.stats.has_poop_out,
-                    is_sleeping: this.stats.is_sleeping
+                    is_sleeping: this.stats.is_sleeping,
+                    is_egg: this.stats.is_egg,
                 }
                 return;
             }
@@ -223,6 +226,7 @@ class PetDefinition {
     }
     setStats(stats){
         Object.assign(this.stats, stats);
+        return this;
     }
 
     increaseFriendship(value){

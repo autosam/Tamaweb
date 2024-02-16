@@ -57,7 +57,7 @@ let App = {
         App.petDefinition = new PetDefinition({
             name: getRandomName(),
             sprite: randomFromArray(PET_CHARACTERS),
-        }).loadStats(loadedData.pet);
+        }).setStats({is_egg: true}).loadStats(loadedData.pet);
         App.pet = new Pet(App.petDefinition);
         App.setScene(App.scene.home);
         App.darkOverlay = new Object2d({
@@ -611,13 +611,13 @@ let App = {
                         Activities.officeWork();
                     }
                 },
-                {
-                    name: 'baby sitter',
-                    onclick: () => {
-                        App.displayPopup('To be implemented...', 1000);
-                        return true;
-                    }
-                },
+                // {
+                //     name: 'baby sitter',
+                //     onclick: () => {
+                //         App.displayPopup('To be implemented...', 1000);
+                //         return true;
+                //     }
+                // },
                 {
                     name: 'doctor visit',
                     onclick: () => {

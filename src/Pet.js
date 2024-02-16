@@ -32,10 +32,42 @@ class Pet extends Object2d {
     behavior() {
         this.isMainPet = this === App.pet;
 
+        if(this.stats.is_egg) return this.handleEgg();
+
         this.think();
         this.moveToTarget();
         this.stateManager();
         this.animationHandler();
+    }
+    handleEgg(){
+        this.x = -600;
+
+        App.toggleGameplayControls(false, () => {
+            App.displayPopup('wait for your egg to hatch');
+        })
+
+        if(!this.eggObject){
+            this.eggStartTime = Date.now();
+            this.hatchTime = this.eggStartTime + random(45000, 70000);
+            this.eggObject = new Object2d({
+                img: 'resources/img/misc/egg.png',
+                x: '50%', 
+                y: '80%',
+            });
+        }
+
+        if(Math.random() < 0.006){
+            this.eggObject.setImg('resources/img/misc/egg_02.png');
+            setTimeout(() => this.eggObject.setImg('resources/img/misc/egg.png'), 200);
+            if(Date.now() > this.hatchTime){
+                this.stats.is_egg = false;
+                App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
+                App.drawer.removeObject(this.eggObject);
+                this.eggObject = null;
+                this.triggerScriptedState('uncomfortable', 5000);
+            }
+        }
     }
     _switchScene(scene){
         // todo: not hardcode these values,
@@ -130,7 +162,7 @@ class Pet extends Object2d {
 
 
         App.toggleGameplayControls(false);
-        
+
         let interruptFn = () => {
             App.pet.stopScriptedState();
         }
@@ -471,7 +503,7 @@ class Pet extends Object2d {
                 if(!set.sound._counter) set.sound._counter = 0;
                 if(++set.sound._counter == set.sound.interval){
                     set.sound._counter = 0;
-                    App.playSound(`resources/sounds/${set.sound.file}`);
+                    this.playSound(`resources/sounds/${set.sound.file}`);
                 }
             }
 
@@ -537,8 +569,12 @@ class Pet extends Object2d {
         // calling stats manager once every second instead of twice every second
         let iterations = Math.floor((elapsedTime / 1000));
         for(let i = 0; i < iterations; i++){
-            App.pet.statsManager();
-        }   
+            if(this.stats.is_egg){
+                this.handleEgg();
+                continue;
+            }
+            this.statsManager();
+        }
     }
     simulateOfflineProgression(elapsedTime){
         // getting caught up with the stats simulation
@@ -550,7 +586,11 @@ class Pet extends Object2d {
             elapsedTime += 500;
             let hour = new Date(elapsedTime).getHours();
             // suppying hour because from 22:00 to 9:00 the starts will drop much slower and pet will get sleep
-            App.pet.statsManager(true, hour);
+            if(this.stats.is_egg){
+                this.handleEgg();
+                continue;
+            }
+            this.statsManager(true, hour);
         }
     }
     serializeStats(){
@@ -558,6 +598,10 @@ class Pet extends Object2d {
     }
     loadStats(json){
         this.petDefinition.loadStats(json);
+    }
+    playSound(sound){
+        if(!this.isMainPet) return;
+        App.playSound(sound);
     }
 
     static scriptedEventDrivers = {
