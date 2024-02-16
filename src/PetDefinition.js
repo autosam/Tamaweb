@@ -83,6 +83,15 @@ class PetDefinition {
                 file: 'cheer.ogg',
                 interval: 2,
             },
+        },
+        cheering_with_icon: {
+            start: 2,
+            end: 4,
+            frameTime: 250,
+            sound: {
+                file: 'cheer.ogg',
+                interval: 2,
+            },
             objects: [
                 {
                     img: 'resources/img/misc/happy_icon.png',
@@ -114,6 +123,7 @@ class PetDefinition {
         hunger_min_desire: 40, // note: when below this number they desire it
         hunger_depletion_rate: 0.01,
         activity_hunger_depletion: 0.5,
+
         // sleep
         max_sleep: 100,
         sleep_satisfaction: 70,

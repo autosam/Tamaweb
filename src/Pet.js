@@ -122,7 +122,7 @@ class Pet extends Object2d {
     }
     playCheeringAnimation(onEndFn){
         this.stopMove();
-        this.triggerScriptedState('cheering', 2000, null, true, () => {
+        this.triggerScriptedState('cheering_with_icon', 2000, null, true, () => {
             if(onEndFn) onEndFn();
         });
     }
@@ -175,7 +175,7 @@ class Pet extends Object2d {
             }
         }
     }
-    statsManager(isOfflineProgression){
+    statsManager(isOfflineProgression, hour){
         if(!this.isMainPet) return;
 
         let stats = this.stats;
@@ -185,19 +185,24 @@ class Pet extends Object2d {
             Sleep: ${this.stats.current_sleep}
             <br>
         */
-        document.querySelector('#debug').innerHTML = `
-        Hunger: ${this.stats.current_hunger}
-        <br>
-        Sleep: ${this.stats.current_sleep}
-        <br>
-            State: ${this.state}
-            <br>
-            Mood: ${this.activeMoodlets.join(' - ') || "normal"}
-        `;
+        // document.querySelector('#debug').innerHTML = `
+        // Hunger: ${this.stats.current_hunger}
+        // <br>
+        // Sleep: ${this.stats.current_sleep}
+        // <br>
+        //     State: ${this.state}
+        //     <br>
+        //     Mood: ${this.activeMoodlets.join(' - ') || "normal"}
+        // `;
 
-        let depletion_mult = 1;
+        let depletion_mult = 1, offlineAndIsNight = false;
         if(isOfflineProgression){
-            depletion_mult = 0.2;
+            depletion_mult = 0.4;
+
+            if(hour && (hour >= 22 || hour < 9)){
+                offlineAndIsNight = true;
+                depletion_mult = 0.1;
+            }
         }
 
         let hunger_depletion_rate = stats.hunger_depletion_rate * depletion_mult;
@@ -207,11 +212,14 @@ class Pet extends Object2d {
         let health_depletion_rate = stats.healt_depletion_rate * depletion_mult;
 
         // sleeping case
-        if(this.state == 'sleeping'){
+        if(this.state == 'sleeping' || offlineAndIsNight){
             fun_depletion_rate = 0;
             hunger_depletion_rate = 0;
             health_depletion_rate = 0;
-            sleep_depletion_rate = -stats.sleep_replenish_rate;
+
+            let sleepAdditionalDepletionMult = 1;
+            if(offlineAndIsNight) sleepAdditionalDepletionMult = 10;
+            sleep_depletion_rate = -stats.sleep_replenish_rate * sleepAdditionalDepletionMult;
         }
 
         // clamping between 0 and max
@@ -485,6 +493,26 @@ class Pet extends Object2d {
             this.x = this.x - this.stats.speed * App.deltaTime;
         }
         this.inverted = false;
+    }
+    simulateAwayProgression(elapsedTime){
+        // calling stats manager once every second instead of twice every second
+        let iterations = Math.floor((elapsedTime / 1000));
+        for(let i = 0; i < iterations; i++){
+            App.pet.statsManager();
+        }   
+    }
+    simulateOfflineProgression(elapsedTime){
+        // getting caught up with the stats simulation
+        // since pets call statsManager twice each seconds
+        // we are going to simulate that by approximating
+        // (max offline progression is 12 hours)
+        let iterations = Math.floor(clamp(elapsedTime / 1000, 0, 43200) * 2);
+        for(let i = 0; i < iterations; i++){
+            elapsedTime += 500;
+            let hour = new Date(elapsedTime).getHours();
+            // suppying hour because from 22:00 to 9:00 the starts will drop much slower and pet will get sleep
+            App.pet.statsManager(true, hour);
+        }
     }
     serializeStats(){
         return this.petDefinition.serializeStats();

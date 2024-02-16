@@ -10,6 +10,8 @@ class Activities {
             img: "resources/img/misc/laptop.png",
             x: '70%', y: '50%',
         });
+        laptop.x = '70%';
+        laptop.y = '50%';
         App.pet.stopMove();
         App.pet.inverted = true;
         App.pet.x = '50%';
@@ -24,6 +26,7 @@ class Activities {
                     moneyMade = Math.round(elapsedTime / 3);
                     App.pet.stats.gold += moneyMade;
                 }
+                App.pet.stats.current_fun -= elapsedTime / 3.5;
                 App.displayPrompt(`${App.petDefinition.name} made $${moneyMade}`, [
                     {
                         name: 'ok',

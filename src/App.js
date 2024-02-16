@@ -66,6 +66,31 @@ let App = {
         })
         // App.pet.loadStats(loadedData.pet);
 
+        // simulating offline progression
+        if(loadedData.lastTime){
+            let elapsedTime = Date.now() - loadedData.lastTime;
+            App.pet.simulateOfflineProgression(elapsedTime);
+
+            let awaySeconds = Math.round(elapsedTime/1000);
+            let awayMinutes = Math.round(awaySeconds/60);
+            let awayHours = Math.round(awayMinutes/60);
+
+            let message;
+            if(awaySeconds < 60) message = `${awaySeconds} seconds`;
+            else if(awayMinutes < 60) message = `${awayMinutes} minutes`;
+            else message = `${awayHours} hours`;
+
+
+            if(awaySeconds > 2){
+                App.displayPrompt(`Welcome back!\n<b>${App.petDefinition.name}</b> missed you in those <b>${message}</b> you were away.`, [
+                    {
+                        name: 'ok',
+                        onclick: () => {}
+                    }
+                ])
+            }
+        }
+
         // entries
         window.onload = function () {
             // function update(time) {
@@ -113,8 +138,8 @@ let App = {
         App.deltaTime = time - App.lastTime;
         App.lastTime = time;
 
-        if(App.deltaTime > 5000){
-            // alert('YOOOOOOOOO came back from offline?');
+        if(App.deltaTime > 5000){ // simulating offline progression
+            App.pet.simulateAwayProgression(App.deltaTime);
         }
 
         requestAnimationFrame(App.onFrameUpdate);
@@ -932,6 +957,7 @@ let App = {
         // setCookie('pet', App.pet.serializeStats(), 365);
         localStorage.setItem('pet', App.pet.serializeStats());
         localStorage.setItem('settings', JSON.stringify(App.settings));
+        localStorage.setItem('last_time', Date.now())
     },
     load: function(){
         let pet = localStorage.getItem('pet');
@@ -939,8 +965,10 @@ let App = {
 
         let settings = localStorage.getItem('settings');
             settings = settings ? JSON.parse(settings) : null;
+
+        let lastTime = localStorage.getItem('last_time') || false;
         return {
-            pet, settings
+            pet, settings, lastTime
         }
     }
 }
