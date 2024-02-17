@@ -228,6 +228,13 @@ class PetDefinition {
         Object.assign(this.stats, stats);
         return this;
     }
+    maxStats(){
+        this.stats.current_hunger = 100;
+        this.stats.current_fun = 100;
+        this.stats.current_sleep = 100;
+        this.stats.current_health = 100;
+        this.stats.current_bladder = 100;
+    }
 
     increaseFriendship(value){
         if(!value) value = random(5, 10);

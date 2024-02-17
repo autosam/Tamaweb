@@ -268,7 +268,7 @@ class Pet extends Object2d {
 
         let depletion_mult = 1, offlineAndIsNight = false;
         if(isOfflineProgression){
-            depletion_mult = 0.5;
+            depletion_mult = 0.35;
 
             if(hour && (hour >= 22 || hour < 9)){
                 offlineAndIsNight = true;
@@ -289,7 +289,7 @@ class Pet extends Object2d {
             health_depletion_rate = 0;
 
             let sleepAdditionalDepletionMult = 1;
-            if(offlineAndIsNight) sleepAdditionalDepletionMult = 10;
+            if(offlineAndIsNight) sleepAdditionalDepletionMult = 1000;
             sleep_depletion_rate = -stats.sleep_replenish_rate * sleepAdditionalDepletionMult;
         }
 
@@ -304,7 +304,7 @@ class Pet extends Object2d {
         stats.current_hunger -= hunger_depletion_rate;
         if(stats.current_hunger <= 0){
             stats.current_hunger = 0;
-            console.log('dead?');
+            // console.log('dead?');
         }
         stats.current_sleep -= sleep_depletion_rate;
         if(stats.current_sleep <= 0){
@@ -314,13 +314,13 @@ class Pet extends Object2d {
         stats.current_fun -= fun_depletion_rate;
         if(stats.current_fun <= 0){
             stats.current_fun = 0;
-            console.log('All my friends no fun?');
+            // console.log('All my friends no fun?');
         }
         stats.current_bladder -= bladder_depletion_rate;
         if(stats.current_bladder <= 0){
             stats.current_bladder = stats.max_bladder;
             this.stats.has_poop_out = true;
-            console.log('pooping myself');
+            // console.log('pooping myself');
         }
         if(this.stats.has_poop_out){
             App.poop.hidden = false;
@@ -332,7 +332,7 @@ class Pet extends Object2d {
         }
         if(stats.current_health <= 0){
             stats.current_health = 0;
-            console.log('dead of sickness?');
+            // console.log('dead of sickness?');
         }
 
         // moodlets
@@ -566,6 +566,8 @@ class Pet extends Object2d {
         this.inverted = false;
     }
     simulateAwayProgression(elapsedTime){
+        this.isMainPet = true;
+
         // calling stats manager once every second instead of twice every second
         let iterations = Math.floor((elapsedTime / 1000));
         for(let i = 0; i < iterations; i++){
@@ -577,14 +579,19 @@ class Pet extends Object2d {
         }
     }
     simulateOfflineProgression(elapsedTime){
+        this.isMainPet = true;
         // getting caught up with the stats simulation
         // since pets call statsManager twice each seconds
         // we are going to simulate that by approximating
         // (max offline progression is 12 hours)
+
+        const startTime = Date.now();
         let iterations = Math.floor(clamp(elapsedTime / 1000, 0, 43200) * 2);
         for(let i = 0; i < iterations; i++){
-            elapsedTime += 500;
-            let hour = new Date(elapsedTime).getHours();
+            elapsedTime -= 500;
+            let date = new Date(startTime - elapsedTime);
+            let hour = date.getHours();
+
             // suppying hour because from 22:00 to 9:00 the starts will drop much slower and pet will get sleep
             if(this.stats.is_egg){
                 this.handleEgg();
