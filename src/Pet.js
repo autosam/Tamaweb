@@ -268,7 +268,7 @@ class Pet extends Object2d {
 
         let depletion_mult = 1, offlineAndIsNight = false;
         if(isOfflineProgression){
-            depletion_mult = 0.35;
+            depletion_mult = 0.5;
 
             if(hour && (hour >= 22 || hour < 9)){
                 offlineAndIsNight = true;
@@ -280,16 +280,16 @@ class Pet extends Object2d {
         let sleep_depletion_rate = stats.sleep_depletion_rate * depletion_mult;
         let fun_depletion_rate = stats.fun_depletion_rate * depletion_mult;
         let bladder_depletion_rate = stats.bladder_depletion_rate * depletion_mult;
-        let health_depletion_rate = stats.healt_depletion_rate * depletion_mult;
+        let health_depletion_rate = stats.health_depletion_rate * depletion_mult;
 
         // sleeping case
-        if(this.state == 'sleeping' || offlineAndIsNight){
+        if(this.stats.is_sleeping || offlineAndIsNight){
             fun_depletion_rate = 0;
             hunger_depletion_rate = 0;
             health_depletion_rate = 0;
 
             let sleepAdditionalDepletionMult = 1;
-            if(offlineAndIsNight) sleepAdditionalDepletionMult = 1000;
+            if(offlineAndIsNight) sleepAdditionalDepletionMult = 2;
             sleep_depletion_rate = -stats.sleep_replenish_rate * sleepAdditionalDepletionMult;
         }
 

@@ -1096,7 +1096,7 @@ let App = {
         // setCookie('pet', App.pet.serializeStats(), 365);
         localStorage.setItem('pet', App.pet.serializeStats());
         localStorage.setItem('settings', JSON.stringify(App.settings));
-        localStorage.setItem('last_time', Date.now())
+        localStorage.setItem('last_time', Date.now() -3600000)
     },
     load: function(){
         let pet = localStorage.getItem('pet');

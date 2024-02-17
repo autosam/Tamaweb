@@ -126,14 +126,14 @@ class PetDefinition {
         max_hunger: 100,
         hunger_satisfaction: 80, // note: when reaching this they won't want anymore food
         hunger_min_desire: 40, // note: when below this number they desire it
-        hunger_depletion_rate: 0.01,
+        hunger_depletion_rate: 0.0085,
         activity_hunger_depletion: 0.5,
 
         // sleep
         max_sleep: 100,
         sleep_satisfaction: 70,
         sleep_min_desire: 20,
-        sleep_depletion_rate: 0.002,
+        sleep_depletion_rate: 0.0065,
         sleep_replenish_rate: 0.1,
         light_sleepiness: 0.01,
         activity_sleep_depletion: 0.3,
@@ -141,14 +141,14 @@ class PetDefinition {
         max_fun: 100,
         fun_min_desire: 35,
         fun_satisfaction: 70,
-        fun_depletion_rate: 0.05,
+        fun_depletion_rate: 0.02,
         // bladder
         max_bladder: 100,
-        bladder_depletion_rate: 0.08,
+        bladder_depletion_rate: 0.07,
         // health
         max_health: 100,
         health_depletion_mult: 0.5, // from 0 to 1, 0 means immune to all health risks
-        healt_depletion_rate: 0.1,
+        health_depletion_rate: 0.1,
         // wander (sec)
         wander_min: 1.5,
         wander_max: 8,
@@ -158,10 +158,10 @@ class PetDefinition {
         current_sleep: 70,
         current_fun: 10,
         current_bladder: 10,
-        current_health: 50,
+        current_health: 90,
 
         // gold
-        gold: 10,
+        gold: 15,
 
         // other status effects
         is_sleeping: false,
@@ -234,6 +234,7 @@ class PetDefinition {
         this.stats.current_sleep = 100;
         this.stats.current_health = 100;
         this.stats.current_bladder = 100;
+        this.stats.has_poop_out = false;
     }
 
     increaseFriendship(value){
