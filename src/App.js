@@ -104,7 +104,19 @@ let App = {
             // }
 
             if(App.ENV === 'prod'){
-                App.sendAnalytics('login', JSON.stringify({away: (App.awayTime || -1), ...App.pet.stats}));
+                let analyticsData = {
+                    away: (App.awayTime || -1),
+                    sprite: App.petDefinition.sprite,
+                    hunger: Math.round(App.pet.stats.current_hunger),
+                    fun: Math.round(App.pet.stats.current_fun),
+                    health: Math.round(App.pet.stats.current_health),
+                    sleep: Math.round(App.pet.stats.current_sleep),
+                    bladder: Math.round(App.pet.stats.current_bladder),
+                    is_egg: App.pet.stats.is_egg,
+                    has_poop_out: App.pet.stats.has_poop_out,
+                    is_sleeping: App.pet.stats.is_sleeping,
+                }
+                App.sendAnalytics('login', JSON.stringify(analyticsData));
             }
 
             // update(0);
