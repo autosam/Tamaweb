@@ -1,5 +1,5 @@
 let App = {
-    INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0},
+    INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', ENV: location.port == 5500 ? 'dev' : 'prod',
     settings: {
         screenSize: 1,
     },
@@ -80,6 +80,7 @@ let App = {
             else if(awayMinutes < 60) message = `${awayMinutes} minutes`;
             else message = `${awayHours} hours`;
 
+            App.awayTime = message;
 
             if(awaySeconds > 2){
                 App.displayPrompt(`Welcome back!\n<b>${App.petDefinition.name}</b> missed you in those <b>${message}</b> you were away`, [
@@ -101,6 +102,10 @@ let App = {
             //     requestAnimationFrame(update);
             //     // document.querySelector('.background-canvas').getContext('2d').drawImage(App.drawer.canvas, 0, 0);
             // }
+
+            if(App.ENV === 'prod'){
+                App.sendAnalytics('login', JSON.stringify({away: (App.awayTime || -1), ...App.pet.stats}));
+            }
 
             // update(0);
             App.targetFps = 60;
@@ -1097,6 +1102,7 @@ let App = {
         localStorage.setItem('pet', App.pet.serializeStats());
         localStorage.setItem('settings', JSON.stringify(App.settings));
         localStorage.setItem('last_time', Date.now());
+        localStorage.setItem('user_id', App.userId);
         // -3600000
     },
     load: function(){
@@ -1107,8 +1113,20 @@ let App = {
             settings = settings ? JSON.parse(settings) : null;
 
         let lastTime = localStorage.getItem('last_time') || false;
+
+        // user id
+        let userId = localStorage.getItem('user_id') || Math.round(Math.random() * 9999999999);
+        App.userId = userId;
+
         return {
             pet, settings, lastTime
         }
+    },
+    sendAnalytics: function(type, value){
+        if(!type) type = 'default';
+
+        let url = `https://docs.google.com/forms/d/e/1FAIpQLSfzl5hhhnV3IAdxuA90ieEaeBAhCY9Bh4s151huzTMeByMwiw/formResponse?usp=pp_url&entry.1384465975=${App.userId}&entry.1653037117=${App.petDefinition?.name || ''}&entry.1322693089=${type}&entry.1403809294=${value || ''}`;
+
+        fetch(url).catch(e => {});
     }
 }
