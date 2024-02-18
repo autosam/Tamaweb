@@ -1,5 +1,5 @@
 let App = {
-    INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', ENV: location.port == 5500 ? 'dev' : 'prod',
+    INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999),
     settings: {
         screenSize: 1,
     },
@@ -104,7 +104,8 @@ let App = {
             // }
 
             if(App.ENV === 'prod'){
-                let analyticsData = {
+                const analyticsData = {
+                    session_id: App.sessionId,
                     away: (App.awayTime || -1),
                     sprite: App.petDefinition.sprite,
                     hunger: Math.round(App.pet.stats.current_hunger),
@@ -127,6 +128,21 @@ let App = {
             App.onFrameUpdate(0);
         }
         window.onbeforeunload = function(){
+            if(App.ENV === 'prod'){
+                const analyticsData = {
+                    session_id: App.sessionId,
+                    hunger: Math.round(App.pet.stats.current_hunger),
+                    fun: Math.round(App.pet.stats.current_fun),
+                    health: Math.round(App.pet.stats.current_health),
+                    sleep: Math.round(App.pet.stats.current_sleep),
+                    bladder: Math.round(App.pet.stats.current_bladder),
+                    is_egg: App.pet.stats.is_egg,
+                    has_poop_out: App.pet.stats.has_poop_out,
+                    is_sleeping: App.pet.stats.is_sleeping,
+                }
+                App.sendAnalytics('logout', JSON.stringify(analyticsData));
+            }
+
             App.save();
         }
 
