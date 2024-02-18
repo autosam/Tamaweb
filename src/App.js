@@ -117,6 +117,7 @@ let App = {
                 is_egg: App.pet.stats.is_egg,
                 has_poop_out: App.pet.stats.has_poop_out,
                 is_sleeping: App.pet.stats.is_sleeping,
+                gold: App.pet.stats.gold,
             }
             App.sendAnalytics('login', JSON.stringify(analyticsData));
 
