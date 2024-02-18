@@ -8,6 +8,7 @@ const SPRITES = [
 
     // items
     "resources/img/item/foods.png",
+    "resources/img/item/items.png",
 
     // misc
     "resources/img/misc/cleaner.png",

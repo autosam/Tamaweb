@@ -103,22 +103,20 @@ let App = {
             //     // document.querySelector('.background-canvas').getContext('2d').drawImage(App.drawer.canvas, 0, 0);
             // }
 
-            if(App.ENV === 'prod'){
-                const analyticsData = {
-                    session_id: App.sessionId,
-                    away: (App.awayTime || -1),
-                    sprite: App.petDefinition.sprite,
-                    hunger: Math.round(App.pet.stats.current_hunger),
-                    fun: Math.round(App.pet.stats.current_fun),
-                    health: Math.round(App.pet.stats.current_health),
-                    sleep: Math.round(App.pet.stats.current_sleep),
-                    bladder: Math.round(App.pet.stats.current_bladder),
-                    is_egg: App.pet.stats.is_egg,
-                    has_poop_out: App.pet.stats.has_poop_out,
-                    is_sleeping: App.pet.stats.is_sleeping,
-                }
-                App.sendAnalytics('login', JSON.stringify(analyticsData));
+            const analyticsData = {
+                session_id: App.sessionId,
+                away: (App.awayTime || -1),
+                sprite: App.petDefinition.sprite,
+                hunger: Math.round(App.pet.stats.current_hunger),
+                fun: Math.round(App.pet.stats.current_fun),
+                health: Math.round(App.pet.stats.current_health),
+                sleep: Math.round(App.pet.stats.current_sleep),
+                bladder: Math.round(App.pet.stats.current_bladder),
+                is_egg: App.pet.stats.is_egg,
+                has_poop_out: App.pet.stats.has_poop_out,
+                is_sleeping: App.pet.stats.is_sleeping,
             }
+            App.sendAnalytics('login', JSON.stringify(analyticsData));
 
             // update(0);
             App.targetFps = 60;
@@ -128,20 +126,18 @@ let App = {
             App.onFrameUpdate(0);
         }
         window.onbeforeunload = function(){
-            if(App.ENV === 'prod'){
-                const analyticsData = {
-                    session_id: App.sessionId,
-                    hunger: Math.round(App.pet.stats.current_hunger),
-                    fun: Math.round(App.pet.stats.current_fun),
-                    health: Math.round(App.pet.stats.current_health),
-                    sleep: Math.round(App.pet.stats.current_sleep),
-                    bladder: Math.round(App.pet.stats.current_bladder),
-                    is_egg: App.pet.stats.is_egg,
-                    has_poop_out: App.pet.stats.has_poop_out,
-                    is_sleeping: App.pet.stats.is_sleeping,
-                }
-                App.sendAnalytics('logout', JSON.stringify(analyticsData));
+            const analyticsData = {
+                session_id: App.sessionId,
+                hunger: Math.round(App.pet.stats.current_hunger),
+                fun: Math.round(App.pet.stats.current_fun),
+                health: Math.round(App.pet.stats.current_health),
+                sleep: Math.round(App.pet.stats.current_sleep),
+                bladder: Math.round(App.pet.stats.current_bladder),
+                is_egg: App.pet.stats.is_egg,
+                has_poop_out: App.pet.stats.has_poop_out,
+                is_sleeping: App.pet.stats.is_sleeping,
             }
+            App.sendAnalytics('logout', JSON.stringify(analyticsData));
 
             App.save();
         }
@@ -462,8 +458,11 @@ let App = {
                             {
                                 name: 'yes',
                                 onclick: () => {
+                                    App.save();
                                     App.save = () => {};
-                                    localStorage.clear();
+                                    // localStorage.clear();
+                                    localStorage.removeItem('last_time');
+                                    localStorage.removeItem('pet');
                                     location.reload();
                                     return false;
                                 }
@@ -559,7 +558,7 @@ let App = {
                 return;
             }
 
-            sliderInstance = App.displaySlider(list, activeIndex, {accept: buyMode ? 'Purchase' : 'Eat'});
+            sliderInstance = App.displaySlider(list, activeIndex, {accept: buyMode ? 'Purchase' : 'Eat'}, buyMode ? `$${App.pet.stats.gold}` : null);
             return sliderInstance;
             return App.displayList(list);
         },
@@ -615,7 +614,7 @@ let App = {
                 return;
             }
 
-            sliderInstance = App.displaySlider(list, activeIndex, {accept: buyMode ? 'Purchase' : 'Use'});
+            sliderInstance = App.displaySlider(list, activeIndex, {accept: buyMode ? 'Purchase' : 'Use'}, buyMode ? `$${App.pet.stats.gold}` : null);
             return sliderInstance;
             return App.displayList(list);
         },
@@ -976,7 +975,7 @@ let App = {
 
         return list;
     },
-    displaySlider: function(listItems, activeIndex, options){
+    displaySlider: function(listItems, activeIndex, options, additionalText){
         let list = document.querySelector('.cloneables .generic-slider-container').cloneNode(true);
 
         let maxIndex = listItems.length,
@@ -1031,6 +1030,10 @@ let App = {
             contentElement.querySelector('.slider-item').style.animation = 'slider-item-anim-out-right 0.1s linear forwards';
             setTimeout(() => changeIndex(1), 150);
         }
+
+        if(additionalText){
+            list.querySelector('.additional-text').innerHTML = additionalText;
+        } else list.querySelector('.additional-text').remove();
 
         if(maxIndex === 1){
             list.querySelector('.slide-left').classList.add('disabled');
@@ -1151,6 +1154,8 @@ let App = {
         }
     },
     sendAnalytics: function(type, value){
+        if(App.ENV !== 'prod') return;
+
         if(!type) type = 'default';
 
         let url = `https://docs.google.com/forms/d/e/1FAIpQLSfzl5hhhnV3IAdxuA90ieEaeBAhCY9Bh4s151huzTMeByMwiw/formResponse?usp=pp_url&entry.1384465975=${App.userId}&entry.1653037117=${App.petDefinition?.name || ''}&entry.1322693089=${type}&entry.1403809294=${value || ''}`;

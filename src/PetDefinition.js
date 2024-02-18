@@ -144,11 +144,11 @@ class PetDefinition {
         fun_depletion_rate: 0.02,
         // bladder
         max_bladder: 100,
-        bladder_depletion_rate: 0.07,
+        bladder_depletion_rate: 0.05,
         // health
         max_health: 100,
         health_depletion_mult: 0.5, // from 0 to 1, 0 means immune to all health risks
-        health_depletion_rate: 0.1,
+        health_depletion_rate: 0.05,
         // wander (sec)
         wander_min: 1.5,
         wander_max: 8,

@@ -178,6 +178,21 @@ body {
         transform: translateX(200px);
     }
 }
+.generic-slider-container .additional-text {
+    position: absolute;
+    top: 5px;
+    pointer-events: none;
+    left: 5px;
+    background: #ffffffb5;
+    padding: 2px 5px;
+    border-radius: 5px;
+    animation: fade-in-anim 0.2s;
+}
+@keyframes fade-in-anim {
+    from {
+        opacity: 0.2;
+    }
+}
 .buttons-container {
     display: flex;
     flex-direction: column;
