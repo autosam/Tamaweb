@@ -328,7 +328,7 @@ class Activities {
     }
     static goToPark(otherPetDef){
         if(!otherPetDef){
-            if(random(1, 100) <= 3){
+            if(random(1, 100) <= 50){
                 otherPetDef = App.getRandomPetDef();
             }
         }
