@@ -15,6 +15,7 @@ Here's a list of features and to-do list:
 - Ability to get Doctor visit to get status on your pet's health
 - Offline progression, meaning when you close the game and comeback after some time, all the stats will be calculated as if you had the game open the entire time (although dropping at a much slower speed). note that your pet will be sleeping from 22:00 to 9:00 when offline, so no stats drop during that time.
 - Ability to purchase toys and items your pet game play with and use
+- Discount days: All shops will sell their products at a discounted rate on the 7th, 12th, 18th, 20th, 25th, 29th and 30th day of each month!
 
 ## To-do:
 - Life stages and evolutions

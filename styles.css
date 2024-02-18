@@ -147,6 +147,7 @@ body {
     background: white;
     border-radius: 20px;
     padding: 10px 0px;
+    min-width: 70%;
 }
 .slide-btn {
     height: 100%;
@@ -185,6 +186,14 @@ body {
     to {
         transform: translateX(200px);
     }
+}
+.sales-notice {
+    background: red;
+    color: white;
+    padding: 2px 5px;
+    border-radius: 5px;
+    margin-left: 5px;
+    margin-right: -5px;
 }
 .generic-slider-container .additional-text {
     position: absolute;

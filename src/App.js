@@ -1,5 +1,5 @@
 let App = {
-    INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999),
+    INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), gameEventsHistory: [],
     settings: {
         screenSize: 1,
     },
@@ -159,6 +159,9 @@ let App = {
             App.save();
         }, 5000);
 
+        // in-game events
+        this.handleInGameEvents();
+
         // hide loading
         document.querySelector('.loading-text').style.display = 'none';
     },
@@ -201,6 +204,23 @@ let App = {
         });
     
         return Promise.all(promises);
+    },
+    handleInGameEvents: function(){
+        App.gameEventsHistory = App.loadedData.eventsHistory || {};
+
+        if(App.isSalesDay()){
+            let day = new Date().getDate();
+            if(!App.gameEventsHistory[`sales_day_${day}_notice`]){
+                App.gameEventsHistory[`sales_day_${day}_notice`] = true;
+                App.displayPrompt(`<b>discount day!</b>Shops are selling their products at a discounted rate! Check them out and pile up on them!`, [
+                    {
+                        name: 'ok',
+                        onclick: () => {},
+                    }
+                ]);
+                return;
+            }
+        }
     },
     defintions: {
         food: {
@@ -531,21 +551,27 @@ let App = {
         open_food_list: function(buyMode, activeIndex){
             let list = [];
             let sliderInstance;
+            let salesDay = App.isSalesDay();
             for(let food of Object.keys(App.defintions.food)){
                 // check if current pet has this food on its inventory
                 if(!App.pet.inventory.food[food] && !buyMode){
                     continue;
                 }
                 let current = App.defintions.food[food];
+
+                // 50% off on sales day
+                let price = current.price;
+                if(salesDay) price = Math.round(price / 2);
+
                 list.push({
-                    name: `<c-sprite width="16" height="16" index="${(current.sprite - 1)}" src="resources/img/item/foods.png"></c-sprite> ${food.toUpperCase()} (x${App.pet.inventory.food[food] || 0}) ${buyMode ? ` - $${current.price}` : ''}`,
+                    name: `<c-sprite width="16" height="16" index="${(current.sprite - 1)}" src="resources/img/item/foods.png"></c-sprite> ${food.toUpperCase()} (x${App.pet.inventory.food[food] || 0}) <b>${buyMode ? `$${price}` : ''}</b>`,
                     onclick: (btn, list) => {
                         if(buyMode){
-                            if(App.pet.stats.gold < current.price){
+                            if(App.pet.stats.gold < price){
                                 App.displayPopup(`Don't have enough gold!`);
                                 return true;
                             }
-                            App.pet.stats.gold -= current.price;
+                            App.pet.stats.gold -= price;
                             if(!App.pet.inventory.food[food]){
                                 App.pet.inventory.food[food] = 1;
                             } else {
@@ -574,28 +600,34 @@ let App = {
                 return;
             }
 
-            sliderInstance = App.displaySlider(list, activeIndex, {accept: buyMode ? 'Purchase' : 'Eat'}, buyMode ? `$${App.pet.stats.gold}` : null);
+            sliderInstance = App.displaySlider(list, activeIndex, {accept: buyMode ? 'Purchase' : 'Eat'}, buyMode ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}` : null);
             return sliderInstance;
             return App.displayList(list);
         },
         open_item_list: function(buyMode, activeIndex, customPayload){
             let list = [];
             let sliderInstance;
+            let salesDay = App.isSalesDay();
             for(let item of Object.keys(App.defintions.item)){
                 // check if current pet has this item on its inventory
                 if(!App.pet.inventory.item[item] && !buyMode){
                     continue;
                 }
                 let current = App.defintions.item[item];
+
+                // 50% off on sales day
+                let price = current.price;
+                if(salesDay) price = Math.round(price / 2);
+
                 list.push({
-                    name: `<c-sprite width="22" height="22" index="${(current.sprite - 1)}" src="resources/img/item/items.png"></c-sprite> ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) ${buyMode ? ` - $${current.price}` : ''}`,
+                    name: `<c-sprite width="22" height="22" index="${(current.sprite - 1)}" src="resources/img/item/items.png"></c-sprite> ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>$${buyMode ? `${price}` : ''}</b>`,
                     onclick: (btn, list) => {
                         if(buyMode){
-                            if(App.pet.stats.gold < current.price){
+                            if(App.pet.stats.gold < price){
                                 App.displayPopup(`Don't have enough gold!`);
                                 return true;
                             }
-                            App.pet.stats.gold -= current.price;
+                            App.pet.stats.gold -= price;
                             if(!App.pet.inventory.item[item]){
                                 App.pet.inventory.item[item] = 1;
                             } else {
@@ -630,7 +662,7 @@ let App = {
                 return;
             }
 
-            sliderInstance = App.displaySlider(list, activeIndex, {accept: buyMode ? 'Purchase' : 'Use'}, buyMode ? `$${App.pet.stats.gold}` : null);
+            sliderInstance = App.displaySlider(list, activeIndex, {accept: buyMode ? 'Purchase' : 'Use'}, buyMode ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}` : null);
             return sliderInstance;
             return App.displayList(list);
         },
@@ -1136,6 +1168,10 @@ let App = {
             }
         })
     },
+    isSalesDay: function(){
+        let day = new Date().getDate();
+        return [7, 12, 18, 20, 25, 29, 30].includes(day);
+    },
     playSound: function(path, force){
         if(this.audioChannelIsBusy && !force) return false;
 
@@ -1150,6 +1186,7 @@ let App = {
         localStorage.setItem('settings', JSON.stringify(App.settings));
         localStorage.setItem('last_time', Date.now());
         localStorage.setItem('user_id', App.userId);
+        localStorage.setItem('ingame_events_history', JSON.stringify(App.gameEventsHistory));
         // -3600000
     },
     load: function(){
@@ -1161,13 +1198,18 @@ let App = {
 
         let lastTime = localStorage.getItem('last_time') || false;
 
+        let eventsHistory = localStorage.getItem('ingame_events_history');
+            eventsHistory = eventsHistory ? JSON.parse(eventsHistory) : null;
+
         // user id
         let userId = localStorage.getItem('user_id') || Math.round(Math.random() * 9999999999);
         App.userId = userId;
 
-        return {
-            pet, settings, lastTime
-        }
+        App.loadedData = {
+            pet, settings, lastTime, eventsHistory
+        };
+
+        return App.loadedData;
     },
     sendAnalytics: function(type, value){
         if(App.ENV !== 'prod') return;
