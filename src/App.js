@@ -781,7 +781,7 @@ let App = {
         },
         open_friends_list: function(){
             if(!App.petDefinition.friends.length){
-                App.displayPopup(`${App.petDefinition.name} doesn't have any friends right now`, 2000);
+                App.displayPopup(`${App.petDefinition.name} doesn't have any friends right now<br><br><small>Visit the park to find new friends<small>`, 4000);
                 return;
             }
 
