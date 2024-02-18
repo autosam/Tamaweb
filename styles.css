@@ -149,6 +149,11 @@ body {
     padding: 10px 0px;
     min-width: 70%;
 }
+.generic-slider-container .content img {
+    outline: 2px solid #ffb4e6;
+    border-radius: 5px;
+    margin-bottom: 5px;
+}
 .slide-btn {
     height: 100%;
     display: inline-flex;
@@ -194,6 +199,13 @@ body {
     border-radius: 5px;
     margin-left: 5px;
     margin-right: -5px;
+    /* animation: name duration timing-function delay iteration-count direction fill-mode; */
+    animation: fade-pulse-anim 1s ease-in infinite;
+}
+@keyframes fade-pulse-anim {
+    50% {
+        opacity: 0.3;
+    }
 }
 .generic-slider-container .additional-text {
     position: absolute;

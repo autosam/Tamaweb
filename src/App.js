@@ -164,6 +164,9 @@ let App = {
         // in-game events
         this.handleInGameEvents();
 
+        // load room customizations
+        this.applyRoomCustomizations(loadedData.roomCustomizations);
+
         // hide loading
         document.querySelector('.loading-text').style.display = 'none';
     },
@@ -320,6 +323,16 @@ let App = {
                 interaction_time: 60000,
                 interruptable: true,
             },   
+        },
+        room_background: {
+            "blue": {
+                image: 'resources/img/background/house/02.png',
+                price: 200,
+            },
+            "peachy": {
+                image: 'resources/img/background/house/03.png',
+                price: 250,
+            },
         }
     },
     scene: {
@@ -363,6 +376,13 @@ let App = {
         if(scene.onLoad){
             scene.onLoad();
         }
+    },
+    applyRoomCustomizations(data){
+        if(!data) return;
+
+        if(data.home.image) App.scene.home.image = data.home.image;
+
+        App.setScene(App.currentScene);
     },
     getRandomPetDef: function(){
         let pet = new PetDefinition({
@@ -672,6 +692,48 @@ let App = {
             return sliderInstance;
             return App.displayList(list);
         },
+        open_room_background_list: function(){
+            let list = [];
+            let sliderInstance;
+            let salesDay = App.isSalesDay();
+            const buyMode = true;
+            for(let room of Object.keys(App.defintions.room_background)){
+                let current = App.defintions.room_background[room];
+
+                // 50% off on sales day
+                let price = current.price;
+                if(salesDay) price = Math.round(price / 2);
+
+                list.push({
+                    // name: `<c-sprite width="22" height="22" index="${(current.sprite - 1)}" src="resources/img/item/items.png"></c-sprite> ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>$${buyMode ? `${price}` : ''}</b>`,
+                    name: `<img src="${current.image}"></img> ${room.toUpperCase()} <b>$${price}</b>`,
+                    onclick: (btn, list) => {
+                        if(current.image === App.scene.home.image){
+                            App.displayPopup('You already own this room');
+                            return true;
+                        }
+
+                        if(App.pet.stats.gold < price){
+                            App.displayPopup(`Don't have enough gold!`);
+                            return true;
+                        }
+                        App.pet.stats.gold -= price;
+
+                        App.closeAllDisplays();
+                        Activities.redecorRoom();
+                        App.scene.home.image = current.image;
+
+                        App.sendAnalytics('home_background_change', App.scene.home.image);
+
+                        return false;
+                    }
+                })
+            }
+
+            sliderInstance = App.displaySlider(list, null, {accept: 'Purchase'}, `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}`);
+            return sliderInstance;
+            return App.displayList(list);
+        },
         open_activity_list: function(){
             return App.displayList([
                 {
@@ -850,6 +912,13 @@ let App = {
                     name: 'buy items',
                     onclick: () => {
                         App.handlers.open_item_list(true);
+                        return true;
+                    }
+                },
+                {
+                    name: 'redécor room',
+                    onclick: () => {
+                        App.handlers.open_room_background_list(true);
                         return true;
                     }
                 },
@@ -1194,6 +1263,11 @@ let App = {
         localStorage.setItem('user_id', App.userId);
         localStorage.setItem('ingame_events_history', JSON.stringify(App.gameEventsHistory));
         localStorage.setItem('play_time', App.playTime);
+        localStorage.setItem('room_customization', JSON.stringify({
+            home: {
+                image: App.scene.home.image,
+            }
+        }))
         // -3600000
     },
     load: function(){
@@ -1208,6 +1282,9 @@ let App = {
         let eventsHistory = localStorage.getItem('ingame_events_history');
             eventsHistory = eventsHistory ? JSON.parse(eventsHistory) : null;
 
+        let roomCustomizations = localStorage.getItem('room_customization');
+        roomCustomizations = roomCustomizations ? JSON.parse(roomCustomizations) : null;
+
         // user id
         let userId = localStorage.getItem('user_id') || Math.round(Math.random() * 9999999999);
         App.userId = userId;
@@ -1215,7 +1292,7 @@ let App = {
         App.playTime = parseInt(localStorage.getItem('play_time') || 0);
 
         App.loadedData = {
-            pet, settings, lastTime, eventsHistory
+            pet, settings, lastTime, eventsHistory, roomCustomizations
         };
 
         return App.loadedData;
