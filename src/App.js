@@ -158,6 +158,9 @@ let App = {
         setInterval(() => {
             App.save();
         }, 5000);
+
+        // hide loading
+        document.querySelector('.loading-text').style.display = 'none';
     },
     applySettings: function(){
         // screen size
@@ -359,53 +362,66 @@ let App = {
             App.playSound(`resources/sounds/ui_click_01.ogg`, true);
             App.displayGrid([
                 {
-                    name: '📊',
+                    // name: '📊',
+                    name: '<i class="fa-solid fa-line-chart"></i>',
                     onclick: () => {
                         App.handlers.open_stats();
                     }
                 },
                 {
-                    name: '🍴',
+                    // name: '🍴',
+                    name: '<i class="fa-solid fa-cutlery"></i>',
                     onclick: () => {
                         App.handlers.open_food_list();
                     }
                 },
                 {
-                    name: '🛁',
+                    // name: '🛁',
+                    name: '<i class="fa-solid fa-bath"></i>',
                     onclick: () => {
                         App.handlers.clean();
                     }
                 },
                 {
                     name: '🛏️',
+                    name: '<i class="fa-solid fa-bed"></i>',
                     onclick: () => {
                         App.handlers.sleep();
                     }
                 },
                 {
                     name: '🚪',
+                    name: '<i class="fa-solid fa-door-open"></i>',
                     onclick: () => {
                         App.handlers.open_activity_list();
                     }
                 },
                 {
                     name: '📦',
+                    name: '<i class="fa-solid fa-box"></i>',
                     onclick: () => {
                         App.handlers.open_item_list();
                     }
                 },
                 {
                     name: '💓',
+                    name: '<i class="fa-solid fa-heart"></i>',
                     onclick: () => {
                         App.handlers.open_friends_list();
                     }
                 },
                 {
                     name: '⚙️',
+                    name: '<i class="fa-solid fa-gear"></i>',
                     onclick: () => {
                         App.handlers.open_settings();
                     }
                 }, 
+                {
+                    name: '<i class="fa-solid fa-arrow-left"></i>',
+                    onclick: () => { }
+                }, 
+                
             ])
         },
         open_settings: function(){
@@ -944,13 +960,13 @@ let App = {
         return list;
     },
     displayGrid: function(listItems){
-        listItems.push({
-            name: '⬅️',
-            class: 'back-btn',
-            onclick: () => {
-                return false;
-            }
-        })
+        // listItems.push({
+        //     name: '⬅️',
+        //     class: 'back-btn',
+        //     onclick: () => {
+        //         return false;
+        //     }
+        // })
 
         let list = document.querySelector('.cloneables .generic-grid-container').cloneNode(true);
 

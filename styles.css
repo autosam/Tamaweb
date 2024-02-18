@@ -22,6 +22,14 @@ body {
     color: white;
     overflow: hidden;
 }
+.loading-text {
+    position: absolute;
+    left: 0px;
+    width: 100%;
+    color: black;
+    text-align: center;
+    z-index: 99;
+}
 .graphics-wrapper {
     width: 100%;
     max-width: 200px;
@@ -32,7 +40,7 @@ body {
     overflow: hidden;
 }
 .graphics-canvas {
-    background-color: rgb(0, 0, 0);
+    background-color: #ffe5ca;
     image-rendering: pixelated;
     width: 100%;
     /* border-top-left-radius: 1000px;
@@ -203,10 +211,12 @@ body {
     flex-direction: row;
     flex-wrap: wrap;
     background: var(--container-background);
+    /* background: white; */
+    background: linear-gradient(0deg, #ffe5ca, #ffdaf7);
 }
 .grid-item {
-    width: 33%;
-    height: 33%;
+    width: 33.333333%;
+    height: 33.333333%;
     flex-shrink: 0;
     display: flex;
     justify-content: center;
@@ -214,21 +224,74 @@ body {
     flex-direction: column;
     font-size: xx-large;
     /* filter: grayscale(1) brightness(1.2) contrast(1); */
-    text-shadow: 0 0 1px black;
-    color: rgb(0, 0, 0);
+    text-shadow: 0px 1px 1px #0000004a;
+    
+    color: rgb(255, 255, 255);
+}
+.grid-item img {
+    width: 35px;
 }
 .grid-item:before {
     position: absolute;
-    width: 50px;
-    height: 50px;
+    width: 55px;
+    height: 55px;
     content: "";
-    background: rgba(255, 255, 255, 0.9);
+    /* background: rgba(255, 255, 255, 0.9); */
+    background: var(--container-background);
     z-index: -1;
     border-radius: 100px;
+    box-shadow: inset -10px 20px rgba(255, 255, 255, 0.158);
+
+    background: linear-gradient(45deg, #ffb362, #ff72e0);
+    /* outline: 3px solid #ffffff63; */
 }
 .grid-item:hover:before {
     background-color: white;
-    outline: 5px solid rgba(255, 255, 255, 0.164);
+    outline: 5px solid #ffffff3b;
+}
+.grid-item:nth-child(1):before {
+    background: #fa9189;
+}
+
+.grid-item:nth-child(2):before {
+    background: #fcae7c
+
+}
+
+.grid-item:nth-child(3):before {
+    
+    background: #99ccff
+
+}
+
+.grid-item:nth-child(4):before {
+    background: #ffcc99
+
+}
+
+.grid-item:nth-child(5):before {
+    background: rgb(164, 228, 169)
+
+}
+
+.grid-item:nth-child(6):before {
+    
+    /* background: #ffe699 */
+    background: #fb88ff
+}
+
+.grid-item:nth-child(7):before {
+    background: #ff99cc
+
+}
+
+.grid-item:nth-child(8):before {
+    background: #d1bdff
+
+}
+
+.grid-item:nth-child(9):before {
+    
 }
 button {
     appearance: none;
