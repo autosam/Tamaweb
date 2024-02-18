@@ -206,6 +206,8 @@ let App = {
         return Promise.all(promises);
     },
     handleInGameEvents: function(){
+        if(App.awayTime == -1) return;
+
         App.gameEventsHistory = App.loadedData.eventsHistory || {};
 
         if(App.isSalesDay()){
