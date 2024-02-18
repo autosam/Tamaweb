@@ -1,5 +1,6 @@
 let App = {
-    INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), gameEventsHistory: [],
+    INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
+    gameEventsHistory: [],
     settings: {
         screenSize: 1,
     },
@@ -105,6 +106,7 @@ let App = {
 
             const analyticsData = {
                 session_id: App.sessionId,
+                play_time_mins: (Math.round(App.playTime) / 1000 / 60).toFixed(2),
                 away: (App.awayTime || -1),
                 sprite: App.petDefinition.sprite,
                 hunger: Math.round(App.pet.stats.current_hunger),
@@ -172,6 +174,8 @@ let App = {
     onFrameUpdate: function(time){
         App.deltaTime = time - App.lastTime;
         App.lastTime = time;
+
+        App.playTime += App.deltaTime;
 
         if(App.deltaTime > 5000){ // simulating offline progression
             App.pet.simulateAwayProgression(App.deltaTime);
@@ -1189,6 +1193,7 @@ let App = {
         localStorage.setItem('last_time', Date.now());
         localStorage.setItem('user_id', App.userId);
         localStorage.setItem('ingame_events_history', JSON.stringify(App.gameEventsHistory));
+        localStorage.setItem('play_time', App.playTime);
         // -3600000
     },
     load: function(){
@@ -1206,6 +1211,8 @@ let App = {
         // user id
         let userId = localStorage.getItem('user_id') || Math.round(Math.random() * 9999999999);
         App.userId = userId;
+
+        App.playTime = parseInt(localStorage.getItem('play_time') || 0);
 
         App.loadedData = {
             pet, settings, lastTime, eventsHistory
