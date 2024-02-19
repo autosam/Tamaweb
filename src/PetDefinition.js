@@ -227,7 +227,11 @@ class PetDefinition {
 
         // changing psuedo pet defs to real ones
         if(this.friends.length) {
-            this.friends = this.friends.map(friend => new PetDefinition(friend));
+            this.friends = this.friends.map(friend => {
+                let def = new PetDefinition(friend);
+                def.friends = [];
+                return def;
+            });
         }
 
         this.prepareSprite();
@@ -296,6 +300,11 @@ class PetDefinition {
 
         this.lastBirthday = new Date();
         this.prepareSprite();
+
+        this.friends.forEach(friendDef => {
+            if(friendDef.ageUp) friendDef.ageUp();
+        })
+
         return true;
     }
 

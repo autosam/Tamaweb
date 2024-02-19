@@ -614,10 +614,10 @@ class Pet extends Object2d {
         }
     }
     ageUp(){
-        if(this.petDefinition.ageUp()){
-            this.removeObject();
-            App.save();
-        }
+        this.petDefinition.ageUp()
+        this.removeObject();
+        App.pet = new Pet(this.petDefinition);
+        App.save();
     }
     serializeStats(){
         return this.petDefinition.serializeStats();

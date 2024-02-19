@@ -5,14 +5,22 @@ class Activities {
         App.pet.stats.has_poop_out = false;
         App.pet.stats.current_bladder = 100;
 
-        let otherPets = [];
+        let otherPetDefs =  [...App.petDefinition.friends]
+                            .map(value => ({ value, sort: Math.random() }))
+                            .sort((a, b) => a.sort - b.sort)
+                            .map(({ value }) => value); // shuffling friends array
         for(let i = 0; i < 3; i++){
             let def = new PetDefinition({
                 sprite: randomFromArray(PET_TEEN_CHARACTERS),
             });
+            otherPetDefs.push(def);
+        }
+
+        let otherPets = [];
+        otherPetDefs.slice(0, 3).forEach(def => {
             let pet = new Pet(def);
             otherPets.push(pet);
-        }
+        });
         
         const table = new Object2d({
             img: 'resources/img/misc/table_01.png',
