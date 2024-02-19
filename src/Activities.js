@@ -60,6 +60,7 @@ class Activities {
 
         App.pet.x = '80%';
         App.pet.stopMove();
+        App.pet.inverted = false;
         App.pet.triggerScriptedState('idle_side', 3000, 0, true, () => {
             App.playSound('resources/sounds/birthday_song_01.ogg', true);
             App.pet.triggerScriptedState('cheering', 15000, 0, true, () => {
@@ -78,8 +79,8 @@ class Activities {
                         App.toggleGameplayControls(true);
                     });
                 });
-            })
-        })
+            });
+        });
 
         function foam(middleFn, endFn){
             let foam = new Object2d({

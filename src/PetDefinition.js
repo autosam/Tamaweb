@@ -190,7 +190,7 @@ class PetDefinition {
     }
 
     getSpritesheetDefinition(){
-        this.spritesheet = PetDefinition.spritesheetDefinitions[this.lifeStage + ''];
+        this.spritesheet = this.spritesheetDefinitions[this.lifeStage + ''];
     }
     
     serializables = [ 'name', 'stats', 'inventory', 'friends', 'sprite', 'birthday', 'lastBirthday' ];
@@ -308,20 +308,20 @@ class PetDefinition {
         return true;
     }
 
-    static spritesheetDefinitions = {
+    spritesheetDefinitions = {
         '0': { // baby
             cellNumber: 0,
             cellSize: 16,
             rows: 4,
             columns: 4,
         },
-        '1': {
+        '1': { // teen
             cellNumber: 0,
             cellSize: 24,
             rows: 4,
             columns: 4,            
         },
-        '2': {
+        '2': { // adult
             cellNumber: 0,
             cellSize: 32,
             rows: 4,
