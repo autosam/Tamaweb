@@ -84,7 +84,7 @@ let App = {
             App.awayTime = message;
 
             if(awaySeconds > 2){
-                App.displayPrompt(`Welcome back!\n<b>${App.petDefinition.name}</b> missed you in those <b>${message}</b> you were away`, [
+                App.displayConfirm(`Welcome back!\n<b>${App.petDefinition.name}</b> missed you in those <b>${message}</b> you were away`, [
                     {
                         name: 'ok',
                         onclick: () => {}
@@ -218,11 +218,13 @@ let App = {
 
         App.gameEventsHistory = App.loadedData.eventsHistory || {};
 
+        const date = new Date();
+        const dayId = date.getFullYear() + '_' + date.getMonth() + '_' + date.getDate();
+
         if(App.isSalesDay()){
-            let day = new Date().getDate();
-            if(!App.gameEventsHistory[`sales_day_${day}_notice`]){
-                App.gameEventsHistory[`sales_day_${day}_notice`] = true;
-                App.displayPrompt(`<b>discount day!</b>Shops are selling their products at a discounted rate! Check them out and pile up on them!`, [
+            if(!App.gameEventsHistory[`sales_day_${dayId}_notice`]){
+                App.gameEventsHistory[`sales_day_${dayId}_notice`] = true;
+                App.displayConfirm(`<b>discount day!</b>Shops are selling their products at a discounted rate! Check them out and pile up on them!`, [
                     {
                         name: 'ok',
                         onclick: () => {},
@@ -500,9 +502,20 @@ let App = {
                 {
                     name: 'set pet name',
                     onclick: () => {
-                        App.pet.petDefinition.name = prompt(`Enter your pet's name:`, App.pet.petDefinition.name) || App.pet.petDefinition.name;
-                        App.save();
-                        App.displayPopup(`Name set to "${App.pet.petDefinition.name}"`)
+                        App.displayPrompt(`Enter your pet's name:`, [
+                            {
+                                name: 'set',
+                                onclick: (value) => {
+                                    if(!value) return false;
+
+                                    App.pet.petDefinition.name = value;
+                                    App.save();
+                                    App.displayPopup(`Name set to "${App.pet.petDefinition.name}"`)
+                                }
+                            },
+                            {name: 'cancel', onclick: () => {}},
+                        ], App.pet.petDefinition.name);
+                        return true;
                     }
                 },
                 // {
@@ -517,7 +530,7 @@ let App = {
                 {
                     name: 'reset save data',
                     onclick: () => {
-                        App.displayPrompt('Are you sure you want to delete your save game?', [
+                        App.displayConfirm('Are you sure you want to delete your save game?', [
                             {
                                 name: 'yes',
                                 onclick: () => {
@@ -647,7 +660,7 @@ let App = {
                 if(salesDay) price = Math.round(price / 2);
 
                 list.push({
-                    name: `<c-sprite width="22" height="22" index="${(current.sprite - 1)}" src="resources/img/item/items.png"></c-sprite> ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>$${buyMode ? `${price}` : ''}</b>`,
+                    name: `<c-sprite width="22" height="22" index="${(current.sprite - 1)}" src="resources/img/item/items.png"></c-sprite> ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>${buyMode ? `$${price}` : ''}</b>`,
                     onclick: (btn, list) => {
                         if(buyMode){
                             if(App.pet.stats.gold < price){
@@ -846,7 +859,7 @@ let App = {
                             {
                                 name: 'gift',
                                 onclick: () => {
-                                    App.displayPrompt(`Are you sure you want to give gift to ${icon} ${name}?`, [
+                                    App.displayConfirm(`Are you sure you want to give gift to ${icon} ${name}?`, [
                                         {
                                             name: 'yes',
                                             onclick: () => {
@@ -869,7 +882,7 @@ let App = {
                             {
                                 name: 'unfriend',
                                 onclick: () => {
-                                    App.displayPrompt(`Are you sure you want to unfriend ${icon} ${name}?`, [
+                                    App.displayConfirm(`Are you sure you want to unfriend ${icon} ${name}?`, [
                                         {
                                             name: 'yes',
                                             onclick: () => {
@@ -933,12 +946,12 @@ let App = {
                         return Activities.parkRngGame();
                     }
                 },
-                {
-                    name: 'guess game (wip)',
-                    onclick: () => {
-                        // return Activities.guessGame();
-                    }
-                },
+                // {
+                //     name: 'guess game (wip)',
+                //     onclick: () => {
+                //         // return Activities.guessGame();
+                //     }
+                // },
             ]);
         },
         open_battle_screen: function(){
@@ -968,6 +981,7 @@ let App = {
                         App.pet.playCheeringAnimationIfTrue(App.pet.stats.has_poop_out, () => {});
                         App.pet.stats.has_poop_out = false;
                         App.poop.hidden = true;
+                        App.pet.stats.current_bladder = App.pet.stats.max_bladder;
                     }
                 }
             })
@@ -1187,7 +1201,7 @@ let App = {
         document.querySelector('.screen-wrapper').appendChild(list);
         return list;
     },
-    displayPrompt: function(text, buttons){
+    displayConfirm: function(text, buttons){
         let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
             list.innerHTML = `
                 <div class="inner-padding uppercase flex-center">
@@ -1196,6 +1210,7 @@ let App = {
                 <div class="buttons-container"></div>
             `;
             list.style['z-index'] = 3;
+            list.style['background'] = 'linear-gradient(0deg, #aec6ff, #dec0ff)';
             
             list.close = function(){
                 list.remove();
@@ -1213,6 +1228,42 @@ let App = {
         });
 
         document.querySelector('.screen-wrapper').appendChild(list);
+        return list;
+    },
+    displayPrompt: function(text, buttons, defualtValue){
+        let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
+            list.innerHTML = `
+                <div class="inner-padding uppercase flex-center">
+                    ${text}
+                </div>
+                <div class="buttons-container"></div>
+            `;
+            list.style['z-index'] = 3;
+            
+            list.close = function(){
+                list.remove();
+            }
+            
+        const btnContainer = list.querySelector('.buttons-container');
+
+        let input = document.createElement('input');
+            input.setAttribute('spellcheck', false);
+        if(defualtValue !== undefined) input.value = defualtValue;
+
+        list.insertBefore(input, btnContainer);
+
+        buttons.forEach(def => {
+            const btn = document.createElement('button');
+            btn.innerHTML = def.name;
+            btn.className = 'list-item';
+            btn.onclick = () => {
+                if(!def.onclick(input.value)) list.close();
+            }
+            btnContainer.appendChild(btn);
+        });
+
+        document.querySelector('.screen-wrapper').appendChild(list);
+        input.focus();
         return list;
     },
     drawUI: function(){

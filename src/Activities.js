@@ -182,7 +182,7 @@ class Activities {
                     App.pet.stats.gold += moneyMade;
                 }
                 App.pet.stats.current_fun -= elapsedTime / 3.5;
-                App.displayPrompt(`${App.petDefinition.name} made $${moneyMade}`, [
+                App.displayConfirm(`${App.petDefinition.name} made $${moneyMade}`, [
                     {
                         name: 'ok',
                         onclick: () => {

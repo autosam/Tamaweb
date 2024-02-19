@@ -153,12 +153,40 @@ body {
     outline: 2px solid #ffb4e6;
     border-radius: 5px;
     margin-bottom: 5px;
+    image-rendering: pixelated;
 }
 .slide-btn {
     height: 100%;
     display: inline-flex;
     align-items: center;
     font-weight: bold;
+
+    height: 100%;
+    display: inline-flex;
+    align-items: center;
+    font-weight: bold;
+    position: relative;
+
+    z-index: 2;
+}
+.slide-btn:before {
+    width: 20px;
+    height: 20px;
+    content: "";
+    position: absolute;
+    background: white;
+    border-radius: 100%;
+    left: 0px;
+    z-index: -1;
+}
+.slide-btn.disabled:before{
+    background: rgb(245, 245, 245);
+}
+.slide-btn.slide-left:before{
+    margin-left: 5px;
+}
+.slide-btn.slide-right:before{
+    margin-left: -5px;
 }
 .slide-left {
     padding-left: 10px;
@@ -171,6 +199,20 @@ body {
     display: flex;
     flex-direction: column;
     width: 80%;
+}
+input {
+    all: unset;
+    background: rgba(255, 255, 255, 0.849);
+    margin: 5px;
+    padding: 5px 10px;
+    border-radius: 10px;
+    border: 1px solid #ffcf9d;
+    text-transform: uppercase;
+}
+input:focus {
+    outline: 3px solid #ffffff7a;
+    border-color: #ff80006b;
+    background: white;
 }
 @keyframes slider-item-anim-in-left {
     from {
@@ -401,8 +443,61 @@ button {
     image-rendering: pixelated;
     z-index: 5;
     scale: 3;
-    top: calc(50% - 85px);
+    top: calc(50% - 82px);
+    left: calc(50% - 58px);
+    pointer-events: none;
 }
+
+.dom-shell {
+    width: 320px;
+    height: 400px;
+    position: absolute;
+    background: linear-gradient(149deg, #ffbd79 20%, white);
+    border-radius: 95%;
+    border-top-right-radius: 100%;
+    border-top-left-radius: 100%;
+    overflow: hidden;
+    box-shadow: inset 20px 20px 32px #ff4d00;
+    background: white;
+}
+
+.dom-shell-pattern {
+    width: 200px;
+    height: 200px;
+    content: "";
+    position: absolute;
+    border-radius: 100%;
+}
+
+.dom-shell-pattern:nth-child(3) {
+    background: rgb(255, 115, 50);
+    transform: translate(-50px, -50px);
+    scale: 1;
+}
+.dom-shell-pattern:nth-child(2) {
+    background: rgb(255, 101, 30);
+    transform: translate(-50px, -50px);
+    scale: 1.5;
+}
+.dom-shell-pattern:nth-child(1) {
+    background: rgb(255, 81, 0);
+    transform: translate(-50px, -50px);
+    scale: 5;
+    box-shadow: 1px 1px 5px inset rgb(255, 255, 255);
+}
+
+/* .dom-shell > * {
+    position: absolute;
+}
+.dom-shell > *:nth-child(1) {
+    transform: translate(-80px, -80px);
+}
+.dom-shell > *:nth-child(2) {
+    transform: translate(-86px, 40px);
+}
+.dom-shell > *:nth-child(3) {
+    transform: translate(90px, 213px);
+} */
 
 .screen-wrapper {
     height: 200px;

@@ -282,6 +282,10 @@ class Pet extends Object2d {
         let bladder_depletion_rate = stats.bladder_depletion_rate * depletion_mult;
         let health_depletion_rate = stats.health_depletion_rate * depletion_mult;
 
+        if(isOfflineProgression){
+            health_depletion_rate = 0;
+        }
+
         // sleeping case
         if(this.stats.is_sleeping || offlineAndIsNight){
             fun_depletion_rate = 0;
