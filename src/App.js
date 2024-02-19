@@ -23,7 +23,9 @@ let App = {
         // handle preloading
         let forPreload = [
             ...SPRITES,
-            ...PET_CHARACTERS,
+            ...PET_ADULT_CHARACTERS,
+            ...PET_TEEN_CHARACTERS,
+            ...PET_BABY_CHARACTERS,
             ...NPC_CHARACTERS,
         ];
         let preloadedResources = await this.preloadImages(forPreload);
@@ -57,8 +59,8 @@ let App = {
         })
         App.petDefinition = new PetDefinition({
             name: getRandomName(),
-            sprite: randomFromArray(PET_CHARACTERS),
-        }).setStats({is_egg: true}).loadStats(loadedData.pet);
+            sprite: randomFromArray(PET_BABY_CHARACTERS),
+        }).setStats({is_egg: false}).loadStats(loadedData.pet);
         App.pet = new Pet(App.petDefinition);
         App.setScene(App.scene.home);
         App.darkOverlay = new Object2d({
@@ -169,7 +171,7 @@ let App = {
         this.applyRoomCustomizations(loadedData.roomCustomizations);
 
         // hide loading
-        document.querySelector('.loading-text').style.display = 'none';
+        document.querySelector('.loading-text').style.display = 'none';  
     },
     applySettings: function(){
         // screen size
@@ -387,10 +389,17 @@ let App = {
 
         App.setScene(App.currentScene);
     },
-    getRandomPetDef: function(){
+    getRandomPetDef: function(age){
+        if(!age) age = 2;
+
+        let sprite;
+        if(age == 0) sprite = randomFromArray(PET_BABY_CHARACTERS);
+        else if(age == 1) sprite = randomFromArray(PET_TEEN_CHARACTERS);
+        else sprite = randomFromArray(PET_ADULT_CHARACTERS);
+
         let pet = new PetDefinition({
+            sprite,
             name: getRandomName(),
-            sprite: randomFromArray(PET_CHARACTERS),
         });
         pet.setStats({
             current_hunger: 100,
@@ -757,6 +766,17 @@ let App = {
                     }
                 },
                 {
+                    _ignore: App.petDefinition.lifeStage >= 2,
+                    name: 'have birthday',
+                    onclick: () => {
+                        let nextBirthday = App.petDefinition.nextBirthdayDate();
+                        if(Date.now() < nextBirthday && false){
+                            App.displayPopup(`${App.petDefinition.name} hasn't grown enough to age up<br><br>come back <b>${(moment(nextBirthday).fromNow())}</b>`, 5000);
+                        }
+                        Activities.birthday();
+                    }
+                },
+                {
                     name: 'park',
                     onclick: () => { // going to park with random pet
                         Activities.goToPark();
@@ -771,6 +791,7 @@ let App = {
                     }
                 },
                 {
+                    _ignore: App.petDefinition.lifeStage < 2,
                     name: 'work',
                     onclick: () => {
                         Activities.officeWork();
@@ -1064,6 +1085,7 @@ let App = {
         }
 
         listItems.forEach(item => {
+            if(item._ignore) return;
             let button = document.createElement('button');
                 button.className = 'list-item ' + (item.class ? item.class : '');
                 // '⤳ ' + 
@@ -1287,7 +1309,7 @@ let App = {
 
         // button click event
         document.addEventListener('click', (e) => {
-            if(e.target.nodeName.toLowerCase() === 'button'){
+            if(e.target.nodeName.toLowerCase() === 'button' || e.target.parentElement?.nodeName.toLowerCase() === 'button'){
                 if(e.target.classList.contains('back-btn') || e.target.textContent.toLowerCase() == 'back')
                     this.playSound(`resources/sounds/ui_click_02.ogg`, true);
                 else
@@ -1308,6 +1330,7 @@ let App = {
         this.audioChannelIsBusy = true;
     },
     save: function(){
+        // return;
         // setCookie('pet', App.pet.serializeStats(), 365);
         localStorage.setItem('pet', App.pet.serializeStats());
         localStorage.setItem('settings', JSON.stringify(App.settings));

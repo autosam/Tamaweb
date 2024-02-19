@@ -8,6 +8,8 @@ class PetDefinition {
     };
 
     // metadata
+    birthday = new Date();
+    lastBirthday = new Date();
     animations = {
         idle: {
             start: 1,
@@ -163,7 +165,7 @@ class PetDefinition {
         // gold
         gold: 15,
 
-        // other status effects
+        // other stats
         is_sleeping: false,
         has_poop_out: false,
         is_egg: false,
@@ -183,9 +185,15 @@ class PetDefinition {
         if(config){
             Object.assign(this, config);
         }
+
+        this.prepareSprite();
+    }
+
+    getSpritesheetDefinition(){
+        this.spritesheet = PetDefinition.spritesheetDefinitions[this.lifeStage + ''];
     }
     
-    serializables = [ 'name', 'stats', 'inventory', 'friends', 'sprite' ];
+    serializables = [ 'name', 'stats', 'inventory', 'friends', 'sprite', 'birthday', 'lastBirthday' ];
     serializeStats(){
         let s = {};
         this.serializables.forEach(serializable => {
@@ -222,6 +230,8 @@ class PetDefinition {
             this.friends = this.friends.map(friend => new PetDefinition(friend));
         }
 
+        this.prepareSprite();
+
         return this;
     }
     setStats(stats){
@@ -250,5 +260,63 @@ class PetDefinition {
         if(!this.stats.player_friendship)
             this.increaseFriendship(random(2, 8));
         return this.stats.player_friendship;
+    }
+
+    getLifeStage(){
+        if(PET_BABY_CHARACTERS.some(char => char === this.sprite)) return 0;
+        else if(PET_TEEN_CHARACTERS.some(char => char === this.sprite)) return 1;
+        return 2;
+    }
+
+    prepareSprite(){
+        this.lifeStage = this.getLifeStage();
+        this.getSpritesheetDefinition();  
+    }
+
+    nextBirthdayDate(){
+        let d = new Date(this.lastBirthday);
+        switch(this.lifeStage){
+            case 0:
+                return d.setDate(d.getDate() + 1);
+            case 1:
+                return d.setDate(d.getDate() + 2);
+        }
+    }
+
+    ageUp(){
+        switch(this.getLifeStage()){
+            case 0:
+                this.sprite = randomFromArray(PET_TEEN_CHARACTERS);
+                break;
+            case 1:
+                this.sprite = randomFromArray(PET_ADULT_CHARACTERS);
+                break;
+            default: return false;
+        }
+
+        this.lastBirthday = new Date();
+        this.prepareSprite();
+        return true;
+    }
+
+    static spritesheetDefinitions = {
+        '0': { // baby
+            cellNumber: 0,
+            cellSize: 16,
+            rows: 4,
+            columns: 4,
+        },
+        '1': {
+            cellNumber: 0,
+            cellSize: 24,
+            rows: 4,
+            columns: 4,            
+        },
+        '2': {
+            cellNumber: 0,
+            cellSize: 32,
+            rows: 4,
+            columns: 4,
+        }
     }
 }

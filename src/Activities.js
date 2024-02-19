@@ -1,4 +1,119 @@
 class Activities {
+    static birthday(){
+        App.setScene(App.scene.home);
+        App.toggleGameplayControls(false);
+        App.pet.stats.has_poop_out = false;
+        App.pet.stats.current_bladder = 100;
+
+        let otherPets = [];
+        for(let i = 0; i < 3; i++){
+            let def = new PetDefinition({
+                sprite: randomFromArray(PET_TEEN_CHARACTERS),
+            });
+            let pet = new Pet(def);
+            otherPets.push(pet);
+        }
+        
+        const table = new Object2d({
+            img: 'resources/img/misc/table_01.png',
+            x: 28,
+            y: 68,
+        });
+        const cake = new Object2d({
+            img: 'resources/img/misc/cake_01.png',
+            x: 39,
+            y: 58,
+        });
+
+        otherPets.forEach((pet, i) => {
+            pet.stopMove();
+            pet.targetX = 20;
+            pet.x = -10 * i;
+            switch(i){
+                case 0:
+                    pet.targetX = 30;
+                    pet.targetY = 65;
+                    break;
+                case 1:
+                    pet.targetX = 15;
+                    pet.targetY = 75;
+                    break;
+                case 2:
+                    pet.targetX = 5;
+                    pet.targetY = 85;
+                    break;
+            }
+            pet.triggerScriptedState('moving', App.INF, 0, true, null, (pet) => {
+                if(!pet.isMoving){
+                    pet.setState('cheering');
+                }
+            })
+        })
+
+        App.pet.x = '80%';
+        App.pet.stopMove();
+        App.pet.triggerScriptedState('idle_side', 3000, 0, true, () => {
+            App.playSound('resources/sounds/birthday_song_01.ogg', true);
+            App.pet.triggerScriptedState('cheering', 15000, 0, true, () => {
+                App.pet.triggerScriptedState('cheering', 10000, 0, true);
+                foam(() => {
+                    otherPets.forEach(pet => pet.removeObject());
+                    table.removeObject();
+                    cake.removeObject();
+
+                    App.pet.ageUp();
+                    App.pet.x = '50%';
+                    App.pet.y = 65;
+                    App.pet.stopMove();
+                    App.pet.triggerScriptedState('cheering', 3000, 0, true, () => {
+                        App.setScene(App.scene.home);
+                        App.toggleGameplayControls(true);
+                    });
+                });
+            })
+        })
+
+        function foam(middleFn, endFn){
+            let foam = new Object2d({
+                img: 'resources/img/misc/foam_01.png',
+                x: 0, y: 0
+            });
+
+            setTimeout(() => {
+                foam.setImg('resources/img/misc/foam_02.png');
+            }, 500);
+
+            setTimeout(() => {
+                foam.setImg('resources/img/misc/foam_03.png');
+            }, 1000);
+
+            setTimeout(() => {
+                foam.setImg('resources/img/misc/foam_04.png');
+            }, 1500);
+
+            setTimeout(() => {
+                if(middleFn) middleFn();
+            }, 2000);
+
+            setTimeout(() => {
+                foam.setImg('resources/img/misc/foam_03.png');
+            }, 3000);
+            setTimeout(() => {
+                foam.setImg('resources/img/misc/foam_02.png');
+            }, 3500);
+            setTimeout(() => {
+                foam.setImg('resources/img/misc/foam_01.png');
+            }, 4000);
+
+            setTimeout(() => {
+                App.drawer.removeObject(foam);
+            }, 4500);
+
+            setTimeout(() => {
+                if(endFn) endFn();
+            }, 5500);
+        }
+    }
     static redecorRoom(){
         App.setScene(App.scene.home);
         App.toggleGameplayControls(false);
@@ -329,7 +444,7 @@ class Activities {
     static goToPark(otherPetDef){
         if(!otherPetDef){
             if(random(1, 100) <= 50){
-                otherPetDef = App.getRandomPetDef();
+                otherPetDef = App.getRandomPetDef(App.petDefinition.lifeStage);
             }
         }
         App.setScene(App.scene.park);
