@@ -60,7 +60,7 @@ let App = {
         App.petDefinition = new PetDefinition({
             name: getRandomName(),
             sprite: randomFromArray(PET_BABY_CHARACTERS),
-        }).setStats({is_egg: false}).loadStats(loadedData.pet);
+        }).setStats({is_egg: true}).loadStats(loadedData.pet);
         App.pet = new Pet(App.petDefinition);
         App.setScene(App.scene.home);
         App.darkOverlay = new Object2d({
@@ -216,6 +216,15 @@ let App = {
         return Promise.all(promises);
     },
     handleInGameEvents: function(){
+        function addEvent(name, payload){
+            if(!App.gameEventsHistory[name]){
+                App.gameEventsHistory[name] = true;
+                payload();
+                return true;
+            }
+            return false;
+        }
+
         if(App.awayTime == -1) return;
 
         App.gameEventsHistory = App.loadedData.eventsHistory || {};
@@ -223,17 +232,53 @@ let App = {
         const date = new Date();
         const dayId = date.getFullYear() + '_' + date.getMonth() + '_' + date.getDate();
 
+        if(addEvent(`update_01_notice`, () => {
+            App.displayConfirm(`<b>new update!</b>babies and teens have been added to the game!`, [
+                {
+                    name: 'ok',
+                    onclick: () => {
+                        App.displayConfirm(`Try to get your pet to marry one of their friends and you'll get to raise their baby!`, [
+                            {
+                                name: 'ok',
+                                onclick: () => {},
+                            }
+                        ]);
+                    },
+                }
+            ]);
+        })) return;
+
+        // if(addEvent(`discord_server_01_notice`, () => {
+            // App.displayConfirm(`<b>Discord!</b>Join our discord server to see the growth chart and decide which features get in the game first!`, [
+            //     {
+            //         name: 'next',
+            //         onclick: () => {
+            //             App.displayConfirm(`Do you want to join and get updated on all the latest changes?`, [
+            //                 {
+            //                     name: '<a href="https://discord.gg/vN7nQUnA" target="_blank">yes (reward +$250)</a>',
+            //                     onclick: () => {
+            //                         App.pet.stats.gold += 250;
+            //                     },
+            //                 }, 
+            //                 {
+            //                     name: 'no',
+            //                     onclick: () => {}
+            //                 }
+            //             ]);
+            //         },
+            //     }
+            // ]);
+        // })) return;
+
         if(App.isSalesDay()){
-            if(!App.gameEventsHistory[`sales_day_${dayId}_notice`]){
-                App.gameEventsHistory[`sales_day_${dayId}_notice`] = true;
+            if(addEvent(`sales_day_${dayId}_notice`, () => {
                 App.displayConfirm(`<b>discount day!</b>Shops are selling their products at a discounted rate! Check them out and pile up on them!`, [
                     {
                         name: 'ok',
                         onclick: () => {},
                     }
                 ]);
-                return;
-            }
+            })) return;
         }
     },
     defintions: {
@@ -553,6 +598,13 @@ let App = {
                 //         location.reload();
                 //     }
                 // },
+                // {
+                //     name: '<a href="https://discord.gg/vN7nQUnA" target="_blank">join discord</a>',
+                //     onclick: () => {
+                //         App.pet.stats.gold += 250;
+                //         return true;
+                //     },
+                // }, 
                 {
                     name: 'reset save data',
                     onclick: () => {
@@ -592,9 +644,13 @@ let App = {
             // </div>
             // `;
 
+            let lifeStageName = 'ADULT';
+            if(App.petDefinition.lifeStage == 0) lifeStageName = 'BABY';
+            else if(App.petDefinition.lifeStage == 1) lifeStageName = 'TEEN';
+
             list.innerHTML = `
             <div class="inner-padding">
-                <b>GOLD:</b> $${App.pet.stats.gold}
+                <b>GOLD:</b> $${App.pet.stats.gold} <small>(${lifeStageName})</small>
                 <br>
                 <b>HUNGER:</b> ${App.createProgressbar( App.pet.stats.current_hunger / App.pet.stats.max_hunger * 100 ).node.outerHTML}
                 <b>SLEEP:</b> ${App.createProgressbar( App.pet.stats.current_sleep / App.pet.stats.max_sleep * 100 ).node.outerHTML}
@@ -788,17 +844,6 @@ let App = {
                     }
                 },
                 {
-                    _ignore: App.petDefinition.lifeStage >= 2,
-                    name: 'have birthday',
-                    onclick: () => {
-                        let nextBirthday = App.petDefinition.nextBirthdayDate();
-                        if(Date.now() < nextBirthday){
-                            return App.displayPopup(`${App.petDefinition.name} hasn't grown enough to age up<br><br>come back <b>${(moment(nextBirthday).fromNow())}</b>`, 5000);
-                        }
-                        Activities.birthday();
-                    }
-                },
-                {
                     name: 'park',
                     onclick: () => { // going to park with random pet
                         Activities.goToPark();
@@ -810,6 +855,17 @@ let App = {
                         // App.displayPopup('To be implemented...', 1000);
                         App.handlers.open_friends_list();
                         return true;
+                    }
+                },
+                {
+                    _ignore: App.petDefinition.lifeStage >= 2,
+                    name: 'have birthday',
+                    onclick: () => {
+                        let nextBirthday = App.petDefinition.nextBirthdayDate();
+                        if(Date.now() < nextBirthday){
+                            return App.displayPopup(`${App.petDefinition.name} hasn't grown enough to age up<br><br>come back <b>${(moment(nextBirthday).fromNow())}</b>`, 5000);
+                        }
+                        Activities.birthday();
                     }
                 },
                 {
@@ -843,7 +899,7 @@ let App = {
 
             const friendsList = App.displayList(App.petDefinition.friends.map((friendDef, index) => {
                 const name = friendDef.name || 'Unknown';
-                const icon = `<c-sprite width="20" height="20" index="0" src="${friendDef.sprite}" pos-x="6" pos-y="4" style="margin-right: 10px;"></c-sprite>`;
+                const icon = friendDef.getCSprite();
                 return {
                     name: icon + name,
                     onclick: () => {
@@ -1387,7 +1443,7 @@ let App = {
         this.audioChannelIsBusy = true;
     },
     save: function(){
-        return;
+        // return;
         // setCookie('pet', App.pet.serializeStats(), 365);
         localStorage.setItem('pet', App.pet.serializeStats());
         localStorage.setItem('settings', JSON.stringify(App.settings));

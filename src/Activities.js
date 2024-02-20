@@ -7,31 +7,57 @@ class Activities {
 
         const otherPet = new Pet(otherPetDef);
 
+        const overlay = new Object2d({
+            img: 'resources/img/background/house/wedding_overlay.png',
+            x: 0,
+            y: 0
+        })
+
         App.pet.stopMove();
         otherPet.stopMove();
 
         otherPet.x = '33%';
         App.pet.x = '67%';
 
-        App.pet.y = 55;
-        otherPet.y = 55;
+        App.pet.y = 0;
+        otherPet.y = 0;
+
+        App.pet.targetY = 56;
+        otherPet.targetY = 56;
 
         otherPet.inverted = true;
         App.pet.inverted = false;
 
-        otherPet.triggerScriptedState('kissing', App.INF, 0, true);
-        App.pet.triggerScriptedState('kissing', App.INF, 0, true);
+        otherPet.triggerScriptedState('blush', App.INF, 0, true);
+        App.pet.triggerScriptedState('blush', App.INF, 0, true);
+
+        setTimeout(() => {
+            App.playSound('resources/sounds/wedding_song_01.ogg', true);
+        })
+
+        setTimeout(() => {
+            otherPet.triggerScriptedState('idle_side', App.INF, 0, true);
+            App.pet.triggerScriptedState('idle_side', App.INF, 0, true);
+        }, 8000);
+
+        setTimeout(() => {
+            otherPet.triggerScriptedState('kissing', App.INF, 0, true);
+            App.pet.triggerScriptedState('kissing', App.INF, 0, true);
+        }, 12380);
 
         setTimeout(() => {
             Activities.task_foam(() => {
                 App.pet.removeObject();
                 otherPet.removeObject();
+                overlay.removeObject();
 
                 let parentA = App.petDefinition,
                     parentB = otherPetDef;
 
                 parentA.stats.player_friendship = 100;
+                parentA.stats.is_player_family = true;
                 parentB.stats.player_friendship = 80;
+                parentB.stats.is_player_family = true;
 
                 App.petDefinition = new PetDefinition({
                     name: getRandomName(),
@@ -44,6 +70,7 @@ class Activities {
                 ];
                 App.petDefinition.inventory = parentA.inventory;
                 App.petDefinition.stats.gold = parentA.stats.gold += 50;
+                App.petDefinition.stats.current_health = 100;
 
                 App.pet.stopMove();
 
@@ -52,8 +79,21 @@ class Activities {
                 App.pet = new Pet(App.petDefinition);
             }, () => {
                 App.toggleGameplayControls(true);
+
+                App.displayPrompt(`Name your new egg:`, [
+                    {
+                        name: 'set',
+                        onclick: (value) => {
+                            if(!value) return false;
+
+                            App.pet.petDefinition.name = value;
+                            App.save();
+                            App.displayPopup(`Name set to "${App.pet.petDefinition.name}"`)
+                        }
+                    },
+                ], App.pet.petDefinition.name);
             })
-        }, 5000)
+        }, 18000);
     }
     static birthday(){
         App.setScene(App.scene.home);
@@ -77,7 +117,6 @@ class Activities {
             let pet = new Pet(def);
             otherPets.push(pet);
         });
-        console.log(otherPets);
         
         const table = new Object2d({
             img: 'resources/img/misc/table_01.png',
@@ -129,9 +168,10 @@ class Activities {
 
                     App.pet.ageUp();
                     App.pet.x = '50%';
-                    App.pet.y = 65;
+                    App.pet.y = 60;
                     App.pet.stopMove();
-                    App.pet.triggerScriptedState('idle', 3000, 0, true, () => {
+
+                    App.pet.triggerScriptedState('blush', 3000, 0, true, () => {
                         App.setScene(App.scene.home);
                         App.toggleGameplayControls(true);
                         App.pet.playCheeringAnimation();
@@ -469,9 +509,8 @@ class Activities {
     }
     static goToPark(otherPetDef){
         if(!otherPetDef){
-            if(random(1, 100) <= 50){
+            if(random(1, 100) <= 60){
                 otherPetDef = App.getRandomPetDef(App.petDefinition.lifeStage);
-                console.log(otherPetDef, App.petDefinition.lifeStage);
             }
         }
         App.setScene(App.scene.park);

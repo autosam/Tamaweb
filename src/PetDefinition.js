@@ -174,6 +174,7 @@ class PetDefinition {
         is_sleeping: false,
         has_poop_out: false,
         is_egg: false,
+        is_player_family: false,
     }
     friends = [];
     inventory = {
@@ -213,6 +214,8 @@ class PetDefinition {
                     has_poop_out: this.stats.has_poop_out,
                     is_sleeping: this.stats.is_sleeping,
                     is_egg: this.stats.is_egg,
+                    is_player_family: this.stats.is_player_family,
+                    player_friendship: this.stats.player_friendship,
                 }
                 return;
             }
@@ -333,22 +336,25 @@ class PetDefinition {
             default: return false;
         } */
 
-        const careRating =  (this.stats.current_hunger +
+        let careRating =  (this.stats.current_hunger +
             this.stats.current_fun +
-            this.stats.current_health + 
-            this.stats.current_sleep) / 4;
+            this.stats.current_sleep) / 3;
+
+        if(isNpc) careRating = random(0, 100);
 
         let possibleEvolutions = GROWTH_CHART[this.sprite];
 
         switch(this.lifeStage){
             case 0:
-                if(careRating > 50) this.sprite = randomFromArray(possibleEvolutions.slice(0, 4));
-                else this.sprite = randomFromArray(possibleEvolutions.slice(4, 8));
+                let targetEvolutions;
+                if(careRating > 50) targetEvolutions = possibleEvolutions.slice(4, 8); // high care
+                else targetEvolutions = possibleEvolutions.slice(0, 4); // low care
+                this.sprite = randomFromArray(targetEvolutions);
                 break;
             case 1:
-                if(careRating > 80) this.sprite = possibleEvolutions[2];
-                else if(careRating > 40) this.sprite = possibleEvolutions[1];
-                else this.sprite = possibleEvolutions[0];
+                if(careRating > 80) this.sprite = possibleEvolutions[2]; // high care
+                else if(careRating > 40) this.sprite = possibleEvolutions[1]; // medium care
+                else this.sprite = possibleEvolutions[0]; // low care
                 break;
             case 2: return;
         }
@@ -361,6 +367,12 @@ class PetDefinition {
         })
 
         return true;
+    }
+
+    getCSprite(){
+        if(this.lifeStage == 0) return `<c-sprite width="16" height="16" index="0" src="${this.sprite}" pos-x="0" pos-y="0" style="margin-right: 10px;"></c-sprite>`;
+        if(this.lifeStage == 1) return `<c-sprite width="16" height="16" index="0" src="${this.sprite}" pos-x="4" pos-y="4" style="margin-right: 10px;"></c-sprite>`;
+        return `<c-sprite width="20" height="20" index="0" src="${this.sprite}" pos-x="6" pos-y="4" style="margin-right: 10px;"></c-sprite>`;
     }
 
     spritesheetDefinitions = {
