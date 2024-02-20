@@ -120,6 +120,11 @@ class PetDefinition {
             start: 16,
             end: 17,
             frameTime: 1000,
+        },
+        kissing: {
+            start: 12,
+            end: 14,
+            frameTime: 250,
         }
     }
     stats = {
@@ -194,7 +199,7 @@ class PetDefinition {
     }
     
     serializables = [ 'name', 'stats', 'inventory', 'friends', 'sprite', 'birthday', 'lastBirthday' ];
-    serializeStats(){
+    serializeStats(noStringify){
         let s = {};
         this.serializables.forEach(serializable => {
             if(serializable === 'stats'){
@@ -211,8 +216,16 @@ class PetDefinition {
                 }
                 return;
             }
+            if(serializable === 'friends'){
+                s['friends'] = this.friends.map(friendDef => {
+                    return friendDef.serializeStats(true);
+                })
+                return;
+            }
             s[serializable] = this[serializable];
         });
+
+        if(noStringify) return s;
         return JSON.stringify(s);
     }
     loadStats(json){
@@ -228,7 +241,7 @@ class PetDefinition {
         // changing psuedo pet defs to real ones
         if(this.friends.length) {
             this.friends = this.friends.map(friend => {
-                let def = new PetDefinition(friend);
+                let def = new PetDefinition().loadStats(friend);
                 def.friends = [];
                 return def;
             });
@@ -287,22 +300,64 @@ class PetDefinition {
         }
     }
 
-    ageUp(){
+    ageUp(isNpc){
+        /* let charName = this.sprite.slice(this.sprite.lastIndexOf('/') + 1);
+        let seed = charName.replace(/\D+/g, '');
+        seed += '854621';
+
+        const careRating =  (this.stats.current_hunger +
+                            this.stats.current_fun +
+                            this.stats.current_health + 
+                            this.stats.current_sleep) / 4;
+
+        // seed += this.stats.current_hunger >= (this.stats.max_hunger / 2) ? 1 : 2;
+        // seed += this.stats.current_health >= (this.stats.max_health / 2) ? 1 : 2;
+        // seed += this.stats.current_fun >= (this.stats.max_fun / 2) ? 1 : 2;
+        // seed += this.stats.current_sleep >= (this.stats.max_sleep / 2) ? 1 : 2;
+        // seed += this.stats.has_poop_out ? 1 : 2;
+        if(careRating > 80) seed += 861;
+        else if(careRating > 40) seed += 53;
+        else seed += 7;
+        
+        if(isNpc) seed = random(1, 99999999999);
+        
+        pRandom.seed = Number(seed) + 987321654;
+
         switch(this.getLifeStage()){
             case 0:
-                this.sprite = randomFromArray(PET_TEEN_CHARACTERS);
+                this.sprite = pRandomFromArray(PET_TEEN_CHARACTERS);
                 break;
             case 1:
-                this.sprite = randomFromArray(PET_ADULT_CHARACTERS);
+                this.sprite = pRandomFromArray(PET_ADULT_CHARACTERS);
                 break;
             default: return false;
+        } */
+
+        const careRating =  (this.stats.current_hunger +
+            this.stats.current_fun +
+            this.stats.current_health + 
+            this.stats.current_sleep) / 4;
+
+        let possibleEvolutions = GROWTH_CHART[this.sprite];
+
+        switch(this.lifeStage){
+            case 0:
+                if(careRating > 50) this.sprite = randomFromArray(possibleEvolutions.slice(0, 4));
+                else this.sprite = randomFromArray(possibleEvolutions.slice(4, 8));
+                break;
+            case 1:
+                if(careRating > 80) this.sprite = possibleEvolutions[2];
+                else if(careRating > 40) this.sprite = possibleEvolutions[1];
+                else this.sprite = possibleEvolutions[0];
+                break;
+            case 2: return;
         }
 
         this.lastBirthday = new Date();
         this.prepareSprite();
 
         this.friends.forEach(friendDef => {
-            if(friendDef.ageUp) friendDef.ageUp();
+            if(friendDef.ageUp) friendDef.ageUp(true);
         })
 
         return true;

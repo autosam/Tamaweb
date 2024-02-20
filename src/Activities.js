@@ -1,4 +1,60 @@
 class Activities {
+    static wedding(otherPetDef){
+        App.closeAllDisplays();
+        App.setScene(App.scene.wedding);
+        App.toggleGameplayControls(false);
+        App.petDefinition.maxStats();
+
+        const otherPet = new Pet(otherPetDef);
+
+        App.pet.stopMove();
+        otherPet.stopMove();
+
+        otherPet.x = '33%';
+        App.pet.x = '67%';
+
+        App.pet.y = 55;
+        otherPet.y = 55;
+
+        otherPet.inverted = true;
+        App.pet.inverted = false;
+
+        otherPet.triggerScriptedState('kissing', App.INF, 0, true);
+        App.pet.triggerScriptedState('kissing', App.INF, 0, true);
+
+        setTimeout(() => {
+            Activities.task_foam(() => {
+                App.pet.removeObject();
+                otherPet.removeObject();
+
+                let parentA = App.petDefinition,
+                    parentB = otherPetDef;
+
+                parentA.stats.player_friendship = 100;
+                parentB.stats.player_friendship = 80;
+
+                App.petDefinition = new PetDefinition({
+                    name: getRandomName(),
+                    sprite: randomFromArray(PET_BABY_CHARACTERS),
+                }).setStats({is_egg: true});
+
+                App.petDefinition.friends = [
+                    parentA,
+                    parentB
+                ];
+                App.petDefinition.inventory = parentA.inventory;
+                App.petDefinition.stats.gold = parentA.stats.gold += 50;
+
+                App.pet.stopMove();
+
+                App.setScene(App.scene.home);
+
+                App.pet = new Pet(App.petDefinition);
+            }, () => {
+                App.toggleGameplayControls(true);
+            })
+        }, 5000)
+    }
     static birthday(){
         App.setScene(App.scene.home);
         App.toggleGameplayControls(false);
@@ -21,6 +77,7 @@ class Activities {
             let pet = new Pet(def);
             otherPets.push(pet);
         });
+        console.log(otherPets);
         
         const table = new Object2d({
             img: 'resources/img/misc/table_01.png',
@@ -63,9 +120,9 @@ class Activities {
         App.pet.inverted = false;
         App.pet.triggerScriptedState('idle_side', 3000, 0, true, () => {
             App.playSound('resources/sounds/birthday_song_01.ogg', true);
-            App.pet.triggerScriptedState('cheering', 15000, 0, true, () => {
+            App.pet.triggerScriptedState('cheering', 13000, 0, true, () => {
                 App.pet.triggerScriptedState('cheering', 10000, 0, true);
-                foam(() => {
+                Activities.task_foam(() => {
                     otherPets.forEach(pet => pet.removeObject());
                     table.removeObject();
                     cake.removeObject();
@@ -74,54 +131,14 @@ class Activities {
                     App.pet.x = '50%';
                     App.pet.y = 65;
                     App.pet.stopMove();
-                    App.pet.triggerScriptedState('cheering', 3000, 0, true, () => {
+                    App.pet.triggerScriptedState('idle', 3000, 0, true, () => {
                         App.setScene(App.scene.home);
                         App.toggleGameplayControls(true);
+                        App.pet.playCheeringAnimation();
                     });
                 });
             });
         });
-
-        function foam(middleFn, endFn){
-            let foam = new Object2d({
-                img: 'resources/img/misc/foam_01.png',
-                x: 0, y: 0
-            });
-
-            setTimeout(() => {
-                foam.setImg('resources/img/misc/foam_02.png');
-            }, 500);
-
-            setTimeout(() => {
-                foam.setImg('resources/img/misc/foam_03.png');
-            }, 1000);
-
-            setTimeout(() => {
-                foam.setImg('resources/img/misc/foam_04.png');
-            }, 1500);
-
-            setTimeout(() => {
-                if(middleFn) middleFn();
-            }, 2000);
-
-            setTimeout(() => {
-                foam.setImg('resources/img/misc/foam_03.png');
-            }, 3000);
-            setTimeout(() => {
-                foam.setImg('resources/img/misc/foam_02.png');
-            }, 3500);
-            setTimeout(() => {
-                foam.setImg('resources/img/misc/foam_01.png');
-            }, 4000);
-
-            setTimeout(() => {
-                App.drawer.removeObject(foam);
-            }, 4500);
-
-            setTimeout(() => {
-                if(endFn) endFn();
-            }, 5500);
-        }
     }
     static redecorRoom(){
         App.setScene(App.scene.home);
@@ -454,6 +471,7 @@ class Activities {
         if(!otherPetDef){
             if(random(1, 100) <= 50){
                 otherPetDef = App.getRandomPetDef(App.petDefinition.lifeStage);
+                console.log(otherPetDef, App.petDefinition.lifeStage);
             }
         }
         App.setScene(App.scene.park);
@@ -542,5 +560,46 @@ class Activities {
             }
 
         });
+    }
+
+    static task_foam(middleFn, endFn){
+        let foam = new Object2d({
+            img: 'resources/img/misc/foam_01.png',
+            x: 0, y: 0
+        });
+
+        setTimeout(() => {
+            foam.setImg('resources/img/misc/foam_02.png');
+        }, 500);
+
+        setTimeout(() => {
+            foam.setImg('resources/img/misc/foam_03.png');
+        }, 1000);
+
+        setTimeout(() => {
+            foam.setImg('resources/img/misc/foam_04.png');
+        }, 1500);
+
+        setTimeout(() => {
+            if(middleFn) middleFn();
+        }, 2000);
+
+        setTimeout(() => {
+            foam.setImg('resources/img/misc/foam_03.png');
+        }, 3000);
+        setTimeout(() => {
+            foam.setImg('resources/img/misc/foam_02.png');
+        }, 3500);
+        setTimeout(() => {
+            foam.setImg('resources/img/misc/foam_01.png');
+        }, 4000);
+
+        setTimeout(() => {
+            App.drawer.removeObject(foam);
+        }, 4500);
+
+        setTimeout(() => {
+            if(endFn) endFn();
+        }, 5500);
     }
 }

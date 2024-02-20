@@ -64,6 +64,9 @@ const move = function(s, e, amount){
 const randomFromArray = function(arr){
     return arr[random(0, arr.length - 1)];
 }
+const pRandomFromArray = function(arr){
+    return arr[pRandom.getIntBetween(0, arr.length - 1)];
+}
 function setCookie(cname, cvalue, exdays) {
     const d = new Date();
     d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));

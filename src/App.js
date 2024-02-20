@@ -85,7 +85,7 @@ let App = {
 
             App.awayTime = message;
 
-            if(awaySeconds > 2){
+            if(awaySeconds > 2 && App.ENV !== 'dev'){
                 App.displayConfirm(`Welcome back!\n<b>${App.petDefinition.name}</b> missed you in those <b>${message}</b> you were away`, [
                     {
                         name: 'ok',
@@ -244,6 +244,7 @@ let App = {
                 fun_replenish: 0,
                 health_replenish: 2,
                 price: 3,
+                age: [1, 2],
             },
             "slice of pizza": {
                 sprite: 10,
@@ -251,6 +252,7 @@ let App = {
                 fun_replenish: 5,
                 health_replenish: -5,
                 price: 5,
+                age: [1, 2],
             },
             "carrot": {
                 sprite: 2,
@@ -258,6 +260,7 @@ let App = {
                 fun_replenish: 1,
                 health_replenish: 5,
                 price: 2,
+                age: [1, 2],
             },
             "hamburger": {
                 sprite: 9,
@@ -265,6 +268,7 @@ let App = {
                 fun_replenish: 10,
                 health_replenish: -20,
                 price: 15,
+                age: [1, 2],
             },
             "broccoli": {
                 sprite: 5,
@@ -272,6 +276,7 @@ let App = {
                 fun_replenish: 0,
                 health_replenish: 10,
                 price: 3,
+                age: [1, 2],
             },
             "medicine": {
                 sprite: 13,
@@ -280,6 +285,14 @@ let App = {
                 health_replenish: 999,
                 price: 20,
                 type: 'med',
+                age: [0, 1, 2],
+            },
+            "milk": {
+                sprite: 15,
+                hunger_replenish: 50,
+                fun_replenish: 10,
+                price: 0,
+                age: [0],
             },
         },
         item: {
@@ -364,7 +377,11 @@ let App = {
         }),
         office: new Scene({
             image: 'resources/img/background/house/office_01.png',
-        })
+        }),
+        wedding: new Scene({
+            petX: '50%', petY: '100%',
+            image: 'resources/img/background/house/wedding_01.png',
+        }),
     },
     setScene(scene){
         if(App.currentScene && App.currentScene.onUnload){
@@ -390,7 +407,7 @@ let App = {
         App.setScene(App.currentScene);
     },
     getRandomPetDef: function(age){
-        if(!age) age = 2;
+        if(age === undefined) age = 2;
 
         let sprite;
         if(age == 0) sprite = randomFromArray(PET_BABY_CHARACTERS);
@@ -602,18 +619,23 @@ let App = {
             let sliderInstance;
             let salesDay = App.isSalesDay();
             for(let food of Object.keys(App.defintions.food)){
+                let current = App.defintions.food[food];
+
+                if(!current.age.includes(App.petDefinition.lifeStage)) continue;
+
+                if(buyMode && current.price == 0) continue;
+
                 // check if current pet has this food on its inventory
-                if(!App.pet.inventory.food[food] && !buyMode){
+                if(current.price && !App.pet.inventory.food[food] && !buyMode){
                     continue;
                 }
-                let current = App.defintions.food[food];
 
                 // 50% off on sales day
                 let price = current.price;
                 if(salesDay) price = Math.round(price / 2);
 
                 list.push({
-                    name: `<c-sprite width="16" height="16" index="${(current.sprite - 1)}" src="resources/img/item/foods.png"></c-sprite> ${food.toUpperCase()} (x${App.pet.inventory.food[food] || 0}) <b>${buyMode ? `$${price}` : ''}</b>`,
+                    name: `<c-sprite width="16" height="16" index="${(current.sprite - 1)}" src="resources/img/item/foods.png"></c-sprite> ${food.toUpperCase()} (x${App.pet.inventory.food[food] || (!current.price ? '∞' : 0)}) <b>${buyMode ? `$${price}` : ''}</b>`,
                     onclick: (btn, list) => {
                         if(buyMode){
                             if(App.pet.stats.gold < price){
@@ -770,8 +792,8 @@ let App = {
                     name: 'have birthday',
                     onclick: () => {
                         let nextBirthday = App.petDefinition.nextBirthdayDate();
-                        if(Date.now() < nextBirthday && false){
-                            App.displayPopup(`${App.petDefinition.name} hasn't grown enough to age up<br><br>come back <b>${(moment(nextBirthday).fromNow())}</b>`, 5000);
+                        if(Date.now() < nextBirthday){
+                            return App.displayPopup(`${App.petDefinition.name} hasn't grown enough to age up<br><br>come back <b>${(moment(nextBirthday).fromNow())}</b>`, 5000);
                         }
                         Activities.birthday();
                     }
@@ -860,6 +882,41 @@ let App = {
                                     list.style['z-index'] = 3;
                         
                                     document.querySelector('.screen-wrapper').appendChild(list);
+                                    return true;
+                                }
+                            },
+                            {
+                                _ignore: App.petDefinition.lifeStage < 2 || friendDef.lifeStage < 2 || friendDef.stats.is_player_family,
+                                name: 'marry',
+                                onclick: () => {
+                                    if(friendDef.getFriendship() < 70){
+                                        return App.displayPopup(`${App.petDefinition.name}'s friendship with ${friendDef.name} is too low <br><br> they don't want to marry each other`, 5000);
+                                    }
+
+                                    App.displayConfirm(`${App.petDefinition.name} and <div>${icon} ${friendDef.name}</div> will get married and you'll recieve their egg`, [
+                                        {
+                                            name: 'ok',
+                                            onclick: () => {
+                                                App.displayConfirm(`Are you sure?`, [
+                                                    {
+                                                        name: 'yes',
+                                                        onclick: () => {
+                                                            Activities.wedding(friendDef);
+                                                        }
+                                                    },
+                                                    {
+                                                        name: 'no',
+                                                        onclick: () => {}
+                                                    },
+                                                ]);
+                                            }
+                                        },
+                                        {
+                                            name: 'cancel',
+                                            onclick: () => {}
+                                        }
+                                    ])
+
                                     return true;
                                 }
                             },
@@ -1330,7 +1387,7 @@ let App = {
         this.audioChannelIsBusy = true;
     },
     save: function(){
-        // return;
+        return;
         // setCookie('pet', App.pet.serializeStats(), 365);
         localStorage.setItem('pet', App.pet.serializeStats());
         localStorage.setItem('settings', JSON.stringify(App.settings));

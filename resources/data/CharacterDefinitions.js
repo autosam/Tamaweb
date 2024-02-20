@@ -1,6 +1,6 @@
 const PET_ADULT_CHARACTERS = [
-    "resources/img/character/sonic.png",
-    "resources/img/character/red_sonic.png",
+    // "resources/img/character/sonic.png",
+    // "resources/img/character/red_sonic.png",
 
     "resources/img/character/chara_133b.png",
     "resources/img/character/chara_134b.png",
