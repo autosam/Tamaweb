@@ -23,7 +23,9 @@ let App = {
         // handle preloading
         let forPreload = [
             ...SPRITES,
-            ...PET_CHARACTERS,
+            ...PET_ADULT_CHARACTERS,
+            ...PET_TEEN_CHARACTERS,
+            ...PET_BABY_CHARACTERS,
             ...NPC_CHARACTERS,
         ];
         let preloadedResources = await this.preloadImages(forPreload);
@@ -57,7 +59,7 @@ let App = {
         })
         App.petDefinition = new PetDefinition({
             name: getRandomName(),
-            sprite: randomFromArray(PET_CHARACTERS),
+            sprite: randomFromArray(PET_BABY_CHARACTERS),
         }).setStats({is_egg: true}).loadStats(loadedData.pet);
         App.pet = new Pet(App.petDefinition);
         App.setScene(App.scene.home);
@@ -83,7 +85,7 @@ let App = {
 
             App.awayTime = message;
 
-            if(awaySeconds > 2){
+            if(awaySeconds > 2 && App.ENV !== 'dev'){
                 App.displayConfirm(`Welcome back!\n<b>${App.petDefinition.name}</b> missed you in those <b>${message}</b> you were away`, [
                     {
                         name: 'ok',
@@ -169,7 +171,7 @@ let App = {
         this.applyRoomCustomizations(loadedData.roomCustomizations);
 
         // hide loading
-        document.querySelector('.loading-text').style.display = 'none';
+        document.querySelector('.loading-text').style.display = 'none';  
     },
     applySettings: function(){
         // screen size
@@ -214,6 +216,15 @@ let App = {
         return Promise.all(promises);
     },
     handleInGameEvents: function(){
+        function addEvent(name, payload){
+            if(!App.gameEventsHistory[name]){
+                App.gameEventsHistory[name] = true;
+                payload();
+                return true;
+            }
+            return false;
+        }
+
         if(App.awayTime == -1) return;
 
         App.gameEventsHistory = App.loadedData.eventsHistory || {};
@@ -221,17 +232,53 @@ let App = {
         const date = new Date();
         const dayId = date.getFullYear() + '_' + date.getMonth() + '_' + date.getDate();
 
+        if(addEvent(`update_01_notice`, () => {
+            App.displayConfirm(`<b>new update!</b>babies and teens have been added to the game!`, [
+                {
+                    name: 'ok',
+                    onclick: () => {
+                        App.displayConfirm(`Try to get your pet to marry one of their friends and you'll get to raise their baby!`, [
+                            {
+                                name: 'ok',
+                                onclick: () => {},
+                            }
+                        ]);
+                    },
+                }
+            ]);
+        })) return;
+
+        // if(addEvent(`discord_server_01_notice`, () => {
+            // App.displayConfirm(`<b>Discord!</b>Join our discord server to see the growth chart and decide which features get in the game first!`, [
+            //     {
+            //         name: 'next',
+            //         onclick: () => {
+            //             App.displayConfirm(`Do you want to join and get updated on all the latest changes?`, [
+            //                 {
+            //                     name: '<a href="https://discord.gg/vN7nQUnA" target="_blank">yes (reward +$250)</a>',
+            //                     onclick: () => {
+            //                         App.pet.stats.gold += 250;
+            //                     },
+            //                 }, 
+            //                 {
+            //                     name: 'no',
+            //                     onclick: () => {}
+            //                 }
+            //             ]);
+            //         },
+            //     }
+            // ]);
+        // })) return;
+
         if(App.isSalesDay()){
-            if(!App.gameEventsHistory[`sales_day_${dayId}_notice`]){
-                App.gameEventsHistory[`sales_day_${dayId}_notice`] = true;
+            if(addEvent(`sales_day_${dayId}_notice`, () => {
                 App.displayConfirm(`<b>discount day!</b>Shops are selling their products at a discounted rate! Check them out and pile up on them!`, [
                     {
                         name: 'ok',
                         onclick: () => {},
                     }
                 ]);
-                return;
-            }
+            })) return;
         }
     },
     defintions: {
@@ -242,6 +289,7 @@ let App = {
                 fun_replenish: 0,
                 health_replenish: 2,
                 price: 3,
+                age: [1, 2],
             },
             "slice of pizza": {
                 sprite: 10,
@@ -249,6 +297,7 @@ let App = {
                 fun_replenish: 5,
                 health_replenish: -5,
                 price: 5,
+                age: [1, 2],
             },
             "carrot": {
                 sprite: 2,
@@ -256,6 +305,7 @@ let App = {
                 fun_replenish: 1,
                 health_replenish: 5,
                 price: 2,
+                age: [1, 2],
             },
             "hamburger": {
                 sprite: 9,
@@ -263,6 +313,7 @@ let App = {
                 fun_replenish: 10,
                 health_replenish: -20,
                 price: 15,
+                age: [1, 2],
             },
             "broccoli": {
                 sprite: 5,
@@ -270,6 +321,7 @@ let App = {
                 fun_replenish: 0,
                 health_replenish: 10,
                 price: 3,
+                age: [1, 2],
             },
             "medicine": {
                 sprite: 13,
@@ -278,6 +330,14 @@ let App = {
                 health_replenish: 999,
                 price: 20,
                 type: 'med',
+                age: [0, 1, 2],
+            },
+            "milk": {
+                sprite: 15,
+                hunger_replenish: 50,
+                fun_replenish: 10,
+                price: 0,
+                age: [0],
             },
         },
         item: {
@@ -362,7 +422,11 @@ let App = {
         }),
         office: new Scene({
             image: 'resources/img/background/house/office_01.png',
-        })
+        }),
+        wedding: new Scene({
+            petX: '50%', petY: '100%',
+            image: 'resources/img/background/house/wedding_01.png',
+        }),
     },
     setScene(scene){
         if(App.currentScene && App.currentScene.onUnload){
@@ -387,10 +451,17 @@ let App = {
 
         App.setScene(App.currentScene);
     },
-    getRandomPetDef: function(){
+    getRandomPetDef: function(age){
+        if(age === undefined) age = 2;
+
+        let sprite;
+        if(age == 0) sprite = randomFromArray(PET_BABY_CHARACTERS);
+        else if(age == 1) sprite = randomFromArray(PET_TEEN_CHARACTERS);
+        else sprite = randomFromArray(PET_ADULT_CHARACTERS);
+
         let pet = new PetDefinition({
+            sprite,
             name: getRandomName(),
-            sprite: randomFromArray(PET_CHARACTERS),
         });
         pet.setStats({
             current_hunger: 100,
@@ -527,6 +598,13 @@ let App = {
                 //         location.reload();
                 //     }
                 // },
+                // {
+                //     name: '<a href="https://discord.gg/vN7nQUnA" target="_blank">join discord</a>',
+                //     onclick: () => {
+                //         App.pet.stats.gold += 250;
+                //         return true;
+                //     },
+                // }, 
                 {
                     name: 'reset save data',
                     onclick: () => {
@@ -566,9 +644,13 @@ let App = {
             // </div>
             // `;
 
+            let lifeStageName = 'ADULT';
+            if(App.petDefinition.lifeStage == 0) lifeStageName = 'BABY';
+            else if(App.petDefinition.lifeStage == 1) lifeStageName = 'TEEN';
+
             list.innerHTML = `
             <div class="inner-padding">
-                <b>GOLD:</b> $${App.pet.stats.gold}
+                <b>GOLD:</b> $${App.pet.stats.gold} <small>(${lifeStageName})</small>
                 <br>
                 <b>HUNGER:</b> ${App.createProgressbar( App.pet.stats.current_hunger / App.pet.stats.max_hunger * 100 ).node.outerHTML}
                 <b>SLEEP:</b> ${App.createProgressbar( App.pet.stats.current_sleep / App.pet.stats.max_sleep * 100 ).node.outerHTML}
@@ -593,18 +675,23 @@ let App = {
             let sliderInstance;
             let salesDay = App.isSalesDay();
             for(let food of Object.keys(App.defintions.food)){
+                let current = App.defintions.food[food];
+
+                if(!current.age.includes(App.petDefinition.lifeStage)) continue;
+
+                if(buyMode && current.price == 0) continue;
+
                 // check if current pet has this food on its inventory
-                if(!App.pet.inventory.food[food] && !buyMode){
+                if(current.price && !App.pet.inventory.food[food] && !buyMode){
                     continue;
                 }
-                let current = App.defintions.food[food];
 
                 // 50% off on sales day
                 let price = current.price;
                 if(salesDay) price = Math.round(price / 2);
 
                 list.push({
-                    name: `<c-sprite width="16" height="16" index="${(current.sprite - 1)}" src="resources/img/item/foods.png"></c-sprite> ${food.toUpperCase()} (x${App.pet.inventory.food[food] || 0}) <b>${buyMode ? `$${price}` : ''}</b>`,
+                    name: `<c-sprite width="16" height="16" index="${(current.sprite - 1)}" src="resources/img/item/foods.png"></c-sprite> ${food.toUpperCase()} (x${App.pet.inventory.food[food] || (!current.price ? '∞' : 0)}) <b>${buyMode ? `$${price}` : ''}</b>`,
                     onclick: (btn, list) => {
                         if(buyMode){
                             if(App.pet.stats.gold < price){
@@ -771,6 +858,18 @@ let App = {
                     }
                 },
                 {
+                    _ignore: App.petDefinition.lifeStage >= 2,
+                    name: 'have birthday',
+                    onclick: () => {
+                        let nextBirthday = App.petDefinition.nextBirthdayDate();
+                        if(Date.now() < nextBirthday){
+                            return App.displayPopup(`${App.petDefinition.name} hasn't grown enough to age up<br><br>come back <b>${(moment(nextBirthday).fromNow())}</b>`, 5000);
+                        }
+                        Activities.birthday();
+                    }
+                },
+                {
+                    _ignore: App.petDefinition.lifeStage < 2,
                     name: 'work',
                     onclick: () => {
                         Activities.officeWork();
@@ -800,7 +899,7 @@ let App = {
 
             const friendsList = App.displayList(App.petDefinition.friends.map((friendDef, index) => {
                 const name = friendDef.name || 'Unknown';
-                const icon = `<c-sprite width="20" height="20" index="0" src="${friendDef.sprite}" pos-x="6" pos-y="4" style="margin-right: 10px;"></c-sprite>`;
+                const icon = friendDef.getCSprite();
                 return {
                     name: icon + name,
                     onclick: () => {
@@ -839,6 +938,41 @@ let App = {
                                     list.style['z-index'] = 3;
                         
                                     document.querySelector('.screen-wrapper').appendChild(list);
+                                    return true;
+                                }
+                            },
+                            {
+                                _ignore: App.petDefinition.lifeStage < 2 || friendDef.lifeStage < 2 || friendDef.stats.is_player_family,
+                                name: 'marry',
+                                onclick: () => {
+                                    if(friendDef.getFriendship() < 70){
+                                        return App.displayPopup(`${App.petDefinition.name}'s friendship with ${friendDef.name} is too low <br><br> they don't want to marry each other`, 5000);
+                                    }
+
+                                    App.displayConfirm(`${App.petDefinition.name} and <div>${icon} ${friendDef.name}</div> will get married and you'll recieve their egg`, [
+                                        {
+                                            name: 'ok',
+                                            onclick: () => {
+                                                App.displayConfirm(`Are you sure?`, [
+                                                    {
+                                                        name: 'yes',
+                                                        onclick: () => {
+                                                            Activities.wedding(friendDef);
+                                                        }
+                                                    },
+                                                    {
+                                                        name: 'no',
+                                                        onclick: () => {}
+                                                    },
+                                                ]);
+                                            }
+                                        },
+                                        {
+                                            name: 'cancel',
+                                            onclick: () => {}
+                                        }
+                                    ])
+
                                     return true;
                                 }
                             },
@@ -1064,6 +1198,7 @@ let App = {
         }
 
         listItems.forEach(item => {
+            if(item._ignore) return;
             let button = document.createElement('button');
                 button.className = 'list-item ' + (item.class ? item.class : '');
                 // '⤳ ' + 
@@ -1287,7 +1422,7 @@ let App = {
 
         // button click event
         document.addEventListener('click', (e) => {
-            if(e.target.nodeName.toLowerCase() === 'button'){
+            if(e.target.nodeName.toLowerCase() === 'button' || e.target.parentElement?.nodeName.toLowerCase() === 'button'){
                 if(e.target.classList.contains('back-btn') || e.target.textContent.toLowerCase() == 'back')
                     this.playSound(`resources/sounds/ui_click_02.ogg`, true);
                 else
@@ -1308,6 +1443,7 @@ let App = {
         this.audioChannelIsBusy = true;
     },
     save: function(){
+        // return;
         // setCookie('pet', App.pet.serializeStats(), 365);
         localStorage.setItem('pet', App.pet.serializeStats());
         localStorage.setItem('settings', JSON.stringify(App.settings));

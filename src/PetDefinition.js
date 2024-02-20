@@ -8,6 +8,8 @@ class PetDefinition {
     };
 
     // metadata
+    birthday = new Date();
+    lastBirthday = new Date();
     animations = {
         idle: {
             start: 1,
@@ -118,6 +120,11 @@ class PetDefinition {
             start: 16,
             end: 17,
             frameTime: 1000,
+        },
+        kissing: {
+            start: 12,
+            end: 14,
+            frameTime: 250,
         }
     }
     stats = {
@@ -163,10 +170,11 @@ class PetDefinition {
         // gold
         gold: 15,
 
-        // other status effects
+        // other stats
         is_sleeping: false,
         has_poop_out: false,
         is_egg: false,
+        is_player_family: false,
     }
     friends = [];
     inventory = {
@@ -183,10 +191,16 @@ class PetDefinition {
         if(config){
             Object.assign(this, config);
         }
+
+        this.prepareSprite();
+    }
+
+    getSpritesheetDefinition(){
+        this.spritesheet = this.spritesheetDefinitions[this.lifeStage + ''];
     }
     
-    serializables = [ 'name', 'stats', 'inventory', 'friends', 'sprite' ];
-    serializeStats(){
+    serializables = [ 'name', 'stats', 'inventory', 'friends', 'sprite', 'birthday', 'lastBirthday' ];
+    serializeStats(noStringify){
         let s = {};
         this.serializables.forEach(serializable => {
             if(serializable === 'stats'){
@@ -200,11 +214,21 @@ class PetDefinition {
                     has_poop_out: this.stats.has_poop_out,
                     is_sleeping: this.stats.is_sleeping,
                     is_egg: this.stats.is_egg,
+                    is_player_family: this.stats.is_player_family,
+                    player_friendship: this.stats.player_friendship,
                 }
+                return;
+            }
+            if(serializable === 'friends'){
+                s['friends'] = this.friends.map(friendDef => {
+                    return friendDef.serializeStats(true);
+                })
                 return;
             }
             s[serializable] = this[serializable];
         });
+
+        if(noStringify) return s;
         return JSON.stringify(s);
     }
     loadStats(json){
@@ -219,8 +243,14 @@ class PetDefinition {
 
         // changing psuedo pet defs to real ones
         if(this.friends.length) {
-            this.friends = this.friends.map(friend => new PetDefinition(friend));
+            this.friends = this.friends.map(friend => {
+                let def = new PetDefinition().loadStats(friend);
+                def.friends = [];
+                return def;
+            });
         }
+
+        this.prepareSprite();
 
         return this;
     }
@@ -250,5 +280,119 @@ class PetDefinition {
         if(!this.stats.player_friendship)
             this.increaseFriendship(random(2, 8));
         return this.stats.player_friendship;
+    }
+
+    getLifeStage(){
+        if(PET_BABY_CHARACTERS.some(char => char === this.sprite)) return 0;
+        else if(PET_TEEN_CHARACTERS.some(char => char === this.sprite)) return 1;
+        return 2;
+    }
+
+    prepareSprite(){
+        this.lifeStage = this.getLifeStage();
+        this.getSpritesheetDefinition();  
+    }
+
+    nextBirthdayDate(){
+        let d = new Date(this.lastBirthday);
+        switch(this.lifeStage){
+            case 0:
+                return d.setDate(d.getDate() + 1);
+            case 1:
+                return d.setDate(d.getDate() + 2);
+        }
+    }
+
+    ageUp(isNpc){
+        /* let charName = this.sprite.slice(this.sprite.lastIndexOf('/') + 1);
+        let seed = charName.replace(/\D+/g, '');
+        seed += '854621';
+
+        const careRating =  (this.stats.current_hunger +
+                            this.stats.current_fun +
+                            this.stats.current_health + 
+                            this.stats.current_sleep) / 4;
+
+        // seed += this.stats.current_hunger >= (this.stats.max_hunger / 2) ? 1 : 2;
+        // seed += this.stats.current_health >= (this.stats.max_health / 2) ? 1 : 2;
+        // seed += this.stats.current_fun >= (this.stats.max_fun / 2) ? 1 : 2;
+        // seed += this.stats.current_sleep >= (this.stats.max_sleep / 2) ? 1 : 2;
+        // seed += this.stats.has_poop_out ? 1 : 2;
+        if(careRating > 80) seed += 861;
+        else if(careRating > 40) seed += 53;
+        else seed += 7;
+        
+        if(isNpc) seed = random(1, 99999999999);
+        
+        pRandom.seed = Number(seed) + 987321654;
+
+        switch(this.getLifeStage()){
+            case 0:
+                this.sprite = pRandomFromArray(PET_TEEN_CHARACTERS);
+                break;
+            case 1:
+                this.sprite = pRandomFromArray(PET_ADULT_CHARACTERS);
+                break;
+            default: return false;
+        } */
+
+        let careRating =  (this.stats.current_hunger +
+            this.stats.current_fun +
+            this.stats.current_sleep) / 3;
+
+        if(isNpc) careRating = random(0, 100);
+
+        let possibleEvolutions = GROWTH_CHART[this.sprite];
+
+        switch(this.lifeStage){
+            case 0:
+                let targetEvolutions;
+                if(careRating > 50) targetEvolutions = possibleEvolutions.slice(4, 8); // high care
+                else targetEvolutions = possibleEvolutions.slice(0, 4); // low care
+                this.sprite = randomFromArray(targetEvolutions);
+                break;
+            case 1:
+                if(careRating > 80) this.sprite = possibleEvolutions[2]; // high care
+                else if(careRating > 40) this.sprite = possibleEvolutions[1]; // medium care
+                else this.sprite = possibleEvolutions[0]; // low care
+                break;
+            case 2: return;
+        }
+
+        this.lastBirthday = new Date();
+        this.prepareSprite();
+
+        this.friends.forEach(friendDef => {
+            if(friendDef.ageUp) friendDef.ageUp(true);
+        })
+
+        return true;
+    }
+
+    getCSprite(){
+        if(this.lifeStage == 0) return `<c-sprite width="16" height="16" index="0" src="${this.sprite}" pos-x="0" pos-y="0" style="margin-right: 10px;"></c-sprite>`;
+        if(this.lifeStage == 1) return `<c-sprite width="16" height="16" index="0" src="${this.sprite}" pos-x="4" pos-y="4" style="margin-right: 10px;"></c-sprite>`;
+        return `<c-sprite width="20" height="20" index="0" src="${this.sprite}" pos-x="6" pos-y="4" style="margin-right: 10px;"></c-sprite>`;
+    }
+
+    spritesheetDefinitions = {
+        '0': { // baby
+            cellNumber: 0,
+            cellSize: 16,
+            rows: 4,
+            columns: 4,
+        },
+        '1': { // teen
+            cellNumber: 0,
+            cellSize: 24,
+            rows: 4,
+            columns: 4,            
+        },
+        '2': { // adult
+            cellNumber: 0,
+            cellSize: 32,
+            rows: 4,
+            columns: 4,
+        }
     }
 }

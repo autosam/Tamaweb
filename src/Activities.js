@@ -1,4 +1,185 @@
 class Activities {
+    static wedding(otherPetDef){
+        App.closeAllDisplays();
+        App.setScene(App.scene.wedding);
+        App.toggleGameplayControls(false);
+        App.petDefinition.maxStats();
+
+        const otherPet = new Pet(otherPetDef);
+
+        const overlay = new Object2d({
+            img: 'resources/img/background/house/wedding_overlay.png',
+            x: 0,
+            y: 0
+        })
+
+        App.pet.stopMove();
+        otherPet.stopMove();
+
+        otherPet.x = '33%';
+        App.pet.x = '67%';
+
+        App.pet.y = 0;
+        otherPet.y = 0;
+
+        App.pet.targetY = 56;
+        otherPet.targetY = 56;
+
+        otherPet.inverted = true;
+        App.pet.inverted = false;
+
+        otherPet.triggerScriptedState('blush', App.INF, 0, true);
+        App.pet.triggerScriptedState('blush', App.INF, 0, true);
+
+        setTimeout(() => {
+            App.playSound('resources/sounds/wedding_song_01.ogg', true);
+        })
+
+        setTimeout(() => {
+            otherPet.triggerScriptedState('idle_side', App.INF, 0, true);
+            App.pet.triggerScriptedState('idle_side', App.INF, 0, true);
+        }, 8000);
+
+        setTimeout(() => {
+            otherPet.triggerScriptedState('kissing', App.INF, 0, true);
+            App.pet.triggerScriptedState('kissing', App.INF, 0, true);
+        }, 12380);
+
+        setTimeout(() => {
+            Activities.task_foam(() => {
+                App.pet.removeObject();
+                otherPet.removeObject();
+                overlay.removeObject();
+
+                let parentA = App.petDefinition,
+                    parentB = otherPetDef;
+
+                parentA.stats.player_friendship = 100;
+                parentA.stats.is_player_family = true;
+                parentB.stats.player_friendship = 80;
+                parentB.stats.is_player_family = true;
+
+                App.petDefinition = new PetDefinition({
+                    name: getRandomName(),
+                    sprite: randomFromArray(PET_BABY_CHARACTERS),
+                }).setStats({is_egg: true});
+
+                App.petDefinition.friends = [
+                    parentA,
+                    parentB
+                ];
+                App.petDefinition.inventory = parentA.inventory;
+                App.petDefinition.stats.gold = parentA.stats.gold += 50;
+                App.petDefinition.stats.current_health = 100;
+
+                App.pet.stopMove();
+
+                App.setScene(App.scene.home);
+
+                App.pet = new Pet(App.petDefinition);
+            }, () => {
+                App.toggleGameplayControls(true);
+
+                App.displayPrompt(`Name your new egg:`, [
+                    {
+                        name: 'set',
+                        onclick: (value) => {
+                            if(!value) return false;
+
+                            App.pet.petDefinition.name = value;
+                            App.save();
+                            App.displayPopup(`Name set to "${App.pet.petDefinition.name}"`)
+                        }
+                    },
+                ], App.pet.petDefinition.name);
+            })
+        }, 18000);
+    }
+    static birthday(){
+        App.setScene(App.scene.home);
+        App.toggleGameplayControls(false);
+        App.pet.stats.has_poop_out = false;
+        App.pet.stats.current_bladder = 100;
+
+        let otherPetDefs =  [...App.petDefinition.friends]
+                            .map(value => ({ value, sort: Math.random() }))
+                            .sort((a, b) => a.sort - b.sort)
+                            .map(({ value }) => value); // shuffling friends array
+        for(let i = 0; i < 3; i++){
+            let def = new PetDefinition({
+                sprite: randomFromArray(PET_TEEN_CHARACTERS),
+            });
+            otherPetDefs.push(def);
+        }
+
+        let otherPets = [];
+        otherPetDefs.slice(0, 3).forEach(def => {
+            let pet = new Pet(def);
+            otherPets.push(pet);
+        });
+        
+        const table = new Object2d({
+            img: 'resources/img/misc/table_01.png',
+            x: 28,
+            y: 68,
+        });
+        const cake = new Object2d({
+            img: 'resources/img/misc/cake_01.png',
+            x: 39,
+            y: 58,
+        });
+
+        otherPets.forEach((pet, i) => {
+            pet.stopMove();
+            pet.targetX = 20;
+            pet.x = -10 * i;
+            switch(i){
+                case 0:
+                    pet.targetX = 30;
+                    pet.targetY = 65;
+                    break;
+                case 1:
+                    pet.targetX = 15;
+                    pet.targetY = 75;
+                    break;
+                case 2:
+                    pet.targetX = 5;
+                    pet.targetY = 85;
+                    break;
+            }
+            pet.triggerScriptedState('moving', App.INF, 0, true, null, (pet) => {
+                if(!pet.isMoving){
+                    pet.setState('cheering');
+                }
+            })
+        })
+
+        App.pet.x = '80%';
+        App.pet.stopMove();
+        App.pet.inverted = false;
+        App.pet.triggerScriptedState('idle_side', 3000, 0, true, () => {
+            App.playSound('resources/sounds/birthday_song_01.ogg', true);
+            App.pet.triggerScriptedState('cheering', 13000, 0, true, () => {
+                App.pet.triggerScriptedState('cheering', 10000, 0, true);
+                Activities.task_foam(() => {
+                    otherPets.forEach(pet => pet.removeObject());
+                    table.removeObject();
+                    cake.removeObject();
+
+                    App.pet.ageUp();
+                    App.pet.x = '50%';
+                    App.pet.y = 60;
+                    App.pet.stopMove();
+
+                    App.pet.triggerScriptedState('blush', 3000, 0, true, () => {
+                        App.setScene(App.scene.home);
+                        App.toggleGameplayControls(true);
+                        App.pet.playCheeringAnimation();
+                    });
+                });
+            });
+        });
+    }
     static redecorRoom(){
         App.setScene(App.scene.home);
         App.toggleGameplayControls(false);
@@ -328,8 +509,8 @@ class Activities {
     }
     static goToPark(otherPetDef){
         if(!otherPetDef){
-            if(random(1, 100) <= 50){
-                otherPetDef = App.getRandomPetDef();
+            if(random(1, 100) <= 60){
+                otherPetDef = App.getRandomPetDef(App.petDefinition.lifeStage);
             }
         }
         App.setScene(App.scene.park);
@@ -418,5 +599,46 @@ class Activities {
             }
 
         });
+    }
+
+    static task_foam(middleFn, endFn){
+        let foam = new Object2d({
+            img: 'resources/img/misc/foam_01.png',
+            x: 0, y: 0
+        });
+
+        setTimeout(() => {
+            foam.setImg('resources/img/misc/foam_02.png');
+        }, 500);
+
+        setTimeout(() => {
+            foam.setImg('resources/img/misc/foam_03.png');
+        }, 1000);
+
+        setTimeout(() => {
+            foam.setImg('resources/img/misc/foam_04.png');
+        }, 1500);
+
+        setTimeout(() => {
+            if(middleFn) middleFn();
+        }, 2000);
+
+        setTimeout(() => {
+            foam.setImg('resources/img/misc/foam_03.png');
+        }, 3000);
+        setTimeout(() => {
+            foam.setImg('resources/img/misc/foam_02.png');
+        }, 3500);
+        setTimeout(() => {
+            foam.setImg('resources/img/misc/foam_01.png');
+        }, 4000);
+
+        setTimeout(() => {
+            App.drawer.removeObject(foam);
+        }, 4500);
+
+        setTimeout(() => {
+            if(endFn) endFn();
+        }, 5500);
     }
 }

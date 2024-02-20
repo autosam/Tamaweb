@@ -11,7 +11,10 @@
 <body>
     <div style="position: absolute;" class="hidden" id="debug">DEBUG</div>
     <div class="root">
-        <div class="loading-text">LOADING...</div>
+        <div class="loading-text">
+            <!-- <img src="resources/img/ui/logo_full.png"></img> -->
+            LOADING...
+        </div>
         <canvas class="background-canvas" width="96" height="96"></canvas>
         <!-- <img src="resources/img/ui/Front.png" class="screen-shell"></img> -->
         <!-- <div class="dom-shell">
@@ -91,9 +94,12 @@
     <!-- data & resources -->
     <script src="resources/data/SpriteDefinitions.js"></script>
     <script src="resources/data/CharacterDefinitions.js"></script>
+    <script src="resources/data/GrowthChart.js"></script>
 
     <!-- scripts -->
     <script src="src/libs/jquery-3.7.1.min.js"></script>
+    <script src="src/libs/moment.js"></script>
+    
     <script src="src/Utils.js"></script>
     <script src="src/Drawer.js"></script>
     <script src="src/Object2d.js"></script>

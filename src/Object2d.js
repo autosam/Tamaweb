@@ -38,6 +38,9 @@ class Object2d {
     setImage(image){ // this one gets img object (presume preloadedResource)
         this.image = image;
     }
+    removeObject(){
+        this.drawer.removeObject(this);
+    }
     static setDrawer(drawer) {
         Object2d.defaultDrawer = drawer;
     }

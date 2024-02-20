@@ -276,6 +276,11 @@ class Pet extends Object2d {
             }
         }
 
+        switch(this.petDefinition.lifeStage){
+            case 0: depletion_mult *= 1.8;
+            case 1: depletion_mult *= 1.3;
+        }
+
         let hunger_depletion_rate = stats.hunger_depletion_rate * depletion_mult;
         let sleep_depletion_rate = stats.sleep_depletion_rate * depletion_mult;
         let fun_depletion_rate = stats.fun_depletion_rate * depletion_mult;
@@ -552,6 +557,10 @@ class Pet extends Object2d {
         } else {
             this.isMoving = false;
         }
+
+        if (this.targetY !== undefined && this.targetY != this.y) {
+            this.y = lerp(this.y, this.targetY, this.stats.speed * App.deltaTime * 0.1);
+        }
     }
     moveRight(maxX) {
         if (this.x + this.stats.speed * App.deltaTime > maxX) {
@@ -603,6 +612,12 @@ class Pet extends Object2d {
             }
             this.statsManager(true, hour);
         }
+    }
+    ageUp(){
+        this.petDefinition.ageUp()
+        this.removeObject();
+        App.pet = new Pet(this.petDefinition);
+        App.save();
     }
     serializeStats(){
         return this.petDefinition.serializeStats();
