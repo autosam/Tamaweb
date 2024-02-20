@@ -7,6 +7,13 @@ class Activities {
 
         const otherPet = new Pet(otherPetDef);
 
+        try {
+            App.sendAnalytics('wedding', JSON.stringify({
+                a: App.petDefinition.sprite,
+                b: otherPetDef.sprite
+            }));
+        } catch(e) {}
+
         const overlay = new Object2d({
             img: 'resources/img/background/house/wedding_overlay.png',
             x: 0,
