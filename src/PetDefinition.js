@@ -299,12 +299,24 @@ class PetDefinition {
     }
 
     nextBirthdayDate(){
-        let d = new Date(this.lastBirthday);
+        let m = moment(this.lastBirthday).utc();
         switch(this.lifeStage){
             case 0:
-                return d.setDate(d.getDate() + 1);
+                return m.add(1, 'days');
             case 1:
-                return d.setDate(d.getDate() + 2);
+                return m.add(38, 'hours');
+        }
+    }
+    _nextBirthdayDate(){
+        let d = new Date(this.lastBirthday);
+
+        switch(this.lifeStage){
+            case 0:
+                return  d.setHours(d.getHours());
+                break;
+            case 1:
+                return  d.setHours(d.getHours());
+                break;
         }
     }
 

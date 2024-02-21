@@ -884,9 +884,8 @@ let App = {
                     name: 'have birthday',
                     onclick: () => {
                         let nextBirthday = App.petDefinition.nextBirthdayDate();
-                        if(Date.now() < nextBirthday){
-                            console.log(nextBirthday);
-                            return App.displayPopup(`${App.petDefinition.name} hasn't grown enough to age up<br><br>come back <b>${(moment(nextBirthday).fromNow())}</b>`, 5000);
+                        if(moment().utc().isBefore( nextBirthday )){
+                            return App.displayPopup(`${App.petDefinition.name} hasn't grown enough to age up<br><br>come back <b>${(moment(nextBirthday).utc().calendar())}</b>`, 5000);
                         }
                         Activities.birthday();
                     }
