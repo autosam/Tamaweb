@@ -886,7 +886,7 @@ let App = {
                         let nextBirthday = App.petDefinition.nextBirthdayDate();
                         if(Date.now() < nextBirthday){
                             console.log(nextBirthday);
-                            return App.displayPopup(`${App.petDefinition.name} hasn't grown enough to age up<br><br>come back <b>${(moment(nextBirthday).calendar())}</b>`, 5000);
+                            return App.displayPopup(`${App.petDefinition.name} hasn't grown enough to age up<br><br>come back <b>${(moment(nextBirthday).fromNow())}</b>`, 5000);
                         }
                         Activities.birthday();
                     }
