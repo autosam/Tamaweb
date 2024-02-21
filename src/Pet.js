@@ -272,12 +272,12 @@ class Pet extends Object2d {
 
             if(hour && (hour >= 22 || hour < 9)){
                 offlineAndIsNight = true;
-                depletion_mult = 0.1;
+                depletion_mult = 0.05;
             }
         }
 
         switch(this.petDefinition.lifeStage){
-            case 0: depletion_mult *= 1.8;
+            case 0: depletion_mult *= 1.65;
             case 1: depletion_mult *= 1.3;
         }
 
@@ -293,8 +293,8 @@ class Pet extends Object2d {
 
         // sleeping case
         if(this.stats.is_sleeping || offlineAndIsNight){
-            fun_depletion_rate = 0;
-            hunger_depletion_rate = 0;
+            // fun_depletion_rate = 0;
+            // hunger_depletion_rate = 0;
             health_depletion_rate = 0;
 
             let sleepAdditionalDepletionMult = 1;

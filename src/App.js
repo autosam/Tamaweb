@@ -216,17 +216,42 @@ let App = {
     
         return Promise.all(promises);
     },
-    handleInGameEvents: function(){
-        function addEvent(name, payload){
-            if(!App.gameEventsHistory[name]){
-                App.gameEventsHistory[name] = true;
-                payload();
-                return true;
-            }
+    addEvent: function(name, payload){
+        if(!App.gameEventsHistory[name]){
+            App.gameEventsHistory[name] = true;
+            payload();
+            return true;
+        }
+        return false;
+    },
+    handleInputCode: function(code){
+        const addEvent = App.addEvent;
+
+        function showAlreadyUsed(){
+            App.displayPopup(`You can only use this code once`);
             return false;
         }
+        
+        code = code.toString().toUpperCase();
 
+        let codeEventId = `input_code_event_${code}`;
+
+        switch(code){
+            case "XUZFWQ":
+                if(!addEvent(codeEventId, () => {
+                    App.pet.stats.gold += 250;
+                })) return showAlreadyUsed();
+                App.displayPopup(`Congratulations! ${App.petDefinition.name} got $250!`, 5000);
+                break;
+            default:
+                App.displayPopup(`Invalid code`);
+                break;
+        }
+    },
+    handleInGameEvents: function(){
         if(App.awayTime == -1) return;
+
+        const addEvent = App.addEvent;
 
         App.gameEventsHistory = App.loadedData.eventsHistory || {};
 
@@ -250,7 +275,7 @@ let App = {
         })) return;
 
         // if(addEvent(`discord_server_01_notice`, () => {
-        //     App.displayConfirm(`<b>Discord!</b>Join our discord server to see the growth chart and decide which features get in the game first!`, [
+        //     App.displayConfirm(`<b>We have a Discord server now!</b>Join to see the growth chart and decide which features get in the game first!`, [
         //         {
         //             name: 'next',
         //             onclick: () => {
@@ -586,6 +611,22 @@ let App = {
                                     return true;
                                 }
                             },
+                        ]);
+                        return true;
+                    }
+                },
+                {
+                    name: 'input code',
+                    onclick: () => {
+                        App.displayPrompt(`Input code:`, [
+                            {
+                                name: 'set',
+                                onclick: (value) => {
+                                    App.handleInputCode(value);
+                                    return false;
+                                }
+                            },
+                            {name: 'cancel', onclick: () => {}},
                         ]);
                         return true;
                     }
