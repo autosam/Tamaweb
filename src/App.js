@@ -274,6 +274,7 @@ let App = {
                                                             for(let key of Object.keys(json)){
                                                                 localStorage.setItem(key, json[key]);
                                                             }
+                                                            localStorage.setItem('user_id', App.userId);
                                                             App.displayPopup(`${def.name} is now your pet!`, App.INF);
                                                             setTimeout(() => {
                                                                 location.reload();  
