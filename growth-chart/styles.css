@@ -1,0 +1,45 @@
+/* body {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    column-gap: 100px;
+    justify-content: space-between;
+} */
+
+body {
+    background-color: navajowhite;
+}
+
+.all-cont {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.high-care {
+    background: #22ff0045;
+    padding: 5px 0px;
+}
+
+.med-care {
+    background: #ffd90045;
+    padding: 5px 0px;
+}
+
+.low-care {
+    background: #ff000045;
+    padding: 5px 0px;
+}
+
+.teens,
+.babies {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    column-gap: 100px;
+    justify-content: flex-start;
+}
+
+.babies {
+    margin-bottom: 30px;
+}

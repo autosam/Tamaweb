@@ -92,7 +92,7 @@ function generateEvols(char, lifeStage){
 
 let growthChart = {};
 
-function generateTree(char, lifeStage){
+function generateTree(char, lifeStage, parent){
     let possibleChars = [];
     if(lifeStage == 0){
         for(let i = 0; i < 8; i++){
@@ -121,12 +121,28 @@ function generateTree(char, lifeStage){
     growthChart[char] = possibleChars;
 
     let container = document.createElement('div');
-    container.innerHTML = `${getCSprite(char)} ->`;
-    possibleChars.forEach(c => container.innerHTML += getCSprite(c));
-    document.body.appendChild(container);
+        container.className = 'char-container';
+    container.innerHTML = `${getCSprite(char)} ⤳`;
+
+    if(lifeStage == 0){
+        possibleChars.forEach((c, i) => {
+            container.innerHTML += getCSprite(c, i >= 4 ? 'high-care' : 'low-care');
+        })
+    } else if(lifeStage == 1){
+        possibleChars.forEach((c, i) => {
+            var cls = 'high-care';
+            if(i == 0) cls = 'low-care';
+            else if(i == 1) cls = 'med-care';
+
+            container.innerHTML += getCSprite(c, cls);
+        })
+    }
+    // possibleChars.forEach(c => container.innerHTML += getCSprite(c));
+    (parent || document.body).appendChild(container);
+    return container;
 }
 
-function getCSprite(char){
+function getCSprite(char, cls){
     let n = Number(char.replace(/\D+/g, ''));
 
     let size = 16;
@@ -134,7 +150,7 @@ function getCSprite(char){
     if(n >= 17) size = 24;
     if(n >= 133) size = 32;    
 
-    return `<c-sprite width="${size}" height="${size}" src="/${char}"></c-sprite>`
+    return `<c-sprite width="${size}" height="${size}" src="/${char}" class="${cls}"></c-sprite>`
 }
 
 // PET_BABY_CHARACTERS.forEach(char => {
@@ -145,11 +161,12 @@ function getCSprite(char){
 // })
 
 // generateTree(PET_BABY_CHARACTERS[0], 0);
-PET_BABY_CHARACTERS.forEach(char => {
-    generateTree(char, 0);
+PET_BABY_CHARACTERS.forEach((char, i) => {
+    let cont = generateTree(char, 0, document.querySelector('.babies'));
 })
+
 PET_TEEN_CHARACTERS.forEach(char => {
-    generateTree(char, 1);
+    generateTree(char, 1, document.querySelector('.teens'));
 })
 
 let all = [...PET_BABY_CHARACTERS, ...PET_TEEN_CHARACTERS, ...PET_ADULT_CHARACTERS];
@@ -159,7 +176,7 @@ let allContainer = document.createElement('div');
     allContainer.className = 'all-cont';
     document.body.appendChild(allContainer);
 all.forEach(char => {
-    // return;
+    return;
     let element = document.createElement('div');
     element.innerHTML = getCSprite(char);
     allContainer.appendChild(element);

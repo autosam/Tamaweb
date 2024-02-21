@@ -3,6 +3,7 @@ let App = {
     gameEventsHistory: [],
     settings: {
         screenSize: 1,
+        playSound: true,
     },
     async init () {
         // init
@@ -249,25 +250,28 @@ let App = {
         })) return;
 
         // if(addEvent(`discord_server_01_notice`, () => {
-            // App.displayConfirm(`<b>Discord!</b>Join our discord server to see the growth chart and decide which features get in the game first!`, [
-            //     {
-            //         name: 'next',
-            //         onclick: () => {
-            //             App.displayConfirm(`Do you want to join and get updated on all the latest changes?`, [
-            //                 {
-            //                     name: '<a href="https://discord.gg/vN7nQUnA" target="_blank">yes (reward +$250)</a>',
-            //                     onclick: () => {
-            //                         App.pet.stats.gold += 250;
-            //                     },
-            //                 }, 
-            //                 {
-            //                     name: 'no',
-            //                     onclick: () => {}
-            //                 }
-            //             ]);
-            //         },
-            //     }
-            // ]);
+        //     App.displayConfirm(`<b>Discord!</b>Join our discord server to see the growth chart and decide which features get in the game first!`, [
+        //         {
+        //             name: 'next',
+        //             onclick: () => {
+        //                 App.displayConfirm(`Do you want to join and get updated on all the latest changes and exclusive items?`, [
+        //                     {
+        //                         link: 'https://discord.gg/FdwmmWRaTd',
+        //                         name: 'yes',
+        //                         onclick: () => {
+        //                             return false;
+        //                         },
+        //                     }, 
+        //                     {
+        //                         name: 'no',
+        //                         onclick: () => {
+        //                             App.displayPopup('You can join the server through <b>Settings > Join Discord</b> if you ever change your mind', 5000)
+        //                         }
+        //                     }
+        //                 ]);
+        //             },
+        //         }
+        //     ]);
         // })) return;
 
         if(App.isSalesDay()){
@@ -323,6 +327,13 @@ let App = {
                 price: 3,
                 age: [1, 2],
             },
+            "milk": {
+                sprite: 15,
+                hunger_replenish: 50,
+                fun_replenish: 10,
+                price: 0,
+                age: [0],
+            },
             "medicine": {
                 sprite: 13,
                 hunger_replenish: 0,
@@ -331,13 +342,6 @@ let App = {
                 price: 20,
                 type: 'med',
                 age: [0, 1, 2],
-            },
-            "milk": {
-                sprite: 15,
-                hunger_replenish: 50,
-                fun_replenish: 10,
-                price: 0,
-                age: [0],
             },
         },
         item: {
@@ -547,26 +551,42 @@ let App = {
         open_settings: function(){
             const settings = App.displayList([
                 {
-                    name: '+ screen size',
+                    name: 'system settings',
                     onclick: () => {
-                        App.settings.screenSize += 0.1;
-                        App.applySettings();
-                        return true;
-                    }
-                },
-                {
-                    name: '- screen size',
-                    onclick: () => {
-                        App.settings.screenSize -= 0.1;
-                        App.applySettings();
-                        return true;
-                    }
-                },
-                {
-                    name: 'reset screen size',
-                    onclick: () => {
-                        App.settings.screenSize = 1;
-                        App.applySettings();
+                        App.displayList([
+                            {
+                                name: `sound fx: <i>${App.settings.playSound ? 'on' : 'off'}</i>`,
+                                onclick: (item) => {
+                                    App.settings.playSound = !App.settings.playSound;
+                                    item.innerHTML = `sound fx: <i>${App.settings.playSound ? 'on' : 'off'}</i>`;  
+                                    return true;
+                                }
+                            },
+                            {
+                                name: '+ screen size',
+                                onclick: () => {
+                                    App.settings.screenSize += 0.1;
+                                    App.applySettings();
+                                    return true;
+                                }
+                            },
+                            {
+                                name: '- screen size',
+                                onclick: () => {
+                                    App.settings.screenSize -= 0.1;
+                                    App.applySettings();
+                                    return true;
+                                }
+                            },
+                            {
+                                name: 'reset screen size',
+                                onclick: () => {
+                                    App.settings.screenSize = 1;
+                                    App.applySettings();
+                                    return true;
+                                }
+                            },
+                        ]);
                         return true;
                     }
                 },
@@ -598,13 +618,6 @@ let App = {
                 //         location.reload();
                 //     }
                 // },
-                // {
-                //     name: '<a href="https://discord.gg/vN7nQUnA" target="_blank">join discord</a>',
-                //     onclick: () => {
-                //         App.pet.stats.gold += 250;
-                //         return true;
-                //     },
-                // }, 
                 {
                     name: 'reset save data',
                     onclick: () => {
@@ -628,7 +641,16 @@ let App = {
                         ])
                         return true;
                     }
-                }
+                },
+                {
+                    _ignore: true,
+                    link: 'https://discord.gg/FdwmmWRaTd',
+                    name: 'join discord <span class="red-badge">new!<span>',
+                    onclick: () => {
+                        // App.pet.stats.gold += 250;
+                        return true;
+                    },
+                },
             ])
         },
         open_stats: function(){
@@ -691,7 +713,7 @@ let App = {
                 if(salesDay) price = Math.round(price / 2);
 
                 list.push({
-                    name: `<c-sprite width="16" height="16" index="${(current.sprite - 1)}" src="resources/img/item/foods.png"></c-sprite> ${food.toUpperCase()} (x${App.pet.inventory.food[food] || (!current.price ? '∞' : 0)}) <b>${buyMode ? `$${price}` : ''}</b>`,
+                    name: `<c-sprite width="16" height="16" index="${(current.sprite - 1)}" src="resources/img/item/foods.png"></c-sprite> ${food.toUpperCase()} (x${App.pet.inventory.food[food] > 0 ? App.pet.inventory.food[food] : (!current.price ? '∞' : 0)}) <b>${buyMode ? `$${price}` : ''}</b>`,
                     onclick: (btn, list) => {
                         if(buyMode){
                             if(App.pet.stats.gold < price){
@@ -863,7 +885,8 @@ let App = {
                     onclick: () => {
                         let nextBirthday = App.petDefinition.nextBirthdayDate();
                         if(Date.now() < nextBirthday){
-                            return App.displayPopup(`${App.petDefinition.name} hasn't grown enough to age up<br><br>come back <b>${(moment(nextBirthday).fromNow())}</b>`, 5000);
+                            console.log(nextBirthday);
+                            return App.displayPopup(`${App.petDefinition.name} hasn't grown enough to age up<br><br>come back <b>${(moment(nextBirthday).calendar())}</b>`, 5000);
                         }
                         Activities.birthday();
                     }
@@ -1199,7 +1222,12 @@ let App = {
 
         listItems.forEach(item => {
             if(item._ignore) return;
-            let button = document.createElement('button');
+
+            let button = document.createElement(item.link ? 'a' : 'button');
+                if(item.link){
+                    button.href = item.link;
+                    button.target = '_blank';
+                }
                 button.className = 'list-item ' + (item.class ? item.class : '');
                 // '⤳ ' + 
                 button.innerHTML = item.name;
@@ -1209,6 +1237,8 @@ let App = {
                         list.close();
                     }
                 };
+
+
             list.appendChild(button);
         });
 
@@ -1353,7 +1383,11 @@ let App = {
 
         const btnContainer = list.querySelector('.buttons-container');
         buttons.forEach(def => {
-            const btn = document.createElement('button');
+            const btn = document.createElement(def.link ? 'a' : 'button');
+            if(def.link){
+                btn.href = def.link;
+                btn.target = '_blank';
+            }
             btn.innerHTML = def.name;
             btn.className = 'list-item';
             btn.onclick = () => {
@@ -1422,7 +1456,7 @@ let App = {
 
         // button click event
         document.addEventListener('click', (e) => {
-            if(e.target.nodeName.toLowerCase() === 'button' || e.target.parentElement?.nodeName.toLowerCase() === 'button'){
+            if(e.target.nodeName.toLowerCase() === 'button' || e.target.classList.contains('list-item') || e.target.parentElement?.nodeName.toLowerCase() === 'button'){
                 if(e.target.classList.contains('back-btn') || e.target.textContent.toLowerCase() == 'back')
                     this.playSound(`resources/sounds/ui_click_02.ogg`, true);
                 else
@@ -1435,6 +1469,8 @@ let App = {
         return [7, 12, 18, 20, 25, 29, 30].includes(day);
     },
     playSound: function(path, force){
+        if(!App.settings.playSound) return;
+
         if(this.audioChannelIsBusy && !force) return false;
 
         if(this.audioElement.src != path)

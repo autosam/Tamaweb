@@ -486,6 +486,24 @@ button {
     box-shadow: 1px 1px 5px inset rgb(255, 255, 255);
 }
 
+.red-badge {
+    background: red;
+    font-size: x-small;
+    padding: 2px 5px;
+    color: white;
+    border-radius: 100%;
+    /* position: absolute; */
+    right: 0px;
+    top: 0px;
+    /* height: 15px; */
+    /* width: 13px; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: 2px;
+    font-weight: bold;
+}
+
 /* .dom-shell > * {
     position: absolute;
 }

@@ -234,7 +234,12 @@ class PetDefinition {
     loadStats(json){
         this.serializables.forEach(serializable => {
             if(!json[serializable]) return;
-            if(typeof this[serializable] === 'object'){
+
+            // if(serializable == 'lastBirthday' || serializable == 'birthday'){
+            //     return;
+            // }
+
+            if(typeof json[serializable] === 'object'){
                 Object.assign(this[serializable], json[serializable]);
             } else {
                 this[serializable] = json[serializable];
