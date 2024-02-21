@@ -224,7 +224,7 @@ let App = {
         }
         return false;
     },
-    handleInputCode: function(code){
+    handleInputCode: function(rawCode){
         const addEvent = App.addEvent;
 
         function showAlreadyUsed(){
@@ -232,7 +232,7 @@ let App = {
             return false;
         }
         
-        code = code.toString().toUpperCase();
+        let code = rawCode.toString().toUpperCase();
 
         let codeEventId = `input_code_event_${code}`;
 
@@ -244,6 +244,77 @@ let App = {
                 App.displayPopup(`Congratulations! ${App.petDefinition.name} got $250!`, 5000);
                 break;
             default:
+                if(rawCode.indexOf('save:') != -1){ // is char code
+                    let b64 = rawCode.replace('save:', '');
+                    try {
+                        b64 = atob(b64);
+                        let json = JSON.parse(b64);
+                        if(!json.pet){
+                            throw 'error';
+                        }
+                        let petDef = JSON.parse(json.pet);
+                        console.log(json.user_id, App.userId, json.user_id===App.userId);
+
+                        let def = new PetDefinition().loadStats(petDef);
+                        
+                        App.displayConfirm(`Are you trying to load <div style="font-weight: bold">${def.getCSprite()} ${def.name}?</div>`, [
+                            {
+                                name: 'yes',
+                                onclick: () => {
+                                    App.displayConfirm(`What do you want to do with ${def.name}?`, [
+                                        {
+                                            name: 'as active pet',
+                                            onclick: () => {
+                                                App.displayConfirm(`Are you sure? This will <b>remove</b> your current pet`, [
+                                                    {
+                                                        name: 'yes',
+                                                        onclick: () => {
+                                                            App.save = () => {};
+                                                            localStorage.clear();
+                                                            for(let key of Object.keys(json)){
+                                                                localStorage.setItem(key, json[key]);
+                                                            }
+                                                            App.displayPopup(`${def.name} is now your pet!`, App.INF);
+                                                            setTimeout(() => {
+                                                                location.reload();  
+                                                            }, 3000);
+                                                        }
+                                                    },
+                                                    {
+                                                        name: 'no',
+                                                        onclick: () => {}
+                                                    },
+
+                                                ]);
+                                                return true;
+                                            }
+                                        },
+                                        {
+                                            _ignore: json.user_id===App.userId,
+                                            name: 'add friend',
+                                            onclick: () => {
+                                                App.petDefinition.friends.push(def);
+                                                App.closeAllDisplays();
+                                                return App.displayPopup(`${def.name} was added to the friends list!`, 3000);
+                                            }
+                                        },
+                                        {
+                                            name: 'cancel',
+                                            onclick: () => {}
+                                        }
+                                    ])
+                                }
+                            },
+                            {
+                                name: 'no',
+                                onclick: () => {}
+                            },
+                        ])
+                    } catch(e) {    
+                        return App.displayPopup('Character code is corrupted');
+                    }
+                    return;
+                }
                 App.displayPopup(`Invalid code`);
                 break;
         }
@@ -274,30 +345,30 @@ let App = {
             ]);
         })) return;
 
-        // if(addEvent(`discord_server_01_notice`, () => {
-        //     App.displayConfirm(`<b>We have a Discord server now!</b>Join to see the growth chart and decide which features get in the game first!`, [
-        //         {
-        //             name: 'next',
-        //             onclick: () => {
-        //                 App.displayConfirm(`Do you want to join and get updated on all the latest changes and exclusive items?`, [
-        //                     {
-        //                         link: 'https://discord.gg/FdwmmWRaTd',
-        //                         name: 'yes',
-        //                         onclick: () => {
-        //                             return false;
-        //                         },
-        //                     }, 
-        //                     {
-        //                         name: 'no',
-        //                         onclick: () => {
-        //                             App.displayPopup('You can join the server through <b>Settings > Join Discord</b> if you ever change your mind', 5000)
-        //                         }
-        //                     }
-        //                 ]);
-        //             },
-        //         }
-        //     ]);
-        // })) return;
+        if(addEvent(`discord_server_01_notice`, () => {
+            App.displayConfirm(`<b>We have a Discord server now!</b>Join to see the growth chart and decide which features get in the game first!`, [
+                {
+                    name: 'next',
+                    onclick: () => {
+                        App.displayConfirm(`Do you want to join and get updated on all the latest changes and exclusive items?`, [
+                            {
+                                link: 'https://discord.gg/FdwmmWRaTd',
+                                name: 'yes',
+                                onclick: () => {
+                                    return false;
+                                },
+                            }, 
+                            {
+                                name: 'no',
+                                onclick: () => {
+                                    App.displayPopup('You can join the server through <b>Settings > Join Discord</b> if you ever change your mind', 5000)
+                                }
+                            }
+                        ]);
+                    },
+                }
+            ]);
+        })) return;
 
         if(App.isSalesDay()){
             if(addEvent(`sales_day_${dayId}_notice`, () => {
@@ -317,12 +388,12 @@ let App = {
                 hunger_replenish: 15,
                 fun_replenish: 0,
                 health_replenish: 2,
-                price: 3,
+                price: 2,
                 age: [1, 2],
             },
             "slice of pizza": {
                 sprite: 10,
-                hunger_replenish: 15,
+                hunger_replenish: 20,
                 fun_replenish: 5,
                 health_replenish: -5,
                 price: 5,
@@ -439,8 +510,8 @@ let App = {
             }
         }),
         kitchen: new Scene({
-            image: 'resources/img/background/house/kitchen_01.png',
-            foodsX: 40, foodsY: 58,
+            image: 'resources/img/background/house/kitchen_02.png',
+            foodsX: 40, foodsY: 52,
             petX: 62, petY: 74,
         }),
         park: new Scene({
@@ -616,7 +687,7 @@ let App = {
                     }
                 },
                 {
-                    name: 'input code',
+                    name: 'input code <span class="red-badge">new!<span>',
                     onclick: () => {
                         App.displayPrompt(`Input code:`, [
                             {
@@ -650,15 +721,30 @@ let App = {
                         return true;
                     }
                 },
-                // {
-                //     name: 'set pet def',
-                //     onclick: () => {
-                //         // "resources/img/character/chara_246b.png"
-                //         App.pet.petDefinition.sprite = prompt(`Enter character's id:`, App.pet.petDefinition.sprite) || App.pet.petDefinition.sprite;
-                //         App.save();
-                //         location.reload();
-                //     }
-                // },
+                {
+                    name: 'get save code <span class="red-badge">new!<span>',
+                    onclick: () => {
+                        let charCode = 'save:' + btoa(JSON.stringify(localStorage));
+                        App.displayConfirm(`Here you'll be able to copy your unique save code and continue your playthrough on another device`, [
+                            {
+                                name: 'ok',
+                                onclick: () => {
+                                    App.displayConfirm(`After copying the code, open tamaweb on another device and paste the code in <b>settings > input code</b>`, [
+                                        {
+                                            name: 'ok',
+                                            onclick: () => {
+                                                navigator.clipboard.writeText(charCode);
+                                                console.log('char code copied', charCode)
+                                                App.displayPopup('character code copied!', 1000);
+                                            }
+                                        },
+                                    ]);
+                                }
+                            },
+                        ]);
+                        return true;
+                    }
+                },
                 {
                     name: 'reset save data',
                     onclick: () => {
@@ -684,7 +770,7 @@ let App = {
                     }
                 },
                 {
-                    _ignore: true,
+                    // _ignore: true,
                     link: 'https://discord.gg/FdwmmWRaTd',
                     name: 'join discord <span class="red-badge">new!<span>',
                     onclick: () => {
@@ -1423,6 +1509,8 @@ let App = {
 
         const btnContainer = list.querySelector('.buttons-container');
         buttons.forEach(def => {
+            if(def._ignore) return;
+
             const btn = document.createElement(def.link ? 'a' : 'button');
             if(def.link){
                 btn.href = def.link;
@@ -1462,6 +1550,8 @@ let App = {
         list.insertBefore(input, btnContainer);
 
         buttons.forEach(def => {
+            if(def._ignore) return;
+
             const btn = document.createElement('button');
             btn.innerHTML = def.name;
             btn.className = 'list-item';
