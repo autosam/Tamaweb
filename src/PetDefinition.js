@@ -302,7 +302,7 @@ class PetDefinition {
         let m = moment(this.lastBirthday).utc();
         switch(this.lifeStage){
             case 0:
-                return m.add(1, 'days');
+                return m.add(18, 'hours');
             case 1:
                 return m.add(38, 'hours');
         }
