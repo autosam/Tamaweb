@@ -781,7 +781,7 @@ let App = {
                     },
                 },
                 {
-                    _ignore: App.userId !== '6364515079',
+                    _ignore: App.userId !== '6364515079' && App.ENV !== 'dev',
                     name: 'install app',
                     onclick: () => {
                         // App.pet.stats.gold += 250;
@@ -1674,7 +1674,7 @@ let App = {
     installAsPWA: function() { 
         if(!App.deferredInstallPrompt) return App.displayPopup('no deferredInstallPrompt');
         App.deferredInstallPrompt.prompt();
-        deferredInstallPrompt.userChoice.then((choiceResult) => {
+        App.deferredInstallPrompt.userChoice.then((choiceResult) => {
             if (choiceResult.outcome === 'accepted') {
                 App.sendAnalytics('pwa_install', navigator?.userAgent);
             } else {
@@ -1687,4 +1687,5 @@ let App = {
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     App.deferredInstallPrompt = e;
+    console.log('prompt pwa');
 });
