@@ -1,6 +1,8 @@
+const cacheName = 'tamaweb-v2';
+
 self.addEventListener('install', (e) => {
     e.waitUntil(
-        caches.open('tamaweb').then((cache) => cache.addAll([
+        caches.open(cacheName).then((cache) => cache.addAll([
             // main
             '../index.html',
             '../src/Main.js',
@@ -39,3 +41,18 @@ self.addEventListener('fetch', (e) => {
         caches.match(e.request).then((response) => response || fetch(e.request)),
     );
 });
+
+self.addEventListener('activate', event => {
+    // Remove old caches
+    event.waitUntil(
+        (async () => {
+            const keys = await caches.keys();
+            return keys.map(async (cache) => {
+                if (cache !== cacheName) {
+                    console.log('Service Worker: Removing old cache: ' + cache);
+                    return await caches.delete(cache);
+                }
+            })
+        })()
+    )
+})
