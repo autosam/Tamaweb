@@ -1,7 +1,7 @@
 {
     "short_name": "Tama",
     "name": "Tamaweb",
-    "start_url": "/Tamaweb/index.html",
+    "start_url": "index.html",
     "display": "standalone",
     "description": "Virtual Pet Game",
     "background_color": "navajowhite",

@@ -1,12 +1,14 @@
-// self.importScripts(
-//     'resources/data/CharacterDefinitions.js',
-//     'resources/data/SpriteDefinitions.js',
-// )
+self.importScripts(
+    'resources/data/CharacterDefinitions.js',
+    'resources/data/SpriteDefinitions.js',
+)
 
-const CACHE_NAME = 'tamaweb-v7';
+const CACHE_NAME = 'tamaweb-v8.1';
 const ASSETS = [
     // main
     'index.html',
+    'styles.css',
+    // scripts
     'src/Main.js',
     'src/Activities.js',
     'src/App.js',
@@ -17,10 +19,6 @@ const ASSETS = [
     'src/Scene.js',
     'src/Utils.js',
     'src/ApiHelper.js',
-    // def data
-    'resources/data/CharacterDefinitions.js',
-    'resources/data/SpriteDefinitions.js',
-    'resources/data/GrowthChart.js',
     // sounds
     'resources/sounds/angry.ogg',
     'resources/sounds/birthday_song_01.ogg',
@@ -32,12 +30,17 @@ const ASSETS = [
     'resources/sounds/ui_click_02.ogg',
     'resources/sounds/walk_01.ogg',
     'resources/sounds/wedding_song_01.ogg',
+    // other
     'resources/font/PixelifySans-VariableFont_wght.ttf',
-    // ...SPRITES,
-    // ...PET_ADULT_CHARACTERS,
-    // ...PET_TEEN_CHARACTERS,
-    // ...PET_BABY_CHARACTERS,
-    // ...NPC_CHARACTERS,
+    // def data
+    'resources/data/CharacterDefinitions.js',
+    'resources/data/SpriteDefinitions.js',
+    'resources/data/GrowthChart.js',
+    ...SPRITES,
+    ...PET_ADULT_CHARACTERS,
+    ...PET_TEEN_CHARACTERS,
+    ...PET_BABY_CHARACTERS,
+    ...NPC_CHARACTERS,
 ];
 
 self.addEventListener('install', (e) => {

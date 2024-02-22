@@ -1598,6 +1598,7 @@ let App = {
         // button click event
         document.addEventListener('click', (e) => {
             if(e.target.nodeName.toLowerCase() === 'button' || e.target.classList.contains('list-item') || e.target.parentElement?.nodeName.toLowerCase() === 'button'){
+                App.vibrate();
                 if(e.target.classList.contains('back-btn') || e.target.textContent.toLowerCase() == 'back')
                     this.playSound(`resources/sounds/ui_click_02.ogg`, true);
                 else
@@ -1661,6 +1662,9 @@ let App = {
         };
 
         return App.loadedData;
+    },
+    vibrate: function(dur){
+        navigator?.vibrate(dur || 40);
     },
     sendAnalytics: function(type, value){
         if(App.ENV !== 'prod') return;
