@@ -649,6 +649,15 @@ let App = {
         open_settings: function(){
             const settings = App.displayList([
                 {
+                    _ignore: !App.deferredInstallPrompt,
+                    name: 'install app <span class="red-badge">new!<span>',
+                    onclick: () => {
+                        // App.pet.stats.gold += 250;
+                        App.installAsPWA();
+                        return true;
+                    },
+                },
+                {
                     name: 'system settings',
                     onclick: () => {
                         App.displayList([
@@ -777,15 +786,6 @@ let App = {
                     name: 'join discord <span class="red-badge">new!<span>',
                     onclick: () => {
                         // App.pet.stats.gold += 250;
-                        return true;
-                    },
-                },
-                {
-                    _ignore: !App.deferredInstallPrompt,
-                    name: 'install app',
-                    onclick: () => {
-                        // App.pet.stats.gold += 250;
-                        App.installAsPWA();
                         return true;
                     },
                 },
@@ -1687,24 +1687,23 @@ let App = {
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     App.deferredInstallPrompt = e;
-    // if(App.userId === '6364515079' || App.ENV == 'dev'){
-    //     document.querySelector('.install-prompt').style.display = '';
-    
-    //     document.querySelector('#install-pwa-app').addEventListener('click', (e) => {
-    //         // Hide the app provided install promotion
-    //         document.querySelector('.install-prompt').style.display = 'none';
-    //         // Show the install prompt
-    //         App.deferredInstallPrompt.prompt();
-    //         // Wait for the user to respond to the prompt
-    //         App.deferredInstallPrompt.userChoice.then((choiceResult) => {
-    //             if (choiceResult.outcome === 'accepted') {
-    //                 console.log('User accepted the install prompt');
-    //             } else {
-    //                 console.log('User dismissed the install prompt');
-    //             }
-    //         });
-    //     });
-    // }
-    
-    console.log('prompt pwa');
+
+    if(App.awayTime !== -1){
+        App.addEvent(`pwa_install_notice_01`, () => {
+            App.displayConfirm(`Do you want to install <b>Tamaweb</b> as an app?`, [
+                {
+                    name: 'install',
+                    onclick: () => {
+                        App.installAsPWA();
+                    }
+                },
+                {
+                    name: 'cancel',
+                    onclick: () => {
+                        App.displayPopup(`You can install the game as an app anytime from the <b>settings</b>`)
+                    }
+                },
+            ])
+        })
+    }
 });
