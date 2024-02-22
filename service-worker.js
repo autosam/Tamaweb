@@ -1,7 +1,7 @@
 self.addEventListener('install', (e) => {
     e.waitUntil(
         caches.open('tamaweb-store').then((cache) => cache.addAll([
-            '/index.html'
+            '../index.html'
         ])),
     );
 });
