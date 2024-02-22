@@ -11,13 +11,6 @@ let App = {
         this.drawer = new Drawer(document.querySelector('.graphics-canvas'));
         Object2d.setDrawer(App.drawer);
 
-        // pwa
-        App.deferredInstallPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            App.deferredInstallPrompt = e;
-        });
-
         // load data
         let loadedData = this.load();
         console.log({loadedData});
@@ -1679,7 +1672,7 @@ let App = {
         fetch(url).catch(e => {});
     },
     installAsPWA: function() { 
-        if(!App.deferredInstallPrompt) return false;
+        if(!App.deferredInstallPrompt) return App.displayPopup('no deferredInstallPrompt');
         App.deferredInstallPrompt.prompt();
         deferredInstallPrompt.userChoice.then((choiceResult) => {
             if (choiceResult.outcome === 'accepted') {
@@ -1690,3 +1683,8 @@ let App = {
         });
     },
 }
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    App.deferredInstallPrompt = e;
+});
