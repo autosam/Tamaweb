@@ -22,7 +22,6 @@ const SPRITES = [
     "resources/img/misc/poop.png",
     "resources/img/misc/egg.png",
     "resources/img/misc/egg_02.png",
-    "resources/img/misc/gift.png",
     "resources/img/misc/happy_icon.png",
     "resources/img/misc/laptop.png",
     "resources/img/misc/cake_01.png",
