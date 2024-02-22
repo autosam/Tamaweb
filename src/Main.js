@@ -46,4 +46,6 @@ class SpriteElement extends HTMLElement {
 
 customElements.define("c-sprite", SpriteElement);
 
+navigator?.serviceWorker.register('../service-worker.js').then(() => console.log('Service Worker Registered'));
+
 App.init();
