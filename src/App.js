@@ -1687,5 +1687,24 @@ let App = {
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     App.deferredInstallPrompt = e;
+    if(App.userId === '6364515079' || App.ENV == 'dev'){
+        document.querySelector('.install-prompt').style.display = '';
+    
+        document.querySelector('#install-pwa-app').addEventListener('click', (e) => {
+            // Hide the app provided install promotion
+            document.querySelector('.install-prompt').style.display = 'none';
+            // Show the install prompt
+            App.deferredInstallPrompt.prompt();
+            // Wait for the user to respond to the prompt
+            App.deferredInstallPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('User accepted the install prompt');
+                } else {
+                    console.log('User dismissed the install prompt');
+                }
+            });
+        });
+    }
+    
     console.log('prompt pwa');
 });
