@@ -1,6 +1,6 @@
 let App = {
     INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
-    gameEventsHistory: [],
+    gameEventsHistory: [], deferredInstallPrompt: null,
     settings: {
         screenSize: 1,
         playSound: true,
@@ -781,7 +781,7 @@ let App = {
                     },
                 },
                 {
-                    _ignore: App.userId !== '6364515079' && App.ENV !== 'dev',
+                    _ignore: !App.deferredInstallPrompt,
                     name: 'install app',
                     onclick: () => {
                         // App.pet.stats.gold += 250;
@@ -1672,7 +1672,7 @@ let App = {
         fetch(url).catch(e => {});
     },
     installAsPWA: function() { 
-        if(!App.deferredInstallPrompt) return App.displayPopup('no deferredInstallPrompt');
+        if(!App.deferredInstallPrompt) return false;
         App.deferredInstallPrompt.prompt();
         App.deferredInstallPrompt.userChoice.then((choiceResult) => {
             if (choiceResult.outcome === 'accepted') {
