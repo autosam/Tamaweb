@@ -4,6 +4,7 @@ let App = {
     settings: {
         screenSize: 1,
         playSound: true,
+        vibrate: true,
     },
     async init () {
         // init
@@ -578,10 +579,12 @@ let App = {
                 if(App.gameplayControlsOverwrite) {
                     App.gameplayControlsOverwrite();
                     App.playSound(`resources/sounds/ui_click_01.ogg`, true);
+                    App.vibrate();
                 }
                 return;
             }
             App.playSound(`resources/sounds/ui_click_01.ogg`, true);
+            App.vibrate();
             App.displayGrid([
                 {
                     // name: '📊',
@@ -666,6 +669,14 @@ let App = {
                                 onclick: (item) => {
                                     App.settings.playSound = !App.settings.playSound;
                                     item.innerHTML = `sound fx: <i>${App.settings.playSound ? 'on' : 'off'}</i>`;  
+                                    return true;
+                                }
+                            },
+                            {
+                                name: `vibration: <i>${App.settings.vibrate ? 'on' : 'off'}</i>`,
+                                onclick: (item) => {
+                                    App.settings.vibrate = !App.settings.vibrate;
+                                    item.innerHTML = `vibration: <i>${App.settings.vibrate ? 'on' : 'off'}</i>`;  
                                     return true;
                                 }
                             },
@@ -1664,7 +1675,7 @@ let App = {
         return App.loadedData;
     },
     vibrate: function(dur){
-        navigator?.vibrate(dur || 40);
+        navigator?.vibrate(dur || 35);
     },
     sendAnalytics: function(type, value){
         if(App.ENV !== 'prod') return;
