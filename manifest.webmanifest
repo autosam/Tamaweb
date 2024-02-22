@@ -1,6 +1,10 @@
 {
-    "short_name": "Tamaweb",
+    "short_name": "Tama",
     "name": "Tamaweb",
+    "start_url": "/Tamaweb/index.html",
+    "display": "standalone",
+    "description": "Virtual Pet Game",
+    "background_color": "navajowhite",
     "icons": [
         {
             "src": "\/android-icon-36x36.png",
@@ -38,7 +42,5 @@
             "type": "image\/png",
             "density": "4.0"
         }
-    ],
-    "start_url": "/",
-    "display": "standalone"
+    ]
 }
