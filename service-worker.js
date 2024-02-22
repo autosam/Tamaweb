@@ -1,9 +1,9 @@
-self.importScripts(
-    './resources/data/CharacterDefinitions.js',
-    './resources/data/SpriteDefinitions.js',
-)
+// self.importScripts(
+//     './resources/data/CharacterDefinitions.js',
+//     './resources/data/SpriteDefinitions.js',
+// )
 
-const CACHE_NAME = 'tamaweb-v4';
+const CACHE_NAME = 'tamaweb-v5';
 const ASSETS = [
     // main
     './index.html',
@@ -33,11 +33,11 @@ const ASSETS = [
     './resources/sounds/walk_01.ogg',
     './resources/sounds/wedding_song_01.ogg',
     './resources/font/PixelifySans-VariableFont_wght.ttf',
-    ...SPRITES,
-    ...PET_ADULT_CHARACTERS,
-    ...PET_TEEN_CHARACTERS,
-    ...PET_BABY_CHARACTERS,
-    ...NPC_CHARACTERS,
+    // ...SPRITES,
+    // ...PET_ADULT_CHARACTERS,
+    // ...PET_TEEN_CHARACTERS,
+    // ...PET_BABY_CHARACTERS,
+    // ...NPC_CHARACTERS,
 ];
 
 self.addEventListener('install', (e) => {
