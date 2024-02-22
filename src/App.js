@@ -275,6 +275,7 @@ let App = {
                                                                 localStorage.setItem(key, json[key]);
                                                             }
                                                             localStorage.setItem('user_id', App.userId);
+                                                            localStorage.setItem('play_time', App.playTime);
                                                             App.displayPopup(`${def.name} is now your pet!`, App.INF);
                                                             setTimeout(() => {
                                                                 location.reload();  
@@ -735,8 +736,8 @@ let App = {
                                             name: 'ok',
                                             onclick: () => {
                                                 navigator.clipboard.writeText(charCode);
-                                                console.log('char code copied', charCode)
-                                                App.displayPopup('character code copied!', 1000);
+                                                console.log('save code copied', charCode);
+                                                App.displayPopup('Save code copied!', 1000);
                                             }
                                         },
                                     ]);
