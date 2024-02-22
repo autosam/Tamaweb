@@ -11,6 +11,13 @@ let App = {
         this.drawer = new Drawer(document.querySelector('.graphics-canvas'));
         Object2d.setDrawer(App.drawer);
 
+        // pwa
+        App.deferredInstallPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            App.deferredInstallPrompt = e;
+        });
+
         // load data
         let loadedData = this.load();
         console.log({loadedData});
@@ -777,6 +784,15 @@ let App = {
                     name: 'join discord <span class="red-badge">new!<span>',
                     onclick: () => {
                         // App.pet.stats.gold += 250;
+                        return true;
+                    },
+                },
+                {
+                    _ignore: App.userId !== '6364515079',
+                    name: 'install app',
+                    onclick: () => {
+                        // App.pet.stats.gold += 250;
+                        App.installAsPWA();
                         return true;
                     },
                 },
@@ -1661,5 +1677,16 @@ let App = {
         let url = `https://docs.google.com/forms/d/e/1FAIpQLSfzl5hhhnV3IAdxuA90ieEaeBAhCY9Bh4s151huzTMeByMwiw/formResponse?usp=pp_url&entry.1384465975=${App.userId}&entry.1653037117=${App.petDefinition?.name || ''}&entry.1322693089=${type}&entry.1403809294=${value || ''}`;
 
         fetch(url).catch(e => {});
-    }
+    },
+    installAsPWA: function() { 
+        if(!App.deferredInstallPrompt) return false;
+        App.deferredInstallPrompt.prompt();
+        deferredInstallPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                App.sendAnalytics('pwa_install', navigator?.userAgent);
+            } else {
+                App.sendAnalytics('pwa_install_cancel', navigator?.userAgent);
+            }
+        });
+    },
 }

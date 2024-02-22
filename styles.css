@@ -543,3 +543,26 @@ button {
 .w-btn:hover {
     outline-offset: 1px;
 }
+
+.install-prompt {
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+    display: flex;
+    background: rgb(78, 125, 255);
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+}
+.install-prompt .app-icon {
+    border: 1px solid white;
+    border-radius: 5px;
+    margin: 5px;
+    background-color: rgba(255, 255, 255, 0.175)
+}
+.install-prompt button {
+    background-color: rgba(255, 255, 255, 0.105);
+    padding: 2px 8px;
+    border: 1px solid white;
+    border-radius: 5px;
+}
