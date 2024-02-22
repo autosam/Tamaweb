@@ -11,7 +11,7 @@ const SPRITES = [
     "resources/img/background/house/wedding_overlay.png",
     
     "resources/img/background/outside/park_02.png",
-    "resources/img/background/house/mall_walkway.png",
+    "resources/img/background/outside/mall_walkway.png",
 
     // items
     "resources/img/item/foods.png",
