@@ -1675,6 +1675,7 @@ let App = {
         return App.loadedData;
     },
     vibrate: function(dur){
+        if(!App.settings.vibrate) return;
         navigator?.vibrate(dur || 35);
     },
     sendAnalytics: function(type, value){
