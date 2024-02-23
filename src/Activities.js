@@ -1,4 +1,13 @@
 class Activities {
+    static barTimingGame(){
+        App.closeAllDisplays();
+
+        let screen = App.displayEmpty();
+        screen.innerHTML = `
+            <div class="timing-bar-container">
+            </div>
+        `;
+    }
     static wedding(otherPetDef){
         App.closeAllDisplays();
         App.setScene(App.scene.wedding);

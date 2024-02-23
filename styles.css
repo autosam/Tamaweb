@@ -27,8 +27,16 @@ body {
     left: 0px;
     width: 100%;
     color: black;
-    text-align: center;
     z-index: 99;
+    top: 0px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: cornsilk;
+    outline: 5px solid #00000024;
+    outline-offset: -7px;
+    border-radius: 5px;
 }
 .graphics-wrapper {
     width: 100%;
@@ -36,8 +44,8 @@ body {
     position: relative;
     outline: 5px solid #00000040;
     border-radius: 5px;
-    box-shadow: 8px 20px 20px 3px #00000040;
     overflow: hidden;
+    /* box-shadow: 8px 20px 20px 3px #00000040; */
 }
 .graphics-canvas {
     background-color: #ffe5ca;
@@ -64,6 +72,23 @@ body {
 .gameplay-main-buttons > button.disabled {
     filter: grayscale();
     pointer-events: none;
+}
+.generic-flex-container {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background: white;
+    /* display: flex; */
+    /* flex-direction: column; */
+    top: 0px;
+    left: 0px;
+    color: black;
+    overflow: auto;
+    z-index: 2;
+    background: var(--container-background);
+    /* align-items: center;
+    justify-content: center; */
+    text-transform: uppercase;
 }
 .generic-list-container {
     position: absolute;
@@ -154,6 +179,8 @@ body {
     border-radius: 5px;
     margin-bottom: 5px;
     image-rendering: pixelated;
+    max-height: 130px;
+    object-fit: cover;
 }
 .slide-btn {
     height: 100%;
@@ -199,6 +226,15 @@ body {
     display: flex;
     flex-direction: column;
     width: 80%;
+}
+.custom-file-upload input[type="file"] {
+    display: none;
+}
+.custom-file-upload {
+    cursor: pointer;
+}
+input[type="file"] {
+    width: -webkit-fill-available;
 }
 input {
     all: unset;
@@ -430,11 +466,12 @@ button {
 }
 
 .background-canvas {
-    background-color: white;
+    background-color: transparent;
     position: absolute;
-    width: 80vw;
-    height: 50vh;
+    width: 60vw;
+    /* height: 50vh; */
     filter: blur(100px);
+    opacity: 0.5;
     display: none;
 }
 
@@ -452,16 +489,30 @@ button {
     width: 320px;
     height: 400px;
     position: absolute;
-    background: linear-gradient(149deg, #ffbd79 20%, white);
+    background: rgb(255, 237, 217);
     border-radius: 95%;
     border-top-right-radius: 100%;
     border-top-left-radius: 100%;
     overflow: hidden;
-    box-shadow: inset 20px 20px 32px #ff4d00;
-    background: white;
+    box-shadow: inset 20px 20px 32px #00000055;
+    background-size: cover;
+    filter: drop-shadow(4px 10px 18px #00000015);
+    /* background-image: url(https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTA5L3Jhd3BpeGVsb2ZmaWNlOV9hX3NreV9maWxsZWRfd2l0aF9jbG91ZHNfYW5kX3N0YXJzX21hZGVfb2ZfY290dF85Nzk3Nzk0My0wMDJjLTQwYTQtYjk2NS0zNDUzNDZjNjRhMjBfMS5qcGc.jpg); */
+    /* background-image: url(https://cdn.wallpapersafari.com/23/55/gNpmf4.jpg); */
+    /* background-image: url(https://e0.pxfuel.com/wallpapers/294/264/desktop-wallpaper-cute-kawaii-background-background-cute-kawaii-computer.jpg); */
+    /* background-image: url(https://w0.peakpx.com/wallpaper/1004/222/HD-wallpaper-cute-kawaii-background-adorable-kawaii.jpg); */
+    /* background-image: url(https://wallpaperbat.com/img/412609-pastel-japan-aesthetic-wallpaper.jpg); */
+    background-position: 50% 50%;
+}
+.dom-shell > .logo {
+    position: absolute;
+    left: calc(50% - 75px);
+    top: 40px;
+    width: 150px;
+    /* filter: sepia(1) hue-rotate(192deg) saturate(7.5) contrast(1) brightness(1); */
 }
 
-.dom-shell-pattern {
+/* .dom-shell-pattern {
     width: 200px;
     height: 200px;
     content: "";
@@ -484,7 +535,7 @@ button {
     transform: translate(-50px, -50px);
     scale: 5;
     box-shadow: 1px 1px 5px inset rgb(255, 255, 255);
-}
+} */
 
 .red-badge {
     background: red;
@@ -565,4 +616,11 @@ button {
     padding: 2px 8px;
     border: 1px solid white;
     border-radius: 5px;
+}
+
+.timing-bar-container {
+    background: #ffffffc4;
+    width: 180px;
+    height: 10px;
+    border-radius: 10px;
 }
