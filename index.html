@@ -28,22 +28,23 @@
 <body>
     <div style="position: absolute;" class="hidden" id="debug">DEBUG</div>
     <div class="root">
-        <div class="loading-text">
-            <!-- <img src="resources/img/ui/logo_full.png"></img> -->
-            LOADING...
-        </div>
         <canvas class="background-canvas" width="96" height="96"></canvas>
         <!-- <img src="resources/img/ui/Front.png" class="screen-shell"></img> -->
-        <!-- <div class="dom-shell">
+        <div class="dom-shell">
+            <img class="logo" src="resources/img/ui/logo_trans_01.png"></img>
             <div class="dom-shell-pattern"></div>
             <div class="dom-shell-pattern"></div>
             <div class="dom-shell-pattern"></div>
             <div class="dom-shell-pattern"></div>
             <div class="dom-shell-pattern"></div>
-        </div> -->
+        </div>
         <div class="graphics-wrapper">
             <div class="screen-wrapper">
                 <canvas style="cursor: pointer;" onclick="App.handlers.open_main_menu()" class="graphics-canvas" width="96" height="96"></canvas>
+                <div class="loading-text">
+                    <!-- <img src="resources/img/ui/logo_full.png"></img> -->
+                    LOADING...
+                </div>
             </div>
 
             <!-- battle screen -->
@@ -98,6 +99,8 @@
         <div class="generic-list-container generic-grid-container display">
             
         </div>
+
+        <div class="generic-flex-container display"></div>
 
         <div class="progressbar">
             <div class="progressbar-background">

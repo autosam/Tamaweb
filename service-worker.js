@@ -32,6 +32,7 @@ const ASSETS = [
     'resources/sounds/wedding_song_01.ogg',
     // other
     'resources/font/PixelifySans-VariableFont_wght.ttf',
+    'resources/img/ui/logo_full.png',
     // def data
     'resources/data/CharacterDefinitions.js',
     'resources/data/SpriteDefinitions.js',
