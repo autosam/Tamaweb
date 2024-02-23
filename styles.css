@@ -34,9 +34,9 @@ body {
     align-items: center;
     justify-content: center;
     background: cornsilk;
-    outline: 5px solid #0000004f;
-    outline-offset: -10px;
-    border-radius: 10px;
+    outline: 5px solid #00000024;
+    outline-offset: -7px;
+    border-radius: 5px;
 }
 .graphics-wrapper {
     width: 100%;
@@ -457,11 +457,12 @@ button {
 }
 
 .background-canvas {
-    background-color: white;
+    background-color: transparent;
     position: absolute;
-    width: 80vw;
-    height: 50vh;
+    width: 60vw;
+    /* height: 50vh; */
     filter: blur(100px);
+    opacity: 0.5;
     display: none;
 }
 

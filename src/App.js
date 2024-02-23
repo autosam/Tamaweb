@@ -1,6 +1,6 @@
 let App = {
     INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
-    gameEventsHistory: [], deferredInstallPrompt: null,
+    gameEventsHistory: [], deferredInstallPrompt: null, shellBackground: '',
     settings: {
         screenSize: 1,
         playSound: true,
@@ -181,6 +181,7 @@ let App = {
     applySettings: function(){
         // screen size
         document.querySelector('.graphics-wrapper').style.transform = `scale(${this.settings.screenSize})`;
+        document.querySelector('.dom-shell').style.transform = `scale(${this.settings.screenSize})`;
     },
     onFrameUpdate: function(time){
         App.deltaTime = time - App.lastTime;
@@ -523,10 +524,10 @@ let App = {
                 image: 'https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTA5L3Jhd3BpeGVsb2ZmaWNlOV9hX3NreV9maWxsZWRfd2l0aF9jbG91ZHNfYW5kX3N0YXJzX21hZGVfb2ZfY290dF85Nzk3Nzk0My0wMDJjLTQwYTQtYjk2NS0zNDUzNDZjNjRhMjBfMS5qcGc.jpg',
             },
             "7": {
-                image: 'https://w0.peakpx.com/wallpaper/1004/222/HD-wallpaper-cute-kawaii-background-adorable-kawaii.jpg',
+                image: 'https://wallpapers-clan.com/wp-content/uploads/2023/12/cute-winter-homes-cozy-wallpaper-scaled.jpg',
             },
             "8": {
-                image: 'https://wallpaperbat.com/img/412609-pastel-japan-aesthetic-wallpaper.jpg',
+                image: 'https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTA5L3Jhd3BpeGVsX29mZmljZV8zM193YWxscGFwZXJfb2ZfY3V0ZV9jbG91ZHNfcmFpbmJvd19ncmFkaWVudF9nbF9iMTg3MGIxNi1kOWY3LTQyODAtYmFkMy1mYzAxMDE0MTg1M2JfMS5qcGc.jpg',
             },
         },
     },
@@ -740,14 +741,43 @@ let App = {
                 {
                     name: 'change shell',
                     onclick: () => {
-                        App.handlers.open_shell_background_list();
+                        // App.handlers.open_shell_background_list();
+                        // return true;
+
+                        App.displayList([
+                            {
+                                name: 'select shell',
+                                onclick: () => {
+                                    App.handlers.open_shell_background_list();
+                                    return true;
+                                }
+                            },
+                            {
+                                name: 'custom shell',
+                                onclick: () => {
+                                    App.displayPrompt(`Enter background URL:`, [
+                                        {
+                                            name: 'set',
+                                            onclick: (url) => {
+                                                let res = App.setShellBackground(url);
+                                                if(res) App.displayPopup('Shell background set');
+                                                return true;
+                                            }
+                                        },
+                                        {name: 'cancel', onclick: () => {}},
+                                    ]);
+                                    return true;
+                                }
+                            }
+                        ])
+
                         return true;
                     }
                 },
                 {
                     name: 'input code',
                     onclick: () => {
-                        App.displayPrompt(`Input code:`, [
+                        App.displayPrompt(`Enter code:`, [
                             {
                                 name: 'set',
                                 onclick: (value) => {
@@ -1055,7 +1085,7 @@ let App = {
 
                 list.push({
                     // name: `<c-sprite width="22" height="22" index="${(current.sprite - 1)}" src="resources/img/item/items.png"></c-sprite> ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>$${buyMode ? `${price}` : ''}</b>`,
-                    name: `<img src="${current.image}"></img> ${entry.toUpperCase()}`,
+                    name: `<img src="${current.image}"></img>`,
                     onclick: (btn, list) => {
                         // if(current.image === App.scene.home.image){
                         //     App.displayPopup('You already own this entry');
@@ -1722,6 +1752,7 @@ let App = {
         localStorage.setItem('user_id', App.userId);
         localStorage.setItem('ingame_events_history', JSON.stringify(App.gameEventsHistory));
         localStorage.setItem('play_time', App.playTime);
+        localStorage.setItem('shell_background', App.shellBackground);
         localStorage.setItem('room_customization', JSON.stringify({
             home: {
                 image: App.scene.home.image,
@@ -1786,6 +1817,8 @@ let App = {
     setShellBackground: function(url){
         if(!url) return;
         document.querySelector("body > div.root > div.dom-shell").style.backgroundImage = `url(${url})`;
+        App.shellBackground = url;
+        return true;
     },
 }
 
