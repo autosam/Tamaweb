@@ -1,10 +1,11 @@
 let App = {
     INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
-    gameEventsHistory: [], deferredInstallPrompt: null,
+    gameEventsHistory: [], deferredInstallPrompt: null, shellBackground: '',
     settings: {
         screenSize: 1,
         playSound: true,
         vibrate: true,
+        displayShell: true,
     },
     async init () {
         // init
@@ -15,6 +16,9 @@ let App = {
         // load data
         let loadedData = this.load();
         console.log({loadedData});
+
+        // shell background
+        this.setShellBackground(loadedData.shellBackground);
 
         // handle settings
         if(loadedData.settings){
@@ -178,6 +182,8 @@ let App = {
     applySettings: function(){
         // screen size
         document.querySelector('.graphics-wrapper').style.transform = `scale(${this.settings.screenSize})`;
+        document.querySelector('.dom-shell').style.transform = `scale(${this.settings.screenSize})`;
+        document.querySelector('.dom-shell').style.display = App.settings.displayShell ? '' : 'none';
     },
     onFrameUpdate: function(time){
         App.deltaTime = time - App.lastTime;
@@ -499,7 +505,33 @@ let App = {
                 image: 'resources/img/background/house/03.png',
                 price: 250,
             },
-        }
+        },
+        shell_background: {
+            "1": {
+                image: 'https://cdn.wallpapersafari.com/23/55/gNpmf4.jpg',
+            },
+            "2": {
+                image: 'https://api.asm.skype.com/v1/objects/0-eus-d7-3b9f818761a9664ca6760f3bca223947/views/imgpsh_fullsize_anim',
+            },
+            "3": {
+                image: 'https://cdn.wallpapersafari.com/51/53/4JEOtw.jpg',
+            },
+            "4": {
+                image: 'https://images.rawpixel.com/image_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvdjc2MC10b29uLTEyXzEuanBn.jpg',
+            },
+            "5": {
+                image: 'https://e0.pxfuel.com/wallpapers/294/264/desktop-wallpaper-cute-kawaii-background-background-cute-kawaii-computer.jpg',
+            },
+            "6": {
+                image: 'https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTA5L3Jhd3BpeGVsb2ZmaWNlOV9hX3NreV9maWxsZWRfd2l0aF9jbG91ZHNfYW5kX3N0YXJzX21hZGVfb2ZfY290dF85Nzk3Nzk0My0wMDJjLTQwYTQtYjk2NS0zNDUzNDZjNjRhMjBfMS5qcGc.jpg',
+            },
+            "7": {
+                image: 'https://wallpapers-clan.com/wp-content/uploads/2023/12/cute-winter-homes-cozy-wallpaper-scaled.jpg',
+            },
+            "8": {
+                image: 'https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTA5L3Jhd3BpeGVsX29mZmljZV8zM193YWxscGFwZXJfb2ZfY3V0ZV9jbG91ZHNfcmFpbmJvd19ncmFkaWVudF9nbF9iMTg3MGIxNi1kOWY3LTQyODAtYmFkMy1mYzAxMDE0MTg1M2JfMS5qcGc.jpg',
+            },
+        },
     },
     scene: {
         home: new Scene({
@@ -709,9 +741,88 @@ let App = {
                     }
                 },
                 {
-                    name: 'input code <span class="red-badge">new!<span>',
+                    name: 'change shell <span class="red-badge">new!<span>',
                     onclick: () => {
-                        App.displayPrompt(`Input code:`, [
+                        // App.handlers.open_shell_background_list();
+                        // return true;
+
+                        App.displayList([
+                            {
+                                name: `display shell: <i>${App.settings.displayShell ? 'yes' : 'no'}</i>`,
+                                onclick: (item) => {
+                                    App.settings.displayShell = !App.settings.displayShell;
+                                    item.innerHTML = `display shell: <i>${App.settings.displayShell ? 'yes' : 'no'}</i>`;  
+                                    App.applySettings();
+                                    return true;
+                                }
+                            },
+                            {
+                                name: 'select shell',
+                                onclick: () => {
+                                    App.handlers.open_shell_background_list();
+                                    return true;
+                                }
+                            },
+                            {
+                                name: 'custom shell',
+                                onclick: () => {
+                                    let display = App.displayList([
+                                        {
+                                            name: `<label class="custom-file-upload"><input id="shell-image-file" type="file"></input>Browse</label>`,
+                                            onclick: (btn) => {
+                                                btn.querySelector('label').click();
+                                                return true;
+                                            }
+                                        },
+                                        {
+                                            name: 'enter url',
+                                            onclick: () => {
+                                                App.displayPrompt(`Enter URL:`, [
+                                                    {
+                                                        name: 'set',
+                                                        onclick: (url) => {
+                                                            let res = App.setShellBackground(url);
+                                                            if(res) App.displayPopup('Shell background set');
+                                                            return true;
+                                                        }
+                                                    },
+                                                    {name: 'cancel', onclick: () => {}},
+                                                ]);
+                                                return true;
+                                            }
+                                        }
+                                    ]);
+
+                                    let input = display.querySelector('#shell-image-file');
+                                    input.onchange = () => {
+                                        const file = input.files[0];
+                                        const reader = new FileReader();
+                                        reader.addEventListener(
+                                            "load",
+                                            () => {
+                                                let res = App.setShellBackground(reader.result);
+                                                if(res) App.displayPopup('Shell background set');
+                                                return true;
+                                            },
+                                            false,
+                                        );
+                                        if (file) {
+                                            reader.readAsDataURL(file);
+                                        }
+                                    }
+
+                                    return true;
+                                }
+                            },
+                        ])
+
+                        return true;
+                    },
+                },
+                {
+                    name: 'input code',
+                    onclick: () => {
+                        App.displayPrompt(`Enter code:`, [
                             {
                                 name: 'set',
                                 onclick: (value) => {
@@ -744,7 +855,7 @@ let App = {
                     }
                 },
                 {
-                    name: 'get save code <span class="red-badge">new!<span>',
+                    name: 'get save code',
                     onclick: () => {
                         let charCode = 'save:' + btoa(JSON.stringify(localStorage));
                         App.displayConfirm(`Here you'll be able to copy your unique save code and continue your playthrough on another device`, [
@@ -794,7 +905,7 @@ let App = {
                 {
                     // _ignore: true,
                     link: 'https://discord.gg/FdwmmWRaTd',
-                    name: 'join discord <span class="red-badge">new!<span>',
+                    name: '<b>join discord</b>',
                     onclick: () => {
                         // App.pet.stats.gold += 250;
                         return true;
@@ -1003,6 +1114,47 @@ let App = {
             }
 
             sliderInstance = App.displaySlider(list, null, {accept: 'Purchase'}, `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}`);
+            return sliderInstance;
+            return App.displayList(list);
+        },
+        open_shell_background_list: function(){
+            let list = [];
+            let sliderInstance;
+            let salesDay = App.isSalesDay();
+            for(let entry of Object.keys(App.defintions.shell_background)){
+                let current = App.defintions.shell_background[entry];
+
+                // 50% off on sales day
+                let price = current.price;
+                if(salesDay) price = Math.round(price / 2);
+
+                list.push({
+                    // name: `<c-sprite width="22" height="22" index="${(current.sprite - 1)}" src="resources/img/item/items.png"></c-sprite> ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>$${buyMode ? `${price}` : ''}</b>`,
+                    name: `<img src="${current.image}"></img>`,
+                    onclick: (btn, list) => {
+                        // if(current.image === App.scene.home.image){
+                        //     App.displayPopup('You already own this entry');
+                        //     return true;
+                        // }
+
+                        // if(App.pet.stats.gold < price){
+                        //     App.displayPopup(`Don't have enough gold!`);
+                        //     return true;
+                        // }
+                        // App.pet.stats.gold -= price;
+
+                        // App.closeAllDisplays();
+                        // Activities.redecorRoom();
+                        // App.scene.home.image = current.image;
+
+                        // App.sendAnalytics('home_background_change', App.scene.home.image);
+                        App.setShellBackground(current.image);
+                        return true;
+                    }
+                })
+            }
+
+            sliderInstance = App.displaySlider(list, null, {accept: 'Set'});
             return sliderInstance;
             return App.displayList(list);
         },
@@ -1587,6 +1739,14 @@ let App = {
         input.focus();
         return list;
     },
+    displayEmpty: function(){
+        let display = document.querySelector('.cloneables .generic-flex-container').cloneNode(true);
+        document.querySelector('.screen-wrapper').appendChild(display);
+        display.close = function(){
+            display.remove();
+        }
+        return display;
+    },
     drawUI: function(){
         App.drawer.drawImmediate({
             x: 5,
@@ -1640,6 +1800,7 @@ let App = {
         localStorage.setItem('user_id', App.userId);
         localStorage.setItem('ingame_events_history', JSON.stringify(App.gameEventsHistory));
         localStorage.setItem('play_time', App.playTime);
+        localStorage.setItem('shell_background', App.shellBackground);
         localStorage.setItem('room_customization', JSON.stringify({
             home: {
                 image: App.scene.home.image,
@@ -1668,8 +1829,11 @@ let App = {
 
         App.playTime = parseInt(localStorage.getItem('play_time') || 0);
 
+        let shellBackground = localStorage.getItem('shell_background') || `https://cdn.wallpapersafari.com/23/55/gNpmf4.jpg`;
+        App.shellBackground = shellBackground;
+
         App.loadedData = {
-            pet, settings, lastTime, eventsHistory, roomCustomizations
+            pet, settings, lastTime, eventsHistory, roomCustomizations, shellBackground
         };
 
         return App.loadedData;
@@ -1697,6 +1861,12 @@ let App = {
                 App.sendAnalytics('pwa_install_cancel', navigator?.userAgent);
             }
         });
+    },
+    setShellBackground: function(url){
+        if(!url) return;
+        document.querySelector("body > div.root > div.dom-shell").style.backgroundImage = `url(${url})`;
+        App.shellBackground = url;
+        return true;
     },
 }
 
