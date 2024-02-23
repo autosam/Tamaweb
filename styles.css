@@ -227,6 +227,15 @@ body {
     flex-direction: column;
     width: 80%;
 }
+.custom-file-upload input[type="file"] {
+    display: none;
+}
+.custom-file-upload {
+    cursor: pointer;
+}
+input[type="file"] {
+    width: -webkit-fill-available;
+}
 input {
     all: unset;
     background: rgba(255, 255, 255, 0.849);

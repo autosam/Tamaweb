@@ -5,6 +5,7 @@ let App = {
         screenSize: 1,
         playSound: true,
         vibrate: true,
+        displayShell: true,
     },
     async init () {
         // init
@@ -182,6 +183,7 @@ let App = {
         // screen size
         document.querySelector('.graphics-wrapper').style.transform = `scale(${this.settings.screenSize})`;
         document.querySelector('.dom-shell').style.transform = `scale(${this.settings.screenSize})`;
+        document.querySelector('.dom-shell').style.display = App.settings.displayShell ? '' : 'none';
     },
     onFrameUpdate: function(time){
         App.deltaTime = time - App.lastTime;
@@ -739,12 +741,21 @@ let App = {
                     }
                 },
                 {
-                    name: 'change shell',
+                    name: 'change shell <span class="red-badge">new!<span>',
                     onclick: () => {
                         // App.handlers.open_shell_background_list();
                         // return true;
 
                         App.displayList([
+                            {
+                                name: `display shell: <i>${App.settings.displayShell ? 'yes' : 'no'}</i>`,
+                                onclick: (item) => {
+                                    App.settings.displayShell = !App.settings.displayShell;
+                                    item.innerHTML = `display shell: <i>${App.settings.displayShell ? 'yes' : 'no'}</i>`;  
+                                    App.applySettings();
+                                    return true;
+                                }
+                            },
                             {
                                 name: 'select shell',
                                 onclick: () => {
@@ -755,24 +766,58 @@ let App = {
                             {
                                 name: 'custom shell',
                                 onclick: () => {
-                                    App.displayPrompt(`Enter background URL:`, [
+                                    let display = App.displayList([
                                         {
-                                            name: 'set',
-                                            onclick: (url) => {
-                                                let res = App.setShellBackground(url);
-                                                if(res) App.displayPopup('Shell background set');
+                                            name: `<label class="custom-file-upload"><input id="shell-image-file" type="file"></input>Browse</label>`,
+                                            onclick: (btn) => {
+                                                btn.querySelector('label').click();
                                                 return true;
                                             }
                                         },
-                                        {name: 'cancel', onclick: () => {}},
+                                        {
+                                            name: 'enter url',
+                                            onclick: () => {
+                                                App.displayPrompt(`Enter URL:`, [
+                                                    {
+                                                        name: 'set',
+                                                        onclick: (url) => {
+                                                            let res = App.setShellBackground(url);
+                                                            if(res) App.displayPopup('Shell background set');
+                                                            return true;
+                                                        }
+                                                    },
+                                                    {name: 'cancel', onclick: () => {}},
+                                                ]);
+                                                return true;
+                                            }
+                                        }
                                     ]);
+
+                                    let input = display.querySelector('#shell-image-file');
+                                    input.onchange = () => {
+                                        const file = input.files[0];
+                                        const reader = new FileReader();
+                                        reader.addEventListener(
+                                            "load",
+                                            () => {
+                                                let res = App.setShellBackground(reader.result);
+                                                if(res) App.displayPopup('Shell background set');
+                                                return true;
+                                            },
+                                            false,
+                                        );
+                                        if (file) {
+                                            reader.readAsDataURL(file);
+                                        }
+                                    }
+
                                     return true;
                                 }
-                            }
+                            },
                         ])
 
                         return true;
-                    }
+                    },
                 },
                 {
                     name: 'input code',
@@ -1697,6 +1742,9 @@ let App = {
     displayEmpty: function(){
         let display = document.querySelector('.cloneables .generic-flex-container').cloneNode(true);
         document.querySelector('.screen-wrapper').appendChild(display);
+        display.close = function(){
+            display.remove();
+        }
         return display;
     },
     drawUI: function(){
@@ -1781,7 +1829,7 @@ let App = {
 
         App.playTime = parseInt(localStorage.getItem('play_time') || 0);
 
-        let shellBackground = localStorage.getItem('shell_background') || `https://cdn.wallpapersafari.com/51/53/4JEOtw.jpg`;
+        let shellBackground = localStorage.getItem('shell_background') || `https://cdn.wallpapersafari.com/23/55/gNpmf4.jpg`;
         App.shellBackground = shellBackground;
 
         App.loadedData = {
