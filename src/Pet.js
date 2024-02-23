@@ -106,6 +106,7 @@ class Pet extends Object2d {
 
         if(!type) type = 'food';
 
+        App.toggleGameplayControls(false);
         this.stopMove();
 
         function refuse(){
@@ -142,6 +143,7 @@ class Pet extends Object2d {
                     break;
             }
             App.foods.hidden = true;
+            App.toggleGameplayControls(true);
         });
 
         return true;
