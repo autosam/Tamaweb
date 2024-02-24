@@ -485,24 +485,25 @@ button {
     pointer-events: none;
 }
 
+.background {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    background-position: 50% 50%;
+    filter: contrast(0.8) brightness(0.6) blur(10px);
+    scale: 1.1;
+    display: none;
+}
+
 .dom-shell {
     width: 320px;
     height: 400px;
     position: absolute;
-    background: rgb(255, 237, 217);
-    border-radius: 95%;
-    border-top-right-radius: 100%;
-    border-top-left-radius: 100%;
+    background: 50% 50% / cover rgb(255, 237, 217);
+    border-radius: 100% 100% 95% 95%;
     overflow: hidden;
-    box-shadow: inset 20px 20px 32px #00000055;
-    background-size: cover;
-    filter: drop-shadow(4px 10px 18px #00000015);
-    /* background-image: url(https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTA5L3Jhd3BpeGVsb2ZmaWNlOV9hX3NreV9maWxsZWRfd2l0aF9jbG91ZHNfYW5kX3N0YXJzX21hZGVfb2ZfY290dF85Nzk3Nzk0My0wMDJjLTQwYTQtYjk2NS0zNDUzNDZjNjRhMjBfMS5qcGc.jpg); */
-    /* background-image: url(https://cdn.wallpapersafari.com/23/55/gNpmf4.jpg); */
-    /* background-image: url(https://e0.pxfuel.com/wallpapers/294/264/desktop-wallpaper-cute-kawaii-background-background-cute-kawaii-computer.jpg); */
-    /* background-image: url(https://w0.peakpx.com/wallpaper/1004/222/HD-wallpaper-cute-kawaii-background-adorable-kawaii.jpg); */
-    /* background-image: url(https://wallpaperbat.com/img/412609-pastel-japan-aesthetic-wallpaper.jpg); */
-    background-position: 50% 50%;
+    box-shadow: rgba(0, 0, 0, 0.333) 20px 20px 32px inset, rgb(255 255 255 / 33%) -12px -20px 16px inset;
+    filter: drop-shadow(rgba(0, 0, 0, 0.082) 4px 10px 18px);
 }
 .dom-shell > .logo {
     position: absolute;
@@ -510,6 +511,23 @@ button {
     top: 40px;
     width: 150px;
     /* filter: sepia(1) hue-rotate(192deg) saturate(7.5) contrast(1) brightness(1); */
+}
+
+.dom-shell .shell-main-btn {
+    height: 15px;
+    right: 50%;
+    position: absolute;
+    left: calc(50% - 25px);
+    bottom: 15%;
+    width: 50px;
+    background: linear-gradient(180deg, #ffffff8f, white);
+    border-radius: 50px;
+    border-bottom: 3px solid #00000061;
+    box-shadow: 0 7px 5px -3px #00000018;
+}
+.dom-shell .shell-main-btn:active {
+    border-bottom-width: 0px;
+    box-shadow: none;
 }
 
 /* .dom-shell-pattern {

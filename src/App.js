@@ -1403,6 +1403,17 @@ let App = {
         open_battle_screen: function(){
             Battle.start();
         },
+        shell_button: function(){
+            let displayCount = 0;
+            [...document.querySelectorAll('.display')].forEach(display => {
+                if(!display.closest('.cloneables')){
+                    displayCount++;
+                }
+            });
+
+            if(displayCount) App.closeAllDisplays();
+            else App.handlers.open_main_menu();
+        },
         sleep: function(){
             App.pet.sleep();
         },
@@ -1854,6 +1865,7 @@ let App = {
     setShellBackground: function(url){
         if(!url) return;
         document.querySelector("body > div.root > div.dom-shell").style.backgroundImage = `url(${url})`;
+        document.querySelector(".background").style.backgroundImage = `url(${url})`;
         App.shellBackground = url;
         return true;
     },

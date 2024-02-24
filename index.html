@@ -26,17 +26,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css" integrity="sha512-pZlKGs7nEqF4zoG0egeK167l6yovsuL8ap30d07kA5AJUq+WysFlQ02DLXAmN3n0+H3JVz5ni8SJZnrOaYXWBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
+    <div class="background"></div>
     <div style="position: absolute;" class="hidden" id="debug">DEBUG</div>
     <div class="root">
         <canvas class="background-canvas" width="96" height="96"></canvas>
         <!-- <img src="resources/img/ui/Front.png" class="screen-shell"></img> -->
         <div class="dom-shell" style="display: none;">
             <img class="logo" src="resources/img/ui/logo_trans_01.png"></img>
-            <div class="dom-shell-pattern"></div>
-            <div class="dom-shell-pattern"></div>
-            <div class="dom-shell-pattern"></div>
-            <div class="dom-shell-pattern"></div>
-            <div class="dom-shell-pattern"></div>
+            <!-- <button class="shell-main-btn" onclick="App.handlers.shell_button()"></button> -->
         </div>
         <div class="graphics-wrapper">
             <div class="screen-wrapper">
@@ -48,7 +45,7 @@
             </div>
 
             <!-- battle screen -->
-            <div class="battle-screen generic-list-container hidden">
+            <!-- <div class="battle-screen generic-list-container hidden">
                 <div id="battle-enemy" class="battle-participant-wrapper">
                     <img src="resources/img/character/red_sonic_battle_front.png"></img>
                     <div class="battle-participant-status-wrapper">
@@ -61,16 +58,15 @@
                 <div id="battle-player" class="battle-participant-wrapper">
                     <img src="resources/img/character/red_sonic_battle_front.png"></img>
                 </div>
-            </div>
+            </div> -->
 
             <!-- gameplay buttons -->
-            <div class="gameplay-main-buttons hidden">
+            <!-- <div class="gameplay-main-buttons hidden">
                 <button class="main-action-icon" id="stats" onclick="App.handlers.open_stats()">📊</button>
                 <button class="main-action-icon" id="food" onclick="App.handlers.open_food_list()">🍕</button>
                 <button class="main-action-icon" id="activities" onclick="App.handlers.open_activity_list()">🛣️</button>
-                <!-- <button class="main-action-icon" id="activities" onclick="App.handlers.open_battle_screen()">⚔️</button> -->
                 <button class="main-action-icon" id="sleep" onclick="App.handlers.sleep()">💤</button>
-            </div>
+            </div> -->
         </div>
     </div>
 
