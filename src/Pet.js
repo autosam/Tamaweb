@@ -113,6 +113,7 @@ class Pet extends Object2d {
             me.playRefuseAnimation();
             App.setScene(App.scene.home);
             App.foods.hidden = true;
+            App.toggleGameplayControls(true);
             return false;
         }
 

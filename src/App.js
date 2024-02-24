@@ -619,56 +619,48 @@ let App = {
             App.vibrate();
             App.displayGrid([
                 {
-                    // name: '📊',
                     name: '<i class="fa-solid fa-line-chart"></i>',
                     onclick: () => {
                         App.handlers.open_stats();
                     }
                 },
                 {
-                    // name: '🍴',
                     name: '<i class="fa-solid fa-cutlery"></i>',
                     onclick: () => {
                         App.handlers.open_food_list();
                     }
                 },
                 {
-                    // name: '🛁',
                     name: '<i class="fa-solid fa-bath"></i>',
                     onclick: () => {
                         App.handlers.clean();
                     }
                 },
                 {
-                    name: '🛏️',
                     name: '<i class="fa-solid fa-bed"></i>',
                     onclick: () => {
                         App.handlers.sleep();
                     }
                 },
                 {
-                    name: '🚪',
                     name: '<i class="fa-solid fa-door-open"></i>',
                     onclick: () => {
                         App.handlers.open_activity_list();
                     }
                 },
                 {
-                    name: '📦',
                     name: '<i class="fa-solid fa-box"></i>',
                     onclick: () => {
                         App.handlers.open_item_list();
                     }
                 },
                 {
-                    name: '💓',
-                    name: '<i class="fa-solid fa-heart"></i>',
+                    name: '<i class="fa-solid fa-mobile-alt"></i>',
                     onclick: () => {
-                        App.handlers.open_friends_list();
+                        App.handlers.open_phone();
                     }
                 },
                 {
-                    name: '⚙️',
                     name: '<i class="fa-solid fa-gear"></i>',
                     onclick: () => {
                         App.handlers.open_settings();
@@ -1173,14 +1165,6 @@ let App = {
                     }
                 },
                 {
-                    name: 'friends',
-                    onclick: () => {
-                        // App.displayPopup('To be implemented...', 1000);
-                        App.handlers.open_friends_list();
-                        return true;
-                    }
-                },
-                {
                     _ignore: App.petDefinition.lifeStage >= 2,
                     name: 'have birthday',
                     onclick: () => {
@@ -1205,13 +1189,6 @@ let App = {
                 //         return true;
                 //     }
                 // },
-                {
-                    name: 'doctor visit',
-                    onclick: () => {
-                        // App.displayPopup(`${App.pet.stats.current_health}`, 1000);
-                        Activities.inviteDoctorVisit();
-                    }
-                }
             ])
         },
         open_friends_list: function(){
@@ -1362,6 +1339,25 @@ let App = {
                     }
                 }
             }));
+        },
+        open_phone: function(){
+            App.displayList([
+                {
+                    name: 'friends',
+                    onclick: () => {
+                        // App.displayPopup('To be implemented...', 1000);
+                        App.handlers.open_friends_list();
+                        return true;
+                    }
+                },
+                {
+                    name: 'doctor visit',
+                    onclick: () => {
+                        // App.displayPopup(`${App.pet.stats.current_health}`, 1000);
+                        Activities.inviteDoctorVisit();
+                    }
+                },
+            ])
         },
         open_mall_activity_list: function(){
             App.displayList([
