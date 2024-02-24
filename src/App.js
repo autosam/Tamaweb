@@ -338,18 +338,11 @@ let App = {
         const date = new Date();
         const dayId = date.getFullYear() + '_' + date.getMonth() + '_' + date.getDate();
 
-        if(addEvent(`update_01_notice`, () => {
-            App.displayConfirm(`<b>new update!</b>babies and teens have been added to the game!`, [
+        if(addEvent(`update_02_notice`, () => {
+            App.displayConfirm(`<b>update notice</b>bunch of options were moved from activity menu to the new mobile icon`, [
                 {
                     name: 'ok',
-                    onclick: () => {
-                        App.displayConfirm(`Try to get your pet to marry one of their friends and you'll get to raise their baby!`, [
-                            {
-                                name: 'ok',
-                                onclick: () => {},
-                            }
-                        ]);
-                    },
+                    onclick: () => {},
                 }
             ]);
         })) return;
@@ -1165,17 +1158,6 @@ let App = {
                     }
                 },
                 {
-                    _ignore: App.petDefinition.lifeStage >= 2,
-                    name: 'have birthday',
-                    onclick: () => {
-                        let nextBirthday = App.petDefinition.nextBirthdayDate();
-                        if(moment().utc().isBefore( nextBirthday )){
-                            return App.displayPopup(`${App.petDefinition.name} hasn't grown enough to age up<br><br>come back <b>${(moment(nextBirthday).utc().fromNow())}</b>`, 5000);
-                        }
-                        Activities.birthday();
-                    }
-                },
-                {
                     _ignore: App.petDefinition.lifeStage < 2,
                     name: 'work',
                     onclick: () => {
@@ -1348,6 +1330,17 @@ let App = {
                         // App.displayPopup('To be implemented...', 1000);
                         App.handlers.open_friends_list();
                         return true;
+                    }
+                },
+                {
+                    _ignore: App.petDefinition.lifeStage >= 2,
+                    name: 'have birthday',
+                    onclick: () => {
+                        let nextBirthday = App.petDefinition.nextBirthdayDate();
+                        if(moment().utc().isBefore( nextBirthday )){
+                            return App.displayPopup(`${App.petDefinition.name} hasn't grown enough to age up<br><br>come back <b>${(moment(nextBirthday).utc().fromNow())}</b>`, 5000);
+                        }
+                        Activities.birthday();
                     }
                 },
                 {
