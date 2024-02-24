@@ -613,6 +613,7 @@ let App = {
             App.displayGrid([
                 {
                     name: '<i class="fa-solid fa-line-chart"></i>',
+                    name: '<i class="fa-solid fa-dashboard"></i>',
                     onclick: () => {
                         App.handlers.open_stats();
                     }
@@ -1340,7 +1341,18 @@ let App = {
                         if(moment().utc().isBefore( nextBirthday )){
                             return App.displayPopup(`${App.petDefinition.name} hasn't grown enough to age up<br><br>come back <b>${(moment(nextBirthday).utc().fromNow())}</b>`, 5000);
                         }
-                        Activities.birthday();
+                        App.displayConfirm(`This will age up ${App.petDefinition.name}<br>Are you sure?`, [
+                            {
+                                name: 'yes',
+                                onclick: () => {
+                                    Activities.birthday();
+                                }
+                            },
+                            {
+                                name: 'no',
+                                onclick: () => {},
+                            }
+                        ])
                     }
                 },
                 {
