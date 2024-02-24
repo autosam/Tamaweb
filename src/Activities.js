@@ -4,9 +4,94 @@ class Activities {
 
         let screen = App.displayEmpty();
         screen.innerHTML = `
+        <div class="flex-container flex-row-down height-100p" style="background: #e6d4ef">
             <div class="timing-bar-container">
+                <div class="timing-bar-rod"></div>
+                <div class="timing-bar-rod"></div>
+                <div class="timing-bar-rod"></div>
+                <div class=timing-bar-cursor></div>
             </div>
+        </div>
         `;
+
+        const cursor = screen.querySelector('.timing-bar-cursor');
+        
+        let moneyWon = 0, round = 0, roundsWin = 0;
+        let cursorSpeed = 0.19;
+        let cursorCurrentPos = 0;
+
+        let reset = (cursorSpeedAdd) => {
+            cursorCurrentPos = 0;
+            cursor.style.opacity = 1;
+        }
+
+        reset();
+
+        App.onDraw = () => {
+            cursorCurrentPos += cursorSpeed * App.nDeltaTime;
+            if(cursorCurrentPos >= 98 || cursorCurrentPos <= 0){
+                cursorSpeed *= -1;
+                cursorCurrentPos = clamp(cursorCurrentPos, 0, 100);
+                App.vibrate(25);
+                App.playSound(`resources/sounds/ui_click_04.ogg`, true);
+            }
+            cursor.style.left = `${cursorCurrentPos}%`;
+        }
+
+        screen.onclick = () => {
+            if(cursorSpeed == 0) return;
+
+            cursorSpeed = 0;
+            cursor.style.opacity = 0.3;
+
+            if(cursorCurrentPos >= 90) {
+                App.playSound(`resources/sounds/ui_click_03.ogg`, true);
+                App.vibrate(80);
+                // success
+                moneyWon += 13;
+                roundsWin++;
+            } else if(cursorCurrentPos >= 70) {
+                App.playSound(`resources/sounds/ui_click_01.ogg`, true);
+                moneyWon += 2;
+            } else {
+                App.playSound(`resources/sounds/ui_click_01.ogg`, true);
+            }
+
+            round++;
+
+            if(round == 3){
+                setTimeout(() => {
+                    screen.close();
+                    App.displayPopup(`${App.petDefinition.name} won $${moneyWon}!`, null, () => {
+                        App.pet.stats.gold += moneyWon;
+                        App.pet.stats.current_fun += roundsWin * 10;
+                        App.setScene(App.scene.park);
+                        App.pet.stopMove();
+                        App.pet.x = '50%';
+                        let onEnd = () => {
+                            App.handlers.open_mall_activity_list();
+                            App.setScene(App.scene.home);
+                        }
+                        if(roundsWin <= 1){
+                            App.pet.triggerScriptedState('uncomfortable', 3000, 0, true, onEnd);
+                        } else {
+                            App.pet.playCheeringAnimationIfTrue(roundsWin == 3, onEnd);
+                        }
+                    });
+                }, 500);
+            } else {
+                setTimeout(() => {
+                    reset(0.15);
+
+                    if(round == 1){
+                        cursorSpeed = 0.27;
+                    }
+                    if(round == 2){
+                        cursorSpeed = 0.37;
+                    }
+                }, 500);
+            }
+        }
     }
     static wedding(otherPetDef){
         App.closeAllDisplays();
@@ -375,7 +460,7 @@ class Activities {
             App.displayPopup(`${App.petDefinition.name} worked for ${elapsedTime} seconds`, 2500, () => {
                 let moneyMade = 0;
                 if(elapsedTime > 10){
-                    moneyMade = Math.round(elapsedTime / 3);
+                    moneyMade = Math.round(elapsedTime / 2.5);
                     App.pet.stats.gold += moneyMade;
                 }
                 App.pet.stats.current_fun -= elapsedTime / 3.5;

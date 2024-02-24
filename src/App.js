@@ -153,7 +153,7 @@ let App = {
             App.save();
         }
 
-        // mouse pos on canvas
+        // touch / mouse pos on canvas
         document.addEventListener('mousemove', (evt) => {
             var rect = App.drawer.canvas.getBoundingClientRect();
             let x = evt.clientX - rect.left, y = evt.clientY - rect.top;
@@ -188,6 +188,7 @@ let App = {
     onFrameUpdate: function(time){
         App.deltaTime = time - App.lastTime;
         App.lastTime = time;
+        App.nDeltaTime = clamp(App.deltaTime || 0, 0, 200) // normal delta time
 
         App.playTime += App.deltaTime;
 
@@ -203,12 +204,14 @@ let App = {
         if(App.fpsElapsedTime > App.fpsInterval){
             App.fpsLastTime = App.fpsCurrentTime - (App.fpsElapsedTime % App.fpsInterval);
             App.drawer.draw();
+            App.onDraw();
         }
 
         // App.drawer.pixelate();
         // App.drawUI();
         // document.querySelector('.background-canvas').getContext('2d').drawImage(App.drawer.canvas, 0, 0);
     },
+    onDraw: () => {},
     preloadImages: function(urls) {
         const promises = urls.map((url) => {
             return new Promise((resolve, reject) => {
@@ -1399,6 +1402,14 @@ let App = {
         open_game_list: function(){
             App.displayList([
                 {
+                    name: 'rod rush <span class="red-badge">new!<span>',
+                    onclick: () => {
+                        // return Activities.barTimingGame();
+                        App.displayPopup(`Stop the pointer at the perfect time!`, 1500, () => Activities.barTimingGame())
+                        return false;
+                    }
+                },
+                {
                     name: 'park game',
                     onclick: () => {
                         return Activities.parkRngGame();
@@ -1752,7 +1763,7 @@ let App = {
         return list;
     },
     displayEmpty: function(){
-        let display = document.querySelector('.cloneables .generic-flex-container').cloneNode(true);
+        let display = document.querySelector('.cloneables .generic-empty-container').cloneNode(true);
         document.querySelector('.screen-wrapper').appendChild(display);
         display.close = function(){
             display.remove();
@@ -1780,7 +1791,7 @@ let App = {
 
         // button click event
         document.addEventListener('click', (e) => {
-            if(e.target.nodeName.toLowerCase() === 'button' || e.target.classList.contains('list-item') || e.target.parentElement?.nodeName.toLowerCase() === 'button'){
+            if(e.target.nodeName.toLowerCase() === 'button' || e.target.classList.contains('list-item') || e.target.classList.contains('click-sound') || e.target.parentElement?.nodeName.toLowerCase() === 'button'){
                 App.vibrate();
                 if(e.target.classList.contains('back-btn') || e.target.textContent.toLowerCase() == 'back')
                     this.playSound(`resources/sounds/ui_click_02.ogg`, true);
