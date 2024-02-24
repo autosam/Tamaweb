@@ -1,6 +1,6 @@
 let App = {
     INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
-    gameEventsHistory: [], deferredInstallPrompt: null, shellBackground: '',
+    gameEventsHistory: [], deferredInstallPrompt: null, shellBackground: '', isOnItch: false,
     settings: {
         screenSize: 1,
         playSound: true,
@@ -12,6 +12,9 @@ let App = {
         this.initSound();
         this.drawer = new Drawer(document.querySelector('.graphics-canvas'));
         Object2d.setDrawer(App.drawer);
+
+        // check for itch
+        if(location.host.indexOf('itch') !== -1) App.isOnItch = true;
 
         // load data
         let loadedData = this.load();
@@ -507,7 +510,7 @@ let App = {
                 image: 'https://cdn.wallpapersafari.com/23/55/gNpmf4.jpg',
             },
             "2": {
-                image: 'https://api.asm.skype.com/v1/objects/0-eus-d7-3b9f818761a9664ca6760f3bca223947/views/imgpsh_fullsize_anim',
+                image: 'https://www.freevector.com/uploads/vector/preview/30386/Outstanding_Colorful_Background_3.jpg',
             },
             "3": {
                 image: 'https://cdn.wallpapersafari.com/51/53/4JEOtw.jpg',
@@ -1869,6 +1872,8 @@ let App = {
         if(App.ENV !== 'prod') return;
 
         if(!type) type = 'default';
+
+        if(App.isOnItch) type += '_itch';
 
         let url = `https://docs.google.com/forms/d/e/1FAIpQLSfzl5hhhnV3IAdxuA90ieEaeBAhCY9Bh4s151huzTMeByMwiw/formResponse?usp=pp_url&entry.1384465975=${App.userId}&entry.1653037117=${App.petDefinition?.name || ''}&entry.1322693089=${type}&entry.1403809294=${value || ''}`;
 
