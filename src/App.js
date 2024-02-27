@@ -344,10 +344,31 @@ let App = {
         const date = new Date();
         const dayId = date.getFullYear() + '_' + date.getMonth() + '_' + date.getDate();
 
-        if(addEvent(`update_02_notice`, () => {
-            App.displayConfirm(`<b>update notice</b>bunch of options were moved from activity menu to the new mobile icon`, [
+        // if(addEvent(`update_02_notice`, () => {
+        //     App.displayConfirm(`<b>update notice</b>bunch of options were moved from activity menu to the new mobile icon`, [
+        //         {
+        //             name: 'ok',
+        //             onclick: () => {},
+        //         }
+        //     ]);
+        // })) return;
+
+        if(addEvent(`game_suggestions_poll_01`, () => {
+            App.displayPrompt(`<b><small>Poll</small></b>what would you like to to be added in the next update?`, [
                 {
-                    name: 'ok',
+                    name: 'send',
+                    onclick: (data) => {
+                        if(!data) return true;
+                        App.displayPopup(`<b>Suggestion sent! thanks!</b><br> here's $200 for participating!`, 4000, () => {
+                            App.pet.x = '50%';
+                            App.pet.playCheeringAnimation();
+                        });
+                        App.pet.stats.gold += 200;
+                        App.sendAnalytics('game_suggestions_poll_01', data, true);
+                    },
+                },
+                {
+                    name: 'cancel',
                     onclick: () => {},
                 }
             ]);
@@ -1868,8 +1889,8 @@ let App = {
         if(!App.settings.vibrate) return;
         navigator?.vibrate(dur || 35);
     },
-    sendAnalytics: function(type, value){
-        if(App.ENV !== 'prod') return;
+    sendAnalytics: function(type, value, force){
+        if(!force && App.ENV !== 'prod') return;
 
         if(!type) type = 'default';
 
