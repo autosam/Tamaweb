@@ -32,7 +32,7 @@ class Activities {
             if(cursorCurrentPos >= 98 || cursorCurrentPos <= 0){
                 cursorSpeed *= -1;
                 cursorCurrentPos = clamp(cursorCurrentPos, 0, 100);
-                App.vibrate(25);
+                // App.vibrate(25);
                 App.playSound(`resources/sounds/ui_click_04.ogg`, true);
             }
             cursor.style.left = `${cursorCurrentPos}%`;
@@ -62,6 +62,7 @@ class Activities {
             if(round == 3){
                 setTimeout(() => {
                     screen.close();
+                    App.onDraw = null;
                     App.displayPopup(`${App.petDefinition.name} won $${moneyWon}!`, null, () => {
                         App.pet.stats.gold += moneyWon;
                         App.pet.stats.current_fun += roundsWin * 10;
