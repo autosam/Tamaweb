@@ -48,13 +48,15 @@ class Activities {
                 App.playSound(`resources/sounds/ui_click_03.ogg`, true);
                 App.vibrate(80);
                 // success
-                moneyWon += 13;
+                moneyWon += 20;
                 roundsWin++;
             } else if(cursorCurrentPos >= 70) {
                 App.playSound(`resources/sounds/ui_click_01.ogg`, true);
-                moneyWon += 2;
+                moneyWon += 3;
             } else {
                 App.playSound(`resources/sounds/ui_click_01.ogg`, true);
+                moneyWon -= 5;
+                moneyWon = clamp(moneyWon, 0, 999);
             }
 
             round++;
