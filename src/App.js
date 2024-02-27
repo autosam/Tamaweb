@@ -369,7 +369,9 @@ let App = {
                 },
                 {
                     name: 'cancel',
-                    onclick: () => {},
+                    onclick: () => {
+                        App.sendAnalytics('game_suggestions_poll_01', 'action_user_cancel', true);
+                    },
                 }
             ]);
         })) return;
