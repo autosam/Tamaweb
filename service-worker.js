@@ -3,7 +3,7 @@ self.importScripts(
     'resources/data/SpriteDefinitions.js',
 )
 
-const CACHE_NAME = 'tamaweb-v9.5';
+const CACHE_NAME = 'tamaweb-v9.6';
 const ASSETS = [
     // main
     'index.html',
@@ -23,6 +23,7 @@ const ASSETS = [
     'resources/sounds/angry.ogg',
     'resources/sounds/birthday_song_01.ogg',
     'resources/sounds/cheer.ogg',
+    'resources/sounds/cheer_success.ogg',
     'resources/sounds/eat.ogg',
     'resources/sounds/refuse.ogg',
     'resources/sounds/sad.ogg',

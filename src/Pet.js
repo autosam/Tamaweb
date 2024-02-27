@@ -196,6 +196,7 @@ class Pet extends Object2d {
     }
     playCheeringAnimation(onEndFn){
         this.stopMove();
+        setTimeout(() => this.playSound('resources/sounds/cheer_success.ogg', true));
         this.triggerScriptedState('cheering_with_icon', 2000, null, true, () => {
             if(onEndFn) onEndFn();
         });
@@ -628,9 +629,9 @@ class Pet extends Object2d {
     loadStats(json){
         this.petDefinition.loadStats(json);
     }
-    playSound(sound){
+    playSound(sound, force){
         if(!this.isMainPet) return;
-        App.playSound(sound);
+        App.playSound(sound, force);
     }
 
     static scriptedEventDrivers = {

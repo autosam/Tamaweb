@@ -90,6 +90,11 @@ body {
     justify-content: center; */
     text-transform: uppercase;
 }
+@keyframes menu-animation {
+    from {
+        opacity: 0;
+    }
+}
 .generic-list-container {
     position: absolute;
     height: 100%;
@@ -103,6 +108,9 @@ body {
     overflow: auto;
     z-index: 2;
     background: var(--container-background);
+}
+.generic-list-container > * {
+    animation: menu-animation 0.2s !important;
 }
 .list-item {
     all: unset;

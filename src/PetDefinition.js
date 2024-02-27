@@ -95,10 +95,10 @@ class PetDefinition {
             start: 2,
             end: 4,
             frameTime: 250,
-            sound: {
-                file: 'cheer.ogg',
-                interval: 2,
-            },
+            // sound: {
+            //     file: 'cheer.ogg',
+            //     interval: 2,
+            // },
             objects: [
                 {
                     img: 'resources/img/misc/happy_icon.png',
