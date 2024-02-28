@@ -66,12 +66,14 @@ class Activities {
                     screen.close();
                     App.onDraw = null;
                     App.displayPopup(`${App.petDefinition.name} won $${moneyWon}!`, null, () => {
+                        App.toggleGameplayControls(false);
                         App.pet.stats.gold += moneyWon;
                         App.pet.stats.current_fun += roundsWin * 10;
                         App.setScene(App.scene.park);
                         App.pet.stopMove();
                         App.pet.x = '50%';
                         let onEnd = () => {
+                            App.toggleGameplayControls(true);
                             App.handlers.open_mall_activity_list();
                             App.setScene(App.scene.home);
                         }
@@ -86,12 +88,7 @@ class Activities {
                 setTimeout(() => {
                     reset(0.15);
 
-                    if(round == 1){
-                        cursorSpeed = 0.27;
-                    }
-                    if(round == 2){
-                        cursorSpeed = 0.37;
-                    }
+                    cursorSpeed = round == 1 ? 0.27 : 0.37;
                 }, 500);
             }
         }

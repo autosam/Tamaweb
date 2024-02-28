@@ -106,7 +106,9 @@ class Pet extends Object2d {
 
         if(!type) type = 'food';
 
-        App.toggleGameplayControls(false);
+        App.toggleGameplayControls(false, () => {
+            this.stopScriptedState();
+        });
         this.stopMove();
 
         function refuse(){
