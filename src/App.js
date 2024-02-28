@@ -338,8 +338,6 @@ let App = {
     handleInGameEvents: function(){
         if(!App.awayTime || App.awayTime == -1) return;
 
-        console.log('showing handle events');
-
         const addEvent = App.addEvent;
 
         const date = new Date();
