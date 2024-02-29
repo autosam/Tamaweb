@@ -31,4 +31,4 @@ Here's a list of features and to-do list:
 - Ability to customize your pet by purchasing clothing and accessories
 
 ### Credits
-- Thanks a lot from Curlour for inspiration and letting me use their Tamagotchi sprites from Eternitchi for the early stages of development: https://sa311.tumblr.com/post/163140958242/about-me
+- Thanks a lot to Curlour for inspiration and letting me use their Tamagotchi sprites from Eternitchi for the early stages of development: https://sa311.tumblr.com/post/163140958242/about-me

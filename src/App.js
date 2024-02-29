@@ -230,7 +230,8 @@ let App = {
         return Promise.all(promises);
     },
     addEvent: function(name, payload){
-        if(!App.gameEventsHistory[name]){
+        App.gameEventsHistory = App.loadedData.eventsHistory || {};
+        if(App.gameEventsHistory[name] !== true){
             App.gameEventsHistory[name] = true;
             payload();
             return true;
@@ -283,12 +284,12 @@ let App = {
                                                         name: 'yes',
                                                         onclick: () => {
                                                             App.save = () => {};
-                                                            localStorage.clear();
+                                                            window.localStorage.clear();
                                                             for(let key of Object.keys(json)){
-                                                                localStorage.setItem(key, json[key]);
+                                                                window.localStorage.setItem(key, json[key]);
                                                             }
-                                                            localStorage.setItem('user_id', App.userId);
-                                                            localStorage.setItem('play_time', App.playTime);
+                                                            window.localStorage.setItem('user_id', App.userId);
+                                                            window.localStorage.setItem('play_time', App.playTime);
                                                             App.displayPopup(`${def.name} is now your pet!`, App.INF);
                                                             setTimeout(() => {
                                                                 location.reload();  
@@ -335,11 +336,9 @@ let App = {
         }
     },
     handleInGameEvents: function(){
-        if(App.awayTime == -1) return;
+        if(!App.awayTime || App.awayTime == -1) return;
 
         const addEvent = App.addEvent;
-
-        App.gameEventsHistory = App.loadedData.eventsHistory || {};
 
         const date = new Date();
         const dayId = date.getFullYear() + '_' + date.getMonth() + '_' + date.getDate();
@@ -364,13 +363,13 @@ let App = {
                             App.pet.playCheeringAnimation();
                         });
                         App.pet.stats.gold += 200;
-                        App.sendAnalytics('game_suggestions_poll_01', data, true);
+                        App.sendAnalytics('game_suggestions_poll_01', data);
                     },
                 },
                 {
                     name: 'cancel',
                     onclick: () => {
-                        App.sendAnalytics('game_suggestions_poll_01', 'action_user_cancel', true);
+                        App.sendAnalytics('game_suggestions_poll_01', 'action_user_cancel');
                     },
                 }
             ]);
@@ -853,7 +852,7 @@ let App = {
                 {
                     name: 'get save code',
                     onclick: () => {
-                        let charCode = 'save:' + btoa(JSON.stringify(localStorage));
+                        let charCode = 'save:' + btoa(JSON.stringify(window.localStorage));
                         App.displayConfirm(`Here you'll be able to copy your unique save code and continue your playthrough on another device`, [
                             {
                                 name: 'ok',
@@ -883,9 +882,9 @@ let App = {
                                 onclick: () => {
                                     App.save();
                                     App.save = () => {};
-                                    // localStorage.clear();
-                                    localStorage.removeItem('last_time');
-                                    localStorage.removeItem('pet');
+                                    // window.localStorage.clear();
+                                    window.localStorage.removeItem('last_time');
+                                    window.localStorage.removeItem('pet');
                                     location.reload();
                                     return false;
                                 }
@@ -1926,14 +1925,14 @@ let App = {
     save: function(){
         // return;
         // setCookie('pet', App.pet.serializeStats(), 365);
-        localStorage.setItem('pet', App.pet.serializeStats());
-        localStorage.setItem('settings', JSON.stringify(App.settings));
-        localStorage.setItem('last_time', Date.now());
-        localStorage.setItem('user_id', App.userId);
-        localStorage.setItem('ingame_events_history', JSON.stringify(App.gameEventsHistory));
-        localStorage.setItem('play_time', App.playTime);
-        localStorage.setItem('shell_background', App.shellBackground);
-        localStorage.setItem('room_customization', JSON.stringify({
+        window.localStorage.setItem('pet', App.pet.serializeStats());
+        window.localStorage.setItem('settings', JSON.stringify(App.settings));
+        window.localStorage.setItem('last_time', Date.now());
+        window.localStorage.setItem('user_id', App.userId);
+        window.localStorage.setItem('ingame_events_history', JSON.stringify(App.gameEventsHistory));
+        window.localStorage.setItem('play_time', App.playTime);
+        window.localStorage.setItem('shell_background', App.shellBackground);
+        window.localStorage.setItem('room_customization', JSON.stringify({
             home: {
                 image: App.scene.home.image,
             }
@@ -1941,27 +1940,27 @@ let App = {
         // -3600000
     },
     load: function(){
-        let pet = localStorage.getItem('pet');
+        let pet = window.localStorage.getItem('pet');
             pet = pet ? JSON.parse(pet) : {};
 
-        let settings = localStorage.getItem('settings');
+        let settings = window.localStorage.getItem('settings');
             settings = settings ? JSON.parse(settings) : null;
 
-        let lastTime = localStorage.getItem('last_time') || false;
+        let lastTime = window.localStorage.getItem('last_time') || false;
 
-        let eventsHistory = localStorage.getItem('ingame_events_history');
+        let eventsHistory = window.localStorage.getItem('ingame_events_history');
             eventsHistory = eventsHistory ? JSON.parse(eventsHistory) : null;
 
-        let roomCustomizations = localStorage.getItem('room_customization');
+        let roomCustomizations = window.localStorage.getItem('room_customization');
         roomCustomizations = roomCustomizations ? JSON.parse(roomCustomizations) : null;
 
         // user id
-        let userId = localStorage.getItem('user_id') || Math.round(Math.random() * 9999999999);
+        let userId = window.localStorage.getItem('user_id') || Math.round(Math.random() * 9999999999);
         App.userId = userId;
 
-        App.playTime = parseInt(localStorage.getItem('play_time') || 0);
+        App.playTime = parseInt(window.localStorage.getItem('play_time') || 0);
 
-        let shellBackground = localStorage.getItem('shell_background') || `https://cdn.wallpapersafari.com/23/55/gNpmf4.jpg`;
+        let shellBackground = window.localStorage.getItem('shell_background') || `https://cdn.wallpapersafari.com/23/55/gNpmf4.jpg`;
         App.shellBackground = shellBackground;
 
         App.loadedData = {
