@@ -3,7 +3,7 @@ self.importScripts(
     'resources/data/SpriteDefinitions.js',
 )
 
-const CACHE_NAME = 'tamaweb-v9.6';
+const CACHE_NAME = 'tamaweb-v9.7';
 const ASSETS = [
     // main
     'index.html',
@@ -33,10 +33,12 @@ const ASSETS = [
     'resources/sounds/ui_click_04.ogg',
     'resources/sounds/walk_01.ogg',
     'resources/sounds/wedding_song_01.ogg',
+    'resources/sounds/wedding_song_01.ogg',
     // other
     'resources/font/PixelifySans-VariableFont_wght.ttf',
     'resources/img/ui/logo_full.png',
     'resources/img/ui/logo_trans_01.png',
+    'resources/img/ui/pointer_right.png',
     // def data
     'resources/data/CharacterDefinitions.js',
     'resources/data/SpriteDefinitions.js',

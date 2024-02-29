@@ -644,7 +644,7 @@ let App = {
                     name: '<i class="fa-solid fa-line-chart"></i>',
                     name: '<i class="fa-solid fa-dashboard"></i>',
                     onclick: () => {
-                        App.handlers.open_stats();
+                        App.handlers.open_stats_menu();
                     }
                 },
                 {
@@ -700,7 +700,7 @@ let App = {
             const settings = App.displayList([
                 {
                     _ignore: !App.deferredInstallPrompt,
-                    name: 'install app <span class="red-badge">new!<span>',
+                    name: 'install app',
                     onclick: () => {
                         // App.pet.stats.gold += 250;
                         App.installAsPWA();
@@ -756,7 +756,7 @@ let App = {
                     }
                 },
                 {
-                    name: 'change shell <span class="red-badge">new!<span>',
+                    name: 'change shell',
                     onclick: () => {
                         // App.handlers.open_shell_background_list();
                         // return true;
@@ -851,25 +851,6 @@ let App = {
                     }
                 },
                 {
-                    name: 'set pet name',
-                    onclick: () => {
-                        App.displayPrompt(`Enter your pet's name:`, [
-                            {
-                                name: 'set',
-                                onclick: (value) => {
-                                    if(!value) return false;
-
-                                    App.pet.petDefinition.name = value;
-                                    App.save();
-                                    App.displayPopup(`Name set to "${App.pet.petDefinition.name}"`)
-                                }
-                            },
-                            {name: 'cancel', onclick: () => {}},
-                        ], App.pet.petDefinition.name);
-                        return true;
-                    }
-                },
-                {
                     name: 'get save code',
                     onclick: () => {
                         let charCode = 'save:' + btoa(JSON.stringify(localStorage));
@@ -941,13 +922,9 @@ let App = {
             // </div>
             // `;
 
-            let lifeStageName = 'ADULT';
-            if(App.petDefinition.lifeStage == 0) lifeStageName = 'BABY';
-            else if(App.petDefinition.lifeStage == 1) lifeStageName = 'TEEN';
-
             list.innerHTML = `
             <div class="inner-padding">
-                <b>GOLD:</b> $${App.pet.stats.gold} <small>(${lifeStageName})</small>
+                <b>GOLD:</b> $${App.pet.stats.gold}
                 <br>
                 <b>HUNGER:</b> ${App.createProgressbar( App.pet.stats.current_hunger / App.pet.stats.max_hunger * 100 ).node.outerHTML}
                 <b>SLEEP:</b> ${App.createProgressbar( App.pet.stats.current_sleep / App.pet.stats.max_sleep * 100 ).node.outerHTML}
@@ -1026,6 +1003,95 @@ let App = {
 
             sliderInstance = App.displaySlider(list, activeIndex, {accept: buyMode ? 'Purchase' : 'Eat'}, buyMode ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}` : null);
             return sliderInstance;
+            return App.displayList(list);
+        },
+        open_stats_menu: function(){
+            App.displayList([
+                {
+                    name: 'stats',
+                    onclick: () => {
+                        App.handlers.open_stats();
+                        return true;
+                    }
+                },
+                {
+                    name: 'profile',
+                    onclick: () => {
+                        App.handlers.open_profile();
+                        return true;
+                    }
+                },
+                {
+                    name: 'achievements',
+                    onclick: () => {
+                        App.handlers.open_achievements_list();
+                        return true;
+                    }
+                },
+                {
+                    name: 'set pet name',
+                    onclick: () => {
+                        App.displayPrompt(`Enter your pet's name:`, [
+                            {
+                                name: 'set',
+                                onclick: (value) => {
+                                    if(!value) return false;
+
+                                    App.pet.petDefinition.name = value;
+                                    App.save();
+                                    App.displayPopup(`Name set to "${App.pet.petDefinition.name}"`)
+                                }
+                            },
+                            {name: 'cancel', onclick: () => {}},
+                        ], App.pet.petDefinition.name);
+                        return true;
+                    }
+                },
+
+            ])
+        },
+        open_profile: function(){
+            let age = 'baby';
+            switch(App.petDefinition.getLifeStage()){
+                case 1: age = 'teen'; break;
+                case 2: age = 'adult'; break;
+            }
+
+            App.displayConfirm(`
+                ${App.petDefinition.getCSprite()}
+                <br>
+                <b>${App.petDefinition.name} <br><small>(${age})</small></b>
+                <br>
+                Born ${moment(App.petDefinition.birthday).utc().fromNow()}
+            `, [
+                {
+                    name: 'back',
+                    onclick: () => {}
+                }
+            ])
+        },
+        open_achievements_list: function(){
+            const configureAchievement = (name, id, condition) => {
+                let btn = {
+                    name: `<small>???</small>`,
+                    onclick: () => { return true },
+                }
+                
+                if(condition){
+                    btn.name = `<small>${name}</small>${App.getBadge('★', 'gray')}`;
+                }
+
+                return btn;
+            }
+            let list = [
+                configureAchievement('a week with you', `pass_10_days_with_pet`, moment().diff(App.petDefinition.birthday, 'days') >= 7),
+                configureAchievement('rich kid', `rich_kid`, App.pet.stats.gold > 2000),
+                configureAchievement('play for 10 minutes', `10_mins`, (App.playTime / 1000 / 60) >= 10),
+                configureAchievement('play for 2 hours', `2_hours`, (App.playTime / 1000 / 60 / 60) >= 2),
+                configureAchievement('play for 5 hours', `5_hours`, (App.playTime / 1000 / 60 / 60) >= 5),
+                configureAchievement('play for 10 hours', `10_hours`, (App.playTime / 1000 / 60 / 60) >= 10),
+            ];
+
             return App.displayList(list);
         },
         open_item_list: function(buyMode, activeIndex, customPayload){
@@ -1428,7 +1494,7 @@ let App = {
         open_game_list: function(){
             App.displayList([
                 {
-                    name: 'rod rush <span class="red-badge">new!<span>',
+                    name: 'rod rush',
                     onclick: () => {
                         // return Activities.barTimingGame();
                         App.displayPopup(`Stop the pointer at the perfect time!`, 1500, () => Activities.barTimingGame())
@@ -1453,6 +1519,7 @@ let App = {
             Battle.start();
         },
         shell_button: function(){
+            if(App.disableGameplayControls) return;
             let displayCount = 0;
             [...document.querySelectorAll('.display')].forEach(display => {
                 if(!display.closest('.cloneables')){
@@ -1465,6 +1532,7 @@ let App = {
         },
         sleep: function(){
             App.pet.sleep();
+            App.save();
         },
         clean: function(){
             App.pet.stopMove();
@@ -1549,7 +1617,9 @@ let App = {
     closeAllDisplays: function(){
         [...document.querySelectorAll('.display')].forEach(display => {
             if(!display.closest('.cloneables')){
-                display.close();
+                // display.close();
+                if(display.close) display.close();
+                else display.remove();
             }
         });
     },
@@ -1701,8 +1771,10 @@ let App = {
     displayPopup: function(content, ms, onEndFn){
         let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
             list.innerHTML = `
-                <div class="inner-padding uppercase flex-center">
-                    ${content}
+                <div class="uppercase flex-center">
+                    <div class="inner-padding bg-white b-radius-10">
+                        ${content}
+                    </div>
                 </div>
             `;
             list.style['z-index'] = 3;
@@ -1718,8 +1790,10 @@ let App = {
     displayConfirm: function(text, buttons){
         let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
             list.innerHTML = `
-                <div class="inner-padding uppercase flex-center">
-                    ${text}
+                <div class="uppercase flex-center">
+                    <div class="inner-padding bg-white b-radius-10">
+                        ${text}
+                    </div>
                 </div>
                 <div class="buttons-container"></div>
             `;
@@ -1741,6 +1815,7 @@ let App = {
             }
             btn.innerHTML = def.name;
             btn.className = 'list-item';
+            if(def.name == 'back') btn.className += ' back-btn';
             btn.onclick = () => {
                 if(!def.onclick()) list.close();
             }
@@ -1753,8 +1828,10 @@ let App = {
     displayPrompt: function(text, buttons, defualtValue){
         let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
             list.innerHTML = `
-                <div class="inner-padding uppercase flex-center">
-                    ${text}
+                <div class="uppercase flex-center">
+                    <div class="inner-padding bg-white b-radius-10">
+                        ${text}
+                    </div>
                 </div>
                 <div class="buttons-container"></div>
             `;
@@ -1788,13 +1865,19 @@ let App = {
         input.focus();
         return list;
     },
-    displayEmpty: function(){
+    displayEmpty: function(addClass){
         let display = document.querySelector('.cloneables .generic-empty-container').cloneNode(true);
+        if(addClass) display.className += ' ' + addClass;
         document.querySelector('.screen-wrapper').appendChild(display);
         display.close = function(){
             display.remove();
         }
         return display;
+    },
+    getBadge: function(text, color){
+        if(!text) text = 'new!';
+        if(!color) color = 'red';
+        return `<span class="badge ${color}">${text}<span>`;
     },
     drawUI: function(){
         App.drawer.drawImmediate({

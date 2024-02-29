@@ -135,8 +135,8 @@ body {
     height: 22px;
 }
 .list-item:before {
-    width: 10px;
-    height: 80%;
+    width: 8px;
+    height: calc(80% - 2px);
     background: white;
     content: "";
     position: absolute;
@@ -144,6 +144,31 @@ body {
     width: calc(100% - 10px);
     z-index: -1;
     border-radius: 20px;
+
+    box-shadow: inset 0px -4px 0px 2px #0000001a;
+
+    outline: 2px solid white;
+}
+/* .list-item:active,
+.list-item:hover {
+    padding-left: 30px;
+} */
+.list-item:active:before,
+.list-item:hover:before{
+    outline: 4px solid rgba(255, 255, 255, 0.281);
+}
+.list-item:active:after,
+.list-item:hover:after {
+    width: 11px;
+    height: 9px;
+    content: "";
+    position: absolute;
+    left: 5px;
+    background-color: red;
+    background: url(resources/img/ui/pointer_right.png);
+    background-position: 50% 50%;
+    image-rendering: pixelated;
+    background-repeat: no-repeat;
 }
 .inner-padding {
     padding: 10px 20px;
@@ -563,8 +588,8 @@ button {
     box-shadow: 1px 1px 5px inset rgb(255, 255, 255);
 } */
 
-.red-badge {
-    background: red;
+.badge {
+    background: gray;
     font-size: x-small;
     padding: 2px 5px;
     color: white;
@@ -579,6 +604,9 @@ button {
     align-items: center;
     margin-left: 2px;
     font-weight: bold;
+}
+.badge.red {
+    background: red;
 }
 
 /* .dom-shell > * {
@@ -654,6 +682,16 @@ button {
 }
 .height-100p {
     height: 100%;
+}
+.flex-dir-col {
+    flex-direction: column;
+}
+.bg-white {
+    background: white;
+    /* box-shadow: 4px 4px 0px 0px #00000042; */
+}
+.b-radius-10 {
+    border-radius: 10px;
 }
 
 /* games */
