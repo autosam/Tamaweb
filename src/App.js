@@ -65,6 +65,13 @@ let App = {
             image: App.preloadedResources["resources/img/misc/poop.png"],
             x: '80%', y: '80%',
             hidden: true,
+            onDraw: function() {
+                if(!this.nextFlipMs || App.time > this.nextFlipMs) {
+                    this.inverted = !this.inverted;
+                    this.nextFlipMs = App.time + 300;
+                }
+
+            }
         })
         App.petDefinition = new PetDefinition({
             name: getRandomName(),
@@ -189,6 +196,7 @@ let App = {
         document.querySelector('.dom-shell').style.display = App.settings.displayShell ? '' : 'none';
     },
     onFrameUpdate: function(time){
+        App.time = time;
         App.deltaTime = time - App.lastTime;
         App.lastTime = time;
         App.nDeltaTime = clamp(App.deltaTime || 0, 0, 200) // normal delta time
@@ -1679,7 +1687,7 @@ let App = {
             list.remove();
         }
 
-        listItems.forEach(item => {
+        listItems.forEach((item, i) => {
             if(item._ignore) return;
 
             let button = document.createElement(item.link ? 'a' : 'button');
@@ -1687,7 +1695,8 @@ let App = {
                     button.href = item.link;
                     button.target = '_blank';
                 }
-                button.className = 'list-item ' + (item.class ? item.class : '');
+                button.className = 'list-item' + (item.class ? ' ' + item.class : '');
+                if(i == listItems.length - 2) button.className += ' last-btn';
                 // '⤳ ' + 
                 button.innerHTML = item.name;
                 button.onclick = () => {

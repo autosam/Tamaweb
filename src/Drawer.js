@@ -24,7 +24,7 @@ class Drawer {
             if(!object || object.hidden || object.absHidden) return;
 
             if (object.onDraw !== undefined)
-                object.onDraw();
+                object.onDraw(object);
 
             if (object.x.toString().indexOf('%') >= 0) {
                 let width = object.spritesheet ? object.spritesheet.cellSize : object.width || object.image.width;
@@ -62,6 +62,14 @@ class Drawer {
                             object.spritesheet.cellSize,
                             object.spritesheet.cellSize
                         );
+                    } else {
+                        this.context.drawImage(
+                            object.image,
+                            -x,
+                            y,
+                            -object.width || -object.image.width,
+                            object.height || object.image.height
+                        )
                     }
                     this.context.restore();
                 } else {
