@@ -229,9 +229,9 @@ let App = {
     
         return Promise.all(promises);
     },
-    addEvent: function(name, payload){
+    addEvent: function(name, payload, force){
         App.gameEventsHistory = App.loadedData.eventsHistory || {};
-        if(App.gameEventsHistory[name] !== true){
+        if(App.gameEventsHistory[name] !== true || force){
             App.gameEventsHistory[name] = true;
             payload();
             return true;
@@ -256,6 +256,15 @@ let App = {
                     App.pet.stats.gold += 250;
                 })) return showAlreadyUsed();
                 App.displayPopup(`Congratulations! ${App.petDefinition.name} got $250!`, 5000);
+                break;
+            case "PRNCSS":
+                if(!addEvent(codeEventId, () => {
+                    App.displayPopup(`Success!`, 5000, () => {
+                        App.closeAllDisplays();
+                        Activities.redecorRoom();
+                        App.scene.home.image = App.defintions.room_background.princess.image;
+                    });
+                })) return showAlreadyUsed();
                 break;
             default:
                 if(rawCode.indexOf('save:') != -1){ // is char code
@@ -525,6 +534,11 @@ let App = {
             "peachy": {
                 image: 'resources/img/background/house/03.png',
                 price: 250,
+            },
+            "princess": {
+                image: 'resources/img/background/house/04.png',
+                price: 350,
+                isNew: true,
             },
         },
         shell_background: {
@@ -1169,7 +1183,7 @@ let App = {
 
                 list.push({
                     // name: `<c-sprite width="22" height="22" index="${(current.sprite - 1)}" src="resources/img/item/items.png"></c-sprite> ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>$${buyMode ? `${price}` : ''}</b>`,
-                    name: `<img src="${current.image}"></img> ${room.toUpperCase()} <b>$${price}</b>`,
+                    name: `<img src="${current.image}"></img> ${room.toUpperCase()} <b>$${price}</b> ${current.isNew ? App.getBadge() : ''}`,
                     onclick: (btn, list) => {
                         if(current.image === App.scene.home.image){
                             App.displayPopup('You already own this room');
@@ -1482,7 +1496,7 @@ let App = {
                     }
                 },
                 {
-                    name: 'redécor room',
+                    name: `redécor room ${App.getBadge()}`,
                     onclick: () => {
                         App.handlers.open_room_background_list(true);
                         return true;
@@ -1876,7 +1890,7 @@ let App = {
     getBadge: function(text, color){
         if(!text) text = 'new!';
         if(!color) color = 'red';
-        return `<span class="badge ${color}">${text}<span>`;
+        return `<span class="badge ${color}">${text.toUpperCase()}<span>`;
     },
     drawUI: function(){
         App.drawer.drawImmediate({
