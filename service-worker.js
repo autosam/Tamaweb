@@ -3,7 +3,8 @@ self.importScripts(
     'resources/data/SpriteDefinitions.js',
 )
 
-const CACHE_NAME = 'tamaweb-v9.71';
+const VER = '9.83';
+const CACHE_NAME = `tamaweb-${VER}`;
 const ASSETS = [
     // main
     'index.html',
@@ -33,7 +34,6 @@ const ASSETS = [
     'resources/sounds/ui_click_04.ogg',
     'resources/sounds/walk_01.ogg',
     'resources/sounds/wedding_song_01.ogg',
-    'resources/sounds/wedding_song_01.ogg',
     // other
     'resources/font/PixelifySans-VariableFont_wght.ttf',
     'resources/img/ui/logo_full.png',
@@ -51,6 +51,7 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (e) => {
+    self.skipWaiting();
     e.waitUntil(
         caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)),
     );
