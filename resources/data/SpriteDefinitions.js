@@ -15,6 +15,7 @@ const SPRITES = [
 
     // items
     "resources/img/item/foods.png",
+    "resources/img/item/foods_on.png",
     "resources/img/item/items.png",
 
     // misc

@@ -114,19 +114,23 @@ class Pet extends Object2d {
         function refuse(){
             me.playRefuseAnimation();
             App.setScene(App.scene.home);
-            App.foods.hidden = true;
+            // App.foods.hidden = true;
+            App.uiFood.style.visibility = 'hidden';
             App.toggleGameplayControls(true);
             return false;
         }
 
         switch(type){
             case "food": 
-                if(this.hasMoodlet('full')) return refuse();
+                // if(this.hasMoodlet('full')) return refuse();
                 break;
         }
 
-        App.foods.hidden = false;
-        App.foods.spritesheet.cellNumber = foodSpriteCellNumber;
+        /* App.foods.hidden = false; // remove this getting rid of ui food
+        App.foods.spritesheet.cellNumber = foodSpriteCellNumber; */
+
+        App.uiFood.style.visibility = 'visible';
+        App.uiFood.setAttribute('index', foodSpriteCellNumber - 1);
         
         this.inverted = false;
         this.stats.current_hunger += value;
@@ -137,6 +141,7 @@ class Pet extends Object2d {
             switch(type){
                 case "food":
                     this.playCheeringAnimationIfTrue(this.hasMoodlet('full'), () =>{
+                        App.closeAllDisplays();
                         App.handlers.open_food_list();
                         App.setScene(App.scene.home);
                     });
@@ -145,7 +150,8 @@ class Pet extends Object2d {
                     this.playCheeringAnimationIfTrue(this.hasMoodlet('healthy'), () => App.setScene(App.scene.home));
                     break;
             }
-            App.foods.hidden = true;
+            // App.foods.hidden = true;
+            App.uiFood.style.visibility = 'hidden';
             App.toggleGameplayControls(true);
         });
 

@@ -562,6 +562,14 @@ button {
     border-bottom-width: 0px;
     box-shadow: none;
 }
+c-sprite.ui-food {
+    position: absolute;
+    z-index: 10;
+    top: calc(50% - -18px);
+    left: calc(50% - 12px);
+    transform: scale(1.2);
+    pointer-events: none;
+}
 
 /* .dom-shell-pattern {
     width: 200px;

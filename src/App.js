@@ -50,17 +50,40 @@ let App = {
             // img: "resources/img/background/house/01.jpg",
             image: null, x: 0, y: 0, width: 96, height: 96,
         })
+        // App.foods = new Object2d({
+        //     image: App.preloadedResources["resources/img/item/foods.png"],
+        //     x: 10, y: 10,
+        //     spritesheet: {
+        //         cellNumber: 11,
+        //         cellSize: 16,
+        //         rows: 4,
+        //         columns: 4,
+        //     },
+        //     hidden: true,
+        // })
         App.foods = new Object2d({
-            image: App.preloadedResources["resources/img/item/foods.png"],
+            image: App.preloadedResources["resources/img/item/foods_on.png"],
             x: 10, y: 10,
+            width: 12, height: 12,
+            scale: 24, // todo: add scale functionality
             spritesheet: {
-                cellNumber: 11,
-                cellSize: 16,
-                rows: 4,
-                columns: 4
+                cellNumber: 2,
+                cellSize: 24,
+                rows: 33,
+                columns: 33,
             },
             hidden: true,
         })
+        App.uiFood = document.createElement('c-sprite');
+        App.uiFood.setAttribute('width', 24);
+        App.uiFood.setAttribute('height', 24);
+        App.uiFood.setAttribute('index', 0);
+        App.uiFood.setAttribute('src', "resources/img/item/foods_on.png");
+        App.uiFood.setAttribute('class', 'ui-food');
+        App.uiFood.style.visibility = 'hidden';
+        document.querySelector('.graphics-wrapper').appendChild(App.uiFood);
+        console.log(App.uiFood);
+
         App.poop = new Object2d({
             image: App.preloadedResources["resources/img/misc/poop.png"],
             x: '80%', y: '80%',
@@ -431,39 +454,74 @@ let App = {
     defintions: {
         food: {
             "bread": {
-                sprite: 1,
+                sprite: 542,
                 hunger_replenish: 15,
                 fun_replenish: 0,
                 health_replenish: 2,
                 price: 2,
                 age: [1, 2],
             },
-            "slice of pizza": {
-                sprite: 10,
-                hunger_replenish: 20,
+            // fast food
+            "pizza": {
+                sprite: 512,
+                hunger_replenish: 40,
                 fun_replenish: 5,
                 health_replenish: -5,
-                price: 5,
-                age: [1, 2],
-            },
-            "carrot": {
-                sprite: 2,
-                hunger_replenish: 10,
-                fun_replenish: 1,
-                health_replenish: 5,
-                price: 2,
+                price: 10,
                 age: [1, 2],
             },
             "hamburger": {
-                sprite: 9,
+                sprite: 2,
                 hunger_replenish: 40,
                 fun_replenish: 10,
                 health_replenish: -20,
                 price: 15,
                 age: [1, 2],
             },
+            "koluche": {
+                sprite: 1030,
+                hunger_replenish: 25,
+                fun_replenish: 5,
+                health_replenish: 5,
+                price: 8,
+                age: [1, 2],
+            },
+            "jelly": {
+                sprite: 1013,
+                hunger_replenish: 8,
+                fun_replenish: 20,
+                health_replenish: 0,
+                price: 10,
+                age: [1, 2],
+            },
+            "chocolate pie": {
+                sprite: 1010,
+                hunger_replenish: 10,
+                fun_replenish: 8,
+                health_replenish: 0,
+                price: 8,
+                age: [1, 2],
+            },
+            "pancake": {
+                sprite: 60,
+                hunger_replenish: 10,
+                fun_replenish: 8,
+                health_replenish: 0,
+                price: 8,
+                age: [1, 2],
+            },
+            // exq food
+            "crab dish": {
+                sprite: 456,
+                hunger_replenish: 50,
+                fun_replenish: 5,
+                health_replenish: 10,
+                price: 20,
+                age: [2],
+            },
+            // groc
             "broccoli": {
-                sprite: 5,
+                sprite: 632,
                 hunger_replenish: 15,
                 fun_replenish: 0,
                 health_replenish: 10,
@@ -471,14 +529,14 @@ let App = {
                 age: [1, 2],
             },
             "milk": {
-                sprite: 15,
+                sprite: 1036,
                 hunger_replenish: 50,
                 fun_replenish: 10,
                 price: 0,
                 age: [0],
             },
             "medicine": {
-                sprite: 13,
+                sprite: 1050,
                 hunger_replenish: 0,
                 fun_replenish: -20,
                 health_replenish: 999,
@@ -589,7 +647,7 @@ let App = {
         }),
         kitchen: new Scene({
             image: 'resources/img/background/house/kitchen_02.png',
-            foodsX: 40, foodsY: 52,
+            foodsX: '50%', foodsY: 44,
             petX: 62, petY: 74,
         }),
         park: new Scene({
@@ -972,21 +1030,21 @@ let App = {
             for(let food of Object.keys(App.defintions.food)){
                 let current = App.defintions.food[food];
 
-                if(!current.age.includes(App.petDefinition.lifeStage)) continue;
+                // if(!current.age.includes(App.petDefinition.lifeStage)) continue;
 
                 if(buyMode && current.price == 0) continue;
 
                 // check if current pet has this food on its inventory
-                if(current.price && !App.pet.inventory.food[food] && !buyMode){
-                    continue;
-                }
+                // if(current.price && !App.pet.inventory.food[food] && !buyMode){
+                //     continue;
+                // }
 
                 // 50% off on sales day
                 let price = current.price;
                 if(salesDay) price = Math.round(price / 2);
 
                 list.push({
-                    name: `<c-sprite width="16" height="16" index="${(current.sprite - 1)}" src="resources/img/item/foods.png"></c-sprite> ${food.toUpperCase()} (x${App.pet.inventory.food[food] > 0 ? App.pet.inventory.food[food] : (!current.price ? '∞' : 0)}) <b>${buyMode ? `$${price}` : ''}</b>`,
+                    name: `<c-sprite width="24" height="24" index="${(current.sprite - 1)}" src="resources/img/item/foods_on.png"></c-sprite> ${food.toUpperCase()} (x${App.pet.inventory.food[food] > 0 ? App.pet.inventory.food[food] : (!current.price ? '∞' : 0)}) <b>${buyMode ? `$${price}` : ''}</b>`,
                     onclick: (btn, list) => {
                         if(buyMode){
                             if(App.pet.stats.gold < price){

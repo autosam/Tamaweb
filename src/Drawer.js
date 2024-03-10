@@ -84,7 +84,7 @@ class Drawer {
                             x,
                             y,
                             object.spritesheet.cellSize,
-                            object.spritesheet.cellSize
+                            object.spritesheet.cellSize,
                         );
                     } else {
                         this.context.drawImage(
