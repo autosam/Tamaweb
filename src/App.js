@@ -175,16 +175,17 @@ let App = {
             App.mouse = { x: x / 2, y: y / 2 };
         })
 
-        // saver
-        setInterval(() => {
-            App.save();
-        }, 5000);
-
         // in-game events
+        App.gameEventsHistory = loadedData.eventsHistory || {};
         this.handleInGameEvents();
 
         // load room customizations
         this.applyRoomCustomizations(loadedData.roomCustomizations);
+
+        // saver
+        setInterval(() => {
+            App.save();
+        }, 5000);
 
         // hide loading
         document.querySelector('.loading-text').style.display = 'none';  
@@ -238,7 +239,6 @@ let App = {
         return Promise.all(promises);
     },
     addEvent: function(name, payload, force){
-        App.gameEventsHistory = App.loadedData.eventsHistory || {};
         if(App.gameEventsHistory[name] !== true || force){
             App.gameEventsHistory[name] = true;
             payload();
@@ -1084,6 +1084,9 @@ let App = {
                 <b>${App.petDefinition.name} <br><small>(${age})</small></b>
                 <br>
                 Born ${moment(App.petDefinition.birthday).utc().fromNow()}
+                <div class="user-id">
+                    uid:${App.userId}
+                </div>
             `, [
                 {
                     name: 'back',
@@ -1545,7 +1548,7 @@ let App = {
                     }
                 },
                 {
-                    name: `redécor room ${App.getBadge()}`,
+                    name: `redécor room`,
                     onclick: () => {
                         App.handlers.open_room_background_list(true);
                         return true;

@@ -154,11 +154,16 @@ body {
     padding-left: 30px;
 } */
 .list-item:active:before,
-.list-item:hover:before{
+.list-item:hover:before,
+.w-btn:hover,
+.w-btn:active,
+.slide-btn:hover::before,
+.slide-btn:active::before {
     outline: 4px solid rgba(255, 255, 255, 0.281);
 }
 .list-item:active:after,
-.list-item:hover:after {
+.list-item:hover:after 
+{
     width: 11px;
     height: 9px;
     content: "";
@@ -260,6 +265,11 @@ body {
     flex-direction: column;
     width: 80%;
 }
+.slide-btn:before {
+    box-shadow: inset 0px -4px 0px 2px #0000001a;
+    outline: 2px solid white;
+}
+
 .custom-file-upload input[type="file"] {
     display: none;
 }
@@ -563,6 +573,16 @@ button {
     box-shadow: none;
 }
 
+.user-id {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    font-size: x-small;
+    padding: 5px;
+    background: #ffffff;
+    border-bottom-right-radius: 5px;
+}
+
 /* .dom-shell-pattern {
     width: 200px;
     height: 200px;
@@ -644,9 +664,14 @@ button {
     padding: 0px 5px;
     text-transform: uppercase;
     border-radius: 20px;
+    position: relative;
 }
 .w-btn:hover {
     outline-offset: 1px;
+}
+.w-btn {
+    box-shadow: inset 0px -4px 0px 2px #0000001a;
+    outline: 2px solid white;
 }
 
 .install-prompt {
