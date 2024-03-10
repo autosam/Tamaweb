@@ -369,7 +369,7 @@ let App = {
         //     ]);
         // })) return;
 
-        if(addEvent(`game_suggestions_poll_01`, () => {
+        /* if(addEvent(`game_suggestions_poll_01`, () => {
             App.displayPrompt(`<b><small>Poll</small></b>what would you like to to be added in the next update?`, [
                 {
                     name: 'send',
@@ -415,7 +415,7 @@ let App = {
                     },
                 }
             ]);
-        })) return;
+        })) return; */
 
         if(App.isSalesDay()){
             if(addEvent(`sales_day_${dayId}_notice`, () => {
@@ -920,6 +920,25 @@ let App = {
                     }
                 },
                 {
+                    name: `send feedback ${App.getBadge()}`,
+                    onclick: () => {
+                        App.displayPrompt(`what would you like to to be added in the next update?`, [
+                            {
+                                name: 'send',
+                                onclick: (data) => {
+                                    if(!data) return true;
+                                    App.displayPopup(`<b>Suggestion sent!</b><br> thanks for participating!`, 4000);
+                                    App.sendAnalytics('game_feedback', data);
+                                },
+                            },
+                            {
+                                name: 'cancel',
+                                onclick: () => {},
+                            }
+                        ]);
+                    }
+                },
+                {
                     // _ignore: true,
                     link: 'https://discord.gg/FdwmmWRaTd',
                     name: '<b>join discord</b>',
@@ -1006,7 +1025,9 @@ let App = {
                         }
                         let ateFood = App.pet.feed(current.sprite, current.hunger_replenish, current.type);
                         if(ateFood) {
-                            App.pet.inventory.food[food] -= 1;
+                            if(App.pet.inventory.food[food] > 0)
+                                App.pet.inventory.food[food] -= 1;
+
                             App.pet.stats.current_fun += current.fun_replenish;
                             if(App.pet.hasMoodlet('healthy') && current.type === 'med')
                                 App.pet.stats.current_health = App.pet.stats.current_health * 0.6;
