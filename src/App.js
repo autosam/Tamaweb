@@ -293,7 +293,7 @@ let App = {
                     App.displayPopup(`Success!`, 5000, () => {
                         App.closeAllDisplays();
                         Activities.redecorRoom();
-                        App.scene.home.image = App.defintions.room_background.princess.image;
+                        App.scene.home.image = App.definitions.room_background.princess.image;
                     });
                 })) return showAlreadyUsed();
                 break;
@@ -451,189 +451,6 @@ let App = {
             })) return;
         }
     },
-    defintions: {
-        food: {
-            "bread": {
-                sprite: 542,
-                hunger_replenish: 15,
-                fun_replenish: 0,
-                health_replenish: 2,
-                price: 2,
-                age: [1, 2],
-            },
-            // fast food
-            "pizza": {
-                sprite: 512,
-                hunger_replenish: 40,
-                fun_replenish: 5,
-                health_replenish: -5,
-                price: 10,
-                age: [1, 2],
-            },
-            "hamburger": {
-                sprite: 2,
-                hunger_replenish: 40,
-                fun_replenish: 10,
-                health_replenish: -20,
-                price: 15,
-                age: [1, 2],
-            },
-            "koluche": {
-                sprite: 1030,
-                hunger_replenish: 25,
-                fun_replenish: 5,
-                health_replenish: 5,
-                price: 8,
-                age: [1, 2],
-            },
-            "jelly": {
-                sprite: 1013,
-                hunger_replenish: 8,
-                fun_replenish: 20,
-                health_replenish: 0,
-                price: 10,
-                age: [1, 2],
-            },
-            "chocolate pie": {
-                sprite: 1010,
-                hunger_replenish: 10,
-                fun_replenish: 8,
-                health_replenish: 0,
-                price: 8,
-                age: [1, 2],
-            },
-            "pancake": {
-                sprite: 60,
-                hunger_replenish: 10,
-                fun_replenish: 8,
-                health_replenish: 0,
-                price: 8,
-                age: [1, 2],
-            },
-            // exq food
-            "crab dish": {
-                sprite: 456,
-                hunger_replenish: 50,
-                fun_replenish: 5,
-                health_replenish: 10,
-                price: 20,
-                age: [2],
-            },
-            // groc
-            "broccoli": {
-                sprite: 632,
-                hunger_replenish: 15,
-                fun_replenish: 0,
-                health_replenish: 10,
-                price: 3,
-                age: [1, 2],
-            },
-            "milk": {
-                sprite: 1036,
-                hunger_replenish: 50,
-                fun_replenish: 10,
-                price: 0,
-                age: [0],
-            },
-            "medicine": {
-                sprite: 1050,
-                hunger_replenish: 0,
-                fun_replenish: -20,
-                health_replenish: 999,
-                price: 20,
-                type: 'med',
-                age: [0, 1, 2],
-            },
-        },
-        item: {
-            "foxy": {
-                sprite: 1,
-                fun_replenish: 20,
-                price: 50,
-                interaction_time: 12000,
-                interruptable: true,
-            },
-            "dumble": {
-                sprite: 2,
-                fun_replenish: 10,
-                price: 100
-            },
-            "music player": {
-                sprite: 3,
-                fun_replenish: 20,
-                price: 65
-            },
-            "ball": {
-                sprite: 4,
-                fun_replenish: 30,
-                price: 35,
-                interaction_time: 100000,
-                interruptable: true,
-            },
-            "smartphone": {
-                sprite: 5,
-                fun_replenish: 80,
-                price: 350,
-                interaction_time: 100000,
-                interruptable: true,
-            },
-            "magazine": {
-                sprite: 6,
-                fun_replenish: 10,
-                price: 20,
-                interaction_time: 60000,
-                interruptable: true,
-            },
-            "microphone": {
-                sprite: 7,
-                fun_replenish: 20,
-                price: 75,
-                interaction_time: 60000,
-                interruptable: true,
-            },   
-        },
-        room_background: {
-            "blue": {
-                image: 'resources/img/background/house/02.png',
-                price: 200,
-            },
-            "peachy": {
-                image: 'resources/img/background/house/03.png',
-                price: 250,
-            },
-            "princess": {
-                image: 'resources/img/background/house/04.png',
-                price: 350,
-                isNew: true,
-            },
-        },
-        shell_background: {
-            "1": {
-                image: 'https://cdn.wallpapersafari.com/23/55/gNpmf4.jpg',
-            },
-            "2": {
-                image: 'https://www.freevector.com/uploads/vector/preview/30386/Outstanding_Colorful_Background_3.jpg',
-            },
-            "3": {
-                image: 'https://cdn.wallpapersafari.com/51/53/4JEOtw.jpg',
-            },
-            "4": {
-                image: 'https://images.rawpixel.com/image_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvdjc2MC10b29uLTEyXzEuanBn.jpg',
-            },
-            "5": {
-                image: 'https://e0.pxfuel.com/wallpapers/294/264/desktop-wallpaper-cute-kawaii-background-background-cute-kawaii-computer.jpg',
-            },
-            "6": {
-                image: 'https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTA5L3Jhd3BpeGVsb2ZmaWNlOV9hX3NreV9maWxsZWRfd2l0aF9jbG91ZHNfYW5kX3N0YXJzX21hZGVfb2ZfY290dF85Nzk3Nzk0My0wMDJjLTQwYTQtYjk2NS0zNDUzNDZjNjRhMjBfMS5qcGc.jpg',
-            },
-            "7": {
-                image: 'https://wallpapers-clan.com/wp-content/uploads/2023/12/cute-winter-homes-cozy-wallpaper-scaled.jpg',
-            },
-            "8": {
-                image: 'https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTA5L3Jhd3BpeGVsX29mZmljZV8zM193YWxscGFwZXJfb2ZfY3V0ZV9jbG91ZHNfcmFpbmJvd19ncmFkaWVudF9nbF9iMTg3MGIxNi1kOWY3LTQyODAtYmFkMy1mYzAxMDE0MTg1M2JfMS5qcGc.jpg',
-            },
-        },
-    },
     scene: {
         home: new Scene({
             image: 'resources/img/background/house/02.png',
@@ -729,7 +546,27 @@ let App = {
                 {
                     name: '<i class="fa-solid fa-cutlery"></i>',
                     onclick: () => {
-                        App.handlers.open_food_list();
+                        // App.handlers.open_food_list();
+                        App.displayList([
+                            {
+                                name: 'food',
+                                onclick: () => {
+                                    return App.handlers.open_food_list(null, null, 'food');
+                                }
+                            },
+                            {
+                                name: 'snacks',
+                                onclick: () => {
+                                    return App.handlers.open_food_list(null, null, 'treat');
+                                }
+                            },
+                            {
+                                name: 'meds',
+                                onclick: () => {
+                                    return App.handlers.open_food_list(null, null, 'med');
+                                }
+                            },  
+                        ])
                     }
                 },
                 {
@@ -1042,16 +879,18 @@ let App = {
 
             document.querySelector('.screen-wrapper').appendChild(list);
         },
-        open_food_list: function(buyMode, activeIndex){
+        open_food_list: function(buyMode, activeIndex, filterType){
             let list = [];
             let sliderInstance;
             let salesDay = App.isSalesDay();
-            for(let food of Object.keys(App.defintions.food)){
-                let current = App.defintions.food[food];
+            for(let food of Object.keys(App.definitions.food)){
+                let current = App.definitions.food[food];
 
                 // if(!current.age.includes(App.petDefinition.lifeStage)) continue;
 
                 if(buyMode && current.price == 0) continue;
+
+                if(filterType && (current.type || 'food') != filterType) continue;
 
                 // check if current pet has this food on its inventory
                 // if(current.price && !App.pet.inventory.food[food] && !buyMode){
@@ -1242,12 +1081,12 @@ let App = {
             let list = [];
             let sliderInstance;
             let salesDay = App.isSalesDay();
-            for(let item of Object.keys(App.defintions.item)){
+            for(let item of Object.keys(App.definitions.item)){
                 // check if current pet has this item on its inventory
                 if(!App.pet.inventory.item[item] && !buyMode){
                     continue;
                 }
-                let current = App.defintions.item[item];
+                let current = App.definitions.item[item];
 
                 // 50% off on sales day
                 let price = current.price;
@@ -1305,8 +1144,8 @@ let App = {
             let sliderInstance;
             let salesDay = App.isSalesDay();
             const buyMode = true;
-            for(let room of Object.keys(App.defintions.room_background)){
-                let current = App.defintions.room_background[room];
+            for(let room of Object.keys(App.definitions.room_background)){
+                let current = App.definitions.room_background[room];
 
                 // 50% off on sales day
                 let price = current.price;
@@ -1346,8 +1185,8 @@ let App = {
             let list = [];
             let sliderInstance;
             let salesDay = App.isSalesDay();
-            for(let entry of Object.keys(App.defintions.shell_background)){
-                let current = App.defintions.shell_background[entry];
+            for(let entry of Object.keys(App.definitions.shell_background)){
+                let current = App.definitions.shell_background[entry];
 
                 // 50% off on sales day
                 let price = current.price;
