@@ -140,7 +140,7 @@ class PetDefinition {
         max_sleep: 100,
         sleep_satisfaction: 70,
         sleep_min_desire: 20,
-        sleep_depletion_rate: 0.008,
+        sleep_depletion_rate: 0.03,
         sleep_replenish_rate: 0.1,
         light_sleepiness: 0.01,
         activity_sleep_depletion: 0.3,
@@ -155,7 +155,7 @@ class PetDefinition {
         // health
         max_health: 100,
         health_depletion_mult: 0.5, // from 0 to 1, 0 means immune to all health risks
-        health_depletion_rate: 0.1,
+        health_depletion_rate: 0.25,
         // wander (sec)
         wander_min: 1.5,
         wander_max: 8,
