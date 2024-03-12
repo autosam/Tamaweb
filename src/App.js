@@ -546,27 +546,7 @@ let App = {
                 {
                     name: '<i class="fa-solid fa-cutlery"></i>',
                     onclick: () => {
-                        // App.handlers.open_food_list();
-                        App.displayList([
-                            {
-                                name: 'food',
-                                onclick: () => {
-                                    return App.handlers.open_food_list(null, null, 'food');
-                                }
-                            },
-                            {
-                                name: 'snacks',
-                                onclick: () => {
-                                    return App.handlers.open_food_list(null, null, 'treat');
-                                }
-                            },
-                            {
-                                name: 'meds',
-                                onclick: () => {
-                                    return App.handlers.open_food_list(null, null, 'med');
-                                }
-                            },  
-                        ])
+                        App.handlers.open_feeding_menu();
                     }
                 },
                 {
@@ -902,7 +882,7 @@ let App = {
                 if(salesDay) price = Math.round(price / 2);
 
                 list.push({
-                    name: `<c-sprite width="24" height="24" index="${(current.sprite - 1)}" src="resources/img/item/foods_on.png"></c-sprite> ${food.toUpperCase()} (x${App.pet.inventory.food[food] > 0 ? App.pet.inventory.food[food] : (!current.price ? '∞' : 0)}) <b>${buyMode ? `$${price}` : ''}</b>`,
+                    name: `<c-sprite naturalWidth="792" naturalHeight="792" width="24" height="24" index="${(current.sprite - 1)}" src="resources/img/item/foods_on.png"></c-sprite> ${food.toUpperCase()} (x${App.pet.inventory.food[food] > 0 ? App.pet.inventory.food[food] : (!current.price ? '∞' : 0)}) <b>${buyMode ? `$${price}` : ''}</b>`,
                     onclick: (btn, list) => {
                         if(buyMode){
                             if(App.pet.stats.gold < price){
@@ -916,10 +896,12 @@ let App = {
                                 App.pet.inventory.food[food] += 1;
                             }
                             // console.log(list.scrollTop);
-                            let nList = App.handlers.open_food_list(true, sliderInstance?.getCurrentIndex());
+                            let nList = App.handlers.open_food_list(true, sliderInstance?.getCurrentIndex(), filterType);
                                 // nList.scrollTop = list.scrollTop;
                             return false;
                         }
+
+                        App.closeAllDisplays();
                         let ateFood = App.pet.feed(current.sprite, current.hunger_replenish, current.type);
                         if(ateFood) {
                             if(App.pet.inventory.food[food] > 0)
@@ -943,6 +925,28 @@ let App = {
             sliderInstance = App.displaySlider(list, activeIndex, {accept: buyMode ? 'Purchase' : 'Eat'}, buyMode ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}` : null);
             return sliderInstance;
             return App.displayList(list);
+        },
+        open_feeding_menu: function(){
+            App.displayList([
+                {
+                    name: 'food',
+                    onclick: () => {
+                        return App.handlers.open_food_list(null, null, 'food');
+                    }
+                },
+                {
+                    name: 'snacks',
+                    onclick: () => {
+                        return App.handlers.open_food_list(null, null, 'treat');
+                    }
+                },
+                {
+                    name: 'meds',
+                    onclick: () => {
+                        return App.handlers.open_food_list(null, null, 'med');
+                    }
+                },  
+            ])
         },
         open_stats_menu: function(){
             App.displayList([
@@ -1231,6 +1235,12 @@ let App = {
                     }
                 },
                 {
+                    name: 'market',
+                    onclick: () => {
+                        App.handlers.open_market_menu();
+                    }
+                },
+                {
                     name: 'park',
                     onclick: () => { // going to park with random pet
                         Activities.goToPark();
@@ -1452,13 +1462,6 @@ let App = {
                     }
                 },
                 {
-                    name: 'buy groceries',
-                    onclick: () => {
-                        App.handlers.open_food_list(true);
-                        return true;
-                    }
-                },
-                {
                     name: 'buy items',
                     onclick: () => {
                         App.handlers.open_item_list(true);
@@ -1473,6 +1476,31 @@ let App = {
                     }
                 },
             ]);
+        },
+        open_market_menu: function(){
+            App.displayList([
+                {
+                    name: 'purchase food',
+                    onclick: () => {
+                        App.handlers.open_food_list(true, null, "food");
+                        return true;
+                    }
+                },
+                {
+                    name: 'purchase snacks',
+                    onclick: () => {
+                        App.handlers.open_food_list(true, null, "treat");
+                        return true;
+                    }
+                },
+                {
+                    name: 'pharmacy',
+                    onclick: () => {
+                        App.handlers.open_food_list(true, null, "med");
+                        return true;
+                    }
+                },
+            ])
         },
         open_game_list: function(){
             App.displayList([

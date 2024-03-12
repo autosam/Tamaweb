@@ -66,7 +66,7 @@ App.definitions = {
             age: [1, 2],
         },
         "sushi set": {
-            sprite: 170,
+            sprite: 169,
             hunger_replenish: 40,
             fun_replenish: 10,
             health_replenish: 20,
@@ -89,7 +89,7 @@ App.definitions = {
             price: 20,
             age: [1, 2],
         },
-        "spicy dragon ramen": {
+        "spicy dragon pot": {
             sprite: 719,
             hunger_replenish: 30,
             fun_replenish: 0,
@@ -191,6 +191,38 @@ App.definitions = {
             fun_replenish: 5,
             health_replenish: 10,
             price: 13,
+            age: [1, 2],
+        },
+        "breadrolls": {
+            sprite: 554,
+            hunger_replenish: 20,
+            fun_replenish: 5,
+            health_replenish: 2,
+            price: 20,
+            age: [1, 2],
+        },
+        "sweetbread": {
+            sprite: 713,
+            hunger_replenish: 15,
+            fun_replenish: 0,
+            health_replenish: 10,
+            price: 10,
+            age: [1, 2],
+        },
+        "meatballs": {
+            sprite: 951,
+            hunger_replenish: 30,
+            fun_replenish: 0,
+            health_replenish: 0,
+            price: 15,
+            age: [1, 2],
+        },
+        "xiao long bao": {
+            sprite: 602,
+            hunger_replenish: 10,
+            fun_replenish: 0,
+            health_replenish: 5,
+            price: 7,
             age: [1, 2],
         },
 

@@ -129,6 +129,10 @@ class Pet extends Object2d {
         /* App.foods.hidden = false; // remove this getting rid of ui food
         App.foods.spritesheet.cellNumber = foodSpriteCellNumber; */
 
+        let baseFoodSpriteIndex = foodSpriteCellNumber - 1;
+        let foodSpriteIndex = baseFoodSpriteIndex;
+        let lastFoodSpriteIndexChangeMs = App.time;
+
         App.uiFood.style.visibility = 'visible';
         App.uiFood.setAttribute('index', foodSpriteCellNumber - 1);
         
@@ -139,20 +143,30 @@ class Pet extends Object2d {
 
         this.triggerScriptedState('eating', 4000, null, true, () => {
             switch(type){
-                case "food":
-                    this.playCheeringAnimationIfTrue(this.hasMoodlet('full'), () =>{
-                        App.closeAllDisplays();
-                        App.handlers.open_food_list();
-                        App.setScene(App.scene.home);
-                    });
-                    break;
                 case "med":
                     this.playCheeringAnimationIfTrue(this.hasMoodlet('healthy'), () => App.setScene(App.scene.home));
+                    break;
+                default:
+                    this.playCheeringAnimationIfTrue(this.hasMoodlet('full'), () =>{
+                        App.closeAllDisplays();
+                        
+                        App.handlers.open_feeding_menu();
+                        App.handlers.open_food_list(null, null, type);
+                        App.setScene(App.scene.home);
+                    });
                     break;
             }
             // App.foods.hidden = true;
             App.uiFood.style.visibility = 'hidden';
             App.toggleGameplayControls(true);
+        }, () => {
+            if(App.time - lastFoodSpriteIndexChangeMs > 1200){
+                lastFoodSpriteIndexChangeMs = App.time;
+
+                foodSpriteIndex = clamp(foodSpriteIndex + 1, baseFoodSpriteIndex, baseFoodSpriteIndex + 2);
+
+                App.uiFood.setAttribute('index', foodSpriteIndex);
+            }
         });
 
         return true;
