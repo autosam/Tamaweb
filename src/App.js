@@ -82,7 +82,6 @@ let App = {
         App.uiFood.setAttribute('class', 'ui-food');
         App.uiFood.style.visibility = 'hidden';
         document.querySelector('.graphics-wrapper').appendChild(App.uiFood);
-        console.log(App.uiFood);
 
         App.poop = new Object2d({
             image: App.preloadedResources["resources/img/misc/poop.png"],
@@ -239,7 +238,7 @@ let App = {
         if(App.fpsElapsedTime > App.fpsInterval){
             App.fpsLastTime = App.fpsCurrentTime - (App.fpsElapsedTime % App.fpsInterval);
             App.drawer.draw();
-            App.onDraw();
+            if(App.onDraw) App.onDraw();
         }
 
         // App.drawer.pixelate();
@@ -480,6 +479,9 @@ let App = {
             petX: '50%', petY: '100%',
             image: 'resources/img/background/house/wedding_01.png',
         }),
+        arcade: new Scene({
+            image: 'resources/img/background/house/arcade_01.png',
+        })
     },
     setScene(scene){
         if(App.currentScene && App.currentScene.onUnload){
@@ -508,9 +510,17 @@ let App = {
         if(age === undefined) age = 2;
 
         let sprite;
-        if(age == 0) sprite = randomFromArray(PET_BABY_CHARACTERS);
-        else if(age == 1) sprite = randomFromArray(PET_TEEN_CHARACTERS);
-        else sprite = randomFromArray(PET_ADULT_CHARACTERS);
+        switch(age){
+            case 0:
+                sprite = randomFromArray(PET_BABY_CHARACTERS);
+                break;
+            case 1:
+                sprite = randomFromArray(PET_TEEN_CHARACTERS);
+                break;
+            default:
+                sprite = randomFromArray(PET_ADULT_CHARACTERS);
+                break;
+        }
 
         let pet = new PetDefinition({
             sprite,
@@ -1241,6 +1251,14 @@ let App = {
                     }
                 },
                 {
+                    name: 'game center',
+                    onclick: () => {
+                        // App.handlers.open_game_list();
+                        Activities.goToArcade();
+                        // return true;
+                    }
+                },
+                {
                     name: 'park',
                     onclick: () => { // going to park with random pet
                         Activities.goToPark();
@@ -1454,13 +1472,6 @@ let App = {
         },
         open_mall_activity_list: function(){
             App.displayList([
-                {
-                    name: 'game center',
-                    onclick: () => {
-                        App.handlers.open_game_list();
-                        return true;
-                    }
-                },
                 {
                     name: 'buy items',
                     onclick: () => {

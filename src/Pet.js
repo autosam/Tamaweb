@@ -679,6 +679,15 @@ class Pet extends Object2d {
                 this.pet.targetX = -20;
             }
         },
+        movingIn: function(){
+            this.pet.setState('moving');
+
+            if(this.moving_init_done === undefined){
+                this.moving_init_done = true;
+                this.pet.x = '105%';
+                this.pet.targetX = -20;
+            }
+        },
         playingWithItem: function(start){
             if(!this.item) return false;
 
