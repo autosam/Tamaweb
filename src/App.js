@@ -511,31 +511,40 @@ let App = {
 
         App.setScene(App.currentScene);
     },
-    getRandomPetDef: function(age){
+    getRandomPetDef: function(age, seed){
+        pRandom.save();
+        let rndArrayFn = randomFromArray;
+
+        if(seed !== undefined) {
+            pRandom.seed = seed;
+            rndArrayFn = pRandomFromArray;
+        }
+
         if(age === undefined) age = 2;
 
         let sprite;
         switch(age){
             case 0:
-                sprite = randomFromArray(PET_BABY_CHARACTERS);
+                sprite = rndArrayFn(PET_BABY_CHARACTERS);
                 break;
             case 1:
-                sprite = randomFromArray(PET_TEEN_CHARACTERS);
+                sprite = rndArrayFn(PET_TEEN_CHARACTERS);
                 break;
             default:
-                sprite = randomFromArray(PET_ADULT_CHARACTERS);
+                sprite = rndArrayFn(PET_ADULT_CHARACTERS);
                 break;
         }
 
         let pet = new PetDefinition({
             sprite,
-            name: getRandomName(),
+            name: getRandomName(seed ? seed : false),
         });
         pet.setStats({
             current_hunger: 100,
             current_sleep: 100,
             current_fun: 100
         });
+        pRandom.load();
         return pet;
     },
     handlers: {
@@ -1485,6 +1494,68 @@ let App = {
                         Activities.inviteDoctorVisit();
                     }
                 },
+                {
+                    _disable: App.petDefinition.lifeStage == 0,
+                    name: `social media ${App.getBadge()}`,
+                    onclick: () => {
+                        App.handlers.open_social_media();
+                        return true;
+                    }
+                }
+            ])
+        },
+        open_social_media: function(){
+            App.displayList([
+                {
+                    name: 'post',
+                    onclick: () => {
+                        return true;
+                    }
+                },
+                {
+                    name: 'explore',
+                    onclick: () => {
+                        const date = new Date();
+                        const dayId = date.getFullYear() + date.getMonth() + date.getDate();
+
+                        let seed = App.userId + dayId;
+
+                        let potentialFriends = new Array(8).fill(undefined).map((spot, i) => App.getRandomPetDef(App.petDefinition.lifeStage, seed + (i * 128)));
+
+                        App.displayGrid([...potentialFriends.map(otherPetDef => {
+                            return {
+                                name: `${otherPetDef.getFullCSprite()}`,
+                                class: 'bg-bef-1',
+                                onclick: () => {
+                                    App.displayConfirm(`Do you want to send friend request to<br><b>${otherPetDef.getCSprite()} ${otherPetDef.name}?</b>`, [
+                                        {
+                                            name: 'yes',
+                                            onclick: () => {
+                                                let willAcceptFriendRequest = random(0, 2) == 1;
+                                                if(!willAcceptFriendRequest){
+                                                    App.displayPopup(`${otherPetDef.name} did <b style="color: #ff6e74">not accept</b> ${App.petDefinition.name}'s friend request`)
+                                                    return;
+                                                }
+                                                let state = App.petDefinition.addFriend(otherPetDef);
+                                                if(state) App.displayPopup(`${otherPetDef.name} <b style="color: #87cf00">accepted</b> ${App.petDefinition.name}'s friend request!`);
+                                                else App.displayPopup(`${App.petDefinition.name} is already friends with ${otherPetDef.name}!`);
+                                            }
+                                        },
+                                        {
+                                            name: 'no',
+                                            onclick: () => { }
+                                        }
+                                    ])
+                                    return true;
+                                }
+                            }
+                        }), {
+                            name: '<i class="fa-solid fa-arrow-left"></i>',
+                            onclick: () => { }
+                        }])
+                        return true;
+                    }
+                },
             ])
         },
         open_mall_activity_list: function(){
@@ -1690,6 +1761,7 @@ let App = {
                 if(i == listItems.length - 2) button.className += ' last-btn';
                 // '⤳ ' + 
                 button.innerHTML = item.name;
+                button.disabled = item._disable;
                 button.onclick = () => {
                     let result = item.onclick(button, list);
                     if(!result){

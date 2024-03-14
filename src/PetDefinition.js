@@ -386,10 +386,36 @@ class PetDefinition {
         return true;
     }
 
+    addFriend(friendDef, friendship){
+        if(this.friends.indexOf(friendDef) === -1){ // checking friends list
+            let friendDefS = friendDef.name + friendDef.sprite;
+            let haveMatchingDef = this.friends.some(activeFriendDef => {
+                let activeFriendDefS = activeFriendDef.name + activeFriendDef.sprite;
+                if(activeFriendDefS == friendDefS) return true;
+                return false;
+            });
+            if(!haveMatchingDef){ // new friend
+                this.friends.push(friendDef);
+                friendDef.increaseFriendship(friendship);
+                return true;
+            } else { // not new friend
+                return false;
+            }
+        }
+
+        return false;
+    }
+
     getCSprite(){
         if(this.lifeStage == 0) return `<c-sprite width="16" height="16" index="0" src="${this.sprite}" pos-x="0" pos-y="0" style="margin-right: 10px;"></c-sprite>`;
         if(this.lifeStage == 1) return `<c-sprite width="16" height="16" index="0" src="${this.sprite}" pos-x="4" pos-y="4" style="margin-right: 10px;"></c-sprite>`;
         return `<c-sprite width="20" height="20" index="0" src="${this.sprite}" pos-x="6" pos-y="4" style="margin-right: 10px;"></c-sprite>`;
+    }
+
+    getFullCSprite(){
+        if(this.lifeStage == 0) return `<c-sprite width="16" height="16" index="0" src="${this.sprite}" pos-x="0" pos-y="0"></c-sprite>`;
+        if(this.lifeStage == 1) return `<c-sprite width="24" height="24" index="0" src="${this.sprite}" pos-x="0" pos-y="0"></c-sprite>`;
+        return `<c-sprite width="32" height="32" index="0" src="${this.sprite}" pos-x="0" pos-y="0"></c-sprite>`;
     }
 
     spritesheetDefinitions = {

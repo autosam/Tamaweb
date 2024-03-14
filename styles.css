@@ -175,6 +175,13 @@ body {
     image-rendering: pixelated;
     background-repeat: no-repeat;
 }
+.list-item:disabled {
+    pointer-events: none;
+    color: gray;
+}
+.list-item:disabled::before {
+    opacity: 0.6;
+}
 .inner-padding {
     padding: 10px 20px;
 }
@@ -725,6 +732,9 @@ c-sprite.ui-food {
 }
 .b-radius-10 {
     border-radius: 10px;
+}
+.bg-bef-1:before {
+    background: #e5acde !important;
 }
 
 /* games */

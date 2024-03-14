@@ -582,10 +582,7 @@ class Activities {
         let otherPet;
         if(otherPetDef){
             otherPet = new Pet(otherPetDef);
-            if(App.petDefinition.friends.indexOf(otherPetDef) === -1){ // new friend
-                App.petDefinition.friends.push(otherPetDef);
-            }
-            otherPetDef.increaseFriendship();
+            App.petDefinition.addFriend(otherPetDef);
         }
         App.pet.triggerScriptedState('playing', 10000, null, true, () => {
             App.pet.x = '50%';
