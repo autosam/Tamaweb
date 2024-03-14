@@ -6,6 +6,7 @@ let App = {
         playSound: true,
         vibrate: true,
         displayShell: true,
+        displayShellButtons: false,
     },
     async init () {
         // init
@@ -217,6 +218,7 @@ let App = {
         document.querySelector('.graphics-wrapper').style.transform = `scale(${this.settings.screenSize})`;
         document.querySelector('.dom-shell').style.transform = `scale(${this.settings.screenSize})`;
         document.querySelector('.dom-shell').style.display = App.settings.displayShell ? '' : 'none';
+        document.querySelector('.shell-main-btn').style.display = App.settings.displayShellButtons ? '' : 'none';
     },
     onFrameUpdate: function(time){
         App.time = time;
@@ -441,7 +443,7 @@ let App = {
 
         if(App.isSalesDay()){
             if(addEvent(`sales_day_${dayId}_notice`, () => {
-                App.displayConfirm(`<b>discount day!</b>Shops are selling their products at a discounted rate! Check them out and pile up on them!`, [
+                App.displayConfirm(`<b>discount day!</b><br>Shops are selling their products at a discounted rate! Check them out and pile up on them!`, [
                     {
                         name: 'ok',
                         onclick: () => {},
@@ -481,7 +483,10 @@ let App = {
         }),
         arcade: new Scene({
             image: 'resources/img/background/house/arcade_01.png',
-        })
+        }),
+        market: new Scene({
+            image: 'resources/img/background/outside/market_01.png',
+        }),
     },
     setScene(scene){
         if(App.currentScene && App.currentScene.onUnload){
@@ -590,7 +595,7 @@ let App = {
                     }
                 },
                 {
-                    name: '<i class="fa-solid fa-gear"></i>',
+                    name: `<i class="fa-solid fa-gear"></i>`,
                     onclick: () => {
                         App.handlers.open_settings();
                     }
@@ -662,7 +667,7 @@ let App = {
                     }
                 },
                 {
-                    name: 'change shell',
+                    name: `change shell ${App.getBadge()}`,
                     onclick: () => {
                         // App.handlers.open_shell_background_list();
                         // return true;
@@ -678,7 +683,16 @@ let App = {
                                 }
                             },
                             {
-                                name: 'select shell',
+                                name: `shell button: <i>${App.settings.displayShellButtons ? 'yes' : 'no'}</i> ${App.getBadge()}`,
+                                onclick: (item) => {
+                                    App.settings.displayShellButtons = !App.settings.displayShellButtons;
+                                    item.innerHTML = `shell button: <i>${App.settings.displayShellButtons ? 'yes' : 'no'}</i>`;  
+                                    App.applySettings();
+                                    return true;
+                                }
+                            },
+                            {
+                                name: `select shell ${App.getBadge()}`,
                                 onclick: () => {
                                     App.handlers.open_shell_background_list();
                                     return true;
@@ -876,16 +890,19 @@ let App = {
             for(let food of Object.keys(App.definitions.food)){
                 let current = App.definitions.food[food];
 
-                // if(!current.age.includes(App.petDefinition.lifeStage)) continue;
+                // lifestage check
+                if(!current.age.includes(App.petDefinition.lifeStage)) continue;
 
+                // buy mode and is free
                 if(buyMode && current.price == 0) continue;
 
+                // filter check
                 if(filterType && (current.type || 'food') != filterType) continue;
 
                 // check if current pet has this food on its inventory
-                // if(current.price && !App.pet.inventory.food[food] && !buyMode){
-                //     continue;
-                // }
+                if(current.price && !App.pet.inventory.food[food] && !buyMode){
+                    continue;
+                }
 
                 // 50% off on sales day
                 let price = current.price;
@@ -955,7 +972,7 @@ let App = {
                     onclick: () => {
                         return App.handlers.open_food_list(null, null, 'med');
                     }
-                },  
+                },
             ])
         },
         open_stats_menu: function(){
@@ -1247,7 +1264,7 @@ let App = {
                 {
                     name: 'market',
                     onclick: () => {
-                        App.handlers.open_market_menu();
+                        Activities.goToMarket();
                     }
                 },
                 {
@@ -1504,13 +1521,6 @@ let App = {
                         return true;
                     }
                 },
-                {
-                    name: 'pharmacy',
-                    onclick: () => {
-                        App.handlers.open_food_list(true, null, "med");
-                        return true;
-                    }
-                },
             ])
         },
         open_game_list: function(){
@@ -1543,12 +1553,19 @@ let App = {
         shell_button: function(){
             if(App.disableGameplayControls) return;
             let displayCount = 0;
+            let disallow = false;
             [...document.querySelectorAll('.display')].forEach(display => {
                 if(!display.closest('.cloneables')){
                     displayCount++;
+                    if(display.classList.contains('popup')) disallow = true;
+                    if(display.classList.contains('confirm')) disallow = true;
+                    if(display.classList.contains('prompt')) disallow = true;
                 }
             });
 
+            if(disallow) return;
+
+            App.setScene(App.scene.home);
             if(displayCount) App.closeAllDisplays();
             else App.handlers.open_main_menu();
         },
@@ -1793,6 +1810,7 @@ let App = {
     },
     displayPopup: function(content, ms, onEndFn){
         let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
+            list.classList.add('popup');
             list.innerHTML = `
                 <div class="uppercase flex-center">
                     <div class="inner-padding bg-white b-radius-10">
@@ -1812,6 +1830,7 @@ let App = {
     },
     displayConfirm: function(text, buttons){
         let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
+            list.classList.add('confirm');
             list.innerHTML = `
                 <div class="uppercase flex-center">
                     <div class="inner-padding bg-white b-radius-10">
@@ -1850,6 +1869,7 @@ let App = {
     },
     displayPrompt: function(text, buttons, defualtValue){
         let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
+            list.classList.add('prompt');
             list.innerHTML = `
                 <div class="uppercase flex-center">
                     <div class="inner-padding bg-white b-radius-10">
@@ -1955,7 +1975,7 @@ let App = {
         window.localStorage.setItem('user_id', App.userId);
         window.localStorage.setItem('ingame_events_history', JSON.stringify(App.gameEventsHistory));
         window.localStorage.setItem('play_time', App.playTime);
-        window.localStorage.setItem('shell_background', App.shellBackground);
+        window.localStorage.setItem('shell_background_v2.1', App.shellBackground);
         window.localStorage.setItem('room_customization', JSON.stringify({
             home: {
                 image: App.scene.home.image,
@@ -1984,7 +2004,7 @@ let App = {
 
         App.playTime = parseInt(window.localStorage.getItem('play_time') || 0);
 
-        let shellBackground = window.localStorage.getItem('shell_background') || `https://cdn.wallpapersafari.com/23/55/gNpmf4.jpg`;
+        let shellBackground = window.localStorage.getItem('shell_background_v2.1') || App.definitions.shell_background['1'].image;
         App.shellBackground = shellBackground;
 
         App.loadedData = {

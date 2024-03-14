@@ -451,28 +451,22 @@ App.definitions = {
     },
     shell_background: {
         "1": {
-            image: 'https://cdn.wallpapersafari.com/23/55/gNpmf4.jpg',
+            image: 'resources/img/ui/shell_background_01.png',
         },
         "2": {
-            image: 'https://www.freevector.com/uploads/vector/preview/30386/Outstanding_Colorful_Background_3.jpg',
+            image: 'resources/img/ui/shell_background_02.png',
         },
         "3": {
-            image: 'https://cdn.wallpapersafari.com/51/53/4JEOtw.jpg',
+            image: 'resources/img/ui/shell_background_03.png',
         },
         "4": {
-            image: 'https://images.rawpixel.com/image_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvdjc2MC10b29uLTEyXzEuanBn.jpg',
+            image: 'resources/img/ui/shell_background_04.png',
         },
         "5": {
-            image: 'https://e0.pxfuel.com/wallpapers/294/264/desktop-wallpaper-cute-kawaii-background-background-cute-kawaii-computer.jpg',
+            image: 'resources/img/ui/shell_background_05.png',
         },
         "6": {
-            image: 'https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTA5L3Jhd3BpeGVsb2ZmaWNlOV9hX3NreV9maWxsZWRfd2l0aF9jbG91ZHNfYW5kX3N0YXJzX21hZGVfb2ZfY290dF85Nzk3Nzk0My0wMDJjLTQwYTQtYjk2NS0zNDUzNDZjNjRhMjBfMS5qcGc.jpg',
-        },
-        "7": {
-            image: 'https://wallpapers-clan.com/wp-content/uploads/2023/12/cute-winter-homes-cozy-wallpaper-scaled.jpg',
-        },
-        "8": {
-            image: 'https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTA5L3Jhd3BpeGVsX29mZmljZV8zM193YWxscGFwZXJfb2ZfY3V0ZV9jbG91ZHNfcmFpbmJvd19ncmFkaWVudF9nbF9iMTg3MGIxNi1kOWY3LTQyODAtYmFkMy1mYzAxMDE0MTg1M2JfMS5qcGc.jpg',
+            image: 'resources/img/ui/shell_background_06.png',
         },
     },
 }

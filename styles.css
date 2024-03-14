@@ -557,13 +557,13 @@ button {
 }
 
 .dom-shell .shell-main-btn {
-    height: 15px;
+    height: 30px;
     right: 50%;
     position: absolute;
-    left: calc(50% - 25px);
-    bottom: 15%;
-    width: 50px;
-    background: linear-gradient(180deg, #ffffff8f, white);
+    left: calc(50% - 15px);
+    bottom: 12%;
+    width: 30px;
+    background: linear-gradient(180deg, #e3e3e3, white);
     border-radius: 50px;
     border-bottom: 3px solid #00000061;
     box-shadow: 0 7px 5px -3px #00000018;

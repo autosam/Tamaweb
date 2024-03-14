@@ -39,6 +39,13 @@ const ASSETS = [
     'resources/img/ui/logo_full.png',
     'resources/img/ui/logo_trans_01.png',
     'resources/img/ui/pointer_right.png',
+    // shell background
+    'resources/img/ui/shell_background_01.png',
+    'resources/img/ui/shell_background_02.png',
+    'resources/img/ui/shell_background_03.png',
+    'resources/img/ui/shell_background_04.png',
+    'resources/img/ui/shell_background_05.png',
+    'resources/img/ui/shell_background_06.png',
     // def data
     'resources/data/CharacterDefinitions.js',
     'resources/data/SpriteDefinitions.js',

@@ -13,6 +13,7 @@ const SPRITES = [
     
     "resources/img/background/outside/park_02.png",
     "resources/img/background/outside/mall_walkway.png",
+    "resources/img/background/outside/market_01.png",
 
     // items
     "resources/img/item/foods.png",

@@ -122,7 +122,7 @@ class Pet extends Object2d {
 
         switch(type){
             case "food": 
-                // if(this.hasMoodlet('full')) return refuse();
+                if(this.hasMoodlet('full')) return refuse();
                 break;
         }
 

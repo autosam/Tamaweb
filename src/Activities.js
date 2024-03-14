@@ -489,6 +489,35 @@ class Activities {
             randomNpcs.forEach(npc => npc.removeObject());
         }, Pet.scriptedEventDrivers.movingIn.bind({pet: App.pet}));
     }
+    static goToMarket(){
+        App.toggleGameplayControls(false);
+        App.setScene(App.scene.market);
+
+        let randomNpcs = new Array(2).fill(undefined).map((item, i) => {
+
+            let petDef = App.getRandomPetDef(2);
+            let npcPet = new Pet(petDef);
+            
+            if(i == 1) npcPet.x = 30;
+            else {
+                npcPet.x = 0;
+                npcPet.inverted = true;
+            }
+
+            npcPet.stopMove();
+            npcPet.triggerScriptedState('eating', App.INF, null, true);
+
+            return npcPet;
+        })
+
+        App.pet.triggerScriptedState('moving', 2500, null, true, () => {
+            App.setScene(App.scene.home);
+            App.handlers.open_market_menu();
+            App.toggleGameplayControls(true);
+
+            randomNpcs.forEach(npc => npc.removeObject());
+        }, Pet.scriptedEventDrivers.movingIn.bind({pet: App.pet}));
+    }
     static inviteHousePlay(otherPetDef){
         App.setScene(App.scene.home);
         App.toggleGameplayControls(false);
