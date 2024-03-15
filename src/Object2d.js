@@ -14,13 +14,13 @@ class Object2d {
         this.x = '50%';
         this.y = '50%';
 
-        // config
-        this.config = config;
-
         // props
         for (let key of Object.keys(config)) {
             this[key] = config[key];
         }
+
+        // config
+        this.config = config;
 
         // initializing
         if(!this.image){

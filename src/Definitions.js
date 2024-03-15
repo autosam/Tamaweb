@@ -358,14 +358,14 @@ App.definitions = {
 
 
         // groc
-        "broccoli": {
+        /* "broccoli": {
             sprite: 632,
             hunger_replenish: 15,
             fun_replenish: 0,
             health_replenish: 10,
             price: 3,
             age: [1, 2],
-        },
+        }, */
 
 
 
@@ -451,10 +451,10 @@ App.definitions = {
     },
     shell_background: {
         "1": {
-            image: 'resources/img/ui/shell_background_01.png',
+            image: 'resources/img/ui/shell_background_02.png',
         },
         "2": {
-            image: 'resources/img/ui/shell_background_02.png',
+            image: 'resources/img/ui/shell_background_01.png',
         },
         "3": {
             image: 'resources/img/ui/shell_background_03.png',

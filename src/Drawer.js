@@ -1,5 +1,6 @@
 class Drawer {
-    constructor(canvas) {
+    constructor(canvas, optWidth, optHeight) {
+        if(!canvas) canvas = document.createElement('canvas');
         this.canvas = canvas;
         this.context = canvas.getContext('2d');
         this.context.fillStyle = 'white';
@@ -11,8 +12,8 @@ class Drawer {
         this.context.imageSmoothingEnabled = false;
         // this.bounds = canvas.getBoundingClientRect();
         this.bounds = {
-            width: this.canvas.width,
-            height: this.canvas.height
+            width: optWidth || this.canvas.width,
+            height: optHeight || this.canvas.height
         }
         this.objects = [];
     }

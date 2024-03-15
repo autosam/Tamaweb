@@ -1,5 +1,5 @@
 let App = {
-    INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
+    INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', userName: null, ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
     gameEventsHistory: [], deferredInstallPrompt: null, shellBackground: '', isOnItch: false,
     settings: {
         screenSize: 1,
@@ -218,7 +218,9 @@ let App = {
         document.querySelector('.graphics-wrapper').style.transform = `scale(${this.settings.screenSize})`;
         document.querySelector('.dom-shell').style.transform = `scale(${this.settings.screenSize})`;
         document.querySelector('.dom-shell').style.display = App.settings.displayShell ? '' : 'none';
-        document.querySelector('.shell-main-btn').style.display = App.settings.displayShellButtons ? '' : 'none';
+        document.querySelector('.shell-btn.main').style.display = App.settings.displayShellButtons ? '' : 'none';
+        document.querySelector('.shell-btn.right').style.display = App.settings.displayShellButtons ? '' : 'none';
+        document.querySelector('.shell-btn.left').style.display = App.settings.displayShellButtons ? '' : 'none';
     },
     onFrameUpdate: function(time){
         App.time = time;
@@ -383,6 +385,20 @@ let App = {
 
         const date = new Date();
         const dayId = date.getFullYear() + '_' + date.getMonth() + '_' + date.getDate();
+
+        if(!App.userName){
+            App.displayPrompt(`Set your username`, [
+                {
+                    name: 'set',
+                    onclick: (username) => {
+                        if(!username) return true;
+                        App.userName = username;
+                        App.save();
+                    }
+                }
+            ])
+            return;
+        }
 
         // if(addEvent(`update_02_notice`, () => {
         //     App.displayConfirm(`<b>update notice</b>bunch of options were moved from activity menu to the new mobile icon`, [
@@ -836,7 +852,7 @@ let App = {
                                 onclick: (data) => {
                                     if(!data) return true;
                                     App.displayPopup(`<b>Suggestion sent!</b><br> thanks for participating!`, 4000);
-                                    App.sendAnalytics('game_feedback', data);
+                                    App.sendAnalytics('game_feedback', data, true);
                                 },
                             },
                             {
@@ -954,7 +970,7 @@ let App = {
             }
 
             if(!list.length){
-                App.displayPopup(`You don't have any food, purchase some from the mall`, 2000);
+                App.displayPopup(`You don't have any consumables, purchase some from the mall`, 2000);
                 return;
             }
 
@@ -1043,7 +1059,7 @@ let App = {
                 <br>
                 Born ${moment(App.petDefinition.birthday).utc().fromNow()}
                 <div class="user-id">
-                    uid:${App.userId}
+                    uid:${App.userName + '-' + App.userId}
                 </div>
             `, [
                 {
@@ -1271,7 +1287,7 @@ let App = {
                     }
                 },
                 {
-                    name: 'market',
+                    name: `market ${App.getBadge()}`,
                     onclick: () => {
                         Activities.goToMarket();
                     }
@@ -1495,10 +1511,95 @@ let App = {
                     }
                 },
                 {
+                    _ignore: true,
                     _disable: App.petDefinition.lifeStage == 0,
                     name: `social media ${App.getBadge()}`,
                     onclick: () => {
                         App.handlers.open_social_media();
+                        return true;
+                    }
+                },
+                {
+                    name: `friend codes ${App.getBadge()}`,
+                    onclick: () => {
+                        App.displayList([
+                            {
+                                name: 'get code',
+                                onclick: () => {
+                                    let charCode = 'friend:' + btoa(JSON.stringify(window.localStorage));
+                                    navigator.clipboard.writeText(charCode);
+                                    App.displayConfirm(`Your friend code has been copied to the clipboard!`, [
+                                        {
+                                            name: 'next',
+                                            onclick: () => {
+                                                App.displayConfirm(`Send it to your friend and they'll be able to add ${App.petDefinition.name} as a friend using <b>Phone > Friend Codes > Input code</b>`, [
+                                                    {
+                                                        name: 'ok',
+                                                        onclick: () => {}
+                                                    },
+                                                ])
+                                            }
+                                        },
+                                    ])
+                                    return true;
+                                }
+                            },
+                            {
+                                name: 'input code',
+                                onclick: () => {
+                                    App.displayPrompt(`enter your friend code:`, [
+                                        {
+                                            name: 'enter',
+                                            onclick: (rawCode) => {
+                                                if(rawCode.indexOf('friend:') == -1) return App.displayPopup(`Invalid friend code!`);
+
+                                                let b64 = rawCode.replace('friend:', '');
+                                                try {
+                                                    b64 = atob(b64);
+                                                    let json = JSON.parse(b64);
+                                                    if(!json.pet){
+                                                        throw 'error';
+                                                    }
+
+                                                    if(json.user_id === App.userId) return App.displayPopup(`You can't add yourself as a friend!`);
+
+                                                    let petDef = JSON.parse(json.pet);
+
+                            
+                                                    let def = new PetDefinition().loadStats(petDef);
+                                                    
+                                                    App.displayConfirm(`Are you trying to add <div style="font-weight: bold">${def.getCSprite()} ${def.name}?</div> as a friend?`, [
+                                                        {
+                                                            name: 'yes',
+                                                            onclick: () => {
+                                                                App.petDefinition.friends.push(def);
+                                                                App.closeAllDisplays();
+                                                                return App.displayPopup(`${def.name} was added to the friends list!`, 3000);
+                                                            }
+                                                        },
+                                                        {
+                                                            name: 'no',
+                                                            onclick: () => {}
+                                                        },
+                                                    ])
+                                                } catch(e) {    
+                                                    return App.displayPopup('Invalid friend code!');
+                                                }
+                                            }
+                                        },
+                                        
+                                        {
+                                            name: 'cancel',
+                                            onclick: () => { }
+                                        },
+
+                                    ])
+
+                                    return true;
+                                }
+                            },             
+                        ])
+
                         return true;
                     }
                 }
@@ -1509,6 +1610,21 @@ let App = {
                 {
                     name: 'post',
                     onclick: () => {
+                        let postCanvas = document.querySelector('.graphics-canvas').cloneNode(true);
+
+                        let postDrawer = new Drawer(null, 96, 96);
+                        // let postDrawer = new Drawer(postCanvas);
+                            postDrawer.canvas.className = 'post-canvas';
+                        document.querySelector('.screen-wrapper').appendChild(postDrawer.canvas);
+
+                        let background = new Object2d({
+                            drawer: postDrawer,
+                            img: App.scene.home.image,
+                            x: 0, y: 0
+                        });
+
+                        console.log(background);
+
                         return true;
                     }
                 },
@@ -2045,6 +2161,7 @@ let App = {
         window.localStorage.setItem('settings', JSON.stringify(App.settings));
         window.localStorage.setItem('last_time', Date.now());
         window.localStorage.setItem('user_id', App.userId);
+        window.localStorage.setItem('user_name', App.userName);
         window.localStorage.setItem('ingame_events_history', JSON.stringify(App.gameEventsHistory));
         window.localStorage.setItem('play_time', App.playTime);
         window.localStorage.setItem('shell_background_v2.1', App.shellBackground);
@@ -2070,9 +2187,11 @@ let App = {
         let roomCustomizations = window.localStorage.getItem('room_customization');
         roomCustomizations = roomCustomizations ? JSON.parse(roomCustomizations) : null;
 
-        // user id
+        // user
         let userId = window.localStorage.getItem('user_id') || Math.round(Math.random() * 9999999999);
         App.userId = userId;
+        let userName = window.localStorage.getItem('user_name');
+        App.userName = userName == 'null' ? null : userName;
 
         App.playTime = parseInt(window.localStorage.getItem('play_time') || 0);
 
@@ -2096,7 +2215,8 @@ let App = {
 
         if(App.isOnItch) type += '_itch';
 
-        let url = `https://docs.google.com/forms/d/e/1FAIpQLSfzl5hhhnV3IAdxuA90ieEaeBAhCY9Bh4s151huzTMeByMwiw/formResponse?usp=pp_url&entry.1384465975=${App.userId}&entry.1653037117=${App.petDefinition?.name || ''}&entry.1322693089=${type}&entry.1403809294=${value || ''}`;
+        let user = (App.userName ? App.userName + '-' : '') + App.userId;
+        let url = `https://docs.google.com/forms/d/e/1FAIpQLSfzl5hhhnV3IAdxuA90ieEaeBAhCY9Bh4s151huzTMeByMwiw/formResponse?usp=pp_url&entry.1384465975=${user}&entry.1653037117=${App.petDefinition?.name || ''}&entry.1322693089=${type}&entry.1403809294=${value || ''}`;
 
         fetch(url).catch(e => {});
     },
@@ -2116,6 +2236,10 @@ let App = {
         document.querySelector("body > div.root > div.dom-shell").style.backgroundImage = `url(${url})`;
         document.querySelector(".background").style.backgroundImage = `url(${url})`;
         App.shellBackground = url;
+
+        document.querySelector('.shell-btn.main').style.backgroundImage = `url(${App.shellBackground})`;
+        document.querySelector('.shell-btn.right').style.backgroundImage = `url(${App.shellBackground})`;
+        document.querySelector('.shell-btn.left').style.backgroundImage = `url(${App.shellBackground})`;
         return true;
     },
 }
