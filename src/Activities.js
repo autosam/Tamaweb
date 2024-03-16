@@ -643,6 +643,7 @@ class Activities {
     }
     static barTimingGame(){
         App.closeAllDisplays();
+        App.toggleGameplayControls(false);
 
         let screen = App.displayEmpty();
         screen.innerHTML = `

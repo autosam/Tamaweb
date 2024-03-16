@@ -1,6 +1,10 @@
 class Drawer {
     constructor(canvas, optWidth, optHeight) {
-        if(!canvas) canvas = document.createElement('canvas');
+        if(!canvas) {
+            canvas = document.createElement('canvas');
+            canvas.setAttribute('width', optWidth);
+            canvas.setAttribute('height', optHeight);
+        }
         this.canvas = canvas;
         this.context = canvas.getContext('2d');
         this.context.fillStyle = 'white';
@@ -106,6 +110,7 @@ class Drawer {
             if (object.onLateDraw !== undefined)
                 object.onLateDraw();
         })
+        return this;
     }
     pixelate(){
         let w = this.bounds.width * 0.4,

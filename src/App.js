@@ -1511,7 +1511,7 @@ let App = {
                     }
                 },
                 {
-                    _ignore: true,
+                    _ignore: false,
                     _disable: App.petDefinition.lifeStage == 0,
                     name: `social media ${App.getBadge()}`,
                     onclick: () => {
@@ -1597,7 +1597,7 @@ let App = {
 
                                     return true;
                                 }
-                            },             
+                            },
                         ])
 
                         return true;
@@ -1610,20 +1610,38 @@ let App = {
                 {
                     name: 'post',
                     onclick: () => {
-                        let postCanvas = document.querySelector('.graphics-canvas').cloneNode(true);
-
                         let postDrawer = new Drawer(null, 96, 96);
                         // let postDrawer = new Drawer(postCanvas);
                             postDrawer.canvas.className = 'post-canvas';
-                        document.querySelector('.screen-wrapper').appendChild(postDrawer.canvas);
 
+                        let postText = document.createElement('div');
+                            postText.className = 'post-text';
+                            postDrawer.canvas.appendChild(postText);
+                        document.querySelector('.screen-wrapper').appendChild(postDrawer.canvas);
+                        
                         let background = new Object2d({
                             drawer: postDrawer,
                             img: App.scene.home.image,
-                            x: 0, y: 0
+                            x: 0, y: 0, width: 96, height: 96,
                         });
 
-                        console.log(background);
+                        let character = new Object2d({
+                            drawer: postDrawer,
+                            spritesheet: {...App.pet.spritesheet},
+                            image: App.pet.image.cloneNode(),
+                            x: '50%', y: 55,
+                        })
+
+                        postText.innerHTML = 'Hello world';
+
+                        // background.setImg(App.scene.home.image);
+                        // console.log(background);
+                        console.log(postDrawer);
+
+                        let drawer = setInterval(() => {
+                            postDrawer.draw();
+                        }, 100);
+                        
 
                         return true;
                     }
