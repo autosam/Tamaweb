@@ -1610,14 +1610,13 @@ let App = {
                 {
                     name: 'post',
                     onclick: () => {
-                        let postDrawer = new Drawer(null, 96, 96);
-                        // let postDrawer = new Drawer(postCanvas);
-                            postDrawer.canvas.className = 'post-canvas';
+                        let post = document.querySelector('.cloneables .post-container').cloneNode(true);
+                        document.querySelector('.screen-wrapper').appendChild(post);
+                        post.style.display = '';
 
-                        let postText = document.createElement('div');
-                            postText.className = 'post-text';
-                            postDrawer.canvas.appendChild(postText);
-                        document.querySelector('.screen-wrapper').appendChild(postDrawer.canvas);
+                        let postDrawer = new Drawer(post.querySelector('.post-canvas'), 96, 96);
+                        // let postDrawer = new Drawer(postCanvas)
+                        let postText = post.querySelector('.post-text');
                         
                         let background = new Object2d({
                             drawer: postDrawer,
@@ -1632,11 +1631,62 @@ let App = {
                             x: '50%', y: 55,
                         })
 
-                        postText.innerHTML = 'Hello world';
+                        post.querySelector('.post-header').innerHTML = App.petDefinition.name;
 
-                        // background.setImg(App.scene.home.image);
-                        // console.log(background);
-                        console.log(postDrawer);
+                        switch(App.pet.state){
+                            case "moving":
+                                switch(random(0, 2)){
+                                    case 0:
+                                        postText.innerHTML = '#zoomies';
+                                        break;
+                                    case 1:
+                                        postText.innerHTML = '#vibing_around';
+                                        break;
+                                    case 2:
+                                        postText.innerHTML = '#sunny_day';
+                                        break;
+                                }
+                                break;
+                            case "idle":
+                                postText.innerHTML = '#chilling';
+                                break;
+                            case "moving":
+                                postText.innerHTML = '#vibing';
+                                break;
+                            default:
+                                let generalTweets = [
+                                    `Found a crumb today, it's like a feast! #TinyTreats`,
+                                    '#vibing_around',
+                                    '#sunny_day',
+                                    'Riding on a leaf down the stream. Best. Day. Ever. #LeafBoat',
+                                    'Naptime in a matchbox bed. Cozy as can be! #SmallDreams',
+                                    'Danced in a raindrop, got soaked! #RaindropDance',
+                                    'Whispered my wish to a dandelion. Hope it comes true! #DandelionWishes',
+                                    'Tried to lift a pebble, felt like a superhero! #TinyStrength',
+                                    `Stargazing tonight, every star is a giant wish waiting to happen! #StarrySky`,
+                                    `A butterfly landed on me, I'm a landing pad! #ButterflyFriends`,
+                                    `A dewdrop became my crystal ball. I see big adventures ahead! #DewdropVisions`,
+                                    `Got lost in a garden maze of grass. Blades like skyscrapers! #GrasslandAdventures`,
+                                    `Shared a berry with an ant. It's all about sharing, no matter your size! #BerryFeast`,
+                                    `Found a feather and flew for a moment. #FeatherFlight`,
+                                    `Played hide and seek with a ladybug. Best hider ever! #TinyGames`,
+                                    `A leaf fell on me. Guess I'm a tree now!`,
+                                ];
+                                postText.innerHTML = randomFromArray(generalTweets);
+                        }
+
+                        if(App.pet.hasMoodlet('hungry')){
+                            postText.innerHTML = 'Can go for a bite #hungy';
+                        }
+                        if(App.pet.hasMoodlet('sleepy')){
+                            postText.innerHTML = 'battery low, need a nap!';
+                        }
+                        if(App.pet.hasMoodlet('bored')){
+                            postText.innerHTML = 'Anyone wanna talk? #bored';
+                        }
+                        if(App.pet.hasMoodlet('sick')){
+                            postText.innerHTML = '#tummyache';
+                        }
 
                         let drawer = setInterval(() => {
                             postDrawer.draw();
