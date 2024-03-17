@@ -35,7 +35,9 @@
         <!-- <img src="resources/img/ui/Front.png" class="screen-shell"></img> -->
         <div class="dom-shell" style="display: none;">
             <img class="logo" src="resources/img/ui/logo_trans_01.png"></img>
-            <!-- <button class="shell-main-btn" onclick="App.handlers.shell_button()" onmousedown="setTimeout(() => App.playSound('resources/sounds/shell_button_down.ogg', true))" onmouseup="setTimeout(() => App.playSound('resources/sounds/shell_button_up.ogg', true))"></button> -->
+            <button class="shell-btn main" onclick="App.handlers.shell_button()" onmousedown="setTimeout(() => App.playSound('resources/sounds/shell_button_down.ogg', true))" onmouseup="setTimeout(() => App.playSound('resources/sounds/shell_button_up.ogg', true))"></button>
+            <button class="shell-btn left" onclick="App.handlers.shell_button()" onmousedown="setTimeout(() => App.playSound('resources/sounds/shell_button_down.ogg', true))" onmouseup="setTimeout(() => App.playSound('resources/sounds/shell_button_up.ogg', true))"></button>
+            <button class="shell-btn right" onclick="App.handlers.shell_button()" onmousedown="setTimeout(() => App.playSound('resources/sounds/shell_button_down.ogg', true))" onmouseup="setTimeout(() => App.playSound('resources/sounds/shell_button_up.ogg', true))"></button>
         </div>
         <div class="graphics-wrapper">
             <div class="screen-wrapper">
@@ -76,6 +78,14 @@
 
     <!-- cloneables -->
     <div style="display: none;" class="cloneables">
+        <div class="post-container" style="display: none;">
+            <canvas width="96" height="96" class="post-canvas"></canvas>
+            <div class="post-text">Post Bottom Text</div>
+            <div class="post-header">Post Header</div>
+            <div class="post-profile-icon"></div>
+            <button class="post-close"><i class="fa-solid fa-times"></i></button>
+        </div>
+
         <div class="generic-list-container display">
 
         </div>
@@ -134,6 +144,7 @@
     <script src="src/Pet.js"></script>
     <script src="src/BattleManager.js"></script>
     <script src="src/App.js"></script>
+    <script src="src/Definitions.js"></script>
     <script src="src/Main.js"></script>
 </body>
 </html>

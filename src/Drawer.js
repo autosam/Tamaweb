@@ -1,5 +1,10 @@
 class Drawer {
-    constructor(canvas) {
+    constructor(canvas, optWidth, optHeight) {
+        if(!canvas) {
+            canvas = document.createElement('canvas');
+            canvas.setAttribute('width', optWidth);
+            canvas.setAttribute('height', optHeight);
+        }
         this.canvas = canvas;
         this.context = canvas.getContext('2d');
         this.context.fillStyle = 'white';
@@ -11,8 +16,8 @@ class Drawer {
         this.context.imageSmoothingEnabled = false;
         // this.bounds = canvas.getBoundingClientRect();
         this.bounds = {
-            width: this.canvas.width,
-            height: this.canvas.height
+            width: optWidth || this.canvas.width,
+            height: optHeight || this.canvas.height
         }
         this.objects = [];
     }
@@ -84,7 +89,7 @@ class Drawer {
                             x,
                             y,
                             object.spritesheet.cellSize,
-                            object.spritesheet.cellSize
+                            object.spritesheet.cellSize,
                         );
                     } else {
                         this.context.drawImage(
@@ -105,6 +110,7 @@ class Drawer {
             if (object.onLateDraw !== undefined)
                 object.onLateDraw();
         })
+        return this;
     }
     pixelate(){
         let w = this.bounds.width * 0.4,

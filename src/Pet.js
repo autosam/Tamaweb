@@ -114,7 +114,8 @@ class Pet extends Object2d {
         function refuse(){
             me.playRefuseAnimation();
             App.setScene(App.scene.home);
-            App.foods.hidden = true;
+            // App.foods.hidden = true;
+            App.uiFood.style.visibility = 'hidden';
             App.toggleGameplayControls(true);
             return false;
         }
@@ -125,8 +126,15 @@ class Pet extends Object2d {
                 break;
         }
 
-        App.foods.hidden = false;
-        App.foods.spritesheet.cellNumber = foodSpriteCellNumber;
+        /* App.foods.hidden = false; // remove this getting rid of ui food
+        App.foods.spritesheet.cellNumber = foodSpriteCellNumber; */
+
+        let baseFoodSpriteIndex = foodSpriteCellNumber - 1;
+        let foodSpriteIndex = baseFoodSpriteIndex;
+        let lastFoodSpriteIndexChangeMs = App.time;
+
+        App.uiFood.style.visibility = 'visible';
+        App.uiFood.setAttribute('index', foodSpriteCellNumber - 1);
         
         this.inverted = false;
         this.stats.current_hunger += value;
@@ -135,18 +143,30 @@ class Pet extends Object2d {
 
         this.triggerScriptedState('eating', 4000, null, true, () => {
             switch(type){
-                case "food":
-                    this.playCheeringAnimationIfTrue(this.hasMoodlet('full'), () =>{
-                        App.handlers.open_food_list();
-                        App.setScene(App.scene.home);
-                    });
-                    break;
                 case "med":
                     this.playCheeringAnimationIfTrue(this.hasMoodlet('healthy'), () => App.setScene(App.scene.home));
                     break;
+                default:
+                    this.playCheeringAnimationIfTrue(this.hasMoodlet('full'), () =>{
+                        App.closeAllDisplays();
+                        
+                        App.handlers.open_feeding_menu();
+                        App.handlers.open_food_list(null, null, type);
+                        App.setScene(App.scene.home);
+                    });
+                    break;
             }
-            App.foods.hidden = true;
+            // App.foods.hidden = true;
+            App.uiFood.style.visibility = 'hidden';
             App.toggleGameplayControls(true);
+        }, () => {
+            if(App.time - lastFoodSpriteIndexChangeMs > 1200){
+                lastFoodSpriteIndexChangeMs = App.time;
+
+                foodSpriteIndex = clamp(foodSpriteIndex + 1, baseFoodSpriteIndex, baseFoodSpriteIndex + 2);
+
+                App.uiFood.setAttribute('index', foodSpriteIndex);
+            }
         });
 
         return true;
@@ -656,6 +676,15 @@ class Pet extends Object2d {
             if(this.moving_init_done === undefined){
                 this.moving_init_done = true;
                 this.pet.x = 0;
+                this.pet.targetX = -20;
+            }
+        },
+        movingIn: function(){
+            this.pet.setState('moving');
+
+            if(this.moving_init_done === undefined){
+                this.moving_init_done = true;
+                this.pet.x = '105%';
                 this.pet.targetX = -20;
             }
         },

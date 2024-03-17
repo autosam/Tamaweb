@@ -1,11 +1,13 @@
 let App = {
-    INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
+    INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', userName: null, ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
     gameEventsHistory: [], deferredInstallPrompt: null, shellBackground: '', isOnItch: false,
     settings: {
         screenSize: 1,
         playSound: true,
         vibrate: true,
         displayShell: true,
+        displayShellButtons: false,
+        backgroundColor: '#FFDEAD',
     },
     async init () {
         // init
@@ -50,17 +52,39 @@ let App = {
             // img: "resources/img/background/house/01.jpg",
             image: null, x: 0, y: 0, width: 96, height: 96,
         })
+        // App.foods = new Object2d({
+        //     image: App.preloadedResources["resources/img/item/foods.png"],
+        //     x: 10, y: 10,
+        //     spritesheet: {
+        //         cellNumber: 11,
+        //         cellSize: 16,
+        //         rows: 4,
+        //         columns: 4,
+        //     },
+        //     hidden: true,
+        // })
         App.foods = new Object2d({
-            image: App.preloadedResources["resources/img/item/foods.png"],
+            image: App.preloadedResources["resources/img/item/foods_on.png"],
             x: 10, y: 10,
+            width: 12, height: 12,
+            scale: 24, // todo: add scale functionality
             spritesheet: {
-                cellNumber: 11,
-                cellSize: 16,
-                rows: 4,
-                columns: 4
+                cellNumber: 2,
+                cellSize: 24,
+                rows: 33,
+                columns: 33,
             },
             hidden: true,
         })
+        App.uiFood = document.createElement('c-sprite');
+        App.uiFood.setAttribute('width', 24);
+        App.uiFood.setAttribute('height', 24);
+        App.uiFood.setAttribute('index', 0);
+        App.uiFood.setAttribute('src', "resources/img/item/foods_on.png");
+        App.uiFood.setAttribute('class', 'ui-food');
+        App.uiFood.style.visibility = 'hidden';
+        document.querySelector('.graphics-wrapper').appendChild(App.uiFood);
+
         App.poop = new Object2d({
             image: App.preloadedResources["resources/img/misc/poop.png"],
             x: '80%', y: '80%',
@@ -191,10 +215,18 @@ let App = {
         document.querySelector('.loading-text').style.display = 'none';  
     },
     applySettings: function(){
+        // background
+        document.body.style.backgroundColor = this.settings.backgroundColor;
+
         // screen size
         document.querySelector('.graphics-wrapper').style.transform = `scale(${this.settings.screenSize})`;
         document.querySelector('.dom-shell').style.transform = `scale(${this.settings.screenSize})`;
+        
+        // shell
         document.querySelector('.dom-shell').style.display = App.settings.displayShell ? '' : 'none';
+        document.querySelector('.shell-btn.main').style.display = App.settings.displayShellButtons ? '' : 'none';
+        document.querySelector('.shell-btn.right').style.display = App.settings.displayShellButtons ? '' : 'none';
+        document.querySelector('.shell-btn.left').style.display = App.settings.displayShellButtons ? '' : 'none';
     },
     onFrameUpdate: function(time){
         App.time = time;
@@ -216,7 +248,7 @@ let App = {
         if(App.fpsElapsedTime > App.fpsInterval){
             App.fpsLastTime = App.fpsCurrentTime - (App.fpsElapsedTime % App.fpsInterval);
             App.drawer.draw();
-            App.onDraw();
+            if(App.onDraw) App.onDraw();
         }
 
         // App.drawer.pixelate();
@@ -270,7 +302,7 @@ let App = {
                     App.displayPopup(`Success!`, 5000, () => {
                         App.closeAllDisplays();
                         Activities.redecorRoom();
-                        App.scene.home.image = App.defintions.room_background.princess.image;
+                        App.scene.home.image = App.definitions.room_background.princess.image;
                     });
                 })) return showAlreadyUsed();
                 break;
@@ -360,14 +392,36 @@ let App = {
         const date = new Date();
         const dayId = date.getFullYear() + '_' + date.getMonth() + '_' + date.getDate();
 
-        // if(addEvent(`update_02_notice`, () => {
-        //     App.displayConfirm(`<b>update notice</b>bunch of options were moved from activity menu to the new mobile icon`, [
-        //         {
-        //             name: 'ok',
-        //             onclick: () => {},
-        //         }
-        //     ]);
-        // })) return;
+        if(!App.userName){
+            App.displayPrompt(`Set your username`, [
+                {
+                    name: 'set',
+                    onclick: (username) => {
+                        if(!username) return true;
+                        App.userName = username;
+                        App.save();
+                    }
+                }
+            ])
+            return;
+        }
+
+        if(addEvent(`update_03_notice`, () => {
+            // 
+            App.displayConfirm(`<b>New update!</b><br>A massive new update just released, adding many new food and snacks from...`, [
+                {
+                    name: 'next',
+                    onclick: () => {
+                        App.displayConfirm(`Tamagotchi ON, social media, friend codes, shell buttons and designs and a lot more!`, [
+                            {
+                                name: 'check it out!',
+                                onclick: () => {},
+                            }
+                        ]);
+                    },
+                }
+            ]);
+        })) return;
 
         /* if(addEvent(`game_suggestions_poll_01`, () => {
             App.displayPrompt(`<b><small>Poll</small></b>what would you like to to be added in the next update?`, [
@@ -419,7 +473,7 @@ let App = {
 
         if(App.isSalesDay()){
             if(addEvent(`sales_day_${dayId}_notice`, () => {
-                App.displayConfirm(`<b>discount day!</b>Shops are selling their products at a discounted rate! Check them out and pile up on them!`, [
+                App.displayConfirm(`<b>discount day!</b><br>Shops are selling their products at a discounted rate! Check them out and pile up on them!`, [
                     {
                         name: 'ok',
                         onclick: () => {},
@@ -427,154 +481,6 @@ let App = {
                 ]);
             })) return;
         }
-    },
-    defintions: {
-        food: {
-            "bread": {
-                sprite: 1,
-                hunger_replenish: 15,
-                fun_replenish: 0,
-                health_replenish: 2,
-                price: 2,
-                age: [1, 2],
-            },
-            "slice of pizza": {
-                sprite: 10,
-                hunger_replenish: 20,
-                fun_replenish: 5,
-                health_replenish: -5,
-                price: 5,
-                age: [1, 2],
-            },
-            "carrot": {
-                sprite: 2,
-                hunger_replenish: 10,
-                fun_replenish: 1,
-                health_replenish: 5,
-                price: 2,
-                age: [1, 2],
-            },
-            "hamburger": {
-                sprite: 9,
-                hunger_replenish: 40,
-                fun_replenish: 10,
-                health_replenish: -20,
-                price: 15,
-                age: [1, 2],
-            },
-            "broccoli": {
-                sprite: 5,
-                hunger_replenish: 15,
-                fun_replenish: 0,
-                health_replenish: 10,
-                price: 3,
-                age: [1, 2],
-            },
-            "milk": {
-                sprite: 15,
-                hunger_replenish: 50,
-                fun_replenish: 10,
-                price: 0,
-                age: [0],
-            },
-            "medicine": {
-                sprite: 13,
-                hunger_replenish: 0,
-                fun_replenish: -20,
-                health_replenish: 999,
-                price: 20,
-                type: 'med',
-                age: [0, 1, 2],
-            },
-        },
-        item: {
-            "foxy": {
-                sprite: 1,
-                fun_replenish: 20,
-                price: 50,
-                interaction_time: 12000,
-                interruptable: true,
-            },
-            "dumble": {
-                sprite: 2,
-                fun_replenish: 10,
-                price: 100
-            },
-            "music player": {
-                sprite: 3,
-                fun_replenish: 20,
-                price: 65
-            },
-            "ball": {
-                sprite: 4,
-                fun_replenish: 30,
-                price: 35,
-                interaction_time: 100000,
-                interruptable: true,
-            },
-            "smartphone": {
-                sprite: 5,
-                fun_replenish: 80,
-                price: 350,
-                interaction_time: 100000,
-                interruptable: true,
-            },
-            "magazine": {
-                sprite: 6,
-                fun_replenish: 10,
-                price: 20,
-                interaction_time: 60000,
-                interruptable: true,
-            },
-            "microphone": {
-                sprite: 7,
-                fun_replenish: 20,
-                price: 75,
-                interaction_time: 60000,
-                interruptable: true,
-            },   
-        },
-        room_background: {
-            "blue": {
-                image: 'resources/img/background/house/02.png',
-                price: 200,
-            },
-            "peachy": {
-                image: 'resources/img/background/house/03.png',
-                price: 250,
-            },
-            "princess": {
-                image: 'resources/img/background/house/04.png',
-                price: 350,
-                isNew: true,
-            },
-        },
-        shell_background: {
-            "1": {
-                image: 'https://cdn.wallpapersafari.com/23/55/gNpmf4.jpg',
-            },
-            "2": {
-                image: 'https://www.freevector.com/uploads/vector/preview/30386/Outstanding_Colorful_Background_3.jpg',
-            },
-            "3": {
-                image: 'https://cdn.wallpapersafari.com/51/53/4JEOtw.jpg',
-            },
-            "4": {
-                image: 'https://images.rawpixel.com/image_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvdjc2MC10b29uLTEyXzEuanBn.jpg',
-            },
-            "5": {
-                image: 'https://e0.pxfuel.com/wallpapers/294/264/desktop-wallpaper-cute-kawaii-background-background-cute-kawaii-computer.jpg',
-            },
-            "6": {
-                image: 'https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTA5L3Jhd3BpeGVsb2ZmaWNlOV9hX3NreV9maWxsZWRfd2l0aF9jbG91ZHNfYW5kX3N0YXJzX21hZGVfb2ZfY290dF85Nzk3Nzk0My0wMDJjLTQwYTQtYjk2NS0zNDUzNDZjNjRhMjBfMS5qcGc.jpg',
-            },
-            "7": {
-                image: 'https://wallpapers-clan.com/wp-content/uploads/2023/12/cute-winter-homes-cozy-wallpaper-scaled.jpg',
-            },
-            "8": {
-                image: 'https://images.rawpixel.com/image_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTA5L3Jhd3BpeGVsX29mZmljZV8zM193YWxscGFwZXJfb2ZfY3V0ZV9jbG91ZHNfcmFpbmJvd19ncmFkaWVudF9nbF9iMTg3MGIxNi1kOWY3LTQyODAtYmFkMy1mYzAxMDE0MTg1M2JfMS5qcGc.jpg',
-            },
-        },
     },
     scene: {
         home: new Scene({
@@ -589,7 +495,7 @@ let App = {
         }),
         kitchen: new Scene({
             image: 'resources/img/background/house/kitchen_02.png',
-            foodsX: 40, foodsY: 52,
+            foodsX: '50%', foodsY: 44,
             petX: 62, petY: 74,
         }),
         park: new Scene({
@@ -604,6 +510,12 @@ let App = {
         wedding: new Scene({
             petX: '50%', petY: '100%',
             image: 'resources/img/background/house/wedding_01.png',
+        }),
+        arcade: new Scene({
+            image: 'resources/img/background/house/arcade_01.png',
+        }),
+        market: new Scene({
+            image: 'resources/img/background/outside/market_01.png',
         }),
     },
     setScene(scene){
@@ -629,23 +541,40 @@ let App = {
 
         App.setScene(App.currentScene);
     },
-    getRandomPetDef: function(age){
+    getRandomPetDef: function(age, seed){
+        pRandom.save();
+        let rndArrayFn = randomFromArray;
+
+        if(seed !== undefined) {
+            pRandom.seed = seed;
+            rndArrayFn = pRandomFromArray;
+        }
+
         if(age === undefined) age = 2;
 
         let sprite;
-        if(age == 0) sprite = randomFromArray(PET_BABY_CHARACTERS);
-        else if(age == 1) sprite = randomFromArray(PET_TEEN_CHARACTERS);
-        else sprite = randomFromArray(PET_ADULT_CHARACTERS);
+        switch(age){
+            case 0:
+                sprite = rndArrayFn(PET_BABY_CHARACTERS);
+                break;
+            case 1:
+                sprite = rndArrayFn(PET_TEEN_CHARACTERS);
+                break;
+            default:
+                sprite = rndArrayFn(PET_ADULT_CHARACTERS);
+                break;
+        }
 
         let pet = new PetDefinition({
             sprite,
-            name: getRandomName(),
+            name: getRandomName(seed ? seed : false),
         });
         pet.setStats({
             current_hunger: 100,
             current_sleep: 100,
             current_fun: 100
         });
+        pRandom.load();
         return pet;
     },
     handlers: {
@@ -671,7 +600,7 @@ let App = {
                 {
                     name: '<i class="fa-solid fa-cutlery"></i>',
                     onclick: () => {
-                        App.handlers.open_food_list();
+                        App.handlers.open_feeding_menu();
                     }
                 },
                 {
@@ -705,7 +634,7 @@ let App = {
                     }
                 },
                 {
-                    name: '<i class="fa-solid fa-gear"></i>',
+                    name: `<i class="fa-solid fa-gear"></i>`,
                     onclick: () => {
                         App.handlers.open_settings();
                     }
@@ -729,7 +658,7 @@ let App = {
                     },
                 },
                 {
-                    name: 'system settings',
+                    name: `system settings ${App.getBadge()}`,
                     onclick: () => {
                         App.displayList([
                             {
@@ -745,6 +674,37 @@ let App = {
                                 onclick: (item) => {
                                     App.settings.vibrate = !App.settings.vibrate;
                                     item.innerHTML = `vibration: <i>${App.settings.vibrate ? 'on' : 'off'}</i>`;  
+                                    return true;
+                                }
+                            },
+                            {
+                                name: `background color ${App.getBadge()}`,
+                                onclick: () => {
+                                    App.displayList([
+                                        {
+                                            name: `<input type="color" value="${App.settings.backgroundColor}" id="background-color-picker"></input>`,
+                                            onclick: () => { return true; },
+                                        },
+                                        {
+                                            name: 'apply',
+                                            onclick: () => {
+                                                let colorPicker = document.querySelector('#background-color-picker');
+                                                App.settings.backgroundColor = colorPicker.value;
+                                                App.applySettings();
+                                                return true;
+                                            }
+                                        },
+                                        {
+                                            name: 'reset',
+                                            onclick: () => {
+                                                let colorPicker = document.querySelector('#background-color-picker');
+                                                colorPicker.value = '#FFDEAD';
+                                                App.settings.backgroundColor = colorPicker.value;
+                                                App.applySettings();
+                                                return true;
+                                            }
+                                        }
+                                    ])
                                     return true;
                                 }
                             },
@@ -777,7 +737,7 @@ let App = {
                     }
                 },
                 {
-                    name: 'change shell',
+                    name: `change shell ${App.getBadge()}`,
                     onclick: () => {
                         // App.handlers.open_shell_background_list();
                         // return true;
@@ -793,7 +753,16 @@ let App = {
                                 }
                             },
                             {
-                                name: 'select shell',
+                                name: `shell button: <i>${App.settings.displayShellButtons ? 'yes' : 'no'}</i> ${App.getBadge()}`,
+                                onclick: (item) => {
+                                    App.settings.displayShellButtons = !App.settings.displayShellButtons;
+                                    item.innerHTML = `shell button: <i>${App.settings.displayShellButtons ? 'yes' : 'no'}</i>`;  
+                                    App.applySettings();
+                                    return true;
+                                }
+                            },
+                            {
+                                name: `select shell ${App.getBadge()}`,
                                 onclick: () => {
                                     App.handlers.open_shell_background_list();
                                     return true;
@@ -920,7 +889,7 @@ let App = {
                     }
                 },
                 {
-                    name: `send feedback ${App.getBadge()}`,
+                    name: `send feedback`,
                     onclick: () => {
                         App.displayPrompt(`what would you like to to be added in the next update?`, [
                             {
@@ -928,7 +897,7 @@ let App = {
                                 onclick: (data) => {
                                     if(!data) return true;
                                     App.displayPopup(`<b>Suggestion sent!</b><br> thanks for participating!`, 4000);
-                                    App.sendAnalytics('game_feedback', data);
+                                    App.sendAnalytics('game_feedback', data, true);
                                 },
                             },
                             {
@@ -984,16 +953,21 @@ let App = {
 
             document.querySelector('.screen-wrapper').appendChild(list);
         },
-        open_food_list: function(buyMode, activeIndex){
+        open_food_list: function(buyMode, activeIndex, filterType){
             let list = [];
             let sliderInstance;
             let salesDay = App.isSalesDay();
-            for(let food of Object.keys(App.defintions.food)){
-                let current = App.defintions.food[food];
+            for(let food of Object.keys(App.definitions.food)){
+                let current = App.definitions.food[food];
 
+                // lifestage check
                 if(!current.age.includes(App.petDefinition.lifeStage)) continue;
 
+                // buy mode and is free
                 if(buyMode && current.price == 0) continue;
+
+                // filter check
+                if(filterType && (current.type || 'food') != filterType) continue;
 
                 // check if current pet has this food on its inventory
                 if(current.price && !App.pet.inventory.food[food] && !buyMode){
@@ -1005,7 +979,7 @@ let App = {
                 if(salesDay) price = Math.round(price / 2);
 
                 list.push({
-                    name: `<c-sprite width="16" height="16" index="${(current.sprite - 1)}" src="resources/img/item/foods.png"></c-sprite> ${food.toUpperCase()} (x${App.pet.inventory.food[food] > 0 ? App.pet.inventory.food[food] : (!current.price ? '∞' : 0)}) <b>${buyMode ? `$${price}` : ''}</b>`,
+                    name: `<c-sprite naturalWidth="792" naturalHeight="792" width="24" height="24" index="${(current.sprite - 1)}" src="resources/img/item/foods_on.png"></c-sprite> ${food.toUpperCase()} (x${App.pet.inventory.food[food] > 0 ? App.pet.inventory.food[food] : (!current.price ? '∞' : 0)}) <b>${buyMode ? `$${price}` : ''}</b>`,
                     onclick: (btn, list) => {
                         if(buyMode){
                             if(App.pet.stats.gold < price){
@@ -1019,10 +993,12 @@ let App = {
                                 App.pet.inventory.food[food] += 1;
                             }
                             // console.log(list.scrollTop);
-                            let nList = App.handlers.open_food_list(true, sliderInstance?.getCurrentIndex());
+                            let nList = App.handlers.open_food_list(true, sliderInstance?.getCurrentIndex(), filterType);
                                 // nList.scrollTop = list.scrollTop;
                             return false;
                         }
+
+                        App.closeAllDisplays();
                         let ateFood = App.pet.feed(current.sprite, current.hunger_replenish, current.type);
                         if(ateFood) {
                             if(App.pet.inventory.food[food] > 0)
@@ -1039,13 +1015,35 @@ let App = {
             }
 
             if(!list.length){
-                App.displayPopup(`You don't have any food, purchase some from the mall`, 2000);
+                App.displayPopup(`You don't have any consumables, purchase some from the mall`, 2000);
                 return;
             }
 
             sliderInstance = App.displaySlider(list, activeIndex, {accept: buyMode ? 'Purchase' : 'Eat'}, buyMode ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}` : null);
             return sliderInstance;
             return App.displayList(list);
+        },
+        open_feeding_menu: function(){
+            App.displayList([
+                {
+                    name: 'food',
+                    onclick: () => {
+                        return App.handlers.open_food_list(null, null, 'food');
+                    }
+                },
+                {
+                    name: 'snacks',
+                    onclick: () => {
+                        return App.handlers.open_food_list(null, null, 'treat');
+                    }
+                },
+                {
+                    name: 'meds',
+                    onclick: () => {
+                        return App.handlers.open_food_list(null, null, 'med');
+                    }
+                },
+            ])
         },
         open_stats_menu: function(){
             App.displayList([
@@ -1106,7 +1104,7 @@ let App = {
                 <br>
                 Born ${moment(App.petDefinition.birthday).utc().fromNow()}
                 <div class="user-id">
-                    uid:${App.userId}
+                    uid:${App.userName + '-' + App.userId}
                 </div>
             `, [
                 {
@@ -1184,12 +1182,12 @@ let App = {
             let list = [];
             let sliderInstance;
             let salesDay = App.isSalesDay();
-            for(let item of Object.keys(App.defintions.item)){
+            for(let item of Object.keys(App.definitions.item)){
                 // check if current pet has this item on its inventory
                 if(!App.pet.inventory.item[item] && !buyMode){
                     continue;
                 }
-                let current = App.defintions.item[item];
+                let current = App.definitions.item[item];
 
                 // 50% off on sales day
                 let price = current.price;
@@ -1247,8 +1245,8 @@ let App = {
             let sliderInstance;
             let salesDay = App.isSalesDay();
             const buyMode = true;
-            for(let room of Object.keys(App.defintions.room_background)){
-                let current = App.defintions.room_background[room];
+            for(let room of Object.keys(App.definitions.room_background)){
+                let current = App.definitions.room_background[room];
 
                 // 50% off on sales day
                 let price = current.price;
@@ -1288,8 +1286,8 @@ let App = {
             let list = [];
             let sliderInstance;
             let salesDay = App.isSalesDay();
-            for(let entry of Object.keys(App.defintions.shell_background)){
-                let current = App.defintions.shell_background[entry];
+            for(let entry of Object.keys(App.definitions.shell_background)){
+                let current = App.definitions.shell_background[entry];
 
                 // 50% off on sales day
                 let price = current.price;
@@ -1331,6 +1329,20 @@ let App = {
                     name: 'mall',
                     onclick: () => {
                         Activities.goToMall();
+                    }
+                },
+                {
+                    name: `market ${App.getBadge()}`,
+                    onclick: () => {
+                        Activities.goToMarket();
+                    }
+                },
+                {
+                    name: 'game center',
+                    onclick: () => {
+                        // App.handlers.open_game_list();
+                        Activities.goToArcade();
+                        // return true;
                     }
                 },
                 {
@@ -1543,24 +1555,284 @@ let App = {
                         Activities.inviteDoctorVisit();
                     }
                 },
+                {
+                    _ignore: false,
+                    _disable: App.petDefinition.lifeStage == 0,
+                    name: `social media ${App.getBadge()}`,
+                    onclick: () => {
+                        App.handlers.open_social_media();
+                        return true;
+                    }
+                },
+                {
+                    name: `friend codes ${App.getBadge()}`,
+                    onclick: () => {
+                        App.displayList([
+                            {
+                                name: 'get code',
+                                onclick: () => {
+                                    let charCode = 'friend:' + btoa(JSON.stringify(window.localStorage));
+                                    navigator.clipboard.writeText(charCode);
+                                    App.displayConfirm(`Your friend code has been copied to the clipboard!`, [
+                                        {
+                                            name: 'next',
+                                            onclick: () => {
+                                                App.displayConfirm(`Send it to your friend and they'll be able to add ${App.petDefinition.name} as a friend using <b>Phone > Friend Codes > Input code</b>`, [
+                                                    {
+                                                        name: 'ok',
+                                                        onclick: () => {}
+                                                    },
+                                                ])
+                                            }
+                                        },
+                                    ])
+                                    return true;
+                                }
+                            },
+                            {
+                                name: 'input code',
+                                onclick: () => {
+                                    App.displayPrompt(`enter your friend code:`, [
+                                        {
+                                            name: 'enter',
+                                            onclick: (rawCode) => {
+                                                if(rawCode.indexOf('friend:') == -1) return App.displayPopup(`Invalid friend code!`);
+
+                                                let b64 = rawCode.replace('friend:', '');
+                                                try {
+                                                    b64 = atob(b64);
+                                                    let json = JSON.parse(b64);
+                                                    if(!json.pet){
+                                                        throw 'error';
+                                                    }
+
+                                                    if(json.user_id === App.userId) return App.displayPopup(`You can't add yourself as a friend!`);
+
+                                                    let petDef = JSON.parse(json.pet);
+
+                            
+                                                    let def = new PetDefinition().loadStats(petDef);
+                                                    
+                                                    App.displayConfirm(`Are you trying to add <div style="font-weight: bold">${def.getCSprite()} ${def.name}?</div> as a friend?`, [
+                                                        {
+                                                            name: 'yes',
+                                                            onclick: () => {
+                                                                App.petDefinition.friends.push(def);
+                                                                App.closeAllDisplays();
+                                                                return App.displayPopup(`${def.name} was added to the friends list!`, 3000);
+                                                            }
+                                                        },
+                                                        {
+                                                            name: 'no',
+                                                            onclick: () => {}
+                                                        },
+                                                    ])
+                                                } catch(e) {    
+                                                    return App.displayPopup('Invalid friend code!');
+                                                }
+                                            }
+                                        },
+                                        
+                                        {
+                                            name: 'cancel',
+                                            onclick: () => { }
+                                        },
+
+                                    ])
+
+                                    return true;
+                                }
+                            },
+                        ])
+
+                        return true;
+                    }
+                }
+            ])
+        },
+        open_social_media: function(){
+            function showPost(petDefinition, noMood){
+                let post = document.querySelector('.cloneables .post-container').cloneNode(true);
+                document.querySelector('.screen-wrapper').appendChild(post);
+                post.style.display = '';
+
+                document.querySelector('.post-profile-icon').innerHTML = `${petDefinition.getCSprite()}`;
+
+                let postDrawer = new Drawer(post.querySelector('.post-canvas'), 96, 96);
+                // let postDrawer = new Drawer(postCanvas)
+                let postText = post.querySelector('.post-text');
+
+                let drawer = setInterval(() => {
+                    postDrawer.draw();
+                }, 32);
+                let close = () => {
+                    clearInterval(drawer);
+                    App.toggleGameplayControls(true);
+                    post.remove();
+                }
+                App.toggleGameplayControls(false, close);
+                post.querySelector('.post-close').onclick = close;
+
+                let homeBackground = App.scene.home.image;
+                if(petDefinition !== App.petDefinition)
+                    homeBackground = randomFromArray([
+                        "resources/img/background/house/01.jpg",
+                        "resources/img/background/house/02.png",
+                        "resources/img/background/house/03.png",
+                        "resources/img/background/house/04.png",
+                    ])
+                
+                let background = new Object2d({
+                    drawer: postDrawer,
+                    img: homeBackground,
+                    x: 0, y: 0, width: 96, height: 96,
+                });
+
+
+                let characterPositions = ['50%', '20%', '80%'],
+                    characterSpritePoses = [1, 11, 14, 8, 2, 12];
+
+                let character = new Object2d({
+                    drawer: postDrawer,
+                    spritesheet: {...petDefinition.spritesheet, cellNumber: randomFromArray(characterSpritePoses)},
+                    // image: App.pet.image.cloneNode(),
+                    // img: petDefinition.sprite,
+                    image: App.preloadedResources[petDefinition.sprite],
+                    x: randomFromArray(characterPositions), y: 55,
+                })
+
+                post.querySelector('.post-header').innerHTML = petDefinition.name;
+
+                switch(App.pet.state){
+                    default:
+                        let generalTweets = [
+                            [`Found a crumb today, it's like a feast! #TinyTreats`, 1, "resources/img/background/house/kitchen_02.png"],
+                            ['#vibing_around', 1, null],
+                            ['#sunny_day', 1, "resources/img/background/outside/park_02.png"],
+                            ['Riding on a leaf down the stream. Best. Day. Ever. #LeafBoat', 2, null],
+                            ['Naptime in a matchbox bed. Cozy as can be! #SmallDreams', 16, "resources/img/background/house/dark_overlay.png"],
+                            ['Danced in a raindrop, got soaked! #RaindropDance', 8, "resources/img/background/house/dark_overlay.png"],
+                            ['Whispered my wish to a dandelion. Hope it comes true! #DandelionWishes', 10, null],
+                            ['Tried to lift a pebble, felt like a superhero! #TinyStrength', 1, "resources/img/background/outside/park_02.png"],
+                            [`Stargazing tonight, every star is a giant wish waiting to happen! #StarrySky`, 1, "resources/img/background/outside/park_02.png"],
+                            [`A butterfly landed on me, I'm a landing pad! #ButterflyFriends`, 2, "resources/img/background/outside/park_02.png"],
+                            [`A dewdrop became my crystal ball. I see big adventures ahead! #DewdropVisions`, 7, null],
+                            [`Got lost in a garden maze of grass. Blades like skyscrapers! #GrasslandAdventures`, 1, "resources/img/background/outside/park_02.png"],
+                            [`Shared a berry with an ant. It's all about sharing, no matter your size! #BerryFeast`, 8, "resources/img/background/outside/park_02.png"],
+                            [`Found a feather and flew for a moment. #FeatherFlight`, 8, null],
+                            [`Played hide and seek. Best hider ever! #TinyGames`, 2, null],
+                            [`A leaf fell on me. Guess I'm a tree now!`, 8, "resources/img/background/outside/park_02.png"],
+                            [`#onthatgrind`, 14, "resources/img/background/house/office_01.png"],
+                            [`checking out the market #shopping`, 10, "resources/img/background/outside/market_01.png"],
+                            [`the prices are so high! #whatisthis`, 7, "resources/img/background/outside/market_01.png"],
+                            [`looking for a cute #headband!`, 8, "resources/img/background/outside/market_01.png"],
+                            [`lost again! don't wanna play anymore! #hategaming`, 6, "resources/img/background/house/arcade_01.png"],
+                            [`I'm just better! #gaming`, 2, "resources/img/background/house/arcade_01.png"],
+                            [`Won again! #ilovegaming`, 2, "resources/img/background/house/arcade_01.png"],
+                        ];
+
+                        let tweet = randomFromArray(generalTweets);
+
+                        postText.innerHTML = tweet[0]; // text
+                        if(tweet[1]) character.spritesheet.cellNumber = tweet[1]; // pose
+                        if(tweet[2]) background.setImg(tweet[2]); // background
+                }
+
+                if(!noMood){
+                    if(App.pet.hasMoodlet('hungry')){
+                        postText.innerHTML = 'Can go for a bite #hungy';
+                        character.spritesheet.cellNumber = 4;
+                        background.setImg(homeBackground);
+                    }
+                    if(App.pet.hasMoodlet('sleepy')){
+                        postText.innerHTML = 'battery low, need a nap!';
+                        character.spritesheet.cellNumber = 4;
+                        background.setImg(homeBackground);
+                    }
+                    if(App.pet.hasMoodlet('bored')){
+                        postText.innerHTML = 'Anyone wanna talk? #bored';
+                        character.spritesheet.cellNumber = 4;
+                        background.setImg(homeBackground);
+                    }
+                    if(App.pet.hasMoodlet('sick')){
+                        postText.innerHTML = 'Not feeling too good... #tummyache';
+                        character.spritesheet.cellNumber = 4;
+                        background.setImg(homeBackground);
+                    }
+                }
+            }
+
+            App.displayList([
+                {
+                    name: 'make post',
+                    onclick: () => {
+                        App.petDefinition.stats.current_fun += random(1, 5);
+                        showPost(App.petDefinition);
+                        return true;
+                    }
+                },
+                {
+                    name: 'explore posts',
+                    onclick: () => {
+                        App.petDefinition.stats.current_fun += random(0, 5);
+                        let otherPetDef;
+                        if(App.petDefinition.friends && App.petDefinition.friends.length){
+                            otherPetDef = randomFromArray(App.petDefinition.friends);
+                        } else {
+                            otherPetDef = App.getRandomPetDef();
+                        }
+                        showPost(otherPetDef, true);
+                        return true;
+                    }
+                },
+                {
+                    name: 'find friends',
+                    onclick: () => {
+                        const date = new Date();
+                        const dayId = date.getFullYear() + date.getMonth() + date.getDate();
+
+                        let seed = App.userId + dayId;
+
+                        let potentialFriends = new Array(8).fill(undefined).map((spot, i) => App.getRandomPetDef(App.petDefinition.lifeStage, seed + (i * 128)));
+
+                        App.displayGrid([...potentialFriends.map(otherPetDef => {
+                            return {
+                                name: `${otherPetDef.getFullCSprite()}`,
+                                class: 'bg-bef-1',
+                                onclick: () => {
+                                    App.displayConfirm(`Do you want to send friend request to<br><b>${otherPetDef.getCSprite()} ${otherPetDef.name}?</b>`, [
+                                        {
+                                            name: 'yes',
+                                            onclick: () => {
+                                                let willAcceptFriendRequest = random(0, 2) == 1;
+                                                if(!willAcceptFriendRequest){
+                                                    App.displayPopup(`${otherPetDef.name} did <b style="color: #ff6e74">not accept</b> ${App.petDefinition.name}'s friend request`)
+                                                    return;
+                                                }
+                                                let state = App.petDefinition.addFriend(otherPetDef);
+                                                if(state) App.displayPopup(`${otherPetDef.name} <b style="color: #87cf00">accepted</b> ${App.petDefinition.name}'s friend request!`);
+                                                else App.displayPopup(`${App.petDefinition.name} is already friends with ${otherPetDef.name}!`);
+                                            }
+                                        },
+                                        {
+                                            name: 'no',
+                                            onclick: () => { }
+                                        }
+                                    ])
+                                    return true;
+                                }
+                            }
+                        }), {
+                            name: '<i class="fa-solid fa-arrow-left"></i>',
+                            onclick: () => { }
+                        }])
+                        return true;
+                    }
+                },
             ])
         },
         open_mall_activity_list: function(){
             App.displayList([
-                {
-                    name: 'game center',
-                    onclick: () => {
-                        App.handlers.open_game_list();
-                        return true;
-                    }
-                },
-                {
-                    name: 'buy groceries',
-                    onclick: () => {
-                        App.handlers.open_food_list(true);
-                        return true;
-                    }
-                },
                 {
                     name: 'buy items',
                     onclick: () => {
@@ -1576,6 +1848,24 @@ let App = {
                     }
                 },
             ]);
+        },
+        open_market_menu: function(){
+            App.displayList([
+                {
+                    name: 'purchase food',
+                    onclick: () => {
+                        App.handlers.open_food_list(true, null, "food");
+                        return true;
+                    }
+                },
+                {
+                    name: 'purchase snacks',
+                    onclick: () => {
+                        App.handlers.open_food_list(true, null, "treat");
+                        return true;
+                    }
+                },
+            ])
         },
         open_game_list: function(){
             App.displayList([
@@ -1605,16 +1895,29 @@ let App = {
             Battle.start();
         },
         shell_button: function(){
+            if(App.disableGameplayControls && App.gameplayControlsOverwrite){
+                App.gameplayControlsOverwrite();
+                App.vibrate();
+                return;
+            }
             if(App.disableGameplayControls) return;
             let displayCount = 0;
+            let disallow = false;
             [...document.querySelectorAll('.display')].forEach(display => {
                 if(!display.closest('.cloneables')){
                     displayCount++;
+                    if(display.classList.contains('popup')) disallow = true;
+                    if(display.classList.contains('confirm')) disallow = true;
+                    if(display.classList.contains('prompt')) disallow = true;
                 }
             });
 
+            if(disallow) return;
+
+            App.setScene(App.scene.home);
             if(displayCount) App.closeAllDisplays();
             else App.handlers.open_main_menu();
+            App.vibrate();
         },
         sleep: function(){
             App.pet.sleep();
@@ -1737,6 +2040,7 @@ let App = {
                 if(i == listItems.length - 2) button.className += ' last-btn';
                 // '⤳ ' + 
                 button.innerHTML = item.name;
+                button.disabled = item._disable;
                 button.onclick = () => {
                     let result = item.onclick(button, list);
                     if(!result){
@@ -1857,6 +2161,7 @@ let App = {
     },
     displayPopup: function(content, ms, onEndFn){
         let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
+            list.classList.add('popup');
             list.innerHTML = `
                 <div class="uppercase flex-center">
                     <div class="inner-padding bg-white b-radius-10">
@@ -1876,6 +2181,7 @@ let App = {
     },
     displayConfirm: function(text, buttons){
         let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
+            list.classList.add('confirm');
             list.innerHTML = `
                 <div class="uppercase flex-center">
                     <div class="inner-padding bg-white b-radius-10">
@@ -1914,6 +2220,7 @@ let App = {
     },
     displayPrompt: function(text, buttons, defualtValue){
         let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
+            list.classList.add('prompt');
             list.innerHTML = `
                 <div class="uppercase flex-center">
                     <div class="inner-padding bg-white b-radius-10">
@@ -2017,9 +2324,10 @@ let App = {
         window.localStorage.setItem('settings', JSON.stringify(App.settings));
         window.localStorage.setItem('last_time', Date.now());
         window.localStorage.setItem('user_id', App.userId);
+        window.localStorage.setItem('user_name', App.userName);
         window.localStorage.setItem('ingame_events_history', JSON.stringify(App.gameEventsHistory));
         window.localStorage.setItem('play_time', App.playTime);
-        window.localStorage.setItem('shell_background', App.shellBackground);
+        window.localStorage.setItem('shell_background_v2.1', App.shellBackground);
         window.localStorage.setItem('room_customization', JSON.stringify({
             home: {
                 image: App.scene.home.image,
@@ -2042,13 +2350,15 @@ let App = {
         let roomCustomizations = window.localStorage.getItem('room_customization');
         roomCustomizations = roomCustomizations ? JSON.parse(roomCustomizations) : null;
 
-        // user id
+        // user
         let userId = window.localStorage.getItem('user_id') || Math.round(Math.random() * 9999999999);
         App.userId = userId;
+        let userName = window.localStorage.getItem('user_name');
+        App.userName = userName == 'null' ? null : userName;
 
         App.playTime = parseInt(window.localStorage.getItem('play_time') || 0);
 
-        let shellBackground = window.localStorage.getItem('shell_background') || `https://cdn.wallpapersafari.com/23/55/gNpmf4.jpg`;
+        let shellBackground = window.localStorage.getItem('shell_background_v2.1') || App.definitions.shell_background['1'].image;
         App.shellBackground = shellBackground;
 
         App.loadedData = {
@@ -2068,7 +2378,8 @@ let App = {
 
         if(App.isOnItch) type += '_itch';
 
-        let url = `https://docs.google.com/forms/d/e/1FAIpQLSfzl5hhhnV3IAdxuA90ieEaeBAhCY9Bh4s151huzTMeByMwiw/formResponse?usp=pp_url&entry.1384465975=${App.userId}&entry.1653037117=${App.petDefinition?.name || ''}&entry.1322693089=${type}&entry.1403809294=${value || ''}`;
+        let user = (App.userName ? App.userName + '-' : '') + App.userId;
+        let url = `https://docs.google.com/forms/d/e/1FAIpQLSfzl5hhhnV3IAdxuA90ieEaeBAhCY9Bh4s151huzTMeByMwiw/formResponse?usp=pp_url&entry.1384465975=${user}&entry.1653037117=${App.petDefinition?.name || ''}&entry.1322693089=${type}&entry.1403809294=${value || ''}`;
 
         fetch(url).catch(e => {});
     },
@@ -2088,6 +2399,10 @@ let App = {
         document.querySelector("body > div.root > div.dom-shell").style.backgroundImage = `url(${url})`;
         document.querySelector(".background").style.backgroundImage = `url(${url})`;
         App.shellBackground = url;
+
+        document.querySelector('.shell-btn.main').style.backgroundImage = `url(${App.shellBackground})`;
+        document.querySelector('.shell-btn.right').style.backgroundImage = `url(${App.shellBackground})`;
+        document.querySelector('.shell-btn.left').style.backgroundImage = `url(${App.shellBackground})`;
         return true;
     },
 }
