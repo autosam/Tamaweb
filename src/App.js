@@ -7,6 +7,7 @@ let App = {
         vibrate: true,
         displayShell: true,
         displayShellButtons: false,
+        backgroundColor: '#FFDEAD',
     },
     async init () {
         // init
@@ -214,9 +215,14 @@ let App = {
         document.querySelector('.loading-text').style.display = 'none';  
     },
     applySettings: function(){
+        // background
+        document.body.style.backgroundColor = this.settings.backgroundColor;
+
         // screen size
         document.querySelector('.graphics-wrapper').style.transform = `scale(${this.settings.screenSize})`;
         document.querySelector('.dom-shell').style.transform = `scale(${this.settings.screenSize})`;
+        
+        // shell
         document.querySelector('.dom-shell').style.display = App.settings.displayShell ? '' : 'none';
         document.querySelector('.shell-btn.main').style.display = App.settings.displayShellButtons ? '' : 'none';
         document.querySelector('.shell-btn.right').style.display = App.settings.displayShellButtons ? '' : 'none';
@@ -400,14 +406,22 @@ let App = {
             return;
         }
 
-        // if(addEvent(`update_02_notice`, () => {
-        //     App.displayConfirm(`<b>update notice</b>bunch of options were moved from activity menu to the new mobile icon`, [
-        //         {
-        //             name: 'ok',
-        //             onclick: () => {},
-        //         }
-        //     ]);
-        // })) return;
+        if(addEvent(`update_03_notice`, () => {
+            // 
+            App.displayConfirm(`<b>New update!</b><br>A massive new update just released, adding many new food and snacks from...`, [
+                {
+                    name: 'next',
+                    onclick: () => {
+                        App.displayConfirm(`Tamagotchi ON, social media, friend codes, shell buttons and designs and a lot more!`, [
+                            {
+                                name: 'check it out!',
+                                onclick: () => {},
+                            }
+                        ]);
+                    },
+                }
+            ]);
+        })) return;
 
         /* if(addEvent(`game_suggestions_poll_01`, () => {
             App.displayPrompt(`<b><small>Poll</small></b>what would you like to to be added in the next update?`, [
@@ -644,7 +658,7 @@ let App = {
                     },
                 },
                 {
-                    name: 'system settings',
+                    name: `system settings ${App.getBadge()}`,
                     onclick: () => {
                         App.displayList([
                             {
@@ -660,6 +674,37 @@ let App = {
                                 onclick: (item) => {
                                     App.settings.vibrate = !App.settings.vibrate;
                                     item.innerHTML = `vibration: <i>${App.settings.vibrate ? 'on' : 'off'}</i>`;  
+                                    return true;
+                                }
+                            },
+                            {
+                                name: `background color ${App.getBadge()}`,
+                                onclick: () => {
+                                    App.displayList([
+                                        {
+                                            name: `<input type="color" value="${App.settings.backgroundColor}" id="background-color-picker"></input>`,
+                                            onclick: () => { return true; },
+                                        },
+                                        {
+                                            name: 'apply',
+                                            onclick: () => {
+                                                let colorPicker = document.querySelector('#background-color-picker');
+                                                App.settings.backgroundColor = colorPicker.value;
+                                                App.applySettings();
+                                                return true;
+                                            }
+                                        },
+                                        {
+                                            name: 'reset',
+                                            onclick: () => {
+                                                let colorPicker = document.querySelector('#background-color-picker');
+                                                colorPicker.value = '#FFDEAD';
+                                                App.settings.backgroundColor = colorPicker.value;
+                                                App.applySettings();
+                                                return true;
+                                            }
+                                        }
+                                    ])
                                     return true;
                                 }
                             },
@@ -844,7 +889,7 @@ let App = {
                     }
                 },
                 {
-                    name: `send feedback ${App.getBadge()}`,
+                    name: `send feedback`,
                     onclick: () => {
                         App.displayPrompt(`what would you like to to be added in the next update?`, [
                             {
@@ -1606,98 +1651,142 @@ let App = {
             ])
         },
         open_social_media: function(){
+            function showPost(petDefinition, noMood){
+                let post = document.querySelector('.cloneables .post-container').cloneNode(true);
+                document.querySelector('.screen-wrapper').appendChild(post);
+                post.style.display = '';
+
+                document.querySelector('.post-profile-icon').innerHTML = `${petDefinition.getCSprite()}`;
+
+                let postDrawer = new Drawer(post.querySelector('.post-canvas'), 96, 96);
+                // let postDrawer = new Drawer(postCanvas)
+                let postText = post.querySelector('.post-text');
+
+                let drawer = setInterval(() => {
+                    postDrawer.draw();
+                }, 32);
+                let close = () => {
+                    clearInterval(drawer);
+                    App.toggleGameplayControls(true);
+                    post.remove();
+                }
+                App.toggleGameplayControls(false, close);
+                post.querySelector('.post-close').onclick = close;
+
+                let homeBackground = App.scene.home.image;
+                if(petDefinition !== App.petDefinition)
+                    homeBackground = randomFromArray([
+                        "resources/img/background/house/01.jpg",
+                        "resources/img/background/house/02.png",
+                        "resources/img/background/house/03.png",
+                        "resources/img/background/house/04.png",
+                    ])
+                
+                let background = new Object2d({
+                    drawer: postDrawer,
+                    img: homeBackground,
+                    x: 0, y: 0, width: 96, height: 96,
+                });
+
+
+                let characterPositions = ['50%', '20%', '80%'],
+                    characterSpritePoses = [1, 11, 14, 8, 2, 12];
+
+                let character = new Object2d({
+                    drawer: postDrawer,
+                    spritesheet: {...petDefinition.spritesheet, cellNumber: randomFromArray(characterSpritePoses)},
+                    // image: App.pet.image.cloneNode(),
+                    // img: petDefinition.sprite,
+                    image: App.preloadedResources[petDefinition.sprite],
+                    x: randomFromArray(characterPositions), y: 55,
+                })
+
+                post.querySelector('.post-header').innerHTML = petDefinition.name;
+
+                switch(App.pet.state){
+                    default:
+                        let generalTweets = [
+                            [`Found a crumb today, it's like a feast! #TinyTreats`, 1, "resources/img/background/house/kitchen_02.png"],
+                            ['#vibing_around', 1, null],
+                            ['#sunny_day', 1, "resources/img/background/outside/park_02.png"],
+                            ['Riding on a leaf down the stream. Best. Day. Ever. #LeafBoat', 2, null],
+                            ['Naptime in a matchbox bed. Cozy as can be! #SmallDreams', 16, "resources/img/background/house/dark_overlay.png"],
+                            ['Danced in a raindrop, got soaked! #RaindropDance', 8, "resources/img/background/house/dark_overlay.png"],
+                            ['Whispered my wish to a dandelion. Hope it comes true! #DandelionWishes', 10, null],
+                            ['Tried to lift a pebble, felt like a superhero! #TinyStrength', 1, "resources/img/background/outside/park_02.png"],
+                            [`Stargazing tonight, every star is a giant wish waiting to happen! #StarrySky`, 1, "resources/img/background/outside/park_02.png"],
+                            [`A butterfly landed on me, I'm a landing pad! #ButterflyFriends`, 2, "resources/img/background/outside/park_02.png"],
+                            [`A dewdrop became my crystal ball. I see big adventures ahead! #DewdropVisions`, 7, null],
+                            [`Got lost in a garden maze of grass. Blades like skyscrapers! #GrasslandAdventures`, 1, "resources/img/background/outside/park_02.png"],
+                            [`Shared a berry with an ant. It's all about sharing, no matter your size! #BerryFeast`, 8, "resources/img/background/outside/park_02.png"],
+                            [`Found a feather and flew for a moment. #FeatherFlight`, 8, null],
+                            [`Played hide and seek. Best hider ever! #TinyGames`, 2, null],
+                            [`A leaf fell on me. Guess I'm a tree now!`, 8, "resources/img/background/outside/park_02.png"],
+                            [`#onthatgrind`, 14, "resources/img/background/house/office_01.png"],
+                            [`checking out the market #shopping`, 10, "resources/img/background/outside/market_01.png"],
+                            [`the prices are so high! #whatisthis`, 7, "resources/img/background/outside/market_01.png"],
+                            [`looking for a cute #headband!`, 8, "resources/img/background/outside/market_01.png"],
+                            [`lost again! don't wanna play anymore! #hategaming`, 6, "resources/img/background/house/arcade_01.png"],
+                            [`I'm just better! #gaming`, 2, "resources/img/background/house/arcade_01.png"],
+                            [`Won again! #ilovegaming`, 2, "resources/img/background/house/arcade_01.png"],
+                        ];
+
+                        let tweet = randomFromArray(generalTweets);
+
+                        postText.innerHTML = tweet[0]; // text
+                        if(tweet[1]) character.spritesheet.cellNumber = tweet[1]; // pose
+                        if(tweet[2]) background.setImg(tweet[2]); // background
+                }
+
+                if(!noMood){
+                    if(App.pet.hasMoodlet('hungry')){
+                        postText.innerHTML = 'Can go for a bite #hungy';
+                        character.spritesheet.cellNumber = 4;
+                        background.setImg(homeBackground);
+                    }
+                    if(App.pet.hasMoodlet('sleepy')){
+                        postText.innerHTML = 'battery low, need a nap!';
+                        character.spritesheet.cellNumber = 4;
+                        background.setImg(homeBackground);
+                    }
+                    if(App.pet.hasMoodlet('bored')){
+                        postText.innerHTML = 'Anyone wanna talk? #bored';
+                        character.spritesheet.cellNumber = 4;
+                        background.setImg(homeBackground);
+                    }
+                    if(App.pet.hasMoodlet('sick')){
+                        postText.innerHTML = 'Not feeling too good... #tummyache';
+                        character.spritesheet.cellNumber = 4;
+                        background.setImg(homeBackground);
+                    }
+                }
+            }
+
             App.displayList([
                 {
-                    name: 'post',
+                    name: 'make post',
                     onclick: () => {
-                        let post = document.querySelector('.cloneables .post-container').cloneNode(true);
-                        document.querySelector('.screen-wrapper').appendChild(post);
-                        post.style.display = '';
-
-                        let postDrawer = new Drawer(post.querySelector('.post-canvas'), 96, 96);
-                        // let postDrawer = new Drawer(postCanvas)
-                        let postText = post.querySelector('.post-text');
-                        
-                        let background = new Object2d({
-                            drawer: postDrawer,
-                            img: App.scene.home.image,
-                            x: 0, y: 0, width: 96, height: 96,
-                        });
-
-                        let character = new Object2d({
-                            drawer: postDrawer,
-                            spritesheet: {...App.pet.spritesheet},
-                            image: App.pet.image.cloneNode(),
-                            x: '50%', y: 55,
-                        })
-
-                        post.querySelector('.post-header').innerHTML = App.petDefinition.name;
-
-                        switch(App.pet.state){
-                            case "moving":
-                                switch(random(0, 2)){
-                                    case 0:
-                                        postText.innerHTML = '#zoomies';
-                                        break;
-                                    case 1:
-                                        postText.innerHTML = '#vibing_around';
-                                        break;
-                                    case 2:
-                                        postText.innerHTML = '#sunny_day';
-                                        break;
-                                }
-                                break;
-                            case "idle":
-                                postText.innerHTML = '#chilling';
-                                break;
-                            case "moving":
-                                postText.innerHTML = '#vibing';
-                                break;
-                            default:
-                                let generalTweets = [
-                                    `Found a crumb today, it's like a feast! #TinyTreats`,
-                                    '#vibing_around',
-                                    '#sunny_day',
-                                    'Riding on a leaf down the stream. Best. Day. Ever. #LeafBoat',
-                                    'Naptime in a matchbox bed. Cozy as can be! #SmallDreams',
-                                    'Danced in a raindrop, got soaked! #RaindropDance',
-                                    'Whispered my wish to a dandelion. Hope it comes true! #DandelionWishes',
-                                    'Tried to lift a pebble, felt like a superhero! #TinyStrength',
-                                    `Stargazing tonight, every star is a giant wish waiting to happen! #StarrySky`,
-                                    `A butterfly landed on me, I'm a landing pad! #ButterflyFriends`,
-                                    `A dewdrop became my crystal ball. I see big adventures ahead! #DewdropVisions`,
-                                    `Got lost in a garden maze of grass. Blades like skyscrapers! #GrasslandAdventures`,
-                                    `Shared a berry with an ant. It's all about sharing, no matter your size! #BerryFeast`,
-                                    `Found a feather and flew for a moment. #FeatherFlight`,
-                                    `Played hide and seek with a ladybug. Best hider ever! #TinyGames`,
-                                    `A leaf fell on me. Guess I'm a tree now!`,
-                                ];
-                                postText.innerHTML = randomFromArray(generalTweets);
-                        }
-
-                        if(App.pet.hasMoodlet('hungry')){
-                            postText.innerHTML = 'Can go for a bite #hungy';
-                        }
-                        if(App.pet.hasMoodlet('sleepy')){
-                            postText.innerHTML = 'battery low, need a nap!';
-                        }
-                        if(App.pet.hasMoodlet('bored')){
-                            postText.innerHTML = 'Anyone wanna talk? #bored';
-                        }
-                        if(App.pet.hasMoodlet('sick')){
-                            postText.innerHTML = '#tummyache';
-                        }
-
-                        let drawer = setInterval(() => {
-                            postDrawer.draw();
-                        }, 100);
-                        
-
+                        App.petDefinition.stats.current_fun += random(1, 5);
+                        showPost(App.petDefinition);
                         return true;
                     }
                 },
                 {
-                    name: 'explore',
+                    name: 'explore posts',
+                    onclick: () => {
+                        App.petDefinition.stats.current_fun += random(0, 5);
+                        let otherPetDef;
+                        if(App.petDefinition.friends && App.petDefinition.friends.length){
+                            otherPetDef = randomFromArray(App.petDefinition.friends);
+                        } else {
+                            otherPetDef = App.getRandomPetDef();
+                        }
+                        showPost(otherPetDef, true);
+                        return true;
+                    }
+                },
+                {
+                    name: 'find friends',
                     onclick: () => {
                         const date = new Date();
                         const dayId = date.getFullYear() + date.getMonth() + date.getDate();
@@ -1806,6 +1895,11 @@ let App = {
             Battle.start();
         },
         shell_button: function(){
+            if(App.disableGameplayControls && App.gameplayControlsOverwrite){
+                App.gameplayControlsOverwrite();
+                App.vibrate();
+                return;
+            }
             if(App.disableGameplayControls) return;
             let displayCount = 0;
             let disallow = false;
@@ -1823,6 +1917,7 @@ let App = {
             App.setScene(App.scene.home);
             if(displayCount) App.closeAllDisplays();
             else App.handlers.open_main_menu();
+            App.vibrate();
         },
         sleep: function(){
             App.pet.sleep();
