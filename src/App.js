@@ -1865,6 +1865,13 @@ let App = {
                         return true;
                     }
                 },
+                {
+                    name: 'purchase meds',
+                    onclick: () => {
+                        App.handlers.open_food_list(true, null, "med");
+                        return true;
+                    }
+                },
             ])
         },
         open_game_list: function(){
