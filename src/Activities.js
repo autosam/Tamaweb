@@ -1,5 +1,76 @@
 class Activities {
     // activities
+    static bathe(){
+        App.closeAllDisplays();
+        App.setScene(App.scene.bathroom);
+        let foams = [];
+        App.toggleGameplayControls(false, () => {
+            App.pet.inverted = !App.pet.inverted;
+            let flipTime = random(200, 300);
+            let foam = new Object2d({
+                img: 'resources/img/misc/foam_single.png',
+                x: 50 + random(-15, 15) + Math.random(), 
+                y: 42 + random(-2, 2) + Math.random(),
+                onDraw: (me) => {
+                    Object2d.animations.flip(me, flipTime);
+                }
+            })
+            foams.push(foam);
+
+            if(foams.length >= 12){
+                foams.forEach(f => f.removeObject());
+                App.toggleGameplayControls(false);
+                App.pet.stopScriptedState();
+            }
+
+            App.pet.stats.current_cleanliness += 25;
+        });
+
+        let bathObject = new Object2d({
+            img: 'resources/img/misc/bathroom_01_bath.png',
+            x: 0, y: 0
+        })
+
+        App.pet.stopMove();
+        App.pet.x = '64%';
+        App.pet.y = '64%';
+        App.pet.triggerScriptedState('idle', App.INF, 0, true, () => {
+            App.pet.x = '50%';
+            App.pet.y = '100%';
+            bathObject.removeObject();
+            App.pet.playCheeringAnimation(() => {
+                App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
+            });
+        });
+    }
+    static poop(){
+        App.closeAllDisplays();
+        App.setScene(App.scene.bathroom);
+        App.toggleGameplayControls(false);
+
+        if(App.pet.stats.current_bladder > App.pet.stats.max_bladder / 2){ // more than half
+            App.pet.playRefuseAnimation(() => {
+                App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
+            });
+            return;
+        }
+
+        App.pet.stopMove();
+        App.pet.x = '21%';
+        App.pet.y = '85%';
+        App.pet.inverted = true;
+        App.pet.triggerScriptedState('sitting', 5000, 0, true, () => {
+            App.pet.x = '50%';
+            App.pet.y = '100%';
+            App.pet.stats.current_bladder = App.pet.stats.max_bladder;
+            App.pet.playCheeringAnimation(() => {
+                App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
+            });
+        });
+    }
     static wedding(otherPetDef){
         App.closeAllDisplays();
         App.setScene(App.scene.wedding);

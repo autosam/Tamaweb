@@ -24,6 +24,8 @@ class Pet extends Object2d {
         this.stats = this.petDefinition.stats;
         this.inventory = this.petDefinition.inventory;
         this.animations = this.petDefinition.animations;
+
+        this.additionalY += this.petDefinition.spritesheet.offsetY || 0;
     }
 
     onLateDraw() {
@@ -312,6 +314,7 @@ class Pet extends Object2d {
         let fun_depletion_rate = stats.fun_depletion_rate * depletion_mult;
         let bladder_depletion_rate = stats.bladder_depletion_rate * depletion_mult;
         let health_depletion_rate = stats.health_depletion_rate * depletion_mult;
+        let cleanliness_depletion_rate = stats.cleanliness_depletion_rate * depletion_mult;
 
         if(isOfflineProgression){
             health_depletion_rate = 0;
@@ -334,6 +337,7 @@ class Pet extends Object2d {
         stats.current_fun = clamp(stats.current_fun, 0, stats.max_fun);
         stats.current_bladder = clamp(stats.current_bladder, 0, stats.max_bladder);
         stats.current_health = clamp(stats.current_health, 0, stats.max_health);
+        stats.current_cleanliness = clamp(stats.current_cleanliness, 0, stats.max_cleanliness);
 
         // depletion
         stats.current_hunger -= hunger_depletion_rate;
@@ -362,8 +366,18 @@ class Pet extends Object2d {
         } else {
             App.poop.hidden = true;
         }
-        if(this.stats.has_poop_out){ // gradually decrease health if poop is nearby
+        stats.current_cleanliness -= cleanliness_depletion_rate;
+        if(stats.current_cleanliness <= 0){
+            stats.current_cleanliness = 0;
+        }
+        if(stats.current_cleanliness <= 25){
+            App.pet.dirtyPatches = true;
+        } else {
+            App.pet.dirtyPatches = false;
+        }
+        if(this.stats.has_poop_out || this.stats.current_cleanliness <= 0){ // gradually decrease health if poop is nearby or dirty
             stats.current_health -= health_depletion_rate * stats.health_depletion_mult;
+            stats.current_cleanliness -= cleanliness_depletion_rate * stats.cleanliness_depletion_mult;
         }
         if(stats.current_health <= 0){
             stats.current_health = 0;

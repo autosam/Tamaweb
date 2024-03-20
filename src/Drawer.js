@@ -102,6 +102,61 @@ class Drawer {
                     }
                 }
             }
+            
+            /* if(object.dirtyCircle){
+                this.context.globalCompositeOperation = "color";
+                // this.context.globalCompositeOperation = "multiply";
+                // this.context.fillStyle = 'rgba(124, 55, 29, 1)'; // Red tint
+                // this.context.ellipse(x, y, object.spritesheet.cellSize, object.spritesheet.cellSize, 0, 0, 360);
+                // this.context.fill();
+                // this.context.fillRect(x, y, object.spritesheet.cellSize, object.spritesheet.cellSize); // Apply the tint to a specific area
+                
+                this.context.beginPath();
+                this.context.arc(x + object.spritesheet.cellSize / 2, y + object.spritesheet.cellSize / 2, 8, 0, 2 * Math.PI, false);
+                this.context.fillStyle = 'rgba(124, 55, 29, 1)';
+                this.context.fill();
+                this.context.lineWidth = 0;
+                // this.context.strokeStyle = '#003300';
+                // this.context.stroke();
+
+                this.context.globalCompositeOperation = 'source-over';
+            } */
+
+            if(object.dirtyPatches){
+                let hCell = object.spritesheet.cellSize / 2;
+                this.context.globalCompositeOperation = "color";
+                this.context.globalCompositeOperation = "multiply";
+
+                let areas = [
+                    [hCell - 0, hCell, 3],
+                    [hCell + 3, hCell - 3, 2],
+                    [hCell - 2, hCell + 2, 2],
+                    // [hCell, hCell, 3],
+                ]
+                areas = [];
+
+                pRandom.save();
+                pRandom.seed = 1;
+                for(let i = 0; i < 8; i++){
+                    areas.push([
+                        hCell - pRandom.getIntBetween(-6, 6),
+                        hCell - pRandom.getIntBetween(-6, 6),
+                        pRandom.getIntBetween(1, 6)
+                    ])
+                }
+                pRandom.load();
+                
+                areas.forEach(area => {
+                    this.context.beginPath();
+                    this.context.arc(x + area[0], y + area[1], area[2], 0, 2 * Math.PI, false);
+                    this.context.fillStyle = 'rgba(124, 55, 29, 0.6)';
+                    this.context.fill();
+                    this.context.lineWidth = 0;
+                })
+
+
+                this.context.globalCompositeOperation = 'source-over';
+            }
 
             if (object.text){
                 this.context.fillText(object.text, x, y);

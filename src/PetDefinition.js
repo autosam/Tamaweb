@@ -42,7 +42,7 @@ class PetDefinition {
         },
         sitting: {
             start: 14,
-            end: 16,
+            end: 15,
             frameTime: 300
         },
         uncomfortable: {
@@ -156,6 +156,10 @@ class PetDefinition {
         max_health: 100,
         health_depletion_mult: 0.5, // from 0 to 1, 0 means immune to all health risks
         health_depletion_rate: 0.25,
+        // cleanliness
+        max_cleanliness: 100,
+        cleanliness_depletion_mult: 20,
+        cleanliness_depletion_rate: 0.015,
         // wander (sec)
         wander_min: 1.5,
         wander_max: 8,
@@ -166,6 +170,7 @@ class PetDefinition {
         current_fun: 10,
         current_bladder: 10,
         current_health: 90,
+        current_cleanliness: 50,
 
         // gold
         gold: 15,
@@ -211,6 +216,7 @@ class PetDefinition {
                     current_hunger: this.stats.current_hunger,
                     current_sleep: this.stats.current_sleep,
                     current_health: this.stats.current_health,
+                    current_cleanliness: this.stats.current_cleanliness,
                     has_poop_out: this.stats.has_poop_out,
                     is_sleeping: this.stats.is_sleeping,
                     is_egg: this.stats.is_egg,
@@ -424,12 +430,14 @@ class PetDefinition {
             cellSize: 16,
             rows: 4,
             columns: 4,
+            offsetY: 8,
         },
         '1': { // teen
             cellNumber: 0,
             cellSize: 24,
             rows: 4,
-            columns: 4,            
+            columns: 4,
+            offsetY: 4,    
         },
         '2': { // adult
             cellNumber: 0,

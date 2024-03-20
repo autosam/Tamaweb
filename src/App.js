@@ -1,6 +1,7 @@
 let App = {
     INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', userName: null, ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
     gameEventsHistory: [], deferredInstallPrompt: null, shellBackground: '', isOnItch: false,
+    misc: {},
     settings: {
         screenSize: 1,
         playSound: true,
@@ -89,12 +90,8 @@ let App = {
             image: App.preloadedResources["resources/img/misc/poop.png"],
             x: '80%', y: '80%',
             hidden: true,
-            onDraw: function() {
-                if(!this.nextFlipMs || App.time > this.nextFlipMs) {
-                    this.inverted = !this.inverted;
-                    this.nextFlipMs = App.time + 300;
-                }
-
+            onDraw: (me) => {
+                Object2d.animations.flip(me, 300);
             }
         })
         App.petDefinition = new PetDefinition({
@@ -102,6 +99,7 @@ let App = {
             sprite: randomFromArray(PET_BABY_CHARACTERS),
         }).setStats({is_egg: true}).loadStats(loadedData.pet);
         App.pet = new Pet(App.petDefinition);
+        // App.pet.dirtyPatches = true;
         App.setScene(App.scene.home);
         App.darkOverlay = new Object2d({
             img: "resources/img/background/house/dark_overlay.png",
@@ -517,6 +515,9 @@ let App = {
         market: new Scene({
             image: 'resources/img/background/outside/market_01.png',
         }),
+        bathroom: new Scene({
+            image: 'resources/img/background/house/bathroom_01.png',
+        }),
     },
     setScene(scene){
         if(App.currentScene && App.currentScene.onUnload){
@@ -606,7 +607,8 @@ let App = {
                 {
                     name: '<i class="fa-solid fa-bath"></i>',
                     onclick: () => {
-                        App.handlers.clean();
+                        // App.handlers.clean();
+                        App.handlers.open_bathroom_menu();
                     }
                 },
                 {
@@ -644,6 +646,28 @@ let App = {
                     onclick: () => { }
                 }, 
                 
+            ])
+        },
+        open_bathroom_menu: function(){
+            App.displayList([
+                {
+                    name: 'bathe',
+                    onclick: () => { 
+                        Activities.bathe();
+                    }
+                },
+                {
+                    name: 'use toilet',
+                    onclick: () => { 
+                        Activities.poop();
+                    }
+                },
+                {
+                    name: 'clean',
+                    onclick: () => {
+                        App.handlers.clean();
+                    }
+                }
             ])
         },
         open_settings: function(){
@@ -1651,6 +1675,7 @@ let App = {
             ])
         },
         open_social_media: function(){
+            // todo: add messaging friends
             function showPost(petDefinition, noMood){
                 let post = document.querySelector('.cloneables .post-container').cloneNode(true);
                 document.querySelector('.screen-wrapper').appendChild(post);
@@ -1951,7 +1976,6 @@ let App = {
                         App.pet.playCheeringAnimationIfTrue(App.pet.stats.has_poop_out, () => {});
                         App.pet.stats.has_poop_out = false;
                         App.poop.hidden = true;
-                        App.pet.stats.current_bladder = App.pet.stats.max_bladder;
                     }
                 }
             })

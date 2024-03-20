@@ -44,4 +44,13 @@ class Object2d {
     static setDrawer(drawer) {
         Object2d.defaultDrawer = drawer;
     }
+    static animations = {
+        flip: function(me, flipTime){
+            if(!flipTime) flipTime = 300;
+            if(!me.nextFlipMs || App.time > me.nextFlipMs) {
+                me.inverted = !me.inverted;
+                me.nextFlipMs = App.time + flipTime;
+            }
+        }
+    }
 }
