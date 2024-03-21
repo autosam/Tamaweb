@@ -45,6 +45,8 @@ class Activities {
         });
     }
     static poop(){
+        // todo: add automatic pooping and poop training symbols to player
+
         App.closeAllDisplays();
         App.setScene(App.scene.bathroom);
         App.toggleGameplayControls(false);
@@ -57,6 +59,8 @@ class Activities {
             return;
         }
 
+        App.pet.needsToiletOverlay.hidden = false;
+        App.pet.stats.current_bladder = App.pet.stats.max_bladder;
         App.pet.stopMove();
         App.pet.x = '21%';
         App.pet.y = '85%';
@@ -64,7 +68,6 @@ class Activities {
         App.pet.triggerScriptedState('sitting', 5000, 0, true, () => {
             App.pet.x = '50%';
             App.pet.y = '100%';
-            App.pet.stats.current_bladder = App.pet.stats.max_bladder;
             App.pet.playCheeringAnimation(() => {
                 App.setScene(App.scene.home);
                 App.toggleGameplayControls(true);

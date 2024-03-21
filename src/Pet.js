@@ -26,6 +26,32 @@ class Pet extends Object2d {
         this.animations = this.petDefinition.animations;
 
         this.additionalY += this.petDefinition.spritesheet.offsetY || 0;
+
+        this.needsToiletOverlay = new Object2d({
+            img: 'resources/img/misc/needstoilet_01.png',
+            x: 0,
+            y: 0,
+            width: this.petDefinition.spritesheet.cellSize, height: this.petDefinition.spritesheet.cellSize,
+            hidden: true,
+            onDraw: (overlay) => {
+                overlay.x = this.x;
+                overlay.y = this.y + this.additionalY;
+                Object2d.animations.flip(overlay, 250);
+            }
+        });
+
+        this.dirtyOverlay = new Object2d({
+            img: 'resources/img/misc/stinky_01.png',
+            x: 0,
+            y: 0,
+            width: this.petDefinition.spritesheet.cellSize, height: this.petDefinition.spritesheet.cellSize,
+            hidden: true,
+            onDraw: (overlay) => {
+                overlay.x = this.x;
+                overlay.y = this.y + this.additionalY;
+                Object2d.animations.flip(overlay, 300);
+            }
+        });
     }
 
     onLateDraw() {
@@ -361,6 +387,11 @@ class Pet extends Object2d {
             this.stats.has_poop_out = true;
             // console.log('pooping myself');
         }
+        if(stats.current_bladder <= stats.max_bladder / 4){
+            this.needsToiletOverlay.hidden = false;
+        } else {
+            this.needsToiletOverlay.hidden = true;
+        }
         if(this.stats.has_poop_out){
             App.poop.hidden = false;
         } else {
@@ -371,9 +402,11 @@ class Pet extends Object2d {
             stats.current_cleanliness = 0;
         }
         if(stats.current_cleanliness <= 25){
-            App.pet.dirtyPatches = true;
+            // App.pet.dirtyPatches = true;
+            this.dirtyOverlay.hidden = false;
         } else {
-            App.pet.dirtyPatches = false;
+            // App.pet.dirtyPatches = false;
+            this.dirtyOverlay.hidden = true;
         }
         if(this.stats.has_poop_out || this.stats.current_cleanliness <= 0){ // gradually decrease health if poop is nearby or dirty
             stats.current_health -= health_depletion_rate * stats.health_depletion_mult;

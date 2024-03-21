@@ -99,7 +99,6 @@ let App = {
             sprite: randomFromArray(PET_BABY_CHARACTERS),
         }).setStats({is_egg: true}).loadStats(loadedData.pet);
         App.pet = new Pet(App.petDefinition);
-        // App.pet.dirtyPatches = true;
         App.setScene(App.scene.home);
         App.darkOverlay = new Object2d({
             img: "resources/img/background/house/dark_overlay.png",
@@ -518,6 +517,9 @@ let App = {
         bathroom: new Scene({
             image: 'resources/img/background/house/bathroom_01.png',
         }),
+        hospitalExterior: new Scene({
+            image: 'resources/img/background/outside/hospital.png',
+        })
     },
     setScene(scene){
         if(App.currentScene && App.currentScene.onUnload){
