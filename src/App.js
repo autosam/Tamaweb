@@ -415,7 +415,7 @@ let App = {
                     }
                 },
             ])
-        }, true)) return;
+        })) return;
 
         /* if(addEvent(`game_suggestions_poll_01`, () => {
             App.displayPrompt(`<b><small>Poll</small></b>what would you like to to be added in the next update?`, [
