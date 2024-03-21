@@ -1,5 +1,5 @@
 let App = {
-    INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', userName: null, ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
+    PI2: Math.PI * 2, INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', userName: null, ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
     gameEventsHistory: [], deferredInstallPrompt: null, shellBackground: '', isOnItch: false,
     misc: {},
     settings: {
@@ -104,7 +104,6 @@ let App = {
             img: "resources/img/background/house/dark_overlay.png",
             hidden: true,
         })
-        // App.pet.loadStats(loadedData.pet);
 
         // simulating offline progression
         if(loadedData.lastTime){

@@ -7,17 +7,21 @@ class Activities {
         App.toggleGameplayControls(false, () => {
             App.pet.inverted = !App.pet.inverted;
             let flipTime = random(200, 300);
+
+            let foamSpeed = random(5, 13) * 0.001;
+            let foamStr = random(1, 4) * 0.1;
             let foam = new Object2d({
                 img: 'resources/img/misc/foam_single.png',
                 x: 50 + random(-15, 15) + Math.random(), 
                 y: 42 + random(-2, 2) + Math.random(),
                 onDraw: (me) => {
                     Object2d.animations.flip(me, flipTime);
+                    Object2d.animations.bob(me, foamSpeed, foamStr);
                 }
             })
             foams.push(foam);
 
-            if(foams.length >= 12){
+            if(foams.length >= 10){
                 foams.forEach(f => f.removeObject());
                 App.toggleGameplayControls(false);
                 App.pet.stopScriptedState();
