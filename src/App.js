@@ -402,22 +402,20 @@ let App = {
             return;
         }
 
-        if(addEvent(`update_03_notice`, () => {
-            // 
-            App.displayConfirm(`<b>New update!</b><br>A massive new update just released, adding many new food and snacks from...`, [
+        if(addEvent(`update_04_notice`, () => {
+            App.displayList([
                 {
-                    name: 'next',
+                    name: 'New update is available!',
+                    type: 'title',
+                },
+                {
+                    name: 'see whats new',
                     onclick: () => {
-                        App.displayConfirm(`Tamagotchi ON, social media, friend codes, shell buttons and designs and a lot more!`, [
-                            {
-                                name: 'check it out!',
-                                onclick: () => {},
-                            }
-                        ]);
-                    },
-                }
-            ]);
-        })) return;
+                        document.querySelector('.blog-post').style.display = '';
+                    }
+                },
+            ])
+        }, true)) return;
 
         /* if(addEvent(`game_suggestions_poll_01`, () => {
             App.displayPrompt(`<b><small>Poll</small></b>what would you like to to be added in the next update?`, [
