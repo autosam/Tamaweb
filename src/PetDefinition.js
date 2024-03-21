@@ -133,9 +133,8 @@ class PetDefinition {
         max_hunger: 100,
         hunger_satisfaction: 80, // note: when reaching this they won't want anymore food
         hunger_min_desire: 40, // note: when below this number they desire it
-        hunger_depletion_rate: 0.009,
+        hunger_depletion_rate: 0.0185,
         activity_hunger_depletion: 0.5,
-
         // sleep
         max_sleep: 100,
         sleep_satisfaction: 70,
@@ -148,10 +147,10 @@ class PetDefinition {
         max_fun: 100,
         fun_min_desire: 35,
         fun_satisfaction: 70,
-        fun_depletion_rate: 0.02,
+        fun_depletion_rate: 0.0235,
         // bladder
         max_bladder: 100,
-        bladder_depletion_rate: 0.05,
+        bladder_depletion_rate: 0.02691,
         // health
         max_health: 100,
         health_depletion_mult: 0.5, // from 0 to 1, 0 means immune to all health risks
@@ -275,6 +274,7 @@ class PetDefinition {
         this.stats.current_sleep = 100;
         this.stats.current_health = 100;
         this.stats.current_bladder = 100;
+        this.stats.current_cleanliness = 100;
         this.stats.has_poop_out = false;
     }
 
@@ -393,6 +393,7 @@ class PetDefinition {
     }
 
     addFriend(friendDef, friendship){
+        if(!friendship)
         if(this.friends.indexOf(friendDef) === -1){ // checking friends list
             let friendDefS = friendDef.name + friendDef.sprite;
             let haveMatchingDef = this.friends.some(activeFriendDef => {

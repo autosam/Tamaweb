@@ -28,6 +28,7 @@ class Activities {
             }
 
             App.pet.stats.current_cleanliness += 25;
+            App.playSound(`resources/sounds/ui_click_03.ogg`, true);
         });
 
         let bathObject = new Object2d({
@@ -358,7 +359,7 @@ class Activities {
 
         task_otherPetMoveIn();
     }
-    static inviteGiveGift(otherPetDef){
+    static inviteGiveGift(otherPetDef, friendshipAmount){
         App.setScene(App.scene.home);
         App.toggleGameplayControls(false);
         let otherPet = new Pet(otherPetDef);
@@ -389,8 +390,6 @@ class Activities {
 
             otherPet.stopMove();
             App.pet.stopMove();
-
-
 
             otherPet.triggerScriptedState('cheering', App.INF);
             App.pet.triggerScriptedState('cheering', 3000, null, true, () => {
@@ -660,7 +659,8 @@ class Activities {
         let otherPet;
         if(otherPetDef){
             otherPet = new Pet(otherPetDef);
-            App.petDefinition.addFriend(otherPetDef);
+            App.petDefinition.addFriend(otherPetDef, 1);
+            otherPetDef.increaseFriendship();
         }
         App.pet.triggerScriptedState('playing', 10000, null, true, () => {
             App.pet.x = '50%';

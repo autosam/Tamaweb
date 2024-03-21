@@ -583,8 +583,8 @@ let App = {
         open_main_menu: function(){
             if(App.disableGameplayControls) {
                 if(App.gameplayControlsOverwrite) {
-                    App.gameplayControlsOverwrite();
                     App.playSound(`resources/sounds/ui_click_01.ogg`, true);
+                    App.gameplayControlsOverwrite();
                     App.vibrate();
                 }
                 return;
@@ -683,7 +683,7 @@ let App = {
                     },
                 },
                 {
-                    name: `system settings ${App.getBadge()}`,
+                    name: `system settings`,
                     onclick: () => {
                         App.displayList([
                             {
@@ -703,7 +703,7 @@ let App = {
                                 }
                             },
                             {
-                                name: `background color ${App.getBadge()}`,
+                                name: `background color`,
                                 onclick: () => {
                                     App.displayList([
                                         {
@@ -762,7 +762,7 @@ let App = {
                     }
                 },
                 {
-                    name: `change shell ${App.getBadge()}`,
+                    name: `change shell`,
                     onclick: () => {
                         // App.handlers.open_shell_background_list();
                         // return true;
@@ -778,7 +778,7 @@ let App = {
                                 }
                             },
                             {
-                                name: `shell button: <i>${App.settings.displayShellButtons ? 'yes' : 'no'}</i> ${App.getBadge()}`,
+                                name: `shell button: <i>${App.settings.displayShellButtons ? 'yes' : 'no'}</i>`,
                                 onclick: (item) => {
                                     App.settings.displayShellButtons = !App.settings.displayShellButtons;
                                     item.innerHTML = `shell button: <i>${App.settings.displayShellButtons ? 'yes' : 'no'}</i>`;  
@@ -787,7 +787,7 @@ let App = {
                                 }
                             },
                             {
-                                name: `select shell ${App.getBadge()}`,
+                                name: `select shell`,
                                 onclick: () => {
                                     App.handlers.open_shell_background_list();
                                     return true;
@@ -1357,7 +1357,7 @@ let App = {
                     }
                 },
                 {
-                    name: `market ${App.getBadge()}`,
+                    name: `market`,
                     onclick: () => {
                         Activities.goToMarket();
                     }
@@ -1392,7 +1392,7 @@ let App = {
                 // },
             ])
         },
-        open_friends_list: function(){
+        open_friends_list: function(onClickOverride){
             if(!App.petDefinition.friends.length){
                 App.displayPopup(`${App.petDefinition.name} doesn't have any friends right now<br><br><small>Visit the park to find new friends<small>`, 4000);
                 return;
@@ -1404,6 +1404,7 @@ let App = {
                 return {
                     name: icon + name,
                     onclick: () => {
+                        if(onClickOverride) return onClickOverride(friendDef);
                         const friendActivitiesList = App.displayList([
                             {
                                 name: 'info',
@@ -1590,7 +1591,7 @@ let App = {
                     }
                 },
                 {
-                    name: `friend codes ${App.getBadge()}`,
+                    name: `friend codes`,
                     onclick: () => {
                         App.displayList([
                             {
@@ -1676,7 +1677,6 @@ let App = {
             ])
         },
         open_social_media: function(){
-            // todo: add messaging friends
             function showPost(petDefinition, noMood){
                 let post = document.querySelector('.cloneables .post-container').cloneNode(true);
                 document.querySelector('.screen-wrapper').appendChild(post);
@@ -1790,6 +1790,11 @@ let App = {
 
             App.displayList([
                 {
+                    _ignore: true,
+                    name: 'Social Media',
+                    type: 'title',
+                },
+                {
                     name: 'make post',
                     onclick: () => {
                         App.petDefinition.stats.current_fun += random(1, 5);
@@ -1855,6 +1860,21 @@ let App = {
                         return true;
                     }
                 },
+                {
+                    name: `send message`,
+                    onclick: () => {
+                        App.handlers.open_friends_list((friendDef) => {
+                            if(friendDef.sentMessage){
+                                App.displayPopup(`${App.petDefinition.name} shouldn't spam ${friendDef.name}'s inbox!`, 3000);
+                                return;
+                            }
+                            App.displayPopup(`sent message to ${friendDef.name}!`, 3000);
+                            friendDef.increaseFriendship(10);
+                            friendDef.sentMessage = true;
+                        })
+                        return true;
+                    }
+                }
             ])
         },
         open_mall_activity_list: function(){
@@ -2045,14 +2065,15 @@ let App = {
         });
     },
     displayList: function(listItems, backFn){
-        listItems.push({
-            name: 'BACK',
-            class: 'back-btn',
-            onclick: () => {
-                if(backFn) backFn();
-                return false;
-            }
-        })
+        if(backFn !== false)
+            listItems.push({
+                name: 'BACK',
+                class: 'back-btn',
+                onclick: () => {
+                    if(backFn) backFn();
+                    return false;
+                }
+            })
 
         let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
 
@@ -2063,25 +2084,37 @@ let App = {
         listItems.forEach((item, i) => {
             if(item._ignore) return;
 
-            let button = document.createElement(item.link ? 'a' : 'button');
-                if(item.link){
-                    button.href = item.link;
-                    button.target = '_blank';
-                }
-                button.className = 'list-item' + (item.class ? ' ' + item.class : '');
-                if(i == listItems.length - 2) button.className += ' last-btn';
-                // '⤳ ' + 
-                button.innerHTML = item.name;
-                button.disabled = item._disable;
-                button.onclick = () => {
-                    let result = item.onclick(button, list);
-                    if(!result){
-                        list.close();
+            let element;
+            let defaultClassName;
+
+            switch(item.type){
+                case "title":
+                    element = document.createElement('h3');
+                    element.innerHTML = item.name;
+                    defaultClassName = 'inner-padding bg-white b-radius-10 uppercase list-title';
+                    break;
+                default:
+                    element = document.createElement(item.link ? 'a' : 'button');
+                    if(item.link){
+                        element.href = item.link;
+                        element.target = '_blank';
                     }
-                };
+                    if(i == listItems.length - 2) element.className += ' last-btn';
+                    // '⤳ ' + 
+                    element.innerHTML = item.name;
+                    element.disabled = item._disable;
+                    element.onclick = () => {
+                        let result = item.onclick(element, list);
+                        if(!result){
+                            list.close();
+                        }
+                    };
+                    defaultClassName = 'list-item';
+            }
 
+            element.className = defaultClassName + (item.class ? ' ' + item.class : '');
 
-            list.appendChild(button);
+            list.appendChild(element);
         });
 
         document.querySelector('.screen-wrapper').appendChild(list);

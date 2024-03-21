@@ -344,13 +344,15 @@ class Pet extends Object2d {
 
         if(isOfflineProgression){
             health_depletion_rate = 0;
+            sleep_depletion_rate /= 3;
         }
 
         // sleeping case
         if(this.stats.is_sleeping || offlineAndIsNight){
             // fun_depletion_rate = 0;
             // hunger_depletion_rate = 0;
-            health_depletion_rate = 0;
+
+            // health_depletion_rate = 0;
 
             let sleepAdditionalDepletionMult = 1;
             if(offlineAndIsNight) sleepAdditionalDepletionMult = 2;
@@ -408,7 +410,7 @@ class Pet extends Object2d {
             // App.pet.dirtyPatches = false;
             this.dirtyOverlay.hidden = true;
         }
-        if(this.stats.has_poop_out || this.stats.current_cleanliness <= 0){ // gradually decrease health if poop is nearby or dirty
+        if(this.stats.has_poop_out || !this.dirtyOverlay.hidden){ // gradually decrease health if poop is nearby or dirty
             stats.current_health -= health_depletion_rate * stats.health_depletion_mult;
             stats.current_cleanliness -= cleanliness_depletion_rate * stats.cleanliness_depletion_mult;
         }
@@ -702,7 +704,29 @@ class Pet extends Object2d {
         if(!this.isMainPet) return;
         App.playSound(sound, force);
     }
+    getStatsDepletionRates(offline){
+        App.petDefinition.maxStats();
+        
+        let seconds = 3600 * 24;
+        let report = {};
+        // let offline = false;
 
+        for(let i = 0; i < seconds; i++){
+            this.statsManager(offline);
+            this.statsManager(offline);
+
+            let min = {m: i / 60, s: i};
+            if(this.stats.current_hunger <= 0 && !report.hunger) report.hunger = {...min, stat: this.stats.current_hunger};
+            if(this.stats.current_sleep <= 2 && !report.sleep) report.sleep = {...min, stat: this.stats.current_sleep};
+            if(this.stats.current_fun <= 0 && !report.fun) report.fun = {...min, stat: this.stats.current_fun};
+            if(this.stats.current_bladder <= 3 && !report.bladder) report.bladder = {...min, stat: this.stats.current_bladder};
+            if(this.stats.current_cleanliness <= 0 && !report.cleanliness) report.cleanliness = {...min, stat: this.stats.current_cleanliness};
+            if(this.stats.current_health <= 0 && !report.health) report.health = {...min, stat: this.stats.current_health};
+        }
+
+        console.log(`Time every stats hit ~0:`, report);
+        App.petDefinition.maxStats();
+    }
     static scriptedEventDrivers = {
         playing: function(start){
             this.pet.setState('moving');
