@@ -3,7 +3,7 @@ self.importScripts(
     'resources/data/SpriteDefinitions.js',
 )
 
-const VER = '9.92';
+const VER = '10';
 const CACHE_NAME = `tamaweb-${VER}`;
 const ASSETS = [
     // main

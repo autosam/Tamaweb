@@ -133,7 +133,7 @@ class PetDefinition {
         max_hunger: 100,
         hunger_satisfaction: 80, // note: when reaching this they won't want anymore food
         hunger_min_desire: 40, // note: when below this number they desire it
-        hunger_depletion_rate: 0.0185,
+        hunger_depletion_rate: 0.0145,
         activity_hunger_depletion: 0.5,
         // sleep
         max_sleep: 100,
