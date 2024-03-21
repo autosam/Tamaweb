@@ -11,11 +11,12 @@ const SPRITES = [
     "resources/img/background/house/wedding_overlay.png",
     "resources/img/background/house/arcade_01.png",
     "resources/img/background/house/bathroom_01.png",
+    "resources/img/background/house/clinic_01.png",
     
     "resources/img/background/outside/park_02.png",
     "resources/img/background/outside/mall_walkway.png",
     "resources/img/background/outside/market_01.png",
-    "resources/img/background/outside/hospital.png",
+    "resources/img/background/outside/hospital_01.png",
 
     // items
     "resources/img/item/foods.png",
@@ -39,4 +40,5 @@ const SPRITES = [
     "resources/img/misc/table_01.png",
     "resources/img/misc/needstoilet_01.png",
     "resources/img/misc/stinky_01.png",
+    "resources/img/misc/dr_sprite.png",
 ]

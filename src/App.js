@@ -517,7 +517,21 @@ let App = {
             image: 'resources/img/background/house/bathroom_01.png',
         }),
         hospitalExterior: new Scene({
-            image: 'resources/img/background/outside/hospital.png',
+            image: 'resources/img/background/outside/hospital_01.png',
+        }),
+        hospitalInterior: new Scene({
+            image: 'resources/img/background/house/clinic_01.png',
+            onLoad: () => {
+                this.drSprite = new Object2d({
+                    image: App.preloadedResources['resources/img/misc/dr_sprite.png'],
+                    x: '80%',
+                    y: '77%',
+                    inverted: true,
+                })
+            },
+            onUnload: () => {
+                this.drSprite?.removeObject();
+            }
         })
     },
     setScene(scene){
@@ -1371,6 +1385,12 @@ let App = {
                     }
                 },
                 {
+                    name: `visit doctor ${App.getBadge()}`,
+                    onclick: () => {
+                        Activities.goToClinic();
+                    }
+                },
+                {
                     name: 'park',
                     onclick: () => { // going to park with random pet
                         Activities.goToPark();
@@ -1575,6 +1595,7 @@ let App = {
                     }
                 },
                 {
+                    _ignore: true,
                     name: 'doctor visit',
                     onclick: () => {
                         // App.displayPopup(`${App.pet.stats.current_health}`, 1000);
