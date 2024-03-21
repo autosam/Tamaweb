@@ -359,7 +359,7 @@ class Activities {
 
         task_otherPetMoveIn();
     }
-    static inviteGiveGift(otherPetDef, friendshipAmount){
+    static inviteGiveGift(otherPetDef){
         App.setScene(App.scene.home);
         App.toggleGameplayControls(false);
         let otherPet = new Pet(otherPetDef);

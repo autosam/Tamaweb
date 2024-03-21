@@ -393,7 +393,6 @@ class PetDefinition {
     }
 
     addFriend(friendDef, friendship){
-        if(!friendship)
         if(this.friends.indexOf(friendDef) === -1){ // checking friends list
             let friendDefS = friendDef.name + friendDef.sprite;
             let haveMatchingDef = this.friends.some(activeFriendDef => {
