@@ -1,5 +1,137 @@
 class Activities {
     // activities
+    static goToClinic(){
+        App.toggleGameplayControls(false);
+
+        function task_visit_doctor(){
+            App.setScene(App.scene.hospitalInterior);
+            App.pet.stopMove();
+            App.pet.x = -30;
+            App.pet.targetX = 50;
+            App.pet.triggerScriptedState('moving', 4000, null, true, () => {
+                App.displayPopup(`<b>Dr. Banzo:</b><br>let's see...`, 3500);
+                App.pet.x = '20%';
+                // App.toggleGameplayControls(true);
+                App.pet.inverted = true;
+                App.pet.triggerScriptedState('idle_side', 4100, null, true, () => {
+                    let health = App.pet.stats.current_health;
+    
+                    let state = 'very healthy';
+                    if(health <= App.pet.stats.max_health * 0.20) state = 'very sick';
+                    else if(health <= App.pet.stats.max_health * 0.45) state = 'sick';
+                    else if(health <= App.pet.stats.max_health * 0.75) state = 'healthy'
+    
+                    if(state == 'very sick' || state == 'sick'){
+                        App.pet.triggerScriptedState('shocked', 2000, false, true, () => {
+                            App.displayPopup(`${App.pet.petDefinition.name} is ${state}`, 5000, () => App.pet.x = '50%');
+                            App.setScene(App.scene.home);
+                            App.toggleGameplayControls(true);
+                        })
+                    } else {
+                        App.pet.triggerScriptedState('cheering_with_icon', 2000, false, true, () => {
+                            App.displayPopup(`${App.pet.petDefinition.name} is ${state}`, 5000, () => App.pet.x = '50%');
+                            App.setScene(App.scene.home);
+                            App.toggleGameplayControls(true);
+                        })
+                    }
+                });
+    
+            });
+        }
+
+        function task_goto_hospital(){
+            App.setScene(App.scene.hospitalExterior);
+            App.pet.stopMove();
+            App.pet.x = '50%';
+            App.pet.y = 130;
+            App.pet.targetY = 80;
+            App.pet.triggerScriptedState('moving', 2500, 0, true, () => {
+                App.pet.stopMove();
+                task_visit_doctor();
+            })
+        }
+
+        task_goto_hospital();
+    }
+    static bathe(){
+        App.closeAllDisplays();
+        App.setScene(App.scene.bathroom);
+        let foams = [];
+        App.toggleGameplayControls(false, () => {
+            App.pet.inverted = !App.pet.inverted;
+            let flipTime = random(200, 300);
+
+            let foamSpeed = random(5, 13) * 0.001;
+            let foamStr = random(1, 4) * 0.1;
+            let foam = new Object2d({
+                img: 'resources/img/misc/foam_single.png',
+                x: 50 + random(-15, 15) + Math.random(), 
+                y: 42 + random(-2, 2) + Math.random(),
+                onDraw: (me) => {
+                    Object2d.animations.flip(me, flipTime);
+                    Object2d.animations.bob(me, foamSpeed, foamStr);
+                }
+            })
+            foams.push(foam);
+
+            if(foams.length >= 10){
+                foams.forEach(f => f.removeObject());
+                App.toggleGameplayControls(false);
+                App.pet.stopScriptedState();
+            }
+
+            App.pet.stats.current_cleanliness += 25;
+            App.playSound(`resources/sounds/ui_click_03.ogg`, true);
+        });
+
+        let bathObject = new Object2d({
+            img: 'resources/img/misc/bathroom_01_bath.png',
+            x: 0, y: 0
+        })
+
+        App.pet.stopMove();
+        App.pet.x = '64%';
+        App.pet.y = '64%';
+        App.pet.triggerScriptedState('idle', App.INF, 0, true, () => {
+            App.pet.x = '50%';
+            App.pet.y = '100%';
+            bathObject.removeObject();
+            App.pet.playCheeringAnimation(() => {
+                App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
+            });
+        });
+    }
+    static poop(){
+        // todo: add automatic pooping and poop training symbols to player
+
+        App.closeAllDisplays();
+        App.setScene(App.scene.bathroom);
+        App.toggleGameplayControls(false);
+
+        if(App.pet.stats.current_bladder > App.pet.stats.max_bladder / 2){ // more than half
+            App.pet.playRefuseAnimation(() => {
+                App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
+            });
+            return;
+        }
+
+        App.pet.needsToiletOverlay.hidden = false;
+        App.pet.stats.current_bladder = App.pet.stats.max_bladder;
+        App.pet.stopMove();
+        App.pet.x = '21%';
+        App.pet.y = '85%';
+        App.pet.inverted = true;
+        App.pet.triggerScriptedState('sitting', 5000, 0, true, () => {
+            App.pet.x = '50%';
+            App.pet.y = '100%';
+            App.pet.playCheeringAnimation(() => {
+                App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
+            });
+        });
+    }
     static wedding(otherPetDef){
         App.closeAllDisplays();
         App.setScene(App.scene.wedding);
@@ -312,8 +444,6 @@ class Activities {
             otherPet.stopMove();
             App.pet.stopMove();
 
-
-
             otherPet.triggerScriptedState('cheering', App.INF);
             App.pet.triggerScriptedState('cheering', 3000, null, true, () => {
                 // App.drawer.removeObject(gift);
@@ -582,7 +712,8 @@ class Activities {
         let otherPet;
         if(otherPetDef){
             otherPet = new Pet(otherPetDef);
-            App.petDefinition.addFriend(otherPetDef);
+            App.petDefinition.addFriend(otherPetDef, 1);
+            otherPetDef.increaseFriendship();
         }
         App.pet.triggerScriptedState('playing', 10000, null, true, () => {
             App.pet.x = '50%';

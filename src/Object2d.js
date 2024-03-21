@@ -44,4 +44,21 @@ class Object2d {
     static setDrawer(drawer) {
         Object2d.defaultDrawer = drawer;
     }
+    static animations = {
+        flip: function(me, flipTime){
+            if(!flipTime) flipTime = 300;
+            if(!me.nextFlipMs || App.time > me.nextFlipMs) {
+                me.inverted = !me.inverted;
+                me.nextFlipMs = App.time + flipTime;
+            }
+        },
+        bob: function(me, bobSpeed, bobStrength){
+            if(!bobSpeed) bobSpeed = 0.01;
+            if(!bobStrength) bobStrength = 0.4;
+            if(!me.bobFloat || me.bobFloat > App.PI2) me.bobFloat = 0;
+            me.bobFloat += bobSpeed * App.deltaTime;
+            let currentFloat = Math.sin(me.bobFloat) * bobStrength;
+            me.y += currentFloat;
+        }
+    }
 }

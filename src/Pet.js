@@ -24,6 +24,34 @@ class Pet extends Object2d {
         this.stats = this.petDefinition.stats;
         this.inventory = this.petDefinition.inventory;
         this.animations = this.petDefinition.animations;
+
+        this.additionalY += this.petDefinition.spritesheet.offsetY || 0;
+
+        this.needsToiletOverlay = new Object2d({
+            img: 'resources/img/misc/needstoilet_01.png',
+            x: 0,
+            y: 0,
+            width: this.petDefinition.spritesheet.cellSize, height: this.petDefinition.spritesheet.cellSize,
+            hidden: true,
+            onDraw: (overlay) => {
+                overlay.x = this.x;
+                overlay.y = this.y + this.additionalY;
+                Object2d.animations.flip(overlay, 250);
+            }
+        });
+
+        this.dirtyOverlay = new Object2d({
+            img: 'resources/img/misc/stinky_01.png',
+            x: 0,
+            y: 0,
+            width: this.petDefinition.spritesheet.cellSize, height: this.petDefinition.spritesheet.cellSize,
+            hidden: true,
+            onDraw: (overlay) => {
+                overlay.x = this.x;
+                overlay.y = this.y + this.additionalY;
+                Object2d.animations.flip(overlay, 300);
+            }
+        });
     }
 
     onLateDraw() {
@@ -312,16 +340,19 @@ class Pet extends Object2d {
         let fun_depletion_rate = stats.fun_depletion_rate * depletion_mult;
         let bladder_depletion_rate = stats.bladder_depletion_rate * depletion_mult;
         let health_depletion_rate = stats.health_depletion_rate * depletion_mult;
+        let cleanliness_depletion_rate = stats.cleanliness_depletion_rate * depletion_mult;
 
         if(isOfflineProgression){
             health_depletion_rate = 0;
+            sleep_depletion_rate /= 3;
         }
 
         // sleeping case
         if(this.stats.is_sleeping || offlineAndIsNight){
             // fun_depletion_rate = 0;
             // hunger_depletion_rate = 0;
-            health_depletion_rate = 0;
+
+            // health_depletion_rate = 0;
 
             let sleepAdditionalDepletionMult = 1;
             if(offlineAndIsNight) sleepAdditionalDepletionMult = 2;
@@ -334,6 +365,7 @@ class Pet extends Object2d {
         stats.current_fun = clamp(stats.current_fun, 0, stats.max_fun);
         stats.current_bladder = clamp(stats.current_bladder, 0, stats.max_bladder);
         stats.current_health = clamp(stats.current_health, 0, stats.max_health);
+        stats.current_cleanliness = clamp(stats.current_cleanliness, 0, stats.max_cleanliness);
 
         // depletion
         stats.current_hunger -= hunger_depletion_rate;
@@ -357,13 +389,30 @@ class Pet extends Object2d {
             this.stats.has_poop_out = true;
             // console.log('pooping myself');
         }
+        if(stats.current_bladder <= stats.max_bladder / 4){
+            this.needsToiletOverlay.hidden = false;
+        } else {
+            this.needsToiletOverlay.hidden = true;
+        }
         if(this.stats.has_poop_out){
             App.poop.hidden = false;
         } else {
             App.poop.hidden = true;
         }
-        if(this.stats.has_poop_out){ // gradually decrease health if poop is nearby
+        stats.current_cleanliness -= cleanliness_depletion_rate;
+        if(stats.current_cleanliness <= 0){
+            stats.current_cleanliness = 0;
+        }
+        if(stats.current_cleanliness <= 25){
+            // App.pet.dirtyPatches = true;
+            this.dirtyOverlay.hidden = false;
+        } else {
+            // App.pet.dirtyPatches = false;
+            this.dirtyOverlay.hidden = true;
+        }
+        if(this.stats.has_poop_out || !this.dirtyOverlay.hidden){ // gradually decrease health if poop is nearby or dirty
             stats.current_health -= health_depletion_rate * stats.health_depletion_mult;
+            stats.current_cleanliness -= cleanliness_depletion_rate * stats.cleanliness_depletion_mult;
         }
         if(stats.current_health <= 0){
             stats.current_health = 0;
@@ -655,7 +704,29 @@ class Pet extends Object2d {
         if(!this.isMainPet) return;
         App.playSound(sound, force);
     }
+    getStatsDepletionRates(offline){
+        App.petDefinition.maxStats();
+        
+        let seconds = 3600 * 24;
+        let report = {};
+        // let offline = false;
 
+        for(let i = 0; i < seconds; i++){
+            this.statsManager(offline);
+            this.statsManager(offline);
+
+            let min = {m: i / 60, s: i};
+            if(this.stats.current_hunger <= 0 && !report.hunger) report.hunger = {...min, stat: this.stats.current_hunger};
+            if(this.stats.current_sleep <= 2 && !report.sleep) report.sleep = {...min, stat: this.stats.current_sleep};
+            if(this.stats.current_fun <= 0 && !report.fun) report.fun = {...min, stat: this.stats.current_fun};
+            if(this.stats.current_bladder <= 3 && !report.bladder) report.bladder = {...min, stat: this.stats.current_bladder};
+            if(this.stats.current_cleanliness <= 0 && !report.cleanliness) report.cleanliness = {...min, stat: this.stats.current_cleanliness};
+            if(this.stats.current_health <= 0 && !report.health) report.health = {...min, stat: this.stats.current_health};
+        }
+
+        console.log(`Time every stats hit ~0:`, report);
+        App.petDefinition.maxStats();
+    }
     static scriptedEventDrivers = {
         playing: function(start){
             this.pet.setState('moving');
