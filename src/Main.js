@@ -46,6 +46,32 @@ class SpriteElement extends HTMLElement {
 
 customElements.define("c-sprite", SpriteElement);
 
-navigator?.serviceWorker?.register('service-worker.js').then(() => console.log('Service Worker Registered'));
+function handleServiceWorker(){
+    if(!navigator?.serviceWorker) return;
 
+    navigator?.serviceWorker?.register('service-worker.js').then(() => console.log('Service Worker Registered'));
+    navigator?.serviceWorker?.addEventListener('controllerchange', () => {
+        if(!App._shownControllerChangeModal){
+            console.log('should see modal now!')
+            App._shownControllerChangeModal = true;
+            document.querySelector('#download-container').style.display = 'none';
+            document.querySelector('#download-complete-container').style.display = '';
+            // App.displayUiModal(`
+            //     <div style="margin-right: 10px">New version is downloaded!</div>
+            //     <a href="">Refresh</a>
+            // `)
+        }
+    })
+
+    const channel = new BroadcastChannel('sw-messages');
+    channel.addEventListener('message', event => {
+        switch(event.data.type){
+            case "install":
+                document.querySelector('#download-container').style.display = '';
+                break;
+        }
+    });
+}
+
+handleServiceWorker();
 App.init();

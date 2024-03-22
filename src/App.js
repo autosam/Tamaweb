@@ -953,6 +953,13 @@ let App = {
                         return true;
                     },
                 },
+                {
+                    _disable: true,
+                    name: `Version ${VERSION || '???'}`,
+                    onclick: () => {
+                        return true;
+                    },
+                },
             ])
         },
         open_stats: function(){
@@ -2351,6 +2358,12 @@ let App = {
             display.remove();
         }
         return display;
+    },
+    displayUiModal: function(content){
+        let modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = content;
+        document.body.appendChild(modal);
     },
     getBadge: function(text, color){
         if(!text) text = 'new!';

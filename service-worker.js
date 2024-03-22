@@ -1,10 +1,14 @@
 self.importScripts(
+    'src/Version.js',
     'resources/data/CharacterDefinitions.js',
     'resources/data/SpriteDefinitions.js',
 )
 
-const VER = '10';
+const channel = new BroadcastChannel('sw-messages');
+
+const VER = VERSION;
 const CACHE_NAME = `tamaweb-${VER}`;
+// channel.postMessage({type: 'version', value: VER});
 const ASSETS = [
     // main
     'index.html',
@@ -20,6 +24,7 @@ const ASSETS = [
     'src/Scene.js',
     'src/Utils.js',
     'src/ApiHelper.js',
+    'src/Version.js',
     // sounds
     'resources/sounds/angry.ogg',
     'resources/sounds/birthday_song_01.ogg',
@@ -58,20 +63,21 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (e) => {
-    self.skipWaiting();
+    channel.postMessage({type: 'install'});
     e.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)),
+        caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
     );
+    self.skipWaiting();
 });
 
 self.addEventListener('fetch', (e) => {
-    // console.log(e.request.url);
     e.respondWith(
         caches.match(e.request).then((response) => response || fetch(e.request)),
     );
 });
 
 self.addEventListener('activate', event => {
+    channel.postMessage({type: 'activate'});
     // Remove old caches
     event.waitUntil(
         (async () => {
