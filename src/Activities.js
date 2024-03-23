@@ -1,5 +1,35 @@
 class Activities {
     // activities
+    static stayAtParents(end){
+        if(end){
+            App.toggleGameplayControls(true);
+            App.setScene(App.scene.home);
+            App.pet.playCheeringAnimation();
+            App.pet.stats.is_at_parents = false;
+            App.save();
+            return;
+        }
+
+        App.toggleGameplayControls(false, () => {
+            App.displayConfirm(`Pickup ${App.petDefinition.name} from their parents house?`, [
+                {
+                    name: 'yes',
+                    onclick: () => {
+                        Activities.stayAtParents(true); // ending
+                    }
+                },
+                {
+                    name: 'no',
+                    onclick: () => { }
+                }
+            ])
+        });
+
+        App.setScene(App.scene.parentsHome);
+
+        App.pet.stats.is_at_parents = true;
+        App.save();
+    }
     static goToClinic(){
         App.toggleGameplayControls(false);
 
@@ -67,6 +97,7 @@ class Activities {
                 img: 'resources/img/misc/foam_single.png',
                 x: 50 + random(-15, 15) + Math.random(), 
                 y: 42 + random(-2, 2) + Math.random(),
+                z: 20,
                 onDraw: (me) => {
                     Object2d.animations.flip(me, flipTime);
                     Object2d.animations.bob(me, foamSpeed, foamStr);
@@ -86,7 +117,7 @@ class Activities {
 
         let bathObject = new Object2d({
             img: 'resources/img/misc/bathroom_01_bath.png',
-            x: 0, y: 0
+            x: 0, y: 0, z: 19
         })
 
         App.pet.stopMove();
@@ -150,7 +181,8 @@ class Activities {
         const overlay = new Object2d({
             img: 'resources/img/background/house/wedding_overlay.png',
             x: 0,
-            y: 0
+            y: 0,
+            z: 99
         })
 
         App.pet.stopMove();
@@ -344,49 +376,17 @@ class Activities {
 
         function task_redecor(){
             otherPet.x = 80 - otherPet.spritesheet.cellSize;
-
             otherPet.stopMove();
             App.pet.stopMove();
 
-            let foam = new Object2d({
-                img: 'resources/img/misc/foam_01.png',
-                x: 0, y: 0
-            });
-
-            setTimeout(() => {
-                foam.setImg('resources/img/misc/foam_02.png');
-            }, 500);
-
-            setTimeout(() => {
-                foam.setImg('resources/img/misc/foam_03.png');
-            }, 1000);
-
-            setTimeout(() => {
-                foam.setImg('resources/img/misc/foam_04.png');
-            }, 1500);
-
-            setTimeout(() => {
+            Activities.task_foam(
+            () => {
                 App.setScene(App.scene.home);
                 App.pet.x = 10;
-            }, 2000);
-
-            setTimeout(() => {
-                foam.setImg('resources/img/misc/foam_03.png');
-            }, 3000);
-            setTimeout(() => {
-                foam.setImg('resources/img/misc/foam_02.png');
-            }, 3500);
-            setTimeout(() => {
-                foam.setImg('resources/img/misc/foam_01.png');
-            }, 4000);
-
-            setTimeout(() => {
-                App.drawer.removeObject(foam);
-            }, 4500);
-
-            setTimeout(() => {
+            }, 
+            () => {
                 App.pet.stopScriptedState();
-            }, 5500);
+            })
 
             otherPet.triggerScriptedState('idle', App.INF);
             App.pet.triggerScriptedState('idle', App.INF, null, true, () => {
@@ -896,7 +896,10 @@ class Activities {
     static task_foam(middleFn, endFn){
         let foam = new Object2d({
             img: 'resources/img/misc/foam_01.png',
-            x: 0, y: 0
+            x: 0, y: 0, z: 99,
+            onDraw: (me) => {
+                Object2d.animations.flip(me, 400)
+            }
         });
 
         setTimeout(() => {

@@ -1,6 +1,6 @@
 let App = {
     PI2: Math.PI * 2, INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', userName: null, ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
-    gameEventsHistory: [], deferredInstallPrompt: null, shellBackground: '', isOnItch: false,
+    gameEventsHistory: [], deferredInstallPrompt: null, shellBackground: '', isOnItch: false, hour: 12,
     misc: {},
     settings: {
         screenSize: 1,
@@ -9,6 +9,12 @@ let App = {
         displayShell: true,
         displayShellButtons: false,
         backgroundColor: '#FFDEAD',
+    },
+    constants: {
+        SLEEP_START: 22,
+        SLEEP_END: 9,
+        PARENT_DAYCARE_START: 8,
+        PARENT_DAYCARE_END: 22,
     },
     async init () {
         // init
@@ -50,8 +56,7 @@ let App = {
 
         // creating game objects
         App.background = new Object2d({
-            // img: "resources/img/background/house/01.jpg",
-            image: null, x: 0, y: 0, width: 96, height: 96,
+            image: null, x: 0, y: 0, width: 96, height: 96, z: -10,
         })
         // App.foods = new Object2d({
         //     image: App.preloadedResources["resources/img/item/foods.png"],
@@ -99,10 +104,12 @@ let App = {
             sprite: randomFromArray(PET_BABY_CHARACTERS),
         }).setStats({is_egg: true}).loadStats(loadedData.pet);
         App.pet = new Pet(App.petDefinition);
+        App.pet.z = 5;
         App.setScene(App.scene.home);
         App.darkOverlay = new Object2d({
             img: "resources/img/background/house/dark_overlay.png",
             hidden: true,
+            z: 10,
         })
 
         // simulating offline progression
@@ -129,6 +136,11 @@ let App = {
                     }
                 ])
             }
+        }
+
+        // check if at daycare
+        if(App.pet.stats.is_at_parents){
+            Activities.stayAtParents();
         }
 
         // entries
@@ -225,6 +237,8 @@ let App = {
         document.querySelector('.shell-btn.left').style.display = App.settings.displayShellButtons ? '' : 'none';
     },
     onFrameUpdate: function(time){
+        App.date = new Date();
+        App.hour = App.date.getHours();
         App.time = time;
         App.deltaTime = time - App.lastTime;
         App.lastTime = time;
@@ -238,7 +252,7 @@ let App = {
 
         requestAnimationFrame(App.onFrameUpdate);
         
-        App.fpsCurrentTime = Date.now();
+        App.fpsCurrentTime = App.date.getTime();
         App.fpsElapsedTime = App.fpsCurrentTime - App.fpsLastTime;
 
         if(App.fpsElapsedTime > App.fpsInterval){
@@ -529,6 +543,20 @@ let App = {
             },
             onUnload: () => {
                 this.drSprite?.removeObject();
+            }
+        }),
+        parentsHome: new Scene({
+            image: 'resources/img/background/house/parents_house_01.png',
+            onLoad: () => {
+                let parentDefs = App.petDefinition.getParents();
+                this.parents = parentDefs.map(parent => {
+                    let p = new Pet(parent);
+                        p.y = 65;
+                    return p;
+                });
+            },
+            onUnload: () => {
+                this.parents.forEach(parent => parent.removeObject());
             }
         })
     },
@@ -1608,11 +1636,39 @@ let App = {
                     }
                 },
                 {
-                    _ignore: false,
                     _disable: App.petDefinition.lifeStage == 0,
                     name: `social media ${App.getBadge()}`,
                     onclick: () => {
                         App.handlers.open_social_media();
+                        return true;
+                    }
+                },
+                {
+                    _ignore: !App.petDefinition.getParents(),
+                    name: `stay with parents ${App.getBadge()}`,
+                    onclick: () => {
+                        if((App.hour < App.constants.PARENT_DAYCARE_START || App.hour >= App.constants.PARENT_DAYCARE_END)){
+                            let start = App.constants.PARENT_DAYCARE_START > 12 ? App.constants.PARENT_DAYCARE_START - 12 + 'pm' : App.constants.PARENT_DAYCARE_START + 'am';
+                            let end = App.constants.PARENT_DAYCARE_END > 12 ? App.constants.PARENT_DAYCARE_END - 12 + 'pm' : App.constants.PARENT_DAYCARE_END + 'am';
+
+
+                            return App.displayPopup(`You can only leave ${App.petDefinition.name} at their parents house between <b>${start}</b> and <b>${end}</b>`, 4000)
+                        }
+
+                        App.displayConfirm(`${App.petDefinition.name} will stay at their parents house, they'll take care of ${App.petDefinition.name} until you comeback, is that ok?`, [
+                            {
+                                name: 'yes',
+                                onclick: () => {
+                                    App.closeAllDisplays();
+                                    Activities.stayAtParents();
+                                }
+                            },
+                            {
+                                name: 'no',
+                                onclick: () => { }
+                            }
+                        ])
+                        
                         return true;
                     }
                 },

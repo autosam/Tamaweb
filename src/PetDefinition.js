@@ -159,6 +159,11 @@ class PetDefinition {
         max_cleanliness: 100,
         cleanliness_depletion_mult: 20,
         cleanliness_depletion_rate: 0.0115,
+        // death ticker
+        max_death_tick: 100, // ~ 54 hours
+        baby_max_death_tick: 44, // ~ 24 hours
+        teen_max_death_tick: 74, // ~ 40 hours
+        death_tick_rate: 0.00026,
         // wander (sec)
         wander_min: 1.5,
         wander_max: 8,
@@ -170,6 +175,7 @@ class PetDefinition {
         current_bladder: 10,
         current_health: 90,
         current_cleanliness: 50,
+        current_death_tick: 100,
 
         // gold
         gold: 15,
@@ -179,6 +185,8 @@ class PetDefinition {
         has_poop_out: false,
         is_egg: false,
         is_player_family: false,
+        is_at_parents: false,
+        is_dead: false,
     }
     friends = [];
     inventory = {
@@ -221,6 +229,7 @@ class PetDefinition {
                     is_egg: this.stats.is_egg,
                     is_player_family: this.stats.is_player_family,
                     player_friendship: this.stats.player_friendship,
+                    is_at_parents: this.stats.is_at_parents,
                 }
                 return;
             }
@@ -275,6 +284,7 @@ class PetDefinition {
         this.stats.current_health = 100;
         this.stats.current_bladder = 100;
         this.stats.current_cleanliness = 100;
+        this.stats.current_death_tick = 100;
         this.stats.has_poop_out = false;
     }
 
@@ -422,6 +432,15 @@ class PetDefinition {
         if(this.lifeStage == 0) return `<c-sprite width="16" height="16" index="0" src="${this.sprite}" pos-x="0" pos-y="0"></c-sprite>`;
         if(this.lifeStage == 1) return `<c-sprite width="24" height="24" index="0" src="${this.sprite}" pos-x="0" pos-y="0"></c-sprite>`;
         return `<c-sprite width="32" height="32" index="0" src="${this.sprite}" pos-x="0" pos-y="0"></c-sprite>`;
+    }
+
+    getParents(){
+        if(!this.friends.length) return false;
+
+        let parents = this.friends.filter(friendDef => friendDef.stats.is_player_family);
+        if(!parents.length) return false;
+        
+        return parents;
     }
 
     spritesheetDefinitions = {
