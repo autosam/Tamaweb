@@ -60,6 +60,7 @@ class Pet extends Object2d {
     behavior() {
         this.isMainPet = this === App.pet;
 
+        if(this.stats.is_dead) return this.handleDead();
         if(this.stats.is_egg) return this.handleEgg();
 
         this.think();
@@ -67,8 +68,55 @@ class Pet extends Object2d {
         this.stateManager();
         this.animationHandler();
     }
-    handleDead(){ // todo: implement dead state
-        this.x = -6000;
+    handleDead(){
+        this.x = -600;
+
+        App.toggleGameplayControls(false, () => {
+            // App.displayPopup('dead');
+            App.displayConfirm(`Do you want to recieve a new egg?`, [
+                {
+                    name: 'yes',
+                    onclick: () => {
+                        let lastPet = App.petDefinition;
+                        App.pet.removeObject();
+                        App.petDefinition = new PetDefinition({
+                            name: getRandomName(),
+                            sprite: randomFromArray(PET_BABY_CHARACTERS),
+                        }).setStats({is_egg: true});
+
+                        App.petDefinition.inventory = lastPet.inventory;
+                        App.petDefinition.stats.gold = lastPet.stats.gold;
+
+                        App.pet = new Pet(App.petDefinition);
+                        setTimeout(() => {
+                            Activities.playEggUfoAnimation(() => App.handlers.show_set_pet_name_dialog());
+                        }, 100);
+                        App.setScene(App.scene.home);
+                        App.toggleGameplayControls(true);
+                    }
+                },
+                {
+                    name: 'no',
+                    onclick: () => { }
+                },
+            ], false);
+        })
+
+        if(!this.ghostObject){
+            this.ghostObject = new Object2d({
+                img: 'resources/img/misc/ghost_01.png',
+                x: 0, 
+                y: -5,
+                onDraw: (me) => {
+                    Object2d.animations.bob(me, 0.001, 0.1);
+                    Object2d.animations.flip(me, 1500);
+
+                    if(!App.pet.stats.is_dead) me.removeObject();
+                }
+            });
+
+            App.setScene(App.scene.graveyard);
+        }
     }
     handleEgg(){
         this.x = -600;
@@ -89,12 +137,12 @@ class Pet extends Object2d {
 
         if(Math.random() < 0.006){
             this.eggObject.setImg('resources/img/misc/egg_02.png');
-            setTimeout(() => this.eggObject.setImg('resources/img/misc/egg.png'), 200);
+            setTimeout(() => this.eggObject?.setImg('resources/img/misc/egg.png'), 200);
             if(Date.now() > this.hatchTime){
                 this.stats.is_egg = false;
                 App.setScene(App.scene.home);
                 App.toggleGameplayControls(true);
-                App.drawer.removeObject(this.eggObject);
+                this.eggObject?.removeObject();
                 this.eggObject = null;
                 this.triggerScriptedState('uncomfortable', 5000);
             }

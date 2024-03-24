@@ -14,7 +14,7 @@ let App = {
         SLEEP_START: 22,
         SLEEP_END: 9,
         PARENT_DAYCARE_START: 8,
-        PARENT_DAYCARE_END: 22,
+        PARENT_DAYCARE_END: 18,
     },
     async init () {
         // init
@@ -105,6 +105,11 @@ let App = {
         }).setStats({is_egg: true}).loadStats(loadedData.pet);
         App.pet = new Pet(App.petDefinition);
         App.pet.z = 5;
+        if(!loadedData.pet || !Object.keys(loadedData.pet).length) { // first time
+            setTimeout(() => {
+                Activities.playEggUfoAnimation(() => App.handlers.show_set_pet_name_dialog());
+            }, 100);
+        }
         App.setScene(App.scene.home);
         App.darkOverlay = new Object2d({
             img: "resources/img/background/house/dark_overlay.png",
@@ -236,6 +241,14 @@ let App = {
         document.querySelector('.shell-btn.right').style.display = App.settings.displayShellButtons ? '' : 'none';
         document.querySelector('.shell-btn.left').style.display = App.settings.displayShellButtons ? '' : 'none';
     },
+    registeredDrawEvents: [],
+    registerOnDrawEvent: function(fn){
+        this.registeredDrawEvents.push(fn);
+    },
+    unregisterOnDrawEvent: function(fn){
+        let index = this.registeredDrawEvents.indexOf(fn);
+        if(index != -1) this.registeredDrawEvents.splice(index, 1);
+    },
     onFrameUpdate: function(time){
         App.date = new Date();
         App.hour = App.date.getHours();
@@ -259,6 +272,9 @@ let App = {
             App.fpsLastTime = App.fpsCurrentTime - (App.fpsElapsedTime % App.fpsInterval);
             App.drawer.draw();
             if(App.onDraw) App.onDraw();
+            if(App.registeredDrawEvents.length){
+                App.registeredDrawEvents.forEach(fn => fn());
+            }
         }
 
         // App.drawer.pixelate();
@@ -416,17 +432,20 @@ let App = {
             return;
         }
 
-        if(addEvent(`update_04_notice`, () => {
+        if(addEvent(`update_05_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
                     type: 'title',
                 },
                 {
+                    name: 'Discover the new pet death sequence and babysitter feature!',
+                    type: 'text',
+                },
+                {
+                    link: 'blog/',
                     name: 'see whats new',
-                    onclick: () => {
-                        document.querySelector('.blog-post').style.display = '';
-                    }
+                    onclick: () => {}
                 },
             ])
         })) return;
@@ -549,15 +568,22 @@ let App = {
             image: 'resources/img/background/house/parents_house_01.png',
             onLoad: () => {
                 let parentDefs = App.petDefinition.getParents();
-                this.parents = parentDefs.map(parent => {
-                    let p = new Pet(parent);
-                        p.y = 65;
-                    return p;
-                });
+                // this.parents = parentDefs.map(parent => {
+                //     let p = new Pet(parent);
+                //         p.y = 65;
+                //     return p;
+                // });
+
+                this.parent = new Pet(randomFromArray(parentDefs));
+                this.parent.y = 65;
             },
             onUnload: () => {
-                this.parents.forEach(parent => parent.removeObject());
+                // this.parents.forEach(parent => parent.removeObject());
+                this.parent?.removeObject();
             }
+        }),
+        graveyard: new Scene({
+            image: 'resources/img/background/outside/graveyard_01.png',
         })
     },
     setScene(scene){
@@ -620,6 +646,20 @@ let App = {
         return pet;
     },
     handlers: {
+        show_set_pet_name_dialog: function(){
+            App.displayPrompt(`Name your new egg:`, [
+                {
+                    name: 'set',
+                    onclick: (value) => {
+                        if(!value) return false;
+
+                        App.pet.petDefinition.name = value;
+                        App.save();
+                        App.displayPopup(`Name set to "${App.pet.petDefinition.name}"`)
+                    }
+                },
+            ], App.pet.petDefinition.name || '');
+        },
         open_main_menu: function(){
             if(App.disableGameplayControls) {
                 if(App.gameplayControlsOverwrite) {
@@ -971,6 +1011,15 @@ let App = {
                             }
                         ]);
                     }
+                },
+                {
+                    // _ignore: true,
+                    link: 'blog/',
+                    name: `<b>see changelog</b> ${App.getBadge()}`,
+                    onclick: () => {
+                        // App.pet.stats.gold += 250;
+                        return true;
+                    },
                 },
                 {
                     // _ignore: true,
@@ -1418,7 +1467,7 @@ let App = {
                     }
                 },
                 {
-                    name: `visit doctor ${App.getBadge()}`,
+                    name: `visit doctor`,
                     onclick: () => {
                         Activities.goToClinic();
                     }
@@ -1637,7 +1686,7 @@ let App = {
                 },
                 {
                     _disable: App.petDefinition.lifeStage == 0,
-                    name: `social media ${App.getBadge()}`,
+                    name: `social media`,
                     onclick: () => {
                         App.handlers.open_social_media();
                         return true;
@@ -1648,14 +1697,10 @@ let App = {
                     name: `stay with parents ${App.getBadge()}`,
                     onclick: () => {
                         if((App.hour < App.constants.PARENT_DAYCARE_START || App.hour >= App.constants.PARENT_DAYCARE_END)){
-                            let start = App.constants.PARENT_DAYCARE_START > 12 ? App.constants.PARENT_DAYCARE_START - 12 + 'pm' : App.constants.PARENT_DAYCARE_START + 'am';
-                            let end = App.constants.PARENT_DAYCARE_END > 12 ? App.constants.PARENT_DAYCARE_END - 12 + 'pm' : App.constants.PARENT_DAYCARE_END + 'am';
-
-
-                            return App.displayPopup(`You can only leave ${App.petDefinition.name} at their parents house between <b>${start}</b> and <b>${end}</b>`, 4000)
+                            return App.displayPopup(`You can only leave ${App.petDefinition.name} at their parents house between <b>${App.formatTo12Hours(App.constants.PARENT_DAYCARE_START)}</b> and <b>${App.formatTo12Hours(App.constants.PARENT_DAYCARE_END)}</b>`, 4000)
                         }
 
-                        App.displayConfirm(`${App.petDefinition.name} will stay at their parents house, they'll take care of ${App.petDefinition.name} until you comeback, is that ok?`, [
+                        App.displayConfirm(`${App.petDefinition.name} will be with their parents, who will look after them from <b>${App.formatTo12Hours(App.constants.PARENT_DAYCARE_START)}</b> to <b>${App.formatTo12Hours(App.constants.PARENT_DAYCARE_END)}</b>, is that ok?`, [
                             {
                                 name: 'yes',
                                 onclick: () => {
@@ -2067,6 +2112,7 @@ let App = {
                 image: App.preloadedResources["resources/img/misc/cleaner.png"],
                 x: 0,
                 y: -100,
+                z: 100,
                 width: 96, height: 96,
                 onDraw: function(){
                     this.y += 1;
@@ -2174,6 +2220,11 @@ let App = {
                     element = document.createElement('h3');
                     element.innerHTML = item.name;
                     defaultClassName = 'inner-padding bg-white b-radius-10 uppercase list-title';
+                    break;
+                case "text":
+                    element = document.createElement('p');
+                    element.innerHTML = item.name;
+                    defaultClassName = 'inner-padding b-radius-10 uppercase list-text';
                     break;
                 default:
                     element = document.createElement(item.link ? 'a' : 'button');
@@ -2455,6 +2506,9 @@ let App = {
                     this.playSound(`resources/sounds/ui_click_01.ogg`, true);
             }
         })
+    },
+    formatTo12Hours: function(hour){
+        return hour > 12 ? hour - 12 + 'pm' : hour + 'am';
     },
     isSalesDay: function(){
         let day = new Date().getDate();

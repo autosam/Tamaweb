@@ -230,6 +230,7 @@ class PetDefinition {
                     is_player_family: this.stats.is_player_family,
                     player_friendship: this.stats.player_friendship,
                     is_at_parents: this.stats.is_at_parents,
+                    is_dead: this.stats.is_dead,
                 }
                 return;
             }

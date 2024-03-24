@@ -1,5 +1,42 @@
 class Activities {
     // activities
+    static playEggUfoAnimation(callback){
+        if(!App.pet.eggObject) return;
+
+        App.toggleGameplayControls(false);
+
+        let egg = App.pet.eggObject;
+            egg.y = -40;
+
+        let stage = 0;
+
+        this.ufoObject = new Object2d({
+            image: App.preloadedResources['resources/img/misc/ufo_01.png'],
+            y: -120,
+            x: 0,
+        });
+
+        let drawEvent = () => {
+            egg.y = lerp(egg.y, 72, 0.0008 * App.deltaTime);
+            
+            if(stage == 0){
+                this.ufoObject.y = lerp(this.ufoObject.y, 0, 0.007 * App.deltaTime);
+                if(egg.y >= 65) stage = 1;
+            } else {
+                this.ufoObject.y = lerp(this.ufoObject.y, -120, 0.001 * App.deltaTime);
+                if(this.ufoObject.y <= -110) stage = 2;
+            }
+
+            if(stage == 2){
+                App.toggleGameplayControls(true);
+                if(callback) callback();
+                this.ufoObject.removeObject();
+                App.unregisterOnDrawEvent(drawEvent);
+            }
+        }
+
+        App.registerOnDrawEvent(drawEvent);
+    }
     static stayAtParents(end){
         if(end){
             App.toggleGameplayControls(true);
@@ -231,6 +268,7 @@ class Activities {
                 parentB.stats.player_friendship = 80;
                 parentB.stats.is_player_family = true;
 
+                // new pet
                 App.petDefinition = new PetDefinition({
                     name: getRandomName(),
                     sprite: randomFromArray(PET_BABY_CHARACTERS),
@@ -252,18 +290,7 @@ class Activities {
             }, () => {
                 App.toggleGameplayControls(true);
 
-                App.displayPrompt(`Name your new egg:`, [
-                    {
-                        name: 'set',
-                        onclick: (value) => {
-                            if(!value) return false;
-
-                            App.pet.petDefinition.name = value;
-                            App.save();
-                            App.displayPopup(`Name set to "${App.pet.petDefinition.name}"`)
-                        }
-                    },
-                ], App.pet.petDefinition.name);
+                App.handlers.show_set_pet_name_dialog();
             })
         }, 18000);
     }
