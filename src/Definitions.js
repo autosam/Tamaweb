@@ -450,6 +450,11 @@ App.definitions = {
             price: 350,
             isNew: false,
         },
+        "futura": {
+            image: 'resources/img/background/house/05.png',
+            price: 200,
+            isNew: true,
+        },   
     },
     shell_background: {
         "1": {

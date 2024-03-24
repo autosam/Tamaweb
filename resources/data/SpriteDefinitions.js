@@ -3,6 +3,8 @@ const SPRITES = [
     "resources/img/background/house/01.jpg",
     "resources/img/background/house/02.png",
     "resources/img/background/house/03.png",
+    "resources/img/background/house/04.png",
+    "resources/img/background/house/05.png",
     "resources/img/background/house/office_01.png",
     "resources/img/background/house/kitchen_01.png",
     "resources/img/background/house/kitchen_02.png",

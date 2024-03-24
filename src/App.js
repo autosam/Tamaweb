@@ -2005,6 +2005,10 @@ let App = {
             ])
         },
         open_mall_activity_list: function(){
+            let hasNewDecor = Object.keys(App.definitions.room_background).some(key => {
+                return App.definitions.room_background[key].isNew;
+            });
+
             App.displayList([
                 {
                     name: 'buy items',
@@ -2014,7 +2018,7 @@ let App = {
                     }
                 },
                 {
-                    name: `redécor room`,
+                    name: `redécor room ${hasNewDecor ? App.getBadge() : ''}`,
                     onclick: () => {
                         App.handlers.open_room_background_list(true);
                         return true;
