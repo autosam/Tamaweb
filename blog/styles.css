@@ -1,0 +1,68 @@
+hr {
+    /* all: unset; */
+    border-color: black;
+    margin: 40px -0px;
+    border-width: 2px;
+    border-radius: 100px;
+    border-style: solid;
+}
+
+.blog-post {
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    background: navajowhite;
+    color: black;
+    /* text-transform: uppercase; */
+    overflow: auto;
+    font-family: system-ui;
+    display: flex;
+    justify-content: center;
+}
+.blog-post .content {
+    padding: 10px;
+    margin-top: 10px;
+    max-width: 500px;
+}
+.blog-post h1 {
+    font-weight: bold;
+    font-size: large;
+    margin: 0px;
+    background: #1d1d73;
+    padding: 10px 15px;
+    color: white;
+    border-radius: 30px;
+    border-top-left-radius: 0px;
+    box-shadow: inset -5px -8px 0px 0px #ffffff1a;
+}
+.blog-post li {
+    background: white;
+    margin: 10px 0px;
+    padding: 10px 10px;
+    border-radius: 15px;
+    border-top-left-radius: 0;
+}
+.blog-post .close {
+    position: fixed;
+    right: 0px;
+    top: 0px;
+    padding: 10px;
+    background: #000000a1;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 5px;
+    border-radius: 100%;
+    cursor: pointer;
+    color: white;
+    font-size: x-large;
+}
+.blog-post .close:hover,
+.blog-post .close:active {
+    background-color: white;
+    color: black;
+}   

@@ -3,6 +3,8 @@ const SPRITES = [
     "resources/img/background/house/01.jpg",
     "resources/img/background/house/02.png",
     "resources/img/background/house/03.png",
+    "resources/img/background/house/04.png",
+    "resources/img/background/house/05.png",
     "resources/img/background/house/office_01.png",
     "resources/img/background/house/kitchen_01.png",
     "resources/img/background/house/kitchen_02.png",
@@ -12,11 +14,13 @@ const SPRITES = [
     "resources/img/background/house/arcade_01.png",
     "resources/img/background/house/bathroom_01.png",
     "resources/img/background/house/clinic_01.png",
+    "resources/img/background/house/parents_house_01.png",
     
     "resources/img/background/outside/park_02.png",
     "resources/img/background/outside/mall_walkway.png",
     "resources/img/background/outside/market_01.png",
     "resources/img/background/outside/hospital_01.png",
+    "resources/img/background/outside/graveyard_01.png",
 
     // items
     "resources/img/item/foods.png",
@@ -41,4 +45,6 @@ const SPRITES = [
     "resources/img/misc/needstoilet_01.png",
     "resources/img/misc/stinky_01.png",
     "resources/img/misc/dr_sprite.png",
+    "resources/img/misc/ghost_01.png",
+    "resources/img/misc/ufo_01.png",
 ]

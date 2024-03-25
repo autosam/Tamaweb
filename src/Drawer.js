@@ -25,6 +25,9 @@ class Drawer {
         if(!skipClear) this.clear();
         if(!objects) objects = this.objects;
 
+        // sorting based on z
+        objects = objects.filter(object => object).sort((a, b) => (a.z || 0) - (b.z || 0));
+
         objects.forEach(object => {
             if(!object || object.hidden || object.absHidden) return;
 

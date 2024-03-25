@@ -60,12 +60,63 @@ class Pet extends Object2d {
     behavior() {
         this.isMainPet = this === App.pet;
 
+        if(this.stats.is_dead) return this.handleDead();
         if(this.stats.is_egg) return this.handleEgg();
 
         this.think();
         this.moveToTarget();
         this.stateManager();
         this.animationHandler();
+    }
+    handleDead(){
+        this.x = -600;
+
+        App.toggleGameplayControls(false, () => {
+            // App.displayPopup('dead');
+            App.displayConfirm(`Do you want to recieve a new egg?`, [
+                {
+                    name: 'yes',
+                    onclick: () => {
+                        let lastPet = App.petDefinition;
+                        App.pet.removeObject();
+                        App.petDefinition = new PetDefinition({
+                            name: getRandomName(),
+                            sprite: randomFromArray(PET_BABY_CHARACTERS),
+                        }).setStats({is_egg: true});
+
+                        App.petDefinition.inventory = lastPet.inventory;
+                        App.petDefinition.stats.gold = lastPet.stats.gold;
+
+                        App.pet = new Pet(App.petDefinition);
+                        setTimeout(() => {
+                            Activities.playEggUfoAnimation(() => App.handlers.show_set_pet_name_dialog());
+                        }, 100);
+                        App.setScene(App.scene.home);
+                        App.toggleGameplayControls(true);
+                    }
+                },
+                {
+                    name: 'no',
+                    onclick: () => { }
+                },
+            ], false);
+        })
+
+        if(!this.ghostObject){
+            this.ghostObject = new Object2d({
+                img: 'resources/img/misc/ghost_01.png',
+                x: 0, 
+                y: -5,
+                onDraw: (me) => {
+                    Object2d.animations.bob(me, 0.001, 0.1);
+                    Object2d.animations.flip(me, 1500);
+
+                    if(!App.pet.stats.is_dead) me.removeObject();
+                }
+            });
+
+            App.setScene(App.scene.graveyard);
+        }
     }
     handleEgg(){
         this.x = -600;
@@ -86,12 +137,12 @@ class Pet extends Object2d {
 
         if(Math.random() < 0.006){
             this.eggObject.setImg('resources/img/misc/egg_02.png');
-            setTimeout(() => this.eggObject.setImg('resources/img/misc/egg.png'), 200);
+            setTimeout(() => this.eggObject?.setImg('resources/img/misc/egg.png'), 200);
             if(Date.now() > this.hatchTime){
                 this.stats.is_egg = false;
                 App.setScene(App.scene.home);
                 App.toggleGameplayControls(true);
-                App.drawer.removeObject(this.eggObject);
+                this.eggObject?.removeObject();
                 this.eggObject = null;
                 this.triggerScriptedState('uncomfortable', 5000);
             }
@@ -301,7 +352,8 @@ class Pet extends Object2d {
         }
     }
     statsManager(isOfflineProgression, hour){
-        if(!this.isMainPet) return;
+        if(!this.isMainPet || this.stats.is_dead) return;
+        if(!hour) hour = App.hour;
 
         let stats = this.stats;
         /*
@@ -324,7 +376,7 @@ class Pet extends Object2d {
         if(isOfflineProgression){
             depletion_mult = 0.25;
 
-            if(hour && (hour >= 22 || hour < 9)){
+            if((hour >= App.constants.SLEEP_START || hour < App.constants.SLEEP_END)){
                 offlineAndIsNight = true;
                 depletion_mult = 0.05;
             }
@@ -335,12 +387,27 @@ class Pet extends Object2d {
             case 1: depletion_mult *= 1.3;
         }
 
+        if(this.stats.is_at_parents){
+            if((hour < App.constants.PARENT_DAYCARE_START || hour >= App.constants.PARENT_DAYCARE_END)){
+                if(!isOfflineProgression) {
+                    Activities.stayAtParents(true);
+                }
+                this.stats.is_at_parents = false;
+            }
+        }
+        if(!offlineAndIsNight && this.stats.is_at_parents) depletion_mult = -0.1;
+
         let hunger_depletion_rate = stats.hunger_depletion_rate * depletion_mult;
         let sleep_depletion_rate = stats.sleep_depletion_rate * depletion_mult;
         let fun_depletion_rate = stats.fun_depletion_rate * depletion_mult;
         let bladder_depletion_rate = stats.bladder_depletion_rate * depletion_mult;
         let health_depletion_rate = stats.health_depletion_rate * depletion_mult;
         let cleanliness_depletion_rate = stats.cleanliness_depletion_rate * depletion_mult;
+        let max_death_tick = stats.max_death_tick;
+        switch(this.petDefinition.lifeStage){
+            case 0: max_death_tick = stats.baby_max_death_tick; break;
+            case 1: max_death_tick = stats.teen_max_death_tick; break;
+        }
 
         if(isOfflineProgression){
             health_depletion_rate = 0;
@@ -417,6 +484,17 @@ class Pet extends Object2d {
         if(stats.current_health <= 0){
             stats.current_health = 0;
             // console.log('dead of sickness?');
+        }
+
+        if(stats.current_health <= 0 && 
+            stats.current_cleanliness <= 0 && 
+            stats.current_fun <= 0 && 
+            stats.current_hunger <= 0
+        ) stats.current_death_tick -= stats.death_tick_rate;
+        else stats.current_death_tick = stats.max_death_tick;
+
+        if(stats.current_death_tick <= 0){
+            App.pet.stats.is_dead = true;
         }
 
         // moodlets
@@ -707,7 +785,7 @@ class Pet extends Object2d {
     getStatsDepletionRates(offline){
         App.petDefinition.maxStats();
         
-        let seconds = 3600 * 24;
+        let seconds = 3600 * 100;
         let report = {};
         // let offline = false;
 
@@ -722,6 +800,7 @@ class Pet extends Object2d {
             if(this.stats.current_bladder <= 3 && !report.bladder) report.bladder = {...min, stat: this.stats.current_bladder};
             if(this.stats.current_cleanliness <= 0 && !report.cleanliness) report.cleanliness = {...min, stat: this.stats.current_cleanliness};
             if(this.stats.current_health <= 0 && !report.health) report.health = {...min, stat: this.stats.current_health};
+            if(this.stats.current_death_tick <= 0 && !report.death_tick) report.death_tick = {...min, stat: this.stats.current_death_tick};
         }
 
         console.log(`Time every stats hit ~0:`, report);

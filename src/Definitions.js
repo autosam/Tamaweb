@@ -438,16 +438,23 @@ App.definitions = {
         "blue": {
             image: 'resources/img/background/house/02.png',
             price: 200,
+            isNew: false,
         },
         "peachy": {
             image: 'resources/img/background/house/03.png',
             price: 250,
+            isNew: false,
         },
         "princess": {
             image: 'resources/img/background/house/04.png',
             price: 350,
-            isNew: true,
+            isNew: false,
         },
+        "futura": {
+            image: 'resources/img/background/house/05.png',
+            price: 200,
+            isNew: true,
+        },   
     },
     shell_background: {
         "1": {

@@ -47,19 +47,16 @@ class SpriteElement extends HTMLElement {
 customElements.define("c-sprite", SpriteElement);
 
 function handleServiceWorker(){
+    let shownControllerChangeModal = false;
+
     if(!navigator?.serviceWorker) return;
 
     navigator?.serviceWorker?.register('service-worker.js').then(() => console.log('Service Worker Registered'));
     navigator?.serviceWorker?.addEventListener('controllerchange', () => {
-        if(!App._shownControllerChangeModal){
-            console.log('should see modal now!')
-            App._shownControllerChangeModal = true;
+        if(!shownControllerChangeModal){
+            shownControllerChangeModal = true;
             document.querySelector('#download-container').style.display = 'none';
             document.querySelector('#download-complete-container').style.display = '';
-            // App.displayUiModal(`
-            //     <div style="margin-right: 10px">New version is downloaded!</div>
-            //     <a href="">Refresh</a>
-            // `)
         }
     })
 
@@ -67,6 +64,7 @@ function handleServiceWorker(){
     channel.addEventListener('message', event => {
         switch(event.data.type){
             case "install":
+                if(!App.awayTime) break;
                 document.querySelector('#download-container').style.display = '';
                 break;
         }
