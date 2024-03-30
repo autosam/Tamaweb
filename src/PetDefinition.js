@@ -125,6 +125,11 @@ class PetDefinition {
             start: 12,
             end: 14,
             frameTime: 250,
+        },
+        battle: {
+            start: 1,
+            end: 3,
+            frameTime: 350 + Math.random() * 250,
         }
     }
     stats = {

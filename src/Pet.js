@@ -333,21 +333,46 @@ class Pet extends Object2d {
         if(!this.scriptedEventTime){
             this.wander();
 
-            if(random(0, 100) == 1){
-                if(this.stats.current_sleep < this.stats.max_sleep / 3){
-                    this.triggerScriptedState('tired', 10000, 20000);
-                    this.stopMove();
-                }
+            this.handleRandomGestures();
+        }
+    }
+    handleRandomGestures(){
+        /* if(random(0, 100) == 1){
+            if(this.stats.current_sleep < this.stats.max_sleep / 3){
+                this.triggerScriptedState('tired', 10000, 20000);
+                this.stopMove();
+                return;
             }
-            if(random(0, 100) < 10){
-                if(this.hasMoodlet('sleepy')){
-                    this.triggerScriptedState('angry', 4000, random(20000, 30000));
-                    this.stopMove();
-                }
-                if(this.hasMoodlet('hungry')){
-                    this.triggerScriptedState('uncomfortable', 4000, random(20000, 30000));
-                    this.stopMove();
-                }
+        } */
+
+        // bad animations
+        if(random(0, 100) < 10){
+            if(this.hasMoodlet('sleepy')){
+                this.triggerScriptedState('angry', 4000, random(20000, 30000));
+                this.stopMove();
+                return;
+            }
+            if(this.hasMoodlet('hungry') || this.hasMoodlet('bored')){
+                this.triggerScriptedState('uncomfortable', 4000, random(20000, 30000));
+                this.stopMove();
+                return;
+            }
+        }
+
+        // good animations
+        if(random(0, 100) < 10){
+            // let goodMoodlets = ;
+            let hasAny = ['amused', 'rested', 'full', 'healthy'].map(moodName => this.hasMoodlet(moodName)).some(moodlet => moodlet);
+            if(hasAny){
+                let animations = [
+                    {name: 'sitting', length: random(2000, 4000)}, 
+                    {name: 'blush', length: random(550, 1000)}, 
+                    {name: 'cheering', length: random(550, 1000)}, 
+                    {name: 'shocked', length: random(550, 1000)}, 
+                ];
+                let animation = randomFromArray(animations);
+                this.triggerScriptedState(animation.name, animation.length, random(10000, 20000));
+                this.stopMove();
             }
         }
     }
@@ -629,8 +654,9 @@ class Pet extends Object2d {
                     else 
                         this.setState('idle_side_uncomfortable');
                 }
-                else
+                else {
                     this.setState('idle');
+                }
             }
         }
     }

@@ -584,6 +584,9 @@ let App = {
         }),
         graveyard: new Scene({
             image: 'resources/img/background/outside/graveyard_01.png',
+        }),
+        battle: new Scene({
+            image: 'resources/img/background/house/battle_01.png',
         })
     },
     setScene(scene){
@@ -2573,7 +2576,7 @@ let App = {
         App.shellBackground = shellBackground;
 
         App.loadedData = {
-            pet, settings, lastTime, eventsHistory, roomCustomizations, shellBackground
+            pet, settings, lastTime, eventsHistory, roomCustomizations, shellBackground, playTime: App.playTime
         };
 
         return App.loadedData;
