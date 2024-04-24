@@ -435,7 +435,7 @@ class Pet extends Object2d {
         }
 
         if(isOfflineProgression){
-            health_depletion_rate = 0;
+            // health_depletion_rate = 0;
             sleep_depletion_rate /= 2;
         }
 
@@ -516,7 +516,7 @@ class Pet extends Object2d {
             stats.current_fun <= 0 && 
             stats.current_hunger <= 0
         ) stats.current_death_tick -= stats.death_tick_rate;
-        else stats.current_death_tick = stats.max_death_tick;
+        else stats.current_death_tick = max_death_tick;
 
         if(stats.current_death_tick <= 0){
             App.pet.stats.is_dead = true;

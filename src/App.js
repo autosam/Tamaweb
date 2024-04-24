@@ -443,7 +443,7 @@ let App = {
                     type: 'text',
                 },
                 {
-                    link: 'blog/',
+                    link: 'https://autosam.github.io/Tamaweb/blog',
                     name: 'see whats new',
                     onclick: () => {}
                 },

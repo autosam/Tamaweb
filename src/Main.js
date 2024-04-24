@@ -47,13 +47,12 @@ class SpriteElement extends HTMLElement {
 customElements.define("c-sprite", SpriteElement);
 
 function handleServiceWorker(){
+    if(!navigator?.serviceWorker || App.isOnItch) return;
+    
     let shownControllerChangeModal = false;
-
-    if(!navigator?.serviceWorker) return;
-
     navigator?.serviceWorker?.register('service-worker.js').then(() => console.log('Service Worker Registered'));
     navigator?.serviceWorker?.addEventListener('controllerchange', () => {
-        if(!shownControllerChangeModal){
+        if(!shownControllerChangeModal && !App.isOnItch){
             shownControllerChangeModal = true;
             document.querySelector('#download-container').style.display = 'none';
             document.querySelector('#download-complete-container').style.display = '';
@@ -64,7 +63,7 @@ function handleServiceWorker(){
     channel.addEventListener('message', event => {
         switch(event.data.type){
             case "install":
-                if(!App.awayTime) break;
+                if(!App.awayTime || App.isOnItch) break;
                 document.querySelector('#download-container').style.display = '';
                 break;
         }

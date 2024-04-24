@@ -453,7 +453,7 @@ App.definitions = {
         "futura": {
             image: 'resources/img/background/house/05.png',
             price: 200,
-            isNew: true,
+            isNew: false,
         },   
     },
     shell_background: {
