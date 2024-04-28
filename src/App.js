@@ -2159,7 +2159,7 @@ let App = {
             })
         }
     },
-    createProgressbar: function(percent){
+    createProgressbar: function(percent, parent){
         let progressbar = document.querySelector('.cloneables .progressbar').cloneNode(true);
 
         let rod = progressbar.querySelector('.progressbar-rod'), background = progressbar.querySelector('.progressbar-background');
@@ -2184,6 +2184,10 @@ let App = {
         }
 
         setPercent(percent);
+
+        if(parent){
+            parent.appendChild(progressbar);
+        }
 
         return {
             node: progressbar,

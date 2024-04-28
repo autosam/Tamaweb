@@ -491,6 +491,7 @@ button {
 .progressbar {
     border-radius: 5px;
     overflow: hidden;
+    pointer-events: none;
 }
 .progressbar-background {
     /* background-color: rgb(193, 193, 193); */

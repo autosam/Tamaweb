@@ -26,8 +26,75 @@ class Activities {
             Object2d.animations.bob(App.pet, 0.01, 0.12)
         })
 
-        App.toggleGameplayControls(false, () => {
+        const   p0 = new BattleParticipant(App.pet),
+                p1 = new BattleParticipant(otherPet);
 
+        const   p0Healthbar = App.createProgressbar(p0.health, document.querySelector('.screen-wrapper'));
+                p0Healthbar.node.style = `
+                    position: absolute;
+                    bottom: 60px;
+                    right: 10px;
+                    width: 50%;
+                `;
+        const   p1Healthbar = App.createProgressbar(p1.health, document.querySelector('.screen-wrapper'));
+                p1Healthbar.node.style = `
+                    position: absolute;
+                    top: 10px;
+                    left: 10px;
+                    width: 50%;
+                `;
+
+        function getAttacked(p){
+            let defAddY = p.pet.additionalY || 0,
+                defAddX = p.pet.additionalX || 0;
+
+            let animInterval = setInterval(() => {
+                p.pet.additionalX = defAddX + (Math.random() - 0.5) * 10;
+                p.pet.additionalY = defAddY + (Math.random() - 0.5) * 10;
+            }, 32);
+
+            setTimeout(() => {
+                clearInterval(animInterval);
+                p.pet.additionalX = defAddX;
+                p.pet.additionalY = defAddY;
+            }, 500);
+        }
+
+        function petAttack(move){
+            let result = move.fn(p0, p1);
+            p1Healthbar.setPercent(p1.health);
+            getAttacked(p1);
+        }
+
+        function oppAttack(move){
+
+        }
+
+        function openBattleMenu(){
+            let availableMoves = ['sparkSplash'];
+
+            return App.displayList([
+                {
+                    name: 'attack',
+                    onclick: () => {
+                        App.displayList(availableMoves.map(moveName => {
+                            const move = BattleSystem.moves[moveName];
+                            return {
+                                name: move.name,
+                                onclick: () => {
+                                    petAttack(move);
+                                }
+                            }
+                        }))
+                    }
+                }
+            ])
+        }
+
+        let turn = 0;
+
+        App.toggleGameplayControls(false, () => {
+            if(turn == 0) openBattleMenu();
         })
     }
     static playEggUfoAnimation(callback){

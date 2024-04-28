@@ -229,6 +229,7 @@ class PetDefinition {
                     current_sleep: this.stats.current_sleep,
                     current_health: this.stats.current_health,
                     current_cleanliness: this.stats.current_cleanliness,
+                    current_death_tick: this.stats.current_death_tick,
                     has_poop_out: this.stats.has_poop_out,
                     is_sleeping: this.stats.is_sleeping,
                     is_egg: this.stats.is_egg,
