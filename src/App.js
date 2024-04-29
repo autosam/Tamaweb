@@ -432,23 +432,23 @@ let App = {
             return;
         }
 
-        if(addEvent(`update_05_notice`, () => {
-            App.displayList([
-                {
-                    name: 'New update is available!',
-                    type: 'title',
-                },
-                {
-                    name: 'Discover the new pet death sequence and babysitter feature!',
-                    type: 'text',
-                },
-                {
-                    link: 'https://autosam.github.io/Tamaweb/blog',
-                    name: 'see whats new',
-                    onclick: () => {}
-                },
-            ])
-        })) return;
+        // if(addEvent(`update_05_notice`, () => {
+        //     App.displayList([
+        //         {
+        //             name: 'New update is available!',
+        //             type: 'title',
+        //         },
+        //         {
+        //             name: 'Discover the new pet death sequence and babysitter feature!',
+        //             type: 'text',
+        //         },
+        //         {
+        //             link: 'https://autosam.github.io/Tamaweb/blog',
+        //             name: 'see whats new',
+        //             onclick: () => {}
+        //         },
+        //     ])
+        // })) return;
 
         /* if(addEvent(`game_suggestions_poll_01`, () => {
             App.displayPrompt(`<b><small>Poll</small></b>what would you like to to be added in the next update?`, [
@@ -530,6 +530,9 @@ let App = {
         }),
         mallWalkway: new Scene({
             image: 'resources/img/background/outside/mall_walkway.png'
+        }),
+        walkway: new Scene({
+            image: 'resources/img/background/outside/walkway_01.png',
         }),
         office: new Scene({
             image: 'resources/img/background/house/office_01.png',

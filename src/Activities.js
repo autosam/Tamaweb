@@ -642,13 +642,27 @@ class Activities {
         task_otherPetMoveIn();
     }
     static goToMall(){
-        App.toggleGameplayControls(false);
-        App.setScene(App.scene.mallWalkway);
-        App.pet.triggerScriptedState('moving', 1000, null, true, () => {
+        App.toggleGameplayControls(false, () => {
+            App.pet.stopScriptedState();
+        });
+        App.setScene(App.scene.walkway);
+
+        App.pet.x = '100%';
+        App.pet.y = 55;
+
+        App.pet.targetX = -20;
+
+        App.pet.triggerScriptedState('moving', 3000, null, true, () => {
             App.setScene(App.scene.home);
             App.handlers.open_mall_activity_list();
             App.toggleGameplayControls(true);
-        }, Pet.scriptedEventDrivers.movingOut.bind({pet: App.pet}));
+        });
+
+        // App.pet.triggerScriptedState('moving', 1000, null, true, () => {
+        //     App.setScene(App.scene.home);
+        //     App.handlers.open_mall_activity_list();
+        //     App.toggleGameplayControls(true);
+        // }, Pet.scriptedEventDrivers.movingOut.bind({pet: App.pet}));
     }
     static goToArcade(){
         App.toggleGameplayControls(false);

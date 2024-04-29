@@ -225,6 +225,30 @@ App.definitions = {
             price: 7,
             age: [1, 2],
         },
+        "spaghetti": {
+            sprite: 219,
+            hunger_replenish: 30,
+            fun_replenish: 3,
+            health_replenish: 0,
+            price: 5,
+            age: [1, 2],
+        },
+        "telesushi": {
+            sprite: 163,
+            hunger_replenish: 45,
+            fun_replenish: 5,
+            health_replenish: 15,
+            price: 25,
+            age: [1, 2],
+        },
+        "s-special dish": {
+            sprite: 506,
+            hunger_replenish: 28,
+            fun_replenish: 0,
+            health_replenish: 10,
+            price: 20,
+            age: [1, 2],
+        },
 
     
         // treats
@@ -354,6 +378,33 @@ App.definitions = {
             age: [0, 1, 2],
             type: 'treat',
         },
+        "cream icepack": {
+            sprite: 488,
+            hunger_replenish: 10,
+            fun_replenish: 25,
+            health_replenish: 0,
+            price: 10,
+            age: [1, 2],
+            type: 'treat',
+        },
+        "bunny mooko": {
+            sprite: 450,
+            hunger_replenish: 20,
+            fun_replenish: 30,
+            health_replenish: 0,
+            price: 14,
+            age: [0, 1, 2],
+            type: 'treat',
+        },
+        "paloodeh": {
+            sprite: 378,
+            hunger_replenish: 5,
+            fun_replenish: 25,
+            health_replenish: 0,
+            price: 8,
+            age: [1, 2],
+            type: 'treat',
+        },
 
 
 
@@ -454,7 +505,12 @@ App.definitions = {
             image: 'resources/img/background/house/05.png',
             price: 200,
             isNew: false,
-        },   
+        },
+        "rainbow": {
+            image: 'resources/img/background/house/06.png',
+            price: 250,
+            isNew: true,
+        },
     },
     shell_background: {
         "1": {

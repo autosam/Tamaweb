@@ -5,6 +5,7 @@ const SPRITES = [
     "resources/img/background/house/03.png",
     "resources/img/background/house/04.png",
     "resources/img/background/house/05.png",
+    "resources/img/background/house/06.png",
     "resources/img/background/house/office_01.png",
     "resources/img/background/house/kitchen_01.png",
     "resources/img/background/house/kitchen_02.png",
@@ -21,6 +22,7 @@ const SPRITES = [
     "resources/img/background/outside/market_01.png",
     "resources/img/background/outside/hospital_01.png",
     "resources/img/background/outside/graveyard_01.png",
+    "resources/img/background/outside/walkway_01.png",
 
     // items
     "resources/img/item/foods.png",
