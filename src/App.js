@@ -1020,7 +1020,7 @@ let App = {
                 },
                 {
                     // _ignore: true,
-                    link: 'blog/',
+                    link: 'https://autosam.github.io/Tamaweb/blog/',
                     name: `<b>see changelog</b> ${App.getBadge()}`,
                     onclick: () => {
                         // App.pet.stats.gold += 250;
