@@ -1,0 +1,1 @@
+export default __webpack_public_path__ + "fonts/roboto-vietnamese-300-normal.woff";
