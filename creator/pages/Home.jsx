@@ -6,6 +6,8 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { Skeleton, TextField } from '@mui/material';
 
+import ResourceReplacer from './ResourceReplacer';
+
 function CustomTabPanel(props) {
     const { children, value, index, ...other } = props;
 
@@ -48,18 +50,16 @@ export default function Home() {
 
     return (
         <Box sx={{ width: '100%' }}>
-            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            {/* <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
                     <Tab label="Create" {...a11yProps(0)} />
                     <Tab disabled label="Soon" {...a11yProps(1)} />
                     <Tab disabled label="Soon" {...a11yProps(2)} />
                 </Tabs>
-            </Box>
-            <CustomTabPanel value={value} index={0}>
-                <Box>
-                    <TextField variant='outlined' label='Character Image'/>
-                </Box>
-            </CustomTabPanel>
+            </Box> */}
+            {/* <CustomTabPanel value={value} index={0}> */}
+                <ResourceReplacer/>
+            {/* </CustomTabPanel> */}
         </Box>
     );
 }

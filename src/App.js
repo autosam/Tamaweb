@@ -1,7 +1,7 @@
 let App = {
     PI2: Math.PI * 2, INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', userName: null, ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
     gameEventsHistory: [], deferredInstallPrompt: null, shellBackground: '', isOnItch: false, hour: 12,
-    misc: {},
+    misc: {}, mods: [],
     settings: {
         screenSize: 1,
         playSound: true,
@@ -31,6 +31,9 @@ let App = {
 
         // shell background
         this.setShellBackground(loadedData.shellBackground);
+
+        // mods
+        this.loadMods(loadedData.mods);
 
         // handle settings
         if(loadedData.settings){
@@ -240,6 +243,17 @@ let App = {
         document.querySelector('.shell-btn.main').style.display = App.settings.displayShellButtons ? '' : 'none';
         document.querySelector('.shell-btn.right').style.display = App.settings.displayShellButtons ? '' : 'none';
         document.querySelector('.shell-btn.left').style.display = App.settings.displayShellButtons ? '' : 'none';
+    },
+    loadMods: function(mods){
+        if(!mods || !mods.length) return;
+        App.mods = mods;
+        App.mods.forEach(mod => {
+            if(mod.replaced_resources){
+                mod.replaced_resources.forEach(([source, target]) => {
+                    Object2d.resourceOverrides[source] = target;
+                })
+            }
+        })
     },
     registeredDrawEvents: [],
     registerOnDrawEvent: function(fn){
@@ -765,6 +779,81 @@ let App = {
                     onclick: () => {
                         // App.pet.stats.gold += 250;
                         App.installAsPWA();
+                        return true;
+                    },
+                },
+                {
+                    name: 'mods',
+                    onclick: () => {
+                        App.displayList([
+                            {
+                                name: 'install',
+                                onclick: () => {
+                                    App.mods.push({
+                                        name: 'my mod 1',
+                                        description: 'this is my test mod',
+                                        replaced_resources: [
+                                            ['resources/img/character/chara_252b.png', 'resources/img/character/chara_250b.png']
+                                        ]
+                                    })
+                                    return true;
+                                }
+                            },
+                            {
+                                name: 'active mods',
+                                onclick: () => {
+                                    // App.displayPopup(JSON.stringify(App.mods, null, 2), 5000);
+                                    if(!App.mods.length) return App.displayPopup('No mods installed');
+
+                                    const activeModsList = App.displayList(
+                                        App.mods.map(
+                                            (modInfo) => {
+                                                return {
+                                                    name: modInfo.name,
+                                                    onclick: () => {
+                                                        const modInfoScreen = App.displayList([
+                                                            {
+                                                                name: modInfo.name,
+                                                                type: 'title',
+                                                            },
+                                                            {
+                                                                name: modInfo.description,
+                                                                type: 'text',
+                                                            },
+                                                            {
+                                                                name: 'uninstall',
+                                                                onclick: () => {
+                                                                    App.displayConfirm(`Are you sure you want to uninstall ${modInfo.name}?`, [
+                                                                        {
+                                                                            name: 'yes',
+                                                                            onclick: () => {
+                                                                                App.mods.splice(App.mods.indexOf(modInfo), 1);
+                                                                                App.displayPopup(`${modInfo.name} uninstalled successfully`);
+                                                                                modInfoScreen.close();
+                                                                                activeModsList.close();
+                                                                            }
+                                                                        },
+                                                                        {
+                                                                            name: 'no',
+                                                                            onclick: () => {}
+                                                                        }
+                                                                    ])
+                                                                    return true;
+                                                                }
+                                                            }
+                                                        ])
+                                                        return true;
+                                                    }
+                                                }
+                                            }
+                                        )
+                                    )
+
+                                    return true;
+                                }
+                            },
+                            
+                        ])
                         return true;
                     },
                 },
@@ -2545,6 +2634,7 @@ let App = {
         window.localStorage.setItem('ingame_events_history', JSON.stringify(App.gameEventsHistory));
         window.localStorage.setItem('play_time', App.playTime);
         window.localStorage.setItem('shell_background_v2.1', App.shellBackground);
+        window.localStorage.setItem('mods', JSON.stringify(App.mods));
         window.localStorage.setItem('room_customization', JSON.stringify({
             home: {
                 image: App.scene.home.image,
@@ -2567,6 +2657,9 @@ let App = {
         let roomCustomizations = window.localStorage.getItem('room_customization');
         roomCustomizations = roomCustomizations ? JSON.parse(roomCustomizations) : null;
 
+        let mods = window.localStorage.getItem('mods');
+        mods = mods ? JSON.parse(mods) : App.mods;
+
         // user
         let userId = window.localStorage.getItem('user_id') || Math.round(Math.random() * 9999999999);
         App.userId = userId;
@@ -2576,10 +2669,16 @@ let App = {
         App.playTime = parseInt(window.localStorage.getItem('play_time') || 0);
 
         let shellBackground = window.localStorage.getItem('shell_background_v2.1') || App.definitions.shell_background['1'].image;
-        App.shellBackground = shellBackground;
 
         App.loadedData = {
-            pet, settings, lastTime, eventsHistory, roomCustomizations, shellBackground, playTime: App.playTime
+            pet, 
+            settings, 
+            lastTime, 
+            eventsHistory, 
+            roomCustomizations, 
+            shellBackground, 
+            playTime: App.playTime, 
+            mods
         };
 
         return App.loadedData;
