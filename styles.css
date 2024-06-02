@@ -133,6 +133,8 @@ body {
     border: 0;
     position: relative;
     height: 22px;
+    text-wrap: nowrap;
+    overflow: hidden;
 }
 .list-item:before {
     width: 8px;
@@ -297,6 +299,13 @@ body {
 .custom-file-upload {
     cursor: pointer;
 }
+.custom-file-upload {
+    width: calc(100% + 18px);
+    padding: 7px;
+    margin: -16px;
+    padding-left: 16px;
+}
+
 input[type="file"] {
     width: -webkit-fill-available;
 }

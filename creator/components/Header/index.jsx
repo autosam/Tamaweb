@@ -1,9 +1,13 @@
-export default function Header() {
+import { AppBar, Toolbar, IconButton, Typography } from "@mui/material";
+
+export default function Header({title = "Tamaweb Creator"}) {
     return (
-        <div className="navbar bg-dark border-bottom border-body" data-bs-theme="dark">
-            <div className="container-fluid">
-                <span className="navbar-brand" href="#">Tamaweb | Creator</span>
-            </div>
-        </div>
+        <AppBar position="static">
+            <Toolbar variant="dense">
+                <Typography variant="h6" color="inherit" component="div">
+                    {title}
+                </Typography>
+            </Toolbar>
+        </AppBar>
     )
 }

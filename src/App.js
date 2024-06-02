@@ -255,6 +255,20 @@ let App = {
             }
         })
     },
+    handleFileLoad: function(inputElement, readType = 'readAsDataURL', onLoad){
+        inputElement.onchange = () => {
+            const file = inputElement.files[0];
+            const reader = new FileReader();
+            reader.addEventListener(
+                "load",
+                () => { return onLoad(reader.result); },
+                false,
+            );
+            if (file) {
+                reader[readType](file);
+            }
+        }
+    },
     registeredDrawEvents: [],
     registerOnDrawEvent: function(fn){
         this.registeredDrawEvents.push(fn);
@@ -785,17 +799,14 @@ let App = {
                 {
                     name: 'mods',
                     onclick: () => {
-                        App.displayList([
+                        const display = App.displayList([
                             {
-                                name: 'install',
-                                onclick: () => {
-                                    App.mods.push({
-                                        name: 'my mod 1',
-                                        description: 'this is my test mod',
-                                        replaced_resources: [
-                                            ['resources/img/character/chara_252b.png', 'resources/img/character/chara_250b.png']
-                                        ]
-                                    })
+                                name: 'Note: <br>install / uninstalling mods will refresh the game.',
+                                type: 'text'
+                            },
+                            {
+                                name: '<label class="custom-file-upload"><input id="mod-file" type="file"></input>Add mod</label>',
+                                onclick: (btn) => {
                                     return true;
                                 }
                             },
@@ -813,7 +824,7 @@ let App = {
                                                     onclick: () => {
                                                         const modInfoScreen = App.displayList([
                                                             {
-                                                                name: modInfo.name,
+                                                                name: `${modInfo.name} <br> <small style="font-size: small">by ${modInfo.author}</small>`,
                                                                 type: 'title',
                                                             },
                                                             {
@@ -823,14 +834,12 @@ let App = {
                                                             {
                                                                 name: 'uninstall',
                                                                 onclick: () => {
-                                                                    App.displayConfirm(`Are you sure you want to uninstall ${modInfo.name}?`, [
+                                                                    App.displayConfirm(`Are you sure you want to uninstall <b>${modInfo.name}</b>?`, [
                                                                         {
                                                                             name: 'yes',
                                                                             onclick: () => {
                                                                                 App.mods.splice(App.mods.indexOf(modInfo), 1);
-                                                                                App.displayPopup(`${modInfo.name} uninstalled successfully`);
-                                                                                modInfoScreen.close();
-                                                                                activeModsList.close();
+                                                                                App.displayPopup(`<b>${modInfo.name}</b> uninstalled successfully, refreshing...`, null, () => location.reload());
                                                                             }
                                                                         },
                                                                         {
@@ -854,6 +863,35 @@ let App = {
                             },
                             
                         ])
+
+                        App.handleFileLoad(display.querySelector('#mod-file'), 'readAsText', (data) => {
+                            try {
+                                const json = JSON.parse(data);
+
+                                if(!json.name){
+                                    throw "Invalid";
+                                }
+
+                                const duplicateIndex = App.mods.findIndex(({ id }) => id == json.id);
+                                if(duplicateIndex != -1){
+                                    App.mods[duplicateIndex] = json;
+                                    App.displayPopup(`<b>${json.name}</b> updated! <br><br> refreshing...`, 2000, () => {
+                                        location.reload();
+                                    })
+                                } else {
+                                    App.mods.push(json);
+                                    App.displayPopup(`<b>${json.name}</b> installed! <br><br> refreshing...`, 2000, () => {
+                                        location.reload();
+                                    })
+                                }
+
+                            } catch(e) {
+                                console.log(e);
+                                App.displayPopup(`Something went wrong, Invalid package: ${e}`);
+                            }
+                        })
+                        
+
                         return true;
                     },
                 },
@@ -975,7 +1013,7 @@ let App = {
                                         {
                                             name: `<label class="custom-file-upload"><input id="shell-image-file" type="file"></input>Browse</label>`,
                                             onclick: (btn) => {
-                                                btn.querySelector('label').click();
+                                                // btn.querySelector('label').click();
                                                 return true;
                                             }
                                         },
@@ -998,23 +1036,11 @@ let App = {
                                         }
                                     ]);
 
-                                    let input = display.querySelector('#shell-image-file');
-                                    input.onchange = () => {
-                                        const file = input.files[0];
-                                        const reader = new FileReader();
-                                        reader.addEventListener(
-                                            "load",
-                                            () => {
-                                                let res = App.setShellBackground(reader.result);
-                                                if(res) App.displayPopup('Shell background set');
-                                                return true;
-                                            },
-                                            false,
-                                        );
-                                        if (file) {
-                                            reader.readAsDataURL(file);
-                                        }
-                                    }
+                                    App.handleFileLoad(display.querySelector('#shell-image-file'), 'readAsDataURL', (data) => {
+                                        let res = App.setShellBackground(data);
+                                        if(res) App.displayPopup('Shell background set');
+                                        return true;
+                                    })
 
                                     return true;
                                 }
