@@ -25,18 +25,19 @@ class Object2d {
         // initializing
         if(!this.image){
             this.image = new Image();
-            this.image.src = config.img;
+            this.setImg(config.img);
         } else {
-            this.image = this.image.cloneNode(true);
+            this.setImage(this.image.cloneNode(true));
         }
 
         this.id = this.drawer.addObject(this);
     }
     setImg(img){ // this one gets image url
-        this.image.src = img;
+        this.image.src = Object2d.checkResourceOverride(img);
     }
     setImage(image){ // this one gets img object (presume preloadedResource)
         this.image = image;
+        this.image.src = Object2d.checkResourceOverride(this.image.src);
     }
     removeObject(){
         this.drawer.removeObject(this);
@@ -61,4 +62,9 @@ class Object2d {
             me.y += currentFloat;
         }
     }
+    static checkResourceOverride(res) {
+        if(!res) return res;
+        return this.resourceOverrides[res.replace(location.href, '')] || res;
+    }
+    static resourceOverrides = {};
 }

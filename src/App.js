@@ -1,7 +1,7 @@
 let App = {
     PI2: Math.PI * 2, INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', userName: null, ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
     gameEventsHistory: [], deferredInstallPrompt: null, shellBackground: '', isOnItch: false, hour: 12,
-    misc: {},
+    misc: {}, mods: [],
     settings: {
         screenSize: 1,
         playSound: true,
@@ -31,6 +31,9 @@ let App = {
 
         // shell background
         this.setShellBackground(loadedData.shellBackground);
+
+        // mods
+        this.loadMods(loadedData.mods);
 
         // handle settings
         if(loadedData.settings){
@@ -241,6 +244,31 @@ let App = {
         document.querySelector('.shell-btn.right').style.display = App.settings.displayShellButtons ? '' : 'none';
         document.querySelector('.shell-btn.left').style.display = App.settings.displayShellButtons ? '' : 'none';
     },
+    loadMods: function(mods){
+        if(!mods || !mods.length) return;
+        App.mods = mods;
+        App.mods.forEach(mod => {
+            if(mod.replaced_resources){
+                mod.replaced_resources.forEach(([source, target]) => {
+                    Object2d.resourceOverrides[source] = target;
+                })
+            }
+        })
+    },
+    handleFileLoad: function(inputElement, readType = 'readAsDataURL', onLoad){
+        inputElement.onchange = () => {
+            const file = inputElement.files[0];
+            const reader = new FileReader();
+            reader.addEventListener(
+                "load",
+                () => { return onLoad(reader.result); },
+                false,
+            );
+            if (file) {
+                reader[readType](file);
+            }
+        }
+    },
     registeredDrawEvents: [],
     registerOnDrawEvent: function(fn){
         this.registeredDrawEvents.push(fn);
@@ -295,6 +323,12 @@ let App = {
         });
     
         return Promise.all(promises);
+    },
+    isTester: function(){
+        const testers = [
+            'Saman', 'samandev',
+        ]
+        return testers.indexOf(App.userName) >= 0;
     },
     addEvent: function(name, payload, force){
         if(App.gameEventsHistory[name] !== true || force){
@@ -769,6 +803,106 @@ let App = {
                     },
                 },
                 {
+                    _ignore: !App.isTester(),
+                    name: `mods ${App.getBadge()}`,
+                    onclick: () => {
+                        const display = App.displayList([
+                            {
+                                name: 'Note: <br>install / uninstalling mods will refresh the game.',
+                                type: 'text'
+                            },
+                            {
+                                name: '<label class="custom-file-upload"><input id="mod-file" type="file"></input>Add mod</label>',
+                                onclick: (btn) => {
+                                    return true;
+                                }
+                            },
+                            {
+                                name: 'active mods',
+                                onclick: () => {
+                                    // App.displayPopup(JSON.stringify(App.mods, null, 2), 5000);
+                                    if(!App.mods.length) return App.displayPopup('No mods installed');
+
+                                    const activeModsList = App.displayList(
+                                        App.mods.map(
+                                            (modInfo) => {
+                                                return {
+                                                    name: modInfo.name,
+                                                    onclick: () => {
+                                                        const modInfoScreen = App.displayList([
+                                                            {
+                                                                name: `${modInfo.name} <br> <small style="font-size: small">by ${modInfo.author}</small>`,
+                                                                type: 'title',
+                                                            },
+                                                            {
+                                                                name: modInfo.description,
+                                                                type: 'text',
+                                                            },
+                                                            {
+                                                                name: 'uninstall',
+                                                                onclick: () => {
+                                                                    App.displayConfirm(`Are you sure you want to uninstall <b>${modInfo.name}</b>?`, [
+                                                                        {
+                                                                            name: 'yes',
+                                                                            onclick: () => {
+                                                                                App.mods.splice(App.mods.indexOf(modInfo), 1);
+                                                                                App.displayPopup(`<b>${modInfo.name}</b> uninstalled successfully, refreshing...`, null, () => location.reload());
+                                                                            }
+                                                                        },
+                                                                        {
+                                                                            name: 'no',
+                                                                            onclick: () => {}
+                                                                        }
+                                                                    ])
+                                                                    return true;
+                                                                }
+                                                            }
+                                                        ])
+                                                        return true;
+                                                    }
+                                                }
+                                            }
+                                        )
+                                    )
+
+                                    return true;
+                                }
+                            },
+                            
+                        ])
+
+                        App.handleFileLoad(display.querySelector('#mod-file'), 'readAsText', (data) => {
+                            try {
+                                const json = JSON.parse(data);
+
+                                if(!json.name){
+                                    throw "Invalid";
+                                }
+
+                                const duplicateIndex = App.mods.findIndex(({ id }) => id == json.id);
+                                if(duplicateIndex != -1){
+                                    App.mods[duplicateIndex] = json;
+                                    App.displayPopup(`<b>${json.name}</b> updated! <br><br> refreshing...`, 2000, () => {
+                                        location.reload();
+                                    })
+                                } else {
+                                    App.mods.push(json);
+                                    App.displayPopup(`<b>${json.name}</b> installed! <br><br> refreshing...`, 2000, () => {
+                                        location.reload();
+                                    })
+                                }
+
+                            } catch(e) {
+                                console.log(e);
+                                App.displayPopup(`Something went wrong, Invalid package: ${e}`);
+                            }
+                        })
+                        
+
+                        return true;
+                    },
+                },
+                {
                     name: `system settings`,
                     onclick: () => {
                         App.displayList([
@@ -886,7 +1020,7 @@ let App = {
                                         {
                                             name: `<label class="custom-file-upload"><input id="shell-image-file" type="file"></input>Browse</label>`,
                                             onclick: (btn) => {
-                                                btn.querySelector('label').click();
+                                                // btn.querySelector('label').click();
                                                 return true;
                                             }
                                         },
@@ -909,23 +1043,11 @@ let App = {
                                         }
                                     ]);
 
-                                    let input = display.querySelector('#shell-image-file');
-                                    input.onchange = () => {
-                                        const file = input.files[0];
-                                        const reader = new FileReader();
-                                        reader.addEventListener(
-                                            "load",
-                                            () => {
-                                                let res = App.setShellBackground(reader.result);
-                                                if(res) App.displayPopup('Shell background set');
-                                                return true;
-                                            },
-                                            false,
-                                        );
-                                        if (file) {
-                                            reader.readAsDataURL(file);
-                                        }
-                                    }
+                                    App.handleFileLoad(display.querySelector('#shell-image-file'), 'readAsDataURL', (data) => {
+                                        let res = App.setShellBackground(data);
+                                        if(res) App.displayPopup('Shell background set');
+                                        return true;
+                                    })
 
                                     return true;
                                 }
@@ -1700,7 +1822,7 @@ let App = {
                 },
                 {
                     _ignore: !App.petDefinition.getParents(),
-                    name: `stay with parents ${App.getBadge()}`,
+                    name: `stay with parents`,
                     onclick: () => {
                         if((App.hour < App.constants.PARENT_DAYCARE_START || App.hour >= App.constants.PARENT_DAYCARE_END)){
                             return App.displayPopup(`You can only leave ${App.petDefinition.name} at their parents house between <b>${App.formatTo12Hours(App.constants.PARENT_DAYCARE_START)}</b> and <b>${App.formatTo12Hours(App.constants.PARENT_DAYCARE_END)}</b>`, 4000)
@@ -2545,6 +2667,7 @@ let App = {
         window.localStorage.setItem('ingame_events_history', JSON.stringify(App.gameEventsHistory));
         window.localStorage.setItem('play_time', App.playTime);
         window.localStorage.setItem('shell_background_v2.1', App.shellBackground);
+        window.localStorage.setItem('mods', JSON.stringify(App.mods));
         window.localStorage.setItem('room_customization', JSON.stringify({
             home: {
                 image: App.scene.home.image,
@@ -2567,6 +2690,9 @@ let App = {
         let roomCustomizations = window.localStorage.getItem('room_customization');
         roomCustomizations = roomCustomizations ? JSON.parse(roomCustomizations) : null;
 
+        let mods = window.localStorage.getItem('mods');
+        mods = mods ? JSON.parse(mods) : App.mods;
+
         // user
         let userId = window.localStorage.getItem('user_id') || Math.round(Math.random() * 9999999999);
         App.userId = userId;
@@ -2576,10 +2702,16 @@ let App = {
         App.playTime = parseInt(window.localStorage.getItem('play_time') || 0);
 
         let shellBackground = window.localStorage.getItem('shell_background_v2.1') || App.definitions.shell_background['1'].image;
-        App.shellBackground = shellBackground;
 
         App.loadedData = {
-            pet, settings, lastTime, eventsHistory, roomCustomizations, shellBackground, playTime: App.playTime
+            pet, 
+            settings, 
+            lastTime, 
+            eventsHistory, 
+            roomCustomizations, 
+            shellBackground, 
+            playTime: App.playTime, 
+            mods
         };
 
         return App.loadedData;
