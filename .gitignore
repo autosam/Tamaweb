@@ -6,3 +6,5 @@ resources/font/Daydream.ttf
 .pm/
 character - Copy/
 Tamaweb.zip
+node_modules
+dist
