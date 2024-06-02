@@ -324,6 +324,12 @@ let App = {
     
         return Promise.all(promises);
     },
+    isTester: function(){
+        const testers = [
+            'Saman', 'samandev',
+        ]
+        return testers.indexOf(App.userName) >= 0;
+    },
     addEvent: function(name, payload, force){
         if(App.gameEventsHistory[name] !== true || force){
             App.gameEventsHistory[name] = true;
@@ -797,7 +803,8 @@ let App = {
                     },
                 },
                 {
-                    name: 'mods',
+                    _ignore: !App.isTester(),
+                    name: `mods ${App.getBadge()}`,
                     onclick: () => {
                         const display = App.displayList([
                             {
@@ -1815,7 +1822,7 @@ let App = {
                 },
                 {
                     _ignore: !App.petDefinition.getParents(),
-                    name: `stay with parents ${App.getBadge()}`,
+                    name: `stay with parents`,
                     onclick: () => {
                         if((App.hour < App.constants.PARENT_DAYCARE_START || App.hour >= App.constants.PARENT_DAYCARE_END)){
                             return App.displayPopup(`You can only leave ${App.petDefinition.name} at their parents house between <b>${App.formatTo12Hours(App.constants.PARENT_DAYCARE_START)}</b> and <b>${App.formatTo12Hours(App.constants.PARENT_DAYCARE_END)}</b>`, 4000)
