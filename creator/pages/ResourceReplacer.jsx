@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { AddRounded, SaveRounded, FileUploadRounded } from "@mui/icons-material";
-import { Box, Button, TextField, Typography, Stack, Divider } from "@mui/material";
+import { Box, Button, TextField, Typography, Stack, Divider, Link } from "@mui/material";
 import { ResourceRow } from "../components/ResourceRow";
 import { saveFile } from "../utils";
 import { uid } from "uid";
 
 export default function ResourceReplacer() {
-    const [resourceRows, setResourceRows] = useState([{ source: '', target: '', id: Date.now(), }]);
+    const [resourceRows, setResourceRows] = useState([]); // [{ source: '', target: '', id: Date.now(), }]
     const [packageName, setPackageName] = useState('');
     const [packageDescription, setPackageDescription] = useState('');
     const [packageAuthor, setPackageAuthor] = useState('');
@@ -77,6 +77,14 @@ export default function ResourceReplacer() {
                 <TextField disabled InputProps={{ readOnly: true }} value={packageId} onChange={(e) => setPackageId(e.target.value)} variant="outlined" label="UUID" />
                 <Box sx={{ display: "flex", gap: "5px" }}>
 
+                    {/* <Button
+                        startIcon={<FileUploadRounded />}
+                        variant="contained"
+                        color="secondary"
+                        // onClick={handleDownloadSamplePackage}
+                    > Download Sample Package
+                    </Button> */}
+
                     <Button
                         startIcon={<FileUploadRounded />}
                         variant="contained"
@@ -92,6 +100,10 @@ export default function ResourceReplacer() {
                         onClick={handleSave}
                     > Save
                     </Button>
+
+                    <Link style={{marginLeft: "auto", display: "inline-flex", alignItems: "flex-end"}}
+                        href="static/files/ExampleMod.rop"
+                        variant="body2">Download Example Package</Link>
 
                 </Box>
             </Stack>

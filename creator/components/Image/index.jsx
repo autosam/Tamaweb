@@ -25,6 +25,7 @@ export default function Image({ src, width, height, style }) {
                 hidden={isLoading}
                 style={style}
                 src={src}
+                // loading="lazy"
                 onLoad={handleLoad}
                 onError={handleError}
                 alt="dynamic content"
