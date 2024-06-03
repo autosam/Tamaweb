@@ -509,7 +509,7 @@ App.definitions = {
         "rainbow": {
             image: 'resources/img/background/house/06.png',
             price: 250,
-            isNew: true,
+            isNew: false,
         },
     },
     shell_background: {

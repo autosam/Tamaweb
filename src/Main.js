@@ -24,7 +24,7 @@ class SpriteElement extends HTMLElement {
         const naturalWidth = this.getAttribute("naturalWidth") || this.image.naturalWidth || 64;
         const posX = this.getAttribute('pos-x') || 0;
         const posY = this.getAttribute('pos-y') || 0;
-        this.image.src = src;
+        this.image.src = App.checkResourceOverride(src);
         this.image.width = width;
         this.image.height = height;
         const x = (index % (naturalWidth / width)) * width;

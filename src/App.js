@@ -250,7 +250,7 @@ let App = {
         App.mods.forEach(mod => {
             if(mod.replaced_resources){
                 mod.replaced_resources.forEach(([source, target]) => {
-                    Object2d.resourceOverrides[source] = target;
+                    App.resourceOverrides[source] = target;
                 })
             }
         })
@@ -323,6 +323,11 @@ let App = {
         });
     
         return Promise.all(promises);
+    },
+    resourceOverrides: {},
+    checkResourceOverride: function(res){
+        if(!res) return res;
+        return this.resourceOverrides[res.replace(location.href, '')] || res;
     },
     isTester: function(){
         const testers = [
@@ -1501,11 +1506,13 @@ let App = {
                 let price = current.price;
                 if(salesDay) price = Math.round(price / 2);
 
+                const image = App.checkResourceOverride(current.image);
+
                 list.push({
                     // name: `<c-sprite width="22" height="22" index="${(current.sprite - 1)}" src="resources/img/item/items.png"></c-sprite> ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>$${buyMode ? `${price}` : ''}</b>`,
-                    name: `<img src="${current.image}"></img> ${room.toUpperCase()} <b>$${price}</b> ${current.isNew ? App.getBadge() : ''}`,
+                    name: `<img src="${image}"></img> ${room.toUpperCase()} <b>$${price}</b> ${current.isNew ? App.getBadge() : ''}`,
                     onclick: (btn, list) => {
-                        if(current.image === App.scene.home.image){
+                        if(image === App.scene.home.image){
                             App.displayPopup('You already own this room');
                             return true;
                         }
@@ -1518,7 +1525,7 @@ let App = {
 
                         App.closeAllDisplays();
                         Activities.redecorRoom();
-                        App.scene.home.image = current.image;
+                        App.scene.home.image = image;
 
                         App.sendAnalytics('home_background_change', App.scene.home.image);
 
