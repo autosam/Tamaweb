@@ -46,6 +46,9 @@ export default function ResourceReplacer() {
         console.log(packageData);
     }
     const handleLoad = async () => {
+        // if (typeof showOpenFilePicker === "undefined") {
+        //     return alert('You need to use a chromium based browser to able to use this web application');
+        // }
         const [fileHandle] = await showOpenFilePicker();
         const file = await fileHandle.getFile();
         const text = await file.text();
@@ -90,6 +93,7 @@ export default function ResourceReplacer() {
                         variant="contained"
                         color="secondary"
                         onClick={handleLoad}
+                        disabled={typeof showOpenFilePicker === "undefined"}
                     > Load from file
                     </Button>
 
@@ -101,7 +105,7 @@ export default function ResourceReplacer() {
                     > Save
                     </Button>
 
-                    <Link style={{marginLeft: "auto", display: "inline-flex", alignItems: "flex-end"}}
+                    <Link style={{ marginLeft: "auto", display: "inline-flex", alignItems: "flex-end" }}
                         href="static/files/ExampleMod.rop"
                         variant="body2">Download Example Package</Link>
 
