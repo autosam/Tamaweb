@@ -775,10 +775,14 @@ class Pet extends Object2d {
         // getting caught up with the stats simulation
         // since pets call statsManager twice each seconds
         // we are going to simulate that by approximating
-        // (max offline progression is 12 hours)
+        // deprecated: (max offline progression is 12 hours)
+        // (max offline progression is 7 days)
+
+        // 3600(secs in 1 hour) * 24(1 day) * 7(7 days) = 604800
+        const maxOfflineProgressionSeconds = 604800;
 
         const startTime = Date.now();
-        let iterations = Math.floor(clamp(elapsedTime / 1000, 0, 43200) * 2);
+        let iterations = Math.floor(clamp(elapsedTime / 1000, 0, maxOfflineProgressionSeconds) * 2);
         for(let i = 0; i < iterations; i++){
             elapsedTime -= 500;
             let date = new Date(startTime - elapsedTime);
