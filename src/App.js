@@ -405,6 +405,7 @@ let App = {
                                                             }
                                                             window.localStorage.setItem('user_id', App.userId);
                                                             window.localStorage.setItem('play_time', App.playTime);
+                                                            window.localStorage.setItem('last_time', Date.now());
                                                             App.displayPopup(`${def.name} is now your pet!`, App.INF);
                                                             setTimeout(() => {
                                                                 location.reload();  
