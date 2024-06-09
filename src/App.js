@@ -562,7 +562,7 @@ let App = {
         kitchen: new Scene({
             image: 'resources/img/background/house/kitchen_02.png',
             foodsX: '50%', foodsY: 44,
-            petX: 62, petY: 74,
+            petX: '75%', petY: '81%',
         }),
         park: new Scene({
             image: 'resources/img/background/outside/park_02.png',
