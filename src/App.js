@@ -629,6 +629,9 @@ let App = {
         }),
         battle: new Scene({
             image: 'resources/img/background/house/battle_01.png',
+        }),
+        stand: new Scene({
+            image: 'resources/img/background/outside/stand_01.png',
         })
     },
     setScene(scene){
