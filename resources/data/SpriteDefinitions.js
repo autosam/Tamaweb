@@ -23,6 +23,7 @@ const SPRITES = [
     "resources/img/background/outside/hospital_01.png",
     "resources/img/background/outside/graveyard_01.png",
     "resources/img/background/outside/walkway_01.png",
+    "resources/img/background/outside/stand_01.png",
 
     // items
     "resources/img/item/foods.png",
@@ -49,4 +50,5 @@ const SPRITES = [
     "resources/img/misc/dr_sprite.png",
     "resources/img/misc/ghost_01.png",
     "resources/img/misc/ufo_01.png",
+    "resources/img/misc/stand_01_booth.png",
 ]

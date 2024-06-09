@@ -610,6 +610,7 @@ class Activities {
         task_otherPetMoveIn();
     }
     static officeWork(){
+        App.closeAllDisplays();
         App.setScene(App.scene.office);
 
         App.toggleGameplayControls(false, () => {

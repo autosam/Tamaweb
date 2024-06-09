@@ -1618,9 +1618,23 @@ let App = {
                 },
                 {
                     _ignore: App.petDefinition.lifeStage < 2,
-                    name: 'work',
+                    name: `work ${App.getBadge()}`,
                     onclick: () => {
-                        Activities.officeWork();
+                        App.displayList([
+                            {
+                                name: `stand work ${App.getBadge()}`,
+                                onclick: () => {
+                                    Activities.standWork();
+                                }
+                            },
+                            {
+                                name: 'office work',
+                                onclick: () => {
+                                    Activities.officeWork();
+                                }
+                            },
+                        ])
+                        return true;
                     }
                 },
                 // {
