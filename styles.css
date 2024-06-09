@@ -234,6 +234,7 @@ body {
     border-radius: 20px;
     padding: 10px 0px;
     min-width: 70%;
+    overflow: hidden;
 }
 .generic-slider-container .content img {
     outline: 2px solid #ffb4e6;

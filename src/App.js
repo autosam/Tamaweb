@@ -1597,26 +1597,6 @@ let App = {
                     }
                 },
                 {
-                    name: 'game center',
-                    onclick: () => {
-                        // App.handlers.open_game_list();
-                        Activities.goToArcade();
-                        // return true;
-                    }
-                },
-                {
-                    name: `visit doctor`,
-                    onclick: () => {
-                        Activities.goToClinic();
-                    }
-                },
-                {
-                    name: 'park',
-                    onclick: () => { // going to park with random pet
-                        Activities.goToPark();
-                    }
-                },
-                {
                     _ignore: App.petDefinition.lifeStage < 2,
                     name: `work ${App.getBadge()}`,
                     onclick: () => {
@@ -1635,6 +1615,26 @@ let App = {
                             },
                         ])
                         return true;
+                    }
+                },
+                {
+                    name: 'game center',
+                    onclick: () => {
+                        // App.handlers.open_game_list();
+                        Activities.goToArcade();
+                        // return true;
+                    }
+                },
+                {
+                    name: `visit doctor`,
+                    onclick: () => {
+                        Activities.goToClinic();
+                    }
+                },
+                {
+                    name: 'park',
+                    onclick: () => { // going to park with random pet
+                        Activities.goToPark();
                     }
                 },
                 // {
