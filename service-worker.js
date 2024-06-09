@@ -22,9 +22,13 @@ const ASSETS = [
     'src/Pet.js',
     'src/PetDefinition.js',
     'src/Scene.js',
+    'src/Definitions.js',
     'src/Utils.js',
     'src/ApiHelper.js',
     'src/Version.js',
+    // libs
+    'src/libs/jquery-3.7.1.min.js',
+    'src/libs/moment.js',
     // sounds
     'resources/sounds/angry.ogg',
     'resources/sounds/birthday_song_01.ogg',
