@@ -648,7 +648,7 @@ class Activities {
         App.setScene(App.scene.walkway);
 
         App.pet.x = '100%';
-        App.pet.y = 55;
+        App.pet.y = '74%';
 
         App.pet.targetX = -20;
 
