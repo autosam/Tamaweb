@@ -2686,8 +2686,8 @@ let App = {
         // setCookie('pet', App.pet.serializeStats(), 365);
         window.localStorage.setItem('pet', App.pet.serializeStats());
         window.localStorage.setItem('settings', JSON.stringify(App.settings));
-        // window.localStorage.setItem('last_time', Date.now());
-        window.localStorage.setItem('last_time', Date.now() - 86400 * 1000 * 10);
+        window.localStorage.setItem('last_time', Date.now());
+        // window.localStorage.setItem('last_time', Date.now() - 86400 * 1000 * 10);
         window.localStorage.setItem('user_id', App.userId);
         window.localStorage.setItem('user_name', App.userName);
         window.localStorage.setItem('ingame_events_history', JSON.stringify(App.gameEventsHistory));
