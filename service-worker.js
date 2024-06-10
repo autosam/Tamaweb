@@ -37,6 +37,8 @@ const ASSETS = [
     'resources/sounds/eat.ogg',
     'resources/sounds/refuse.ogg',
     'resources/sounds/sad.ogg',
+    'resources/sounds/cute.ogg',
+    'resources/sounds/task_complete.ogg',
     'resources/sounds/ui_click_01.ogg',
     'resources/sounds/ui_click_02.ogg',
     'resources/sounds/ui_click_03.ogg',

@@ -17,6 +17,7 @@ class Activities {
             App.pet.stats.current_fun += random(1, 4) * 0.1;
             if(idleTimer) clearTimeout(idleTimer);
             if(closeTimer) clearTimeout(closeTimer);
+            App.playSound('resources/sounds/cute.ogg', true);
             Activities.task_floatingHearts();
             idleTimer = setTimeout(() => {
                 App.pet.setState('idle');
@@ -92,6 +93,7 @@ class Activities {
                     otherPet.triggerScriptedState(currentAnimation, standDuration, 0, true, () => {
                         otherPet.targetX = -100;
                         App.pet.setState('idle');
+                        App.playSound('resources/sounds/task_complete.ogg', true);
                         otherPet.triggerScriptedState('moving', 5000, 0, true, () => {
                             otherPet.removeObject();
                         })

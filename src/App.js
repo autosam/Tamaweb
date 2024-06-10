@@ -791,7 +791,7 @@ let App = {
                 {
                     name: `pet ${App.getBadge()}`,
                     onclick: () => {
-                        App.displayPopup(`Tap the screen to pet <b>${App.petDefinition.name}.</b><br><br>Don't tap for a few seconds to stop petting.`, 3500, () => {
+                        App.displayPopup(`Tap the screen to pet <b>${App.petDefinition.name}.</b><br><br>Don't tap for a few seconds to stop petting.`, 2800, () => {
                             Activities.pet();
                         });
                     }
