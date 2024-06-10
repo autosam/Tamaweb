@@ -56,6 +56,7 @@ class Pet extends Object2d {
 
     onLateDraw() {
         this.behavior();
+        Object2d.animations.pixelBreath(this);
     }
     behavior() {
         this.isMainPet = this === App.pet;

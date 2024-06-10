@@ -17,17 +17,27 @@ class Activities {
         function spawnCustomer() {
             const standDuration = random(2000, 5000);
 
-            const possibleAnimations = ['eating', 'cheering', 'shocked', 'angry', 'uncomfortable'];
+            const badAnimations = ['angry'];
+            const midAnimations = ['uncomfortable', 'shocked'];
+            const goodAnimations = ['eating', 'cheering'];
+
+            let possibleAnimations = [...goodAnimations, ...midAnimations, ...badAnimations];
+
+            const negativeMoodlets = App.pet.hasMoodlet('hungry') + App.pet.hasMoodlet('bored') + App.pet.hasMoodlet('sick') + App.pet.hasMoodlet('sleepy');
+            if(negativeMoodlets && negativeMoodlets <= 2) possibleAnimations = [...midAnimations, ...goodAnimations];
+            else if(negativeMoodlets && negativeMoodlets <= 4) possibleAnimations = [...badAnimations, ...midAnimations];
+            else possibleAnimations = [...goodAnimations];
+
             const currentAnimation = randomFromArray(possibleAnimations);
 
             switch(currentAnimation){
                 case "eating":
                 case "cheering":
-                case "shocked":
-                    totalMoneyMade += random(6, 12);
+                    totalMoneyMade += random(8, 12);
                     break;
+                case "shocked":
                 case "uncomfortable":
-                    totalMoneyMade += 4;
+                    totalMoneyMade += random(3, 5);
                     break;
                 case "angry":
                     totalMoneyMade += 2;
@@ -72,7 +82,7 @@ class Activities {
             Activities.task_endWork(elapsedTime, totalMoneyMade);
             currentCustomer?.removeObject();
         }, () => {
-            Object2d.animations.bob(App.pet, 0.005, 0.05);
+            // Object2d.animations.bob(App.pet, 0.01, 0.05);
             if(Date.now() > nextCustomerSpawnTime){
                 nextCustomerSpawnTime = Date.now() + random(8000, 45000);
                 currentCustomer = spawnCustomer();

@@ -60,6 +60,21 @@ class Object2d {
             me.bobFloat += bobSpeed * App.deltaTime;
             let currentFloat = Math.sin(me.bobFloat) * bobStrength;
             me.y += currentFloat;
-        }
+        },
+        pixelBreath: function(me, speed, diffPixels){
+            if(!diffPixels) diffPixels = 1;
+            if(!speed) speed = 0.0013;
+            if(me.currentOffset === undefined) me.currentOffset = 0;
+            if(!me.breathFloat || me.breathFloat > 1) {
+                me.breathFloat = 0;
+                me.breathState = !me.breathState;
+                if(me.breathState) me.currentOffset = diffPixels;
+                else me.currentOffset = 0;
+
+                // me.y += me.currentOffset;
+                me.upperHalfOffsetY = me.currentOffset;
+            }
+            me.breathFloat += speed * App.deltaTime;
+        },
     }
 }

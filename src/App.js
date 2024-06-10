@@ -121,7 +121,7 @@ let App = {
         })
 
         // simulating offline progression
-        if(loadedData.lastTime){
+        if(loadedData.lastTime && App.ENV !== 'dev'){
             let elapsedTime = Date.now() - loadedData.lastTime;
             App.pet.simulateOfflineProgression(elapsedTime);
             
