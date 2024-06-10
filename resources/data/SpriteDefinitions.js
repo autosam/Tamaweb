@@ -51,4 +51,6 @@ const SPRITES = [
     "resources/img/misc/ghost_01.png",
     "resources/img/misc/ufo_01.png",
     "resources/img/misc/stand_01_booth.png",
+    "resources/img/misc/heart_particle_01.png",
+    "resources/img/misc/heart_particle_02.png",
 ]

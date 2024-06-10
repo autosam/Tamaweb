@@ -573,27 +573,31 @@ class Pet extends Object2d {
         return this.activeMoodlets.indexOf(mood) >= 0;
     }
     triggerScriptedState(state, length, cooldown, forced, onEndFn, driverFn){
-        if(!forced){
-            if(this.scriptedEventTime){
-                return; // already during scripted event
-            }
-    
-            if(this.scriptedEventCooldowns[state]){
-                if(this.scriptedEventCooldowns[state] > App.lastTime){
-                    return;
+        return new Promise((resolve, reject) => {
+            if(!forced){
+                if(this.scriptedEventTime){
+                    return resolve(); // already during scripted event
+                }
+        
+                if(this.scriptedEventCooldowns[state]){
+                    if(this.scriptedEventCooldowns[state] > App.lastTime){
+                        return resolve();
+                    }
                 }
             }
-        }
-
-        if(cooldown){
-            this.scriptedEventCooldowns[state] = App.lastTime + cooldown;
-        }
-
-        this.scriptedEventTime = App.lastTime + length;
-        this.scriptedEventOnEndFn = onEndFn;
-        this.scriptedEventDriverFn = driverFn;
-        this.setState(state);
-        // console.log("Scripted State: ", state);
+    
+            if(cooldown){
+                this.scriptedEventCooldowns[state] = App.lastTime + cooldown;
+            }
+    
+            this.scriptedEventTime = App.lastTime + length;
+            this.scriptedEventOnEndFn = (...args) => {
+                if(typeof onEndFn === "function") onEndFn(...args);
+                resolve();
+            };
+            this.scriptedEventDriverFn = driverFn;
+            this.setState(state);
+        })
     }
     setState(newState){
         if(newState != this.state){

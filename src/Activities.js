@@ -1,5 +1,38 @@
 class Activities {
     // activities
+    static async pet(){
+        let idleTimer = null, closeTimer = null, y = App.pet.y;
+        App.pet.stopMove();
+        App.pet.x = '50%';
+        App.pet.targetY = 132;
+        App.toggleGameplayControls(false);
+        await App.pet.triggerScriptedState('cheering', 1000, null, true);
+        App.pet.scale = 2;
+        App.pet.targetY = 50;
+        await App.pet.triggerScriptedState('cheering', 1000, null, true);
+        App.pet.scale = 3;
+        App.pet.targetY = 60;
+        App.toggleGameplayControls(false, () => {
+            App.pet.setState('blush');
+            App.pet.stats.current_fun += random(1, 4) * 0.1;
+            if(idleTimer) clearTimeout(idleTimer);
+            if(closeTimer) clearTimeout(closeTimer);
+            Activities.task_floatingHearts();
+            idleTimer = setTimeout(() => {
+                App.pet.setState('idle');
+                closeTimer = setTimeout(() => App.pet.stopScriptedState(), 5000);
+                idleTimer = null;
+            }, 250);
+        });
+        await App.pet.triggerScriptedState('idle', App.INF, null, true, () => {
+            App.pet.y = y;
+            App.pet.x = '50%';
+            App.pet.scale = 1;
+            App.pet.playCheeringAnimation();
+            App.toggleGameplayControls(true);
+        });
+        
+    }
     static standWork(){
         App.closeAllDisplays();
         App.setScene(App.scene.stand);
@@ -1097,5 +1130,28 @@ class Activities {
             ]);
         });
         App.toggleGameplayControls(true);
+    }
+    static task_floatingHearts(num){
+        if(!num) num = random(1, 4);
+        for(let i = 0; i < num; i++){
+            let floatSpeed = random(4, 5) * 0.01, 
+                swayFloat = 0, 
+                swaySpeed = random(2, 20) * 0.001;
+            const heartObject = new Object2d({
+                img: `resources/img/misc/heart_particle_0${random(1, 2)}.png`, 
+                z: randomFromArray([0, 100]), 
+                x: `${random(0, 100)}%`, 
+                y: `${random(105, 115)}%`
+            });
+            heartObject.onDraw = (me) => {
+                if(isNaN(me.y)) return;
+
+                me.y -= floatSpeed * App.deltaTime;
+
+                swayFloat += swaySpeed * App.deltaTime;
+                me.x += Math.sin(swayFloat) * 2;
+                if(me.y < -16) me.removeObject();
+            }
+        }
     }
 }

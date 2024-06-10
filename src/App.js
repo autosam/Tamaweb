@@ -108,6 +108,7 @@ let App = {
         }).setStats({is_egg: true}).loadStats(loadedData.pet);
         App.pet = new Pet(App.petDefinition);
         App.pet.z = 5;
+        App.pet.scale = 1;
         if(!loadedData.pet || !Object.keys(loadedData.pet).length) { // first time
             setTimeout(() => {
                 Activities.playEggUfoAnimation(() => App.handlers.show_set_pet_name_dialog());
@@ -743,9 +744,9 @@ let App = {
                     }
                 },
                 {
-                    name: '<i class="fa-solid fa-bed"></i>',
+                    name: '<i class="fa-solid fa-heart"></i>',
                     onclick: () => {
-                        App.handlers.sleep();
+                        App.handlers.open_care_menu();
                     }
                 },
                 {
@@ -777,6 +778,24 @@ let App = {
                     onclick: () => { }
                 }, 
                 
+            ])
+        },
+        open_care_menu: function(){
+            App.displayList([
+                {
+                    name: `sleep`,
+                    onclick: () => {
+                        App.handlers.sleep();
+                    }
+                },
+                {
+                    name: `pet ${App.getBadge()}`,
+                    onclick: () => {
+                        App.displayPopup(`Tap the screen to pet <b>${App.petDefinition.name}.</b><br><br>Don't tap for a few seconds to stop petting.`, 3500, () => {
+                            Activities.pet();
+                        });
+                    }
+                },
             ])
         },
         open_bathroom_menu: function(){
