@@ -40,7 +40,7 @@ body {
 }
 .graphics-wrapper {
     width: 100%;
-    max-width: 200px;
+    max-width: 192px;
     position: relative;
     outline: 5px solid #00000040;
     border-radius: 5px;
@@ -778,7 +778,7 @@ input#background-color-picker {
 } */
 
 .screen-wrapper {
-    height: 200px;
+    height: 192px;
 }
 
 /* battle */
