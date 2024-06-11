@@ -833,6 +833,7 @@ let App = {
                 },
                 {
                     // _ignore: !App.isTester(),
+                    _ignore: App.isOnItch,
                     name: `mods ${App.getBadge()}`,
                     onclick: () => {
                         const display = App.displayList([
@@ -1899,6 +1900,7 @@ let App = {
                                 onclick: () => {
                                     let charCode = 'friend:' + btoa(JSON.stringify(window.localStorage));
                                     navigator.clipboard.writeText(charCode);
+                                    console.log(charCode);
                                     App.displayConfirm(`Your friend code has been copied to the clipboard!`, [
                                         {
                                             name: 'next',
