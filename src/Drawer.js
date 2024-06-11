@@ -118,20 +118,20 @@ class Drawer {
             } */
 
             function drawSprite(object, x, y, context) {
-                const { image, spritesheet, inverted, upperHalfOffsetY, scale } = object;
+                const { image, spritesheet, inverted, upperHalfOffsetY, scale, width, height } = object;
                 if (!image) return;
 
                 context.save();
 
                 if (inverted) {
                     context.scale(-1, 1);
-                    x = -x - (spritesheet ? spritesheet.cellSize : image.width);
+                    x = -x - (spritesheet ? spritesheet.cellSize : (width || image.width));
                 }
 
                 if (scale) {
                     // scaling from center
-                    const spriteCenterX = x + (spritesheet ? spritesheet.cellSize / 2 : image.width / 2);
-                    const spriteCenterY = y + (spritesheet ? spritesheet.cellSize / 2 : image.height / 2);
+                    const spriteCenterX = x + (spritesheet ? spritesheet.cellSize / 2 : (width || image.width) / 2);
+                    const spriteCenterY = y + (spritesheet ? spritesheet.cellSize / 2 : (height || image.height) / 2);
                     context.translate(spriteCenterX, spriteCenterY);
                     context.scale(scale, scale);
                     context.translate(-spriteCenterX, -spriteCenterY);
@@ -171,7 +171,7 @@ class Drawer {
                     drawHalf(0, upperHalfOffsetY); // drawing upper half with offset
                     drawHalf(1); // drawing lower half
                 } else {
-                    context.drawImage(image, x, y, object.width || image.width, object.height || image.height);
+                    context.drawImage(image, x, y, (object.width || image.width), (object.height || image.height));
                 }
 
                 context.restore();
