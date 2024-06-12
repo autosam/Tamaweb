@@ -786,7 +786,8 @@ let App = {
                     }
                 }, 
                 {
-                    name: '<i class="fa-solid fa-arrow-left"></i>',
+                    name: '<i class="fa-solid fa-arrow-left back-sound"></i>',
+                    class: 'back-sound',
                     onclick: () => { }
                 }, 
                 
@@ -877,6 +878,7 @@ let App = {
                                                                 type: 'title',
                                                             },
                                                             {
+                                                                _ignore: !modInfo.description,
                                                                 name: modInfo.description,
                                                                 type: 'text',
                                                             },
@@ -1223,7 +1225,7 @@ let App = {
             // `;
 
             list.innerHTML = `
-            <div class="inner-padding">
+            <div class="inner-padding bg-white b-radius-10 m">
                 <b>GOLD:</b> $${App.pet.stats.gold}
                 <br>
                 <b>HUNGER:</b> ${App.createProgressbar( App.pet.stats.current_hunger / App.pet.stats.max_hunger * 100 ).node.outerHTML}
@@ -2168,7 +2170,8 @@ let App = {
                                 }
                             }
                         }), {
-                            name: '<i class="fa-solid fa-arrow-left"></i>',
+                            name: '<i class="fa-solid fa-arrow-left back-sound"></i>',
+                            class: 'back-sound',
                             onclick: () => { }
                         }])
                         return true;
@@ -2688,10 +2691,12 @@ let App = {
         });
 
         // button click event
+        const clickSoundClassNames = ['click-sound', 'list-item'];
+        const backSoundClassNames = ['back-btn', 'back-sound'];
         document.addEventListener('click', (e) => {
-            if(e.target.nodeName.toLowerCase() === 'button' || e.target.classList.contains('list-item') || e.target.classList.contains('click-sound') || e.target.parentElement?.nodeName.toLowerCase() === 'button'){
+            if(clickSoundClassNames.some(n => e.target.classList.contains(n)) || e.target.nodeName.toLowerCase() === 'button' || e.target.parentElement?.nodeName.toLowerCase() === 'button'){
                 App.vibrate();
-                if(e.target.classList.contains('back-btn') || e.target.textContent.toLowerCase() == 'back')
+                if(backSoundClassNames.some(n => e.target.classList.contains(n)) || e.target.textContent.toLowerCase() == 'back')
                     this.playSound(`resources/sounds/ui_click_02.ogg`, true);
                 else
                     this.playSound(`resources/sounds/ui_click_01.ogg`, true);

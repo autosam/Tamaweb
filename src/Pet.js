@@ -401,23 +401,21 @@ class Pet extends Object2d {
             }
         }
 
-        const hasGoodMoodlets = ['amused', 'rested', 'full', 'healthy'].map(moodName => this.hasMoodlet(moodName)).some(moodlet => moodlet);
+        // const hasGoodMoodlets = ['amused', 'rested', 'full', 'healthy'].map(moodName => this.hasMoodlet(moodName)).some(moodlet => moodlet);
+        const hasBadMoodlets = ['bored', 'sleepy', 'hungry', 'sick'].map(moodName => this.hasMoodlet(moodName)).some(moodlet => moodlet);
 
         // good animations
-        if(hasGoodMoodlets){
+        if(!hasBadMoodlets){
             if(random(0, 100) < 10){
-                // let goodMoodlets = ;
-                // if(hasGoodMoodlets){
-                    let animations = [
-                        {name: 'sitting', length: random(2000, 4000)}, 
-                        {name: 'blush', length: random(550, 1000)}, 
-                        {name: 'cheering', length: random(550, 1000)}, 
-                        {name: 'shocked', length: random(550, 1000)}, 
-                    ];
-                    let animation = randomFromArray(animations);
-                    this.triggerScriptedState(animation.name, animation.length, random(10000, 20000));
-                    this.stopMove();
-                // }
+                let animations = [
+                    {name: 'sitting', length: random(2000, 4000)}, 
+                    {name: 'blush', length: random(550, 1000)}, 
+                    {name: 'cheering', length: random(550, 1000)}, 
+                    {name: 'shocked', length: random(450, 800)}, 
+                ];
+                let animation = randomFromArray(animations);
+                this.triggerScriptedState(animation.name, animation.length, random(10000, 20000));
+                this.stopMove();
             } else if(random(0, 105) < 3){
                 this.jump();
             }

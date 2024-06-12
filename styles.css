@@ -197,10 +197,6 @@ body {
     background: #222285;
     color: white;
 }
-
-.inner-padding {
-    padding: 10px 20px;
-}
 .generic-slider-container {
     position: absolute;
     height: 100%;
@@ -855,6 +851,12 @@ input#background-color-picker {
 }
 .bg-bef-1:before {
     background: #e5acde !important;
+}
+.inner-padding {
+    padding: 10px 20px;
+}
+.m {
+    margin: 6px;
 }
 
 .modal {
