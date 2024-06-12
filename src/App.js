@@ -106,9 +106,9 @@ let App = {
             name: getRandomName(),
             sprite: randomFromArray(PET_BABY_CHARACTERS),
         }).setStats({is_egg: true}).loadStats(loadedData.pet);
-        App.pet = new Pet(App.petDefinition);
-        App.pet.z = 5;
-        App.pet.scale = 1;
+        App.pet = new Pet(App.petDefinition, {
+            z: 5, scale: 1, castShadow: true,
+        });
         if(!loadedData.pet || !Object.keys(loadedData.pet).length) { // first time
             setTimeout(() => {
                 Activities.playEggUfoAnimation(() => App.handlers.show_set_pet_name_dialog());
@@ -273,10 +273,10 @@ let App = {
     },
     registeredDrawEvents: [],
     registerOnDrawEvent: function(fn){
-        this.registeredDrawEvents.push(fn);
+        return this.registeredDrawEvents.push(fn) - 1;
     },
-    unregisterOnDrawEvent: function(fn){
-        let index = this.registeredDrawEvents.indexOf(fn);
+    unregisterOnDrawEvent: function(inp){
+        let index = typeof inp === "function" ? this.registeredDrawEvents.indexOf(inp) : inp;
         if(index != -1) this.registeredDrawEvents.splice(index, 1);
     },
     onFrameUpdate: function(time){
@@ -557,15 +557,23 @@ let App = {
             petX: '50%', petY: '100%',
             onLoad: () => {
                 App.poop.absHidden = false;
+                App.pet.verticalShadowFollow = false;
             },
             onUnload: () => {
                 App.poop.absHidden = true;
+                App.pet.verticalShadowFollow = true;
             }
         }),
         kitchen: new Scene({
             image: 'resources/img/background/house/kitchen_02.png',
             foodsX: '50%', foodsY: 44,
             petX: '75%', petY: '81%',
+            onLoad: () => {
+                App.pet.verticalShadowFollow = false;
+            },
+            onUnload: () => {
+                App.pet.verticalShadowFollow = true;
+            }
         }),
         park: new Scene({
             image: 'resources/img/background/outside/park_02.png',
@@ -582,6 +590,7 @@ let App = {
         wedding: new Scene({
             petX: '50%', petY: '100%',
             image: 'resources/img/background/house/wedding_01.png',
+            noShadows: true,
         }),
         arcade: new Scene({
             image: 'resources/img/background/house/arcade_01.png',
@@ -619,8 +628,10 @@ let App = {
                 //     return p;
                 // });
 
-                this.parent = new Pet(randomFromArray(parentDefs));
-                this.parent.y = 65;
+                this.parent = new Pet(randomFromArray(parentDefs), {
+                    y: 65,
+                });
+                // this.parent.y = 65;
             },
             onUnload: () => {
                 // this.parents.forEach(parent => parent.removeObject());
@@ -629,9 +640,11 @@ let App = {
         }),
         graveyard: new Scene({
             image: 'resources/img/background/outside/graveyard_01.png',
+            noShadows: true,
         }),
         battle: new Scene({
             image: 'resources/img/background/house/battle_01.png',
+            noShadows: true,
         }),
         stand: new Scene({
             image: 'resources/img/background/outside/stand_01.png',

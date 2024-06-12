@@ -145,8 +145,8 @@ class Drawer {
                     const sx = (cellNumber % rows) * cellSize;
                     const sy = Math.floor(cellNumber / columns) * cellSize;
 
-                    const upperHalfHeight = (4 / 5) * cellSize;
-                    const lowerHalfHeight = cellSize - upperHalfHeight;
+                    const upperHalfHeight = Math.round((4 / 5) * cellSize);
+                    const lowerHalfHeight = (cellSize - upperHalfHeight);
 
                     const drawHalf = (half, offsetY) => {
                         let dy = y; // destination y coordinate
@@ -274,8 +274,14 @@ class Drawer {
     }
     removeObject(object) {
         if(!object || object.drawerId === undefined){
-            console.log('no drawer id, cant remove', object);
+            return console.log('no drawer id, cant remove', object);
         }
+
         this.objects[object.drawerId] = null;
+        this.objects.forEach(otherObject => {
+            if(otherObject?.parent?.drawerId === object.drawerId){
+                this.objects[otherObject.drawerId] = null;
+            }
+        })
     }
 }

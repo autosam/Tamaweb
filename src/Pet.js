@@ -12,8 +12,9 @@ class Pet extends Object2d {
     state = 'idle';
     activeMoodlets = [];
     animObjectsQueue = [];
+    castShadow = true;
 
-    constructor(petDefinition){
+    constructor(petDefinition, additionalProps){
         const config = {
             image: App.preloadedResources[petDefinition.sprite],
             spritesheet: petDefinition.spritesheet,
@@ -24,10 +25,18 @@ class Pet extends Object2d {
         this.stats = this.petDefinition.stats;
         this.inventory = this.petDefinition.inventory;
         this.animations = this.petDefinition.animations;
-
         this.additionalY += this.petDefinition.spritesheet.offsetY || 0;
 
+        for(let prop in additionalProps){
+            this[prop] = additionalProps[prop];
+        }
+
+        this.setupOverlays();
+    }
+
+    setupOverlays(){
         this.needsToiletOverlay = new Object2d({
+            parent: this,
             img: 'resources/img/misc/needstoilet_01.png',
             x: 0,
             y: 0,
@@ -41,6 +50,7 @@ class Pet extends Object2d {
         });
 
         this.dirtyOverlay = new Object2d({
+            parent: this,
             img: 'resources/img/misc/stinky_01.png',
             x: 0,
             y: 0,
@@ -52,11 +62,40 @@ class Pet extends Object2d {
                 Object2d.animations.flip(overlay, 300);
             }
         });
-    }
 
+        this.shadowOverlay = new Object2d({
+            parent: this,
+            img: 'resources/img/misc/shadow_01.png',
+            width: this.petDefinition.spritesheet.cellSize, 
+            height: this.petDefinition.spritesheet.cellSize,
+            z: (this.z - 0.1) || 4.9,
+            hidden: !this.castShadow,
+            onDraw: (overlay) => {
+                overlay.x = this.x;
+
+                if(App.currentScene.noShadows) {
+                    overlay.y = -9999;
+                    return;
+                }
+
+                if (this.verticalShadowFollow === undefined && this.isMainPet !== undefined){
+                    if(this.isMainPet) this.verticalShadowFollow = false;
+                    else this.verticalShadowFollow = true;
+                }
+
+                if (this.verticalShadowFollow) {
+                    overlay.y = this.y + this.additionalY + Math.ceil(this.spritesheet.cellSize / 2.1);
+                    return;
+                }
+
+                overlay.y = 96 + this.additionalY + (App.currentScene.shadowOffset || 0) + (this.shadowOffset || 0);
+                const distanceToCaster = overlay.y - this.y;
+                overlay.scale = 1 - ((distanceToCaster + 4) * 0.01);
+            }
+        })
+    }
     onLateDraw() {
         this.behavior();
-        Object2d.animations.pixelBreath(this);
     }
     behavior() {
         this.isMainPet = this === App.pet;
@@ -68,6 +107,8 @@ class Pet extends Object2d {
         this.moveToTarget();
         this.stateManager();
         this.animationHandler();
+
+        Object2d.animations.pixelBreath(this);
     }
     handleDead(){
         this.x = -600;
@@ -265,7 +306,6 @@ class Pet extends Object2d {
 
         itemObject.x = '55%', itemObject.y = '47%';
 
-
         App.toggleGameplayControls(false);
 
         let interruptFn = () => {
@@ -277,6 +317,7 @@ class Pet extends Object2d {
         this.x = '30%';
         this.y = '63%';
         this.inverted = true;
+        this.verticalShadowFollow = true;
         this.triggerScriptedState('cheering', item.interaction_time || 10000, false, true, () => {  
             App.drawer.removeObject(itemObject);
 
@@ -331,7 +372,7 @@ class Pet extends Object2d {
         if(this.state == 'sleeping') 
             return;
 
-        if(!this.scriptedEventTime){
+        if(!this.isDuringScriptedState()){
             this.wander();
 
             this.handleRandomGestures();
@@ -360,20 +401,25 @@ class Pet extends Object2d {
             }
         }
 
+        const hasGoodMoodlets = ['amused', 'rested', 'full', 'healthy'].map(moodName => this.hasMoodlet(moodName)).some(moodlet => moodlet);
+
         // good animations
-        if(random(0, 100) < 10){
-            // let goodMoodlets = ;
-            let hasAny = ['amused', 'rested', 'full', 'healthy'].map(moodName => this.hasMoodlet(moodName)).some(moodlet => moodlet);
-            if(hasAny){
-                let animations = [
-                    {name: 'sitting', length: random(2000, 4000)}, 
-                    {name: 'blush', length: random(550, 1000)}, 
-                    {name: 'cheering', length: random(550, 1000)}, 
-                    {name: 'shocked', length: random(550, 1000)}, 
-                ];
-                let animation = randomFromArray(animations);
-                this.triggerScriptedState(animation.name, animation.length, random(10000, 20000));
-                this.stopMove();
+        if(hasGoodMoodlets){
+            if(random(0, 100) < 10){
+                // let goodMoodlets = ;
+                // if(hasGoodMoodlets){
+                    let animations = [
+                        {name: 'sitting', length: random(2000, 4000)}, 
+                        {name: 'blush', length: random(550, 1000)}, 
+                        {name: 'cheering', length: random(550, 1000)}, 
+                        {name: 'shocked', length: random(550, 1000)}, 
+                    ];
+                    let animation = randomFromArray(animations);
+                    this.triggerScriptedState(animation.name, animation.length, random(10000, 20000));
+                    this.stopMove();
+                // }
+            } else if(random(0, 105) < 3){
+                this.jump();
             }
         }
     }
@@ -617,6 +663,9 @@ class Pet extends Object2d {
         }
         return false;
     }
+    isDuringScriptedState(){
+        return !!this.scriptedEventTime;
+    }
     stateManager(){
         if(this.scriptedEventTime){
             if(this.scriptedEventTime < App.lastTime){ // ending scripted event time
@@ -723,7 +772,7 @@ class Pet extends Object2d {
         }
 
         if (App.lastTime > this.nextRandomTargetSelect) {
-            this.targetX = this.drawer.getRelativePositionX(50) + random(-50, 25);
+            this.targetX = random(this.drawer.getRelativePositionX(0), this.drawer.getRelativePositionX(100) - this.spritesheet.cellSize);
             this.nextRandomTargetSelect = 0;
         }
     }
@@ -761,6 +810,27 @@ class Pet extends Object2d {
             this.x = this.x - this.stats.speed * App.deltaTime;
         }
         this.inverted = false;
+    }
+    jump(strength = 0.28){
+        if(this.jumpAnimationUpdater !== undefined) return false;
+
+        const gravity = 0.001;
+        const startY = this.y;
+        let velocity = strength;
+        App.playSound('resources/sounds/jump.ogg', true);
+
+        this.jumpAnimationUpdater = App.registerOnDrawEvent(() => {
+            velocity -= gravity * App.deltaTime;
+            this.y -= velocity * App.deltaTime;
+            if(this.y >= startY){
+                this.y = startY;
+                this.stopScriptedState();
+                App.unregisterOnDrawEvent(this.jumpAnimationUpdater);
+                this.jumpAnimationUpdater = undefined;
+            }
+        })
+
+        this.triggerScriptedState('jumping', App.INF, 0, true);
     }
     simulateAwayProgression(elapsedTime){
         this.isMainPet = true;

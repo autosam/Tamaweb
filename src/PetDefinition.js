@@ -107,6 +107,11 @@ class PetDefinition {
                 }
             ]
         },
+        jumping: {
+            start: 2,
+            end: 3,
+            frameTime: 250,
+        },
         refuse: {
             start: 4,
             end: 7,

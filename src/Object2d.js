@@ -63,7 +63,7 @@ class Object2d {
         },
         pixelBreath: function(me, speed, diffPixels){
             if(!diffPixels) diffPixels = 1;
-            if(!speed) speed = 0.0013;
+            if(!speed) speed = 0.00145;
             if(me.currentOffset === undefined) me.currentOffset = 0;
             if(!me.breathFloat || me.breathFloat > 1) {
                 me.breathFloat = 0;

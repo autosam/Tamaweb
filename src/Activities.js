@@ -193,6 +193,7 @@ class Activities {
     }
     static stayAtParents(end){
         if(end){
+            return;
             App.toggleGameplayControls(true);
             App.setScene(App.scene.home);
             App.pet.playCheeringAnimation();
