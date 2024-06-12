@@ -809,6 +809,12 @@ let App = {
                         });
                     }
                 },
+                {
+                    name: `acess cam ${App.getBadge('dbg', 'neutral')}`,
+                    onclick: () => {
+                        App.useWebcam();
+                    }
+                },
             ])
         },
         open_bathroom_menu: function(){
@@ -2819,6 +2825,59 @@ let App = {
         document.querySelector('.shell-btn.left').style.backgroundImage = `url(${App.shellBackground})`;
         return true;
     },
+    useWebcam: function(callback){
+        function showError(){
+            App.displayConfirm(`Can't load the camera on this device`, [
+                {
+                    name: 'back',
+                    onclick: () => {}
+                }
+            ])
+        }
+
+        if(!navigator?.mediaDevices) return showError();
+
+        const videoContainer = document.querySelector('.webcam-container').cloneNode(true);
+
+        const videoElement = videoContainer.querySelector('.webcam-video');
+        const webcamButton = videoContainer.querySelector('#webcam-button');
+        const canvas = document.createElement('canvas');
+
+        document.querySelector('.screen-wrapper').appendChild(videoContainer);
+
+        webcamButton.onclick = () => {
+            webcamButton.disabled = true;
+            videoElement.pause();
+            videoElement.classList.add('taken');
+
+            const context = canvas.getContext("2d");
+            canvas.width = document.querySelector('.screen-wrapper').clientWidth;
+            canvas.height = document.querySelector('.screen-wrapper').clientHeight;
+            context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+            const data = canvas.toDataURL("image/png");
+
+            setTimeout(() => {
+                if(callback) callback(data);
+                videoContainer.remove();
+            }, 1500);
+        }
+
+        navigator?.mediaDevices
+            .getUserMedia({
+                video: true,
+                // audio: true,
+            })
+            .then((stream) => {
+                videoElement.srcObject = stream;
+                videoElement.addEventListener("loadedmetadata", () => {
+                    videoElement.play();
+                });
+            })
+            .catch(() => {
+                videoContainer.remove();
+                showError();
+            });
+    }
 }
 
 window.addEventListener('beforeinstallprompt', (e) => {

@@ -5,6 +5,7 @@ class Activities {
         App.pet.stopMove();
         App.pet.x = '50%';
         App.pet.targetY = 132;
+        App.pet.shadowOffset = 999;
         App.toggleGameplayControls(false);
         await App.pet.triggerScriptedState('cheering', 1000, null, true);
         App.pet.scale = 2;
@@ -26,11 +27,13 @@ class Activities {
             }, 250);
         });
         await App.pet.triggerScriptedState('idle', App.INF, null, true, () => {
-            App.pet.y = y;
-            App.pet.x = '50%';
+            // App.pet.y = y;
+            // App.pet.x = '50%';
+            App.setScene(App.currentScene);
+            App.toggleGameplayControls(true);
+            App.pet.shadowOffset = 0;
             App.pet.scale = 1;
             App.pet.playCheeringAnimation();
-            App.toggleGameplayControls(true);
         });
         
     }
