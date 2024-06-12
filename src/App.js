@@ -557,11 +557,11 @@ let App = {
             petX: '50%', petY: '100%',
             onLoad: () => {
                 App.poop.absHidden = false;
-                App.pet.verticalShadowFollow = false;
+                App.pet.staticShadow = false;
             },
             onUnload: () => {
                 App.poop.absHidden = true;
-                App.pet.verticalShadowFollow = true;
+                App.pet.staticShadow = true;
             }
         }),
         kitchen: new Scene({
@@ -569,10 +569,10 @@ let App = {
             foodsX: '50%', foodsY: 44,
             petX: '75%', petY: '81%',
             onLoad: () => {
-                App.pet.verticalShadowFollow = false;
+                App.pet.staticShadow = false;
             },
             onUnload: () => {
-                App.pet.verticalShadowFollow = true;
+                App.pet.staticShadow = true;
             }
         }),
         park: new Scene({
@@ -631,7 +631,6 @@ let App = {
                 this.parent = new Pet(randomFromArray(parentDefs), {
                     y: 65,
                 });
-                // this.parent.y = 65;
             },
             onUnload: () => {
                 // this.parents.forEach(parent => parent.removeObject());

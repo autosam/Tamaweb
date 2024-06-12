@@ -78,12 +78,12 @@ class Pet extends Object2d {
                     return;
                 }
 
-                if (this.verticalShadowFollow === undefined && this.isMainPet !== undefined){
-                    if(this.isMainPet) this.verticalShadowFollow = false;
-                    else this.verticalShadowFollow = true;
+                if (this.staticShadow === undefined && this.isMainPet !== undefined){
+                    if(this.isMainPet) this.staticShadow = false;
+                    else this.staticShadow = true;
                 }
 
-                if (this.verticalShadowFollow) {
+                if (this.staticShadow) {
                     overlay.y = this.y + this.additionalY + Math.ceil(this.spritesheet.cellSize / 2.1);
                     return;
                 }
@@ -317,7 +317,7 @@ class Pet extends Object2d {
         this.x = '30%';
         this.y = '63%';
         this.inverted = true;
-        this.verticalShadowFollow = true;
+        this.staticShadow = true;
         this.triggerScriptedState('cheering', item.interaction_time || 10000, false, true, () => {  
             App.drawer.removeObject(itemObject);
 
@@ -631,6 +631,11 @@ class Pet extends Object2d {
                     }
                 }
             }
+
+            /* check if this is needed
+            // if(this.scriptedEventTime){
+            //     if(this.scriptedEventOnEndFn) this.scriptedEventOnEndFn();
+            // } */
     
             if(cooldown){
                 this.scriptedEventCooldowns[state] = App.lastTime + cooldown;
@@ -812,25 +817,25 @@ class Pet extends Object2d {
         this.inverted = false;
     }
     jump(strength = 0.28){
-        if(this.jumpAnimationUpdater !== undefined) return false;
+        if(this.isJumping !== undefined) return false;
 
+        this.isJumping = true;
         const gravity = 0.001;
         const startY = this.y;
         let velocity = strength;
         App.playSound('resources/sounds/jump.ogg', true);
 
-        this.jumpAnimationUpdater = App.registerOnDrawEvent(() => {
+        this.triggerScriptedState('jumping', App.INF, 0, true, 
+        () => { // on end
+            this.y = startY;
+            this.isJumping = undefined;
+        }, () => { // driver fn
             velocity -= gravity * App.deltaTime;
             this.y -= velocity * App.deltaTime;
             if(this.y >= startY){
-                this.y = startY;
                 this.stopScriptedState();
-                App.unregisterOnDrawEvent(this.jumpAnimationUpdater);
-                this.jumpAnimationUpdater = undefined;
             }
-        })
-
-        this.triggerScriptedState('jumping', App.INF, 0, true);
+        });
     }
     simulateAwayProgression(elapsedTime){
         this.isMainPet = true;
