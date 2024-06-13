@@ -126,9 +126,10 @@ let App = {
         App.setScene(App.scene.home);
 
         // simulating offline progression
-        if(loadedData.lastTime && App.ENV !== 'dev'){
+        if(loadedData.lastTime){
             let elapsedTime = Date.now() - loadedData.lastTime;
-            App.pet.simulateOfflineProgression(elapsedTime);
+            
+            if(App.ENV !== 'dev') App.pet.simulateOfflineProgression(elapsedTime);
             
             let awaySeconds = Math.round(elapsedTime / 1000);
             let awayMinutes = Math.round(awaySeconds / 60);
@@ -478,14 +479,14 @@ let App = {
             return;
         }
 
-        if(addEvent(`update_06_notice`, () => {
+        if(addEvent(`update_07_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
                     type: 'title',
                 },
                 {
-                    name: 'There is now mod support in the game! check out the announcement below!',
+                    name: 'Check out the new accessories, jobs, petting feature, animations, visual and sound effect changes and much more in this update!',
                     type: 'text',
                 },
                 {
@@ -824,7 +825,8 @@ let App = {
                     }
                 },
                 {
-                    name: `acess cam ${App.getBadge('dbg', 'neutral')}`,
+                    _ignore: App.isTester(),
+                    name: `access cam ${App.getBadge('dbg', 'neutral')}`,
                     onclick: () => {
                         App.useWebcam();
                     }
@@ -867,7 +869,7 @@ let App = {
                 {
                     // _ignore: !App.isTester(),
                     _ignore: App.isOnItch,
-                    name: `mods ${App.getBadge()}`,
+                    name: `mods`,
                     onclick: () => {
                         const display = App.displayList([
                             {
@@ -2783,9 +2785,14 @@ let App = {
             modal.innerHTML = content;
         document.body.appendChild(modal);
     },
-    getBadge: function(text, color){
+    getBadge: function(text, color, expirationDate){
         if(!text) text = 'new!';
         if(!color) color = 'red';
+
+        if(expirationDate){
+            if(moment(expirationDate).isBefore(moment())) return '';
+        }
+
         return `<span class="badge ${color}">${text.toUpperCase()}<span>`;
     },
     drawUI: function(){
