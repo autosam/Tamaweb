@@ -22,9 +22,13 @@ const ASSETS = [
     'src/Pet.js',
     'src/PetDefinition.js',
     'src/Scene.js',
+    'src/Definitions.js',
     'src/Utils.js',
     'src/ApiHelper.js',
     'src/Version.js',
+    // libs
+    'src/libs/jquery-3.7.1.min.js',
+    'src/libs/moment.js',
     // sounds
     'resources/sounds/angry.ogg',
     'resources/sounds/birthday_song_01.ogg',
@@ -33,6 +37,9 @@ const ASSETS = [
     'resources/sounds/eat.ogg',
     'resources/sounds/refuse.ogg',
     'resources/sounds/sad.ogg',
+    'resources/sounds/cute.ogg',
+    'resources/sounds/jump.ogg',
+    'resources/sounds/task_complete.ogg',
     'resources/sounds/ui_click_01.ogg',
     'resources/sounds/ui_click_02.ogg',
     'resources/sounds/ui_click_03.ogg',

@@ -17,8 +17,8 @@ class PetDefinition {
             frameTime: 500
         },
         idle_side: {
-            start: 11,
-            end: 12,
+            start: 9,
+            end: 10,
             frameTime: 500
         },
         idle_uncomfortable: {
@@ -106,6 +106,11 @@ class PetDefinition {
                     interval: 2,
                 }
             ]
+        },
+        jumping: {
+            start: 2,
+            end: 3,
+            frameTime: 250,
         },
         refuse: {
             start: 4,
@@ -199,10 +204,10 @@ class PetDefinition {
             'bread': 1,
             'slice of pizza': 3,
         },
-        item: {
-
-        }
+        item: { },
+        accessory: { },
     }
+    accessories = [];
 
     constructor(config) {
         if(config){
@@ -216,7 +221,7 @@ class PetDefinition {
         this.spritesheet = this.spritesheetDefinitions[this.lifeStage + ''];
     }
     
-    serializables = [ 'name', 'stats', 'inventory', 'friends', 'sprite', 'birthday', 'lastBirthday' ];
+    serializables = [ 'name', 'stats', 'inventory', 'friends', 'sprite', 'birthday', 'lastBirthday', 'accessories' ];
     serializeStats(noStringify){
         let s = {};
         this.serializables.forEach(serializable => {
@@ -293,6 +298,11 @@ class PetDefinition {
         this.stats.current_cleanliness = 100;
         this.stats.current_death_tick = 100;
         this.stats.has_poop_out = false;
+    }
+
+    loadAccessories(accessories){
+        if(accessories) this.accessories = accessories;
+        return this;
     }
 
     increaseFriendship(value){
@@ -452,21 +462,21 @@ class PetDefinition {
 
     spritesheetDefinitions = {
         '0': { // baby
-            cellNumber: 0,
+            cellNumber: 1,
             cellSize: 16,
             rows: 4,
             columns: 4,
             offsetY: 8,
         },
         '1': { // teen
-            cellNumber: 0,
+            cellNumber: 1,
             cellSize: 24,
             rows: 4,
             columns: 4,
             offsetY: 4,    
         },
         '2': { // adult
-            cellNumber: 0,
+            cellNumber: 1,
             cellSize: 32,
             rows: 4,
             columns: 4,

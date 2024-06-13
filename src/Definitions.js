@@ -532,4 +532,26 @@ App.definitions = {
             image: 'resources/img/ui/shell_background_06.png',
         },
     },
+    accessories: {
+        "crown": {
+            image: 'resources/img/accessory/crown_01.png',
+            front: true,
+            price: 250,
+        },
+        'wings': {
+            image: 'resources/img/accessory/wings_01.png',
+            front: false,
+            price: 350,
+        },
+        'witch hat': {
+            image: 'resources/img/accessory/witch_hat_01.png',
+            front: true,
+            price: 300,
+        },
+        'frooties': {
+            image: 'resources/img/accessory/frooties_01.png',
+            front: false,
+            price: 200,
+        },
+    }
 }

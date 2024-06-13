@@ -42,6 +42,57 @@ class Object2d {
     removeObject(){
         this.drawer.removeObject(this);
     }
+    mimicParent(){
+        if(!this.parent) return;
+        
+        this.x = this.parent.x;
+        this.y = this.parent.y + this.parent.additionalY;
+        this.spritesheet.cellNumber = this.parent.spritesheet.cellNumber;
+        this.inverted = this.parent.inverted;
+        this.upperHalfOffsetY = this.parent.upperHalfOffsetY;
+        this.scale = this.parent.scale;
+    }
+    stopMove(){
+        this.targetX = undefined;
+        this.targetY = undefined;
+    }
+    moveToTarget(speed = 0.01) {
+        if (this.targetX !== undefined && this.targetX != this.x) {
+            this.isMoving = true;
+            if (this.x > this.targetX)
+                this.moveLeft(this.targetX, speed);
+            else if(this.x < this.targetX)
+                this.moveRight(this.targetX, speed);
+        } else {
+            this.isMoving = false;
+        }
+
+        if (this.targetY !== undefined && this.targetY != this.y) {
+            // this.y = lerp(this.y, this.targetY, this.stats.speed * App.deltaTime * 0.1);
+            if (this.y > this.targetY)
+                this.moveUp(this.targetY, speed);
+            else if(this.y < this.targetY)
+                this.moveDown(this.targetY, speed);
+        }
+    }
+    moveRight(maxX, speed) {
+        const velocity = this.x + speed * App.deltaTime;
+        this.x = velocity > maxX ? maxX : velocity;
+        this.inverted = true;
+    }
+    moveLeft(minX, speed) {
+        const velocity = this.x - speed * App.deltaTime;
+        this.x = velocity < minX ? minX : velocity;
+        this.inverted = false;
+    }
+    moveUp(minY, speed) {
+        const velocity = this.y - speed * 2 * App.deltaTime;
+        this.y = velocity < minY ? minY : velocity;
+    }
+    moveDown(maxY, speed) {
+        const velocity = this.y + speed * 2 * App.deltaTime;
+        this.y = velocity > maxY ? maxY : velocity;
+    }
     static setDrawer(drawer) {
         Object2d.defaultDrawer = drawer;
     }
@@ -60,6 +111,21 @@ class Object2d {
             me.bobFloat += bobSpeed * App.deltaTime;
             let currentFloat = Math.sin(me.bobFloat) * bobStrength;
             me.y += currentFloat;
-        }
+        },
+        pixelBreath: function(me, speed, diffPixels){
+            if(!diffPixels) diffPixels = 1;
+            if(!speed) speed = 0.00145;
+            if(me.currentOffset === undefined) me.currentOffset = 0;
+            if(!me.breathFloat || me.breathFloat > 1) {
+                me.breathFloat = 0;
+                me.breathState = !me.breathState;
+                if(me.breathState) me.currentOffset = diffPixels;
+                else me.currentOffset = 0;
+
+                // me.y += me.currentOffset;
+                me.upperHalfOffsetY = me.currentOffset;
+            }
+            me.breathFloat += speed * App.deltaTime;
+        },
     }
 }

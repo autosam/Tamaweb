@@ -53,7 +53,7 @@ class Drawer {
             y = Math.round(y);
             x = Math.round(x);
 
-            if (object.image){
+            /* if (object.image){
                 if (object.inverted) {
                     this.context.save();
                     this.context.scale(-1, 1);
@@ -64,11 +64,22 @@ class Drawer {
                             (cellNumber % object.spritesheet.rows) * object.spritesheet.cellSize,
                             Math.floor(cellNumber / object.spritesheet.columns) * object.spritesheet.cellSize,
                             object.spritesheet.cellSize,
-                            object.spritesheet.cellSize,
+                            object.spritesheet.cellSize/2,
                             -x - object.spritesheet.cellSize,
                             y,
                             object.spritesheet.cellSize,
-                            object.spritesheet.cellSize
+                            object.spritesheet.cellSize/2
+                        );
+                        this.context.drawImage(
+                            object.image,
+                            (cellNumber % object.spritesheet.rows) * object.spritesheet.cellSize,
+                            Math.floor(cellNumber / object.spritesheet.columns) * object.spritesheet.cellSize + object.spritesheet.cellSize / 2, // Start clipping from the middle
+                            object.spritesheet.cellSize,
+                            object.spritesheet.cellSize / 2,
+                            -x - object.spritesheet.cellSize,
+                            y + object.spritesheet.cellSize / 2,
+                            object.spritesheet.cellSize,
+                            object.spritesheet.cellSize / 2
                         );
                     } else {
                         this.context.drawImage(
@@ -104,7 +115,69 @@ class Drawer {
                         )
                     }
                 }
+            } */
+
+            function drawSprite(object, x, y, context) {
+                const { image, spritesheet, inverted, upperHalfOffsetY, scale, width, height } = object;
+                if (!image) return;
+
+                context.save();
+
+                if (inverted) {
+                    context.scale(-1, 1);
+                    x = -x - (spritesheet ? spritesheet.cellSize : (width || image.width));
+                }
+
+                if (scale) {
+                    // scaling from center
+                    const spriteCenterX = x + (spritesheet ? spritesheet.cellSize / 2 : (width || image.width) / 2);
+                    const spriteCenterY = y + (spritesheet ? spritesheet.cellSize / 2 : (height || image.height) / 2);
+                    context.translate(spriteCenterX, spriteCenterY);
+                    context.scale(scale, scale);
+                    context.translate(-spriteCenterX, -spriteCenterY);
+                }
+
+                if (spritesheet) {
+                    const cellNumber = spritesheet.cellNumber - 1;
+                    const cellSize = spritesheet.cellSize;
+                    const rows = spritesheet.rows;
+                    const columns = spritesheet.columns;
+                    const sx = (cellNumber % rows) * cellSize;
+                    const sy = Math.floor(cellNumber / columns) * cellSize;
+
+                    const upperHalfHeight = Math.round((4 / 5) * cellSize);
+                    const lowerHalfHeight = (cellSize - upperHalfHeight);
+
+                    const drawHalf = (half, offsetY) => {
+                        let dy = y; // destination y coordinate
+                        let sh = half === 0 ? upperHalfHeight : lowerHalfHeight; // source height
+                        let dh = sh; // destination height
+
+                        if (half === 0 && offsetY) dy += offsetY; // applying offset to upper half
+
+                        context.drawImage(
+                            image,
+                            sx,
+                            sy + (half === 0 ? 0 : upperHalfHeight), // adjusting source y for lower half
+                            cellSize,
+                            sh, // using calculated height for the half
+                            x,
+                            dy + (half === 0 ? 0 : upperHalfHeight), // adjusting destination y for lower half
+                            cellSize,
+                            dh // using calculated height for the half
+                        );
+                    };
+
+                    drawHalf(0, upperHalfOffsetY); // drawing upper half with offset
+                    drawHalf(1); // drawing lower half
+                } else {
+                    context.drawImage(image, x, y, (object.width || image.width), (object.height || image.height));
+                }
+
+                context.restore();
             }
+
+            drawSprite(object, x, y, this.context);
             
             /* if(object.dirtyCircle){
                 this.context.globalCompositeOperation = "color";
@@ -201,8 +274,14 @@ class Drawer {
     }
     removeObject(object) {
         if(!object || object.drawerId === undefined){
-            console.log('no drawer id, cant remove', object);
+            return console.log('no drawer id, cant remove', object);
         }
+
         this.objects[object.drawerId] = null;
+        this.objects.forEach(otherObject => {
+            if(otherObject?.parent?.drawerId === object.drawerId){
+                this.objects[otherObject.drawerId] = null;
+            }
+        })
     }
 }

@@ -12,8 +12,10 @@ class Pet extends Object2d {
     state = 'idle';
     activeMoodlets = [];
     animObjectsQueue = [];
+    accessoryObjects = [];
+    castShadow = true;
 
-    constructor(petDefinition){
+    constructor(petDefinition, additionalProps){
         const config = {
             image: App.preloadedResources[petDefinition.sprite],
             spritesheet: petDefinition.spritesheet,
@@ -24,10 +26,19 @@ class Pet extends Object2d {
         this.stats = this.petDefinition.stats;
         this.inventory = this.petDefinition.inventory;
         this.animations = this.petDefinition.animations;
-
         this.additionalY += this.petDefinition.spritesheet.offsetY || 0;
 
+        for(let prop in additionalProps){
+            this[prop] = additionalProps[prop];
+        }
+
+        this.createOverlays();
+        this.createAccessories();
+    }
+
+    createOverlays(){
         this.needsToiletOverlay = new Object2d({
+            parent: this,
             img: 'resources/img/misc/needstoilet_01.png',
             x: 0,
             y: 0,
@@ -41,6 +52,7 @@ class Pet extends Object2d {
         });
 
         this.dirtyOverlay = new Object2d({
+            parent: this,
             img: 'resources/img/misc/stinky_01.png',
             x: 0,
             y: 0,
@@ -52,8 +64,68 @@ class Pet extends Object2d {
                 Object2d.animations.flip(overlay, 300);
             }
         });
-    }
 
+        this.shadowOverlay = new Object2d({
+            parent: this,
+            img: 'resources/img/misc/shadow_01.png',
+            width: this.petDefinition.spritesheet.cellSize, 
+            height: this.petDefinition.spritesheet.cellSize,
+            z: (this.z - 0.1) || 4.9,
+            hidden: !this.castShadow,
+            onDraw: (overlay) => {
+                overlay.x = this.x;
+
+                if(App.currentScene.noShadows) {
+                    overlay.y = -9999;
+                    return;
+                }
+
+                if (this.staticShadow === undefined && this.isMainPet !== undefined){
+                    if(this.isMainPet) this.staticShadow = false;
+                    else this.staticShadow = true;
+                }
+
+                if (this.staticShadow) {
+                    overlay.y = this.y + this.additionalY + Math.ceil(this.spritesheet.cellSize / 2.1);
+                    return;
+                }
+
+                overlay.y = 96 + this.additionalY + (App.currentScene.shadowOffset || 0) + (this.shadowOffset || 0);
+                const distanceToCaster = overlay.y - this.y;
+                overlay.scale = 1 - ((distanceToCaster + 4) * 0.01);
+            }
+        })
+    }
+    createAccessories(){
+        // removing old accessories
+        this.accessoryObjects.forEach(accessoryObject => accessoryObject?.removeObject());
+        this.accessoryObjects = [];
+
+        if(!this.petDefinition.accessories) return;
+        this.petDefinition.accessories.forEach((accName) => {
+            const accessory = App.definitions.accessories[accName];
+            if(!accessory) return;
+
+            const accessoryObject = new Object2d({
+                parent: this,
+                img: accessory.image,
+                z: accessory.front ? (this.z + 0.1) || 5.1 : (this.z - 0.1) || 4.9,
+                spritesheet: {
+                    cellNumber: 1,
+                    cellSize: 64,
+                    rows: 4,
+                    columns: 4,
+                },
+                onDraw: (overlay) => {
+                    overlay.mimicParent();
+                    overlay.x -= 16;
+                    overlay.y -= 16;
+                }
+            })
+
+            this.accessoryObjects.push(accessoryObject);
+        })
+    }
     onLateDraw() {
         this.behavior();
     }
@@ -64,9 +136,11 @@ class Pet extends Object2d {
         if(this.stats.is_egg) return this.handleEgg();
 
         this.think();
-        this.moveToTarget();
+        this.moveToTarget(this.stats.speed);
         this.stateManager();
         this.animationHandler();
+
+        Object2d.animations.pixelBreath(this);
     }
     handleDead(){
         this.x = -600;
@@ -264,7 +338,6 @@ class Pet extends Object2d {
 
         itemObject.x = '55%', itemObject.y = '47%';
 
-
         App.toggleGameplayControls(false);
 
         let interruptFn = () => {
@@ -276,6 +349,7 @@ class Pet extends Object2d {
         this.x = '30%';
         this.y = '63%';
         this.inverted = true;
+        this.staticShadow = true;
         this.triggerScriptedState('cheering', item.interaction_time || 10000, false, true, () => {  
             App.drawer.removeObject(itemObject);
 
@@ -330,7 +404,7 @@ class Pet extends Object2d {
         if(this.state == 'sleeping') 
             return;
 
-        if(!this.scriptedEventTime){
+        if(!this.isDuringScriptedState()){
             this.wander();
 
             this.handleRandomGestures();
@@ -359,20 +433,23 @@ class Pet extends Object2d {
             }
         }
 
+        // const hasGoodMoodlets = ['amused', 'rested', 'full', 'healthy'].map(moodName => this.hasMoodlet(moodName)).some(moodlet => moodlet);
+        const hasBadMoodlets = ['bored', 'sleepy', 'hungry', 'sick'].map(moodName => this.hasMoodlet(moodName)).some(moodlet => moodlet);
+
         // good animations
-        if(random(0, 100) < 10){
-            // let goodMoodlets = ;
-            let hasAny = ['amused', 'rested', 'full', 'healthy'].map(moodName => this.hasMoodlet(moodName)).some(moodlet => moodlet);
-            if(hasAny){
+        if(!hasBadMoodlets){
+            if(random(0, 100) < 10){
                 let animations = [
                     {name: 'sitting', length: random(2000, 4000)}, 
                     {name: 'blush', length: random(550, 1000)}, 
                     {name: 'cheering', length: random(550, 1000)}, 
-                    {name: 'shocked', length: random(550, 1000)}, 
+                    {name: 'shocked', length: random(450, 800)}, 
                 ];
                 let animation = randomFromArray(animations);
                 this.triggerScriptedState(animation.name, animation.length, random(10000, 20000));
                 this.stopMove();
+            } else if(random(0, 105) < 3){
+                this.jump();
             }
         }
     }
@@ -572,27 +649,36 @@ class Pet extends Object2d {
         return this.activeMoodlets.indexOf(mood) >= 0;
     }
     triggerScriptedState(state, length, cooldown, forced, onEndFn, driverFn){
-        if(!forced){
-            if(this.scriptedEventTime){
-                return; // already during scripted event
-            }
-    
-            if(this.scriptedEventCooldowns[state]){
-                if(this.scriptedEventCooldowns[state] > App.lastTime){
-                    return;
+        return new Promise((resolve, reject) => {
+            if(!forced){
+                if(this.scriptedEventTime){
+                    return resolve(); // already during scripted event
+                }
+        
+                if(this.scriptedEventCooldowns[state]){
+                    if(this.scriptedEventCooldowns[state] > App.lastTime){
+                        return resolve();
+                    }
                 }
             }
-        }
 
-        if(cooldown){
-            this.scriptedEventCooldowns[state] = App.lastTime + cooldown;
-        }
-
-        this.scriptedEventTime = App.lastTime + length;
-        this.scriptedEventOnEndFn = onEndFn;
-        this.scriptedEventDriverFn = driverFn;
-        this.setState(state);
-        // console.log("Scripted State: ", state);
+            /* check if this is needed
+            // if(this.scriptedEventTime){
+            //     if(this.scriptedEventOnEndFn) this.scriptedEventOnEndFn();
+            // } */
+    
+            if(cooldown){
+                this.scriptedEventCooldowns[state] = App.lastTime + cooldown;
+            }
+    
+            this.scriptedEventTime = App.lastTime + length;
+            this.scriptedEventOnEndFn = (...args) => {
+                if(typeof onEndFn === "function") onEndFn(...args);
+                resolve();
+            };
+            this.scriptedEventDriverFn = driverFn;
+            this.setState(state);
+        })
     }
     setState(newState){
         if(newState != this.state){
@@ -611,6 +697,9 @@ class Pet extends Object2d {
             return true;
         }
         return false;
+    }
+    isDuringScriptedState(){
+        return !!this.scriptedEventTime;
     }
     stateManager(){
         if(this.scriptedEventTime){
@@ -707,7 +796,6 @@ class Pet extends Object2d {
             }
         }
     }
-    nextRandomTargetSelect = 1;
     wander() {
         if(this.isMoving){
             this.nextRandomTargetSelect = 0;
@@ -718,44 +806,30 @@ class Pet extends Object2d {
         }
 
         if (App.lastTime > this.nextRandomTargetSelect) {
-            this.targetX = this.drawer.getRelativePositionX(50) + random(-50, 25);
+            this.targetX = random(this.drawer.getRelativePositionX(0), this.drawer.getRelativePositionX(100) - this.spritesheet.cellSize);
             this.nextRandomTargetSelect = 0;
         }
     }
-    stopMove(){
-        this.targetX = undefined;
-        this.targetY = undefined;
-    }
-    moveToTarget() {
-        if (this.targetX !== undefined && this.targetX != this.x) {
-            this.isMoving = true;
-            if (this.x > this.targetX)
-                this.moveLeft(this.targetX);
-            else if(this.x < this.targetX)
-                this.moveRight(this.targetX);
-        } else {
-            this.isMoving = false;
-        }
+    jump(strength = 0.28){
+        if(this.isJumping !== undefined) return false;
 
-        if (this.targetY !== undefined && this.targetY != this.y) {
-            this.y = lerp(this.y, this.targetY, this.stats.speed * App.deltaTime * 0.1);
-        }
-    }
-    moveRight(maxX) {
-        if (this.x + this.stats.speed * App.deltaTime > maxX) {
-            this.x = maxX;
-        } else {
-            this.x = this.x + this.stats.speed * App.deltaTime;
-        }
-        this.inverted = true;
-    }
-    moveLeft(minX) {
-        if (this.x - this.stats.speed * App.deltaTime < minX) {
-            this.x = minX;
-        } else {
-            this.x = this.x - this.stats.speed * App.deltaTime;
-        }
-        this.inverted = false;
+        this.isJumping = true;
+        const gravity = 0.001;
+        const startY = this.y;
+        let velocity = strength;
+        App.playSound('resources/sounds/jump.ogg', true);
+
+        this.triggerScriptedState('jumping', App.INF, 0, true, 
+        () => { // on end
+            this.y = startY;
+            this.isJumping = undefined;
+        }, () => { // driver fn
+            velocity -= gravity * App.deltaTime;
+            this.y -= velocity * App.deltaTime;
+            if(this.y >= startY){
+                this.stopScriptedState();
+            }
+        });
     }
     simulateAwayProgression(elapsedTime){
         this.isMainPet = true;
@@ -775,10 +849,14 @@ class Pet extends Object2d {
         // getting caught up with the stats simulation
         // since pets call statsManager twice each seconds
         // we are going to simulate that by approximating
-        // (max offline progression is 12 hours)
+        // deprecated: (max offline progression is 12 hours)
+        // (max offline progression is 7 days)
+
+        // 3600(secs in 1 hour) * 24(1 day) * 7(7 days) = 604800
+        const maxOfflineProgressionSeconds = 604800;
 
         const startTime = Date.now();
-        let iterations = Math.floor(clamp(elapsedTime / 1000, 0, 43200) * 2);
+        let iterations = Math.floor(clamp(elapsedTime / 1000, 0, maxOfflineProgressionSeconds) * 2);
         for(let i = 0; i < iterations; i++){
             elapsedTime -= 500;
             let date = new Date(startTime - elapsedTime);

@@ -1,5 +1,158 @@
 class Activities {
     // activities
+    static async getDressed(middleFn, onEndFn){
+        App.closeAllDisplays();
+        App.toggleGameplayControls(false);
+
+        let curtainTargetElevation = 16, step = 0;
+        const curtainObject = new Object2d({
+            img: 'resources/img/misc/dresser_curtain_01.png',
+            x: 0, y: -100, z: 9,
+            onDraw: (curtain) => {
+                // curtain.y = lerp(curtain.y, curtainTargetElevation, 0.001 * App.deltaTime);
+                curtain.targetY = curtainTargetElevation;
+                curtain.moveToTarget(0.03);
+                Object2d.animations.bob(curtain, 0.01, 1);
+            }
+        })
+
+        App.pet.stopMove();
+        App.pet.x = '50%';
+        await App.pet.triggerScriptedState('idle', 4000, 0, true);
+        if(middleFn) middleFn();
+        curtainTargetElevation = -100;
+        await App.pet.triggerScriptedState('idle', 2000, 0, true);
+        curtainObject.removeObject();
+        App.toggleGameplayControls(true);
+        App.pet.playCheeringAnimation(onEndFn);
+    }
+    static async pet(){
+        let idleTimer = null, closeTimer = null, y = App.pet.y;
+        App.pet.stopMove();
+        App.pet.x = '50%';
+        App.pet.targetY = 132;
+        App.pet.shadowOffset = 999;
+        App.toggleGameplayControls(false);
+        await App.pet.triggerScriptedState('cheering', 1000, null, true);
+        App.pet.scale = 2;
+        App.pet.targetY = 50;
+        await App.pet.triggerScriptedState('cheering', 1000, null, true);
+        App.pet.scale = 3;
+        App.pet.targetY = 60;
+        App.toggleGameplayControls(false, () => {
+            App.pet.setState('blush');
+            App.pet.stats.current_fun += random(1, 4) * 0.1;
+            if(idleTimer) clearTimeout(idleTimer);
+            if(closeTimer) clearTimeout(closeTimer);
+            App.playSound('resources/sounds/cute.ogg', true);
+            Activities.task_floatingHearts();
+            idleTimer = setTimeout(() => {
+                App.pet.setState('idle');
+                closeTimer = setTimeout(() => App.pet.stopScriptedState(), 5000);
+                idleTimer = null;
+            }, 250);
+        });
+        await App.pet.triggerScriptedState('idle', App.INF, null, true, () => {
+            // App.pet.y = y;
+            // App.pet.x = '50%';
+            App.setScene(App.currentScene);
+            App.toggleGameplayControls(true);
+            App.pet.shadowOffset = 0;
+            App.pet.scale = 1;
+            App.pet.playCheeringAnimation();
+        });
+        
+    }
+    static standWork(){
+        App.closeAllDisplays();
+        App.setScene(App.scene.stand);
+        let totalMoneyMade = 0;
+
+        let standObject = new Object2d({
+            img: 'resources/img/misc/stand_01_booth.png',
+            x: 0, y: 0, z: 19
+        })
+
+        App.toggleGameplayControls(false, () => {
+            App.pet.stopScriptedState();
+        });
+
+        function spawnCustomer() {
+            const standDuration = random(2000, 5000);
+
+            const badAnimations = ['angry'];
+            const midAnimations = ['uncomfortable', 'shocked'];
+            const goodAnimations = ['eating', 'cheering'];
+
+            let possibleAnimations = [...goodAnimations, ...midAnimations, ...badAnimations];
+
+            const negativeMoodlets = App.pet.hasMoodlet('hungry') + App.pet.hasMoodlet('bored') + App.pet.hasMoodlet('sick') + App.pet.hasMoodlet('sleepy');
+            if(negativeMoodlets && negativeMoodlets <= 2) possibleAnimations = [...midAnimations, ...goodAnimations];
+            else if(negativeMoodlets && negativeMoodlets <= 4) possibleAnimations = [...badAnimations, ...midAnimations];
+            else possibleAnimations = [...goodAnimations];
+
+            const currentAnimation = randomFromArray(possibleAnimations);
+
+            switch(currentAnimation){
+                case "eating":
+                case "cheering":
+                    totalMoneyMade += random(8, 12);
+                    break;
+                case "shocked":
+                case "uncomfortable":
+                    totalMoneyMade += random(3, 5);
+                    break;
+                case "angry":
+                    totalMoneyMade += 2;
+                    break;
+            }
+
+            let otherPet = new Pet(App.getRandomPetDef(random(1, 2)));
+                otherPet.stopMove();
+                otherPet.x = -32;
+                otherPet.y = '100%';
+                otherPet.z = 20;
+                otherPet.inverted = true;
+                otherPet.targetX = 8;
+                App.pet.setState('idle_side');
+                otherPet.triggerScriptedState('moving', 4000, 0, true, () => {
+                    otherPet.stopMove();
+                    otherPet.x = 8;
+                    App.pet.setState('eating');
+                    otherPet.triggerScriptedState(currentAnimation, standDuration, 0, true, () => {
+                        otherPet.targetX = -100;
+                        App.pet.setState('idle');
+                        App.playSound('resources/sounds/task_complete.ogg', true);
+                        otherPet.triggerScriptedState('moving', 5000, 0, true, () => {
+                            otherPet.removeObject();
+                        })
+
+                    })
+                })
+
+            return otherPet;
+        }
+
+        App.pet.stopMove();
+        App.pet.x = '68%';
+        App.pet.y = '70%';
+        App.pet.inverted = false;
+        let startTime = Date.now();
+        let nextCustomerSpawnTime = Date.now() + random(0, 8000);
+        let currentCustomer;
+        App.pet.triggerScriptedState('idle', 200000, 0, true, () => {
+            standObject.removeObject();
+            let elapsedTime = Math.round((Date.now() - startTime) / 1000);
+            Activities.task_endWork(elapsedTime, totalMoneyMade);
+            currentCustomer?.removeObject();
+        }, () => {
+            // Object2d.animations.bob(App.pet, 0.01, 0.05);
+            if(Date.now() > nextCustomerSpawnTime){
+                nextCustomerSpawnTime = Date.now() + random(8000, 45000);
+                currentCustomer = spawnCustomer();
+            }
+        });
+    }
     static battle(otherPetDef){
         App.setScene(App.scene.battle);
 
@@ -309,7 +462,7 @@ class Activities {
                     parentB
                 ];
                 App.petDefinition.inventory = parentA.inventory;
-                App.petDefinition.stats.gold = parentA.stats.gold += 50;
+                App.petDefinition.stats.gold = parentA.stats.gold + random(50, 150);
                 App.petDefinition.stats.current_health = 100;
 
                 App.pet.stopMove();
@@ -531,6 +684,7 @@ class Activities {
         task_otherPetMoveIn();
     }
     static officeWork(){
+        App.closeAllDisplays();
         App.setScene(App.scene.office);
 
         App.toggleGameplayControls(false, () => {
@@ -549,25 +703,9 @@ class Activities {
         App.pet.y = '60%';
         let startTime = Date.now();
         App.pet.triggerScriptedState('eating', 200000, false, true, () => {
-            App.drawer.removeObject(laptop);
+            laptop.removeObject();
             let elapsedTime = Math.round((Date.now() - startTime) / 1000);
-            App.displayPopup(`${App.petDefinition.name} worked for ${elapsedTime} seconds`, 2500, () => {
-                let moneyMade = 0;
-                if(elapsedTime > 10){
-                    moneyMade = Math.round(elapsedTime / 2.5);
-                    App.pet.stats.gold += moneyMade;
-                }
-                App.pet.stats.current_fun -= elapsedTime / 3.5;
-                App.displayConfirm(`${App.petDefinition.name} made $${moneyMade}`, [
-                    {
-                        name: 'ok',
-                        onclick: () => {
-                            App.setScene(App.scene.home);
-                        }
-                    }
-                ]);
-            });
-            App.toggleGameplayControls(true);
+            Activities.task_endWork(elapsedTime, Math.round(elapsedTime / 2.5));
         })
     }
     static inviteDoctorVisit(){
@@ -1006,5 +1144,45 @@ class Activities {
         setTimeout(() => {
             if(endFn) endFn();
         }, 5500);
+    }
+    static task_endWork(elapsedTime, moneyMade){
+        App.displayPopup(`${App.petDefinition.name} worked for ${elapsedTime} seconds`, 2500, () => {
+            if(elapsedTime > 10){
+                App.pet.stats.gold += moneyMade;
+            } else moneyMade = 0;
+            App.pet.stats.current_fun -= elapsedTime / 3.5;
+            App.displayConfirm(`${App.petDefinition.name} made $${moneyMade}`, [
+                {
+                    name: 'ok',
+                    onclick: () => {
+                        App.setScene(App.scene.home);
+                    }
+                }
+            ]);
+        });
+        App.toggleGameplayControls(true);
+    }
+    static task_floatingHearts(num){
+        if(!num) num = random(1, 4);
+        for(let i = 0; i < num; i++){
+            let floatSpeed = random(4, 5) * 0.01, 
+                swayFloat = 0, 
+                swaySpeed = random(2, 20) * 0.001;
+            const heartObject = new Object2d({
+                img: `resources/img/misc/heart_particle_0${random(1, 2)}.png`, 
+                z: randomFromArray([0, 100]), 
+                x: `${random(0, 100)}%`, 
+                y: `${random(105, 115)}%`
+            });
+            heartObject.onDraw = (me) => {
+                if(isNaN(me.y)) return;
+
+                me.y -= floatSpeed * App.deltaTime;
+
+                swayFloat += swaySpeed * App.deltaTime;
+                me.x += Math.sin(swayFloat) * 2;
+                if(me.y < -16) me.removeObject();
+            }
+        }
     }
 }

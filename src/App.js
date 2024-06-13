@@ -94,6 +94,11 @@ let App = {
         App.uiFood.style.visibility = 'hidden';
         document.querySelector('.graphics-wrapper').appendChild(App.uiFood);
 
+        App.darkOverlay = new Object2d({
+            img: "resources/img/background/house/dark_overlay.png",
+            hidden: true,
+            z: 10,
+        })
         App.poop = new Object2d({
             image: App.preloadedResources["resources/img/misc/poop.png"],
             x: '80%', y: '80%',
@@ -105,30 +110,32 @@ let App = {
         App.petDefinition = new PetDefinition({
             name: getRandomName(),
             sprite: randomFromArray(PET_BABY_CHARACTERS),
-        }).setStats({is_egg: true}).loadStats(loadedData.pet);
-        App.pet = new Pet(App.petDefinition);
-        App.pet.z = 5;
+        })
+            .setStats({is_egg: true})
+            .loadStats(loadedData.pet)
+            .loadAccessories(loadedData.accessories);
+        App.pet = new Pet(App.petDefinition, {
+            z: 5, scale: 1, castShadow: true,
+        });
+
         if(!loadedData.pet || !Object.keys(loadedData.pet).length) { // first time
             setTimeout(() => {
                 Activities.playEggUfoAnimation(() => App.handlers.show_set_pet_name_dialog());
             }, 100);
         }
         App.setScene(App.scene.home);
-        App.darkOverlay = new Object2d({
-            img: "resources/img/background/house/dark_overlay.png",
-            hidden: true,
-            z: 10,
-        })
 
         // simulating offline progression
         if(loadedData.lastTime){
             let elapsedTime = Date.now() - loadedData.lastTime;
-            App.pet.simulateOfflineProgression(elapsedTime);
-
-            let awaySeconds = Math.round(elapsedTime/1000);
-            let awayMinutes = Math.round(awaySeconds/60);
-            let awayHours = Math.round(awayMinutes/60);
-
+            
+            if(App.ENV !== 'dev') App.pet.simulateOfflineProgression(elapsedTime);
+            
+            let awaySeconds = Math.round(elapsedTime / 1000);
+            let awayMinutes = Math.round(awaySeconds / 60);
+            let awayHours = Math.round(awayMinutes / 60);
+            // console.log({awayHours, awayMinutes, awaySeconds})
+            
             let message;
             if(awaySeconds < 60) message = `${awaySeconds} seconds`;
             else if(awayMinutes < 60) message = `${awayMinutes} minutes`;
@@ -271,10 +278,10 @@ let App = {
     },
     registeredDrawEvents: [],
     registerOnDrawEvent: function(fn){
-        this.registeredDrawEvents.push(fn);
+        return this.registeredDrawEvents.push(fn) - 1;
     },
-    unregisterOnDrawEvent: function(fn){
-        let index = this.registeredDrawEvents.indexOf(fn);
+    unregisterOnDrawEvent: function(inp){
+        let index = typeof inp === "function" ? this.registeredDrawEvents.indexOf(inp) : inp;
         if(index != -1) this.registeredDrawEvents.splice(index, 1);
     },
     onFrameUpdate: function(time){
@@ -404,6 +411,7 @@ let App = {
                                                             }
                                                             window.localStorage.setItem('user_id', App.userId);
                                                             window.localStorage.setItem('play_time', App.playTime);
+                                                            window.localStorage.setItem('last_time', Date.now());
                                                             App.displayPopup(`${def.name} is now your pet!`, App.INF);
                                                             setTimeout(() => {
                                                                 location.reload();  
@@ -471,14 +479,14 @@ let App = {
             return;
         }
 
-        if(addEvent(`update_06_notice`, () => {
+        if(addEvent(`update_07_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
                     type: 'title',
                 },
                 {
-                    name: 'There is now mod support in the game! check out the announcement below!',
+                    name: 'Check out the new accessories, jobs, petting feature, animations, visual and sound effect changes and much more in this update!',
                     type: 'text',
                 },
                 {
@@ -554,15 +562,23 @@ let App = {
             petX: '50%', petY: '100%',
             onLoad: () => {
                 App.poop.absHidden = false;
+                App.pet.staticShadow = false;
             },
             onUnload: () => {
                 App.poop.absHidden = true;
+                App.pet.staticShadow = true;
             }
         }),
         kitchen: new Scene({
             image: 'resources/img/background/house/kitchen_02.png',
             foodsX: '50%', foodsY: 44,
             petX: '75%', petY: '81%',
+            onLoad: () => {
+                App.pet.staticShadow = false;
+            },
+            onUnload: () => {
+                App.pet.staticShadow = true;
+            }
         }),
         park: new Scene({
             image: 'resources/img/background/outside/park_02.png',
@@ -579,6 +595,7 @@ let App = {
         wedding: new Scene({
             petX: '50%', petY: '100%',
             image: 'resources/img/background/house/wedding_01.png',
+            noShadows: true,
         }),
         arcade: new Scene({
             image: 'resources/img/background/house/arcade_01.png',
@@ -616,8 +633,9 @@ let App = {
                 //     return p;
                 // });
 
-                this.parent = new Pet(randomFromArray(parentDefs));
-                this.parent.y = 65;
+                this.parent = new Pet(randomFromArray(parentDefs), {
+                    y: 65,
+                });
             },
             onUnload: () => {
                 // this.parents.forEach(parent => parent.removeObject());
@@ -626,9 +644,14 @@ let App = {
         }),
         graveyard: new Scene({
             image: 'resources/img/background/outside/graveyard_01.png',
+            noShadows: true,
         }),
         battle: new Scene({
             image: 'resources/img/background/house/battle_01.png',
+            noShadows: true,
+        }),
+        stand: new Scene({
+            image: 'resources/img/background/outside/stand_01.png',
         })
     },
     setScene(scene){
@@ -738,9 +761,9 @@ let App = {
                     }
                 },
                 {
-                    name: '<i class="fa-solid fa-bed"></i>',
+                    name: '<i class="fa-solid fa-house-chimney-user"></i>',
                     onclick: () => {
-                        App.handlers.sleep();
+                        App.handlers.open_care_menu();
                     }
                 },
                 {
@@ -768,10 +791,46 @@ let App = {
                     }
                 }, 
                 {
-                    name: '<i class="fa-solid fa-arrow-left"></i>',
+                    name: '<i class="fa-solid fa-arrow-left back-sound"></i>',
+                    class: 'back-sound',
                     onclick: () => { }
                 }, 
                 
+            ])
+        },
+        open_care_menu: function(){
+            App.displayList([
+                {
+                    name: `sleep`,
+                    onclick: () => {
+                        App.handlers.sleep();
+                    }
+                },
+                {
+                    name: `accessories ${App.getBadge()}`,
+                    onclick: () => {
+                        if(App.petDefinition.lifeStage != 2){
+                            return App.displayPopup(`${App.petDefinition.name} is not old enough to wear accessories`);
+                        }
+                        App.handlers.open_accessory_list();
+                        return true;
+                    }
+                },
+                {
+                    name: `pet ${App.getBadge()}`,
+                    onclick: () => {
+                        App.displayPopup(`Tap the screen to pet <b>${App.petDefinition.name}</b><br><br>Don't tap for a few seconds to stop petting`, 2800, () => {
+                            Activities.pet();
+                        });
+                    }
+                },
+                {
+                    _ignore: App.isTester(),
+                    name: `access cam ${App.getBadge('dbg', 'neutral')}`,
+                    onclick: () => {
+                        App.useWebcam();
+                    }
+                },
             ])
         },
         open_bathroom_menu: function(){
@@ -809,7 +868,8 @@ let App = {
                 },
                 {
                     // _ignore: !App.isTester(),
-                    name: `mods ${App.getBadge()}`,
+                    _ignore: App.isOnItch,
+                    name: `mods`,
                     onclick: () => {
                         const display = App.displayList([
                             {
@@ -840,6 +900,7 @@ let App = {
                                                                 type: 'title',
                                                             },
                                                             {
+                                                                _ignore: !modInfo.description,
                                                                 name: modInfo.description,
                                                                 type: 'text',
                                                             },
@@ -1186,7 +1247,7 @@ let App = {
             // `;
 
             list.innerHTML = `
-            <div class="inner-padding">
+            <div class="inner-padding bg-white b-radius-10 m">
                 <b>GOLD:</b> $${App.pet.stats.gold}
                 <br>
                 <b>HUNGER:</b> ${App.createProgressbar( App.pet.stats.current_hunger / App.pet.stats.max_hunger * 100 ).node.outerHTML}
@@ -1579,6 +1640,93 @@ let App = {
             return sliderInstance;
             return App.displayList(list);
         },
+        open_accessory_list: function(buyMode, activeIndex, customPayload){
+            let list = [];
+            let sliderInstance;
+            let salesDay = App.isSalesDay();
+            // buyMode = true;
+            for(let accessoryName of Object.keys(App.definitions.accessories)){
+                // check if current pet has this item on its inventory
+                if(!App.pet.inventory.accessory[accessoryName] && !buyMode){
+                    continue;
+                }
+                let current = App.definitions.accessories[accessoryName];
+
+                // 50% off on sales day
+                let price = current.price;
+                if(salesDay) price = Math.round(price / 2);
+
+                const equipped = App.petDefinition.accessories.includes(accessoryName);
+                const owned = App.pet.inventory.accessory[accessoryName];
+
+                const image = App.checkResourceOverride(current.image);
+
+                const reopen = () => {
+                    App.handlers.open_care_menu();
+                    App.handlers.open_accessory_list(buyMode, sliderInstance?.getCurrentIndex());
+                    return false;
+                }
+
+                list.push({
+                    // name: `<c-sprite width="22" height="22" index="${(current.sprite - 1)}" src="resources/img/item/items.png"></c-sprite> ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>$${buyMode ? `${price}` : ''}</b>`,
+                    name: `
+                        <c-sprite width="64" height="36" index="0" src="${image}"></c-sprite>
+                        ${accessoryName.toUpperCase()} 
+                        <b>
+                        ${
+                            buyMode 
+                            ? owned ? 'OWNED' : `$${price}`
+                            : equipped ? 'EQUIPPED' : 'NOT EQUIPPED'
+                        }
+                        </b> 
+                        ${
+                            current.isNew 
+                            ? App.getBadge() 
+                            : ''
+                        }
+                    `,
+                    onclick: (btn, list) => {
+                        if(buyMode){
+                            if(App.pet.inventory.accessory[accessoryName]) {
+                                App.displayPopup('You already own this accessory');
+                                return true;
+                            }
+                            if(App.pet.stats.gold < price){
+                                App.displayPopup(`Don't have enough gold!`);
+                                return true;
+                            }
+                            App.pet.stats.gold -= price;
+                            App.pet.inventory.accessory[accessoryName] = true;
+                            //     // nList.scrollTop = list.scrollTop;
+                            return reopen();
+                        }
+
+                        // toggle equip mode
+                        if(equipped) App.petDefinition.accessories.splice(App.petDefinition.accessories.indexOf(accessoryName), 1);
+                        else App.petDefinition.accessories.push(accessoryName);
+                        Activities.getDressed(() => App.pet.createAccessories(), reopen);
+
+                        // return reopen();
+                    }
+                })
+            }
+
+            if(!list.length){
+                App.displayPopup(`You don't have any accessories, purchase some from the mall`, 2000);
+                return;
+            }
+
+            sliderInstance = App.displaySlider(
+                list, 
+                activeIndex, 
+                {
+                    accept: buyMode 
+                        ? 'Purchase' 
+                        : 'Toggle'
+                }, 
+                buyMode ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}` : null);
+            return sliderInstance;
+        },
         open_activity_list: function(){
             return App.displayList([
                 {
@@ -1591,6 +1739,27 @@ let App = {
                     name: `market`,
                     onclick: () => {
                         Activities.goToMarket();
+                    }
+                },
+                {
+                    _ignore: App.petDefinition.lifeStage < 2,
+                    name: `work ${App.getBadge()}`,
+                    onclick: () => {
+                        App.displayList([
+                            {
+                                name: `stand work ${App.getBadge()}`,
+                                onclick: () => {
+                                    Activities.standWork();
+                                }
+                            },
+                            {
+                                name: 'office work',
+                                onclick: () => {
+                                    Activities.officeWork();
+                                }
+                            },
+                        ])
+                        return true;
                     }
                 },
                 {
@@ -1611,13 +1780,6 @@ let App = {
                     name: 'park',
                     onclick: () => { // going to park with random pet
                         Activities.goToPark();
-                    }
-                },
-                {
-                    _ignore: App.petDefinition.lifeStage < 2,
-                    name: 'work',
-                    onclick: () => {
-                        Activities.officeWork();
                     }
                 },
                 // {
@@ -1861,6 +2023,7 @@ let App = {
                                 onclick: () => {
                                     let charCode = 'friend:' + btoa(JSON.stringify(window.localStorage));
                                     navigator.clipboard.writeText(charCode);
+                                    console.log(charCode);
                                     App.displayConfirm(`Your friend code has been copied to the clipboard!`, [
                                         {
                                             name: 'next',
@@ -2116,7 +2279,8 @@ let App = {
                                 }
                             }
                         }), {
-                            name: '<i class="fa-solid fa-arrow-left"></i>',
+                            name: '<i class="fa-solid fa-arrow-left back-sound"></i>',
+                            class: 'back-sound',
                             onclick: () => { }
                         }])
                         return true;
@@ -2149,6 +2313,16 @@ let App = {
                     name: 'buy items',
                     onclick: () => {
                         App.handlers.open_item_list(true);
+                        return true;
+                    }
+                },
+                {
+                    name: `buy accessories ${App.getBadge()}`,
+                    onclick: () => {
+                        App.handlers.open_accessory_list(true);
+                        if(App.petDefinition.lifeStage != 2){
+                            App.displayPopup(`${App.petDefinition.name} is not old enough to wear accessories yet, but you can buy some for later`);
+                        }
                         return true;
                     }
                 },
@@ -2611,9 +2785,14 @@ let App = {
             modal.innerHTML = content;
         document.body.appendChild(modal);
     },
-    getBadge: function(text, color){
+    getBadge: function(text, color, expirationDate){
         if(!text) text = 'new!';
         if(!color) color = 'red';
+
+        if(expirationDate){
+            if(moment(expirationDate).isBefore(moment())) return '';
+        }
+
         return `<span class="badge ${color}">${text.toUpperCase()}<span>`;
     },
     drawUI: function(){
@@ -2636,10 +2815,12 @@ let App = {
         });
 
         // button click event
+        const clickSoundClassNames = ['click-sound', 'list-item'];
+        const backSoundClassNames = ['back-btn', 'back-sound'];
         document.addEventListener('click', (e) => {
-            if(e.target.nodeName.toLowerCase() === 'button' || e.target.classList.contains('list-item') || e.target.classList.contains('click-sound') || e.target.parentElement?.nodeName.toLowerCase() === 'button'){
+            if(clickSoundClassNames.some(n => e.target.classList.contains(n)) || e.target.nodeName.toLowerCase() === 'button' || e.target.parentElement?.nodeName.toLowerCase() === 'button'){
                 App.vibrate();
-                if(e.target.classList.contains('back-btn') || e.target.textContent.toLowerCase() == 'back')
+                if(backSoundClassNames.some(n => e.target.classList.contains(n)) || e.target.textContent.toLowerCase() == 'back')
                     this.playSound(`resources/sounds/ui_click_02.ogg`, true);
                 else
                     this.playSound(`resources/sounds/ui_click_01.ogg`, true);
@@ -2669,6 +2850,7 @@ let App = {
         window.localStorage.setItem('pet', App.pet.serializeStats());
         window.localStorage.setItem('settings', JSON.stringify(App.settings));
         window.localStorage.setItem('last_time', Date.now());
+        // window.localStorage.setItem('last_time', Date.now() - 86400 * 1000 * 10);
         window.localStorage.setItem('user_id', App.userId);
         window.localStorage.setItem('user_name', App.userName);
         window.localStorage.setItem('ingame_events_history', JSON.stringify(App.gameEventsHistory));
@@ -2761,6 +2943,59 @@ let App = {
         document.querySelector('.shell-btn.left').style.backgroundImage = `url(${App.shellBackground})`;
         return true;
     },
+    useWebcam: function(callback){
+        function showError(){
+            App.displayConfirm(`Can't load the camera on this device`, [
+                {
+                    name: 'back',
+                    onclick: () => {}
+                }
+            ])
+        }
+
+        if(!navigator?.mediaDevices) return showError();
+
+        const videoContainer = document.querySelector('.webcam-container').cloneNode(true);
+
+        const videoElement = videoContainer.querySelector('.webcam-video');
+        const webcamButton = videoContainer.querySelector('#webcam-button');
+        const canvas = document.createElement('canvas');
+
+        document.querySelector('.screen-wrapper').appendChild(videoContainer);
+
+        webcamButton.onclick = () => {
+            webcamButton.disabled = true;
+            videoElement.pause();
+            videoElement.classList.add('taken');
+
+            const context = canvas.getContext("2d");
+            canvas.width = document.querySelector('.screen-wrapper').clientWidth;
+            canvas.height = document.querySelector('.screen-wrapper').clientHeight;
+            context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+            const data = canvas.toDataURL("image/png");
+
+            setTimeout(() => {
+                if(callback) callback(data);
+                videoContainer.remove();
+            }, 1500);
+        }
+
+        navigator?.mediaDevices
+            .getUserMedia({
+                video: true,
+                // audio: true,
+            })
+            .then((stream) => {
+                videoElement.srcObject = stream;
+                videoElement.addEventListener("loadedmetadata", () => {
+                    videoElement.play();
+                });
+            })
+            .catch(() => {
+                videoContainer.remove();
+                showError();
+            });
+    }
 }
 
 window.addEventListener('beforeinstallprompt', (e) => {
