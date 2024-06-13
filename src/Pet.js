@@ -12,6 +12,7 @@ class Pet extends Object2d {
     state = 'idle';
     activeMoodlets = [];
     animObjectsQueue = [];
+    accessoryObjects = [];
     castShadow = true;
 
     constructor(petDefinition, additionalProps){
@@ -31,10 +32,11 @@ class Pet extends Object2d {
             this[prop] = additionalProps[prop];
         }
 
-        this.setupOverlays();
+        this.createOverlays();
+        this.createAccessories();
     }
 
-    setupOverlays(){
+    createOverlays(){
         this.needsToiletOverlay = new Object2d({
             parent: this,
             img: 'resources/img/misc/needstoilet_01.png',
@@ -94,6 +96,36 @@ class Pet extends Object2d {
             }
         })
     }
+    createAccessories(){
+        // removing old accessories
+        this.accessoryObjects.forEach(accessoryObject => accessoryObject?.removeObject());
+        this.accessoryObjects = [];
+
+        if(!this.petDefinition.accessories) return;
+        this.petDefinition.accessories.forEach((accName) => {
+            const accessory = App.definitions.accessories[accName];
+            if(!accessory) return;
+
+            const accessoryObject = new Object2d({
+                parent: this,
+                img: accessory.image,
+                z: accessory.front ? (this.z + 0.1) || 5.1 : (this.z - 0.1) || 4.9,
+                spritesheet: {
+                    cellNumber: 1,
+                    cellSize: 64,
+                    rows: 4,
+                    columns: 4,
+                },
+                onDraw: (overlay) => {
+                    overlay.mimicParent();
+                    overlay.x -= 16;
+                    overlay.y -= 16;
+                }
+            })
+
+            this.accessoryObjects.push(accessoryObject);
+        })
+    }
     onLateDraw() {
         this.behavior();
     }
@@ -104,7 +136,7 @@ class Pet extends Object2d {
         if(this.stats.is_egg) return this.handleEgg();
 
         this.think();
-        this.moveToTarget();
+        this.moveToTarget(this.stats.speed);
         this.stateManager();
         this.animationHandler();
 
@@ -764,7 +796,6 @@ class Pet extends Object2d {
             }
         }
     }
-    nextRandomTargetSelect = 1;
     wander() {
         if(this.isMoving){
             this.nextRandomTargetSelect = 0;
@@ -778,41 +809,6 @@ class Pet extends Object2d {
             this.targetX = random(this.drawer.getRelativePositionX(0), this.drawer.getRelativePositionX(100) - this.spritesheet.cellSize);
             this.nextRandomTargetSelect = 0;
         }
-    }
-    stopMove(){
-        this.targetX = undefined;
-        this.targetY = undefined;
-    }
-    moveToTarget() {
-        if (this.targetX !== undefined && this.targetX != this.x) {
-            this.isMoving = true;
-            if (this.x > this.targetX)
-                this.moveLeft(this.targetX);
-            else if(this.x < this.targetX)
-                this.moveRight(this.targetX);
-        } else {
-            this.isMoving = false;
-        }
-
-        if (this.targetY !== undefined && this.targetY != this.y) {
-            this.y = lerp(this.y, this.targetY, this.stats.speed * App.deltaTime * 0.1);
-        }
-    }
-    moveRight(maxX) {
-        if (this.x + this.stats.speed * App.deltaTime > maxX) {
-            this.x = maxX;
-        } else {
-            this.x = this.x + this.stats.speed * App.deltaTime;
-        }
-        this.inverted = true;
-    }
-    moveLeft(minX) {
-        if (this.x - this.stats.speed * App.deltaTime < minX) {
-            this.x = minX;
-        } else {
-            this.x = this.x - this.stats.speed * App.deltaTime;
-        }
-        this.inverted = false;
     }
     jump(strength = 0.28){
         if(this.isJumping !== undefined) return false;

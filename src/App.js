@@ -94,6 +94,11 @@ let App = {
         App.uiFood.style.visibility = 'hidden';
         document.querySelector('.graphics-wrapper').appendChild(App.uiFood);
 
+        App.darkOverlay = new Object2d({
+            img: "resources/img/background/house/dark_overlay.png",
+            hidden: true,
+            z: 10,
+        })
         App.poop = new Object2d({
             image: App.preloadedResources["resources/img/misc/poop.png"],
             x: '80%', y: '80%',
@@ -105,21 +110,20 @@ let App = {
         App.petDefinition = new PetDefinition({
             name: getRandomName(),
             sprite: randomFromArray(PET_BABY_CHARACTERS),
-        }).setStats({is_egg: true}).loadStats(loadedData.pet);
+        })
+            .setStats({is_egg: true})
+            .loadStats(loadedData.pet)
+            .loadAccessories(loadedData.accessories);
         App.pet = new Pet(App.petDefinition, {
             z: 5, scale: 1, castShadow: true,
         });
+
         if(!loadedData.pet || !Object.keys(loadedData.pet).length) { // first time
             setTimeout(() => {
                 Activities.playEggUfoAnimation(() => App.handlers.show_set_pet_name_dialog());
             }, 100);
         }
         App.setScene(App.scene.home);
-        App.darkOverlay = new Object2d({
-            img: "resources/img/background/house/dark_overlay.png",
-            hidden: true,
-            z: 10,
-        })
 
         // simulating offline progression
         if(loadedData.lastTime && App.ENV !== 'dev'){
@@ -756,7 +760,7 @@ let App = {
                     }
                 },
                 {
-                    name: '<i class="fa-solid fa-heart"></i>',
+                    name: '<i class="fa-solid fa-house-chimney-user"></i>',
                     onclick: () => {
                         App.handlers.open_care_menu();
                     }
@@ -802,9 +806,19 @@ let App = {
                     }
                 },
                 {
+                    name: `accessories ${App.getBadge()}`,
+                    onclick: () => {
+                        if(App.petDefinition.lifeStage != 2){
+                            return App.displayPopup(`${App.petDefinition.name} is not old enough to wear accessories`);
+                        }
+                        App.handlers.open_accessory_list();
+                        return true;
+                    }
+                },
+                {
                     name: `pet ${App.getBadge()}`,
                     onclick: () => {
-                        App.displayPopup(`Tap the screen to pet <b>${App.petDefinition.name}.</b><br><br>Don't tap for a few seconds to stop petting.`, 2800, () => {
+                        App.displayPopup(`Tap the screen to pet <b>${App.petDefinition.name}</b><br><br>Don't tap for a few seconds to stop petting`, 2800, () => {
                             Activities.pet();
                         });
                     }
@@ -1624,6 +1638,93 @@ let App = {
             return sliderInstance;
             return App.displayList(list);
         },
+        open_accessory_list: function(buyMode, activeIndex, customPayload){
+            let list = [];
+            let sliderInstance;
+            let salesDay = App.isSalesDay();
+            // buyMode = true;
+            for(let accessoryName of Object.keys(App.definitions.accessories)){
+                // check if current pet has this item on its inventory
+                if(!App.pet.inventory.accessory[accessoryName] && !buyMode){
+                    continue;
+                }
+                let current = App.definitions.accessories[accessoryName];
+
+                // 50% off on sales day
+                let price = current.price;
+                if(salesDay) price = Math.round(price / 2);
+
+                const equipped = App.petDefinition.accessories.includes(accessoryName);
+                const owned = App.pet.inventory.accessory[accessoryName];
+
+                const image = App.checkResourceOverride(current.image);
+
+                const reopen = () => {
+                    App.handlers.open_care_menu();
+                    App.handlers.open_accessory_list(buyMode, sliderInstance?.getCurrentIndex());
+                    return false;
+                }
+
+                list.push({
+                    // name: `<c-sprite width="22" height="22" index="${(current.sprite - 1)}" src="resources/img/item/items.png"></c-sprite> ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>$${buyMode ? `${price}` : ''}</b>`,
+                    name: `
+                        <c-sprite width="64" height="36" index="0" src="${image}"></c-sprite>
+                        ${accessoryName.toUpperCase()} 
+                        <b>
+                        ${
+                            buyMode 
+                            ? owned ? 'OWNED' : `$${price}`
+                            : equipped ? 'EQUIPPED' : 'NOT EQUIPPED'
+                        }
+                        </b> 
+                        ${
+                            current.isNew 
+                            ? App.getBadge() 
+                            : ''
+                        }
+                    `,
+                    onclick: (btn, list) => {
+                        if(buyMode){
+                            if(App.pet.inventory.accessory[accessoryName]) {
+                                App.displayPopup('You already own this accessory');
+                                return true;
+                            }
+                            if(App.pet.stats.gold < price){
+                                App.displayPopup(`Don't have enough gold!`);
+                                return true;
+                            }
+                            App.pet.stats.gold -= price;
+                            App.pet.inventory.accessory[accessoryName] = true;
+                            //     // nList.scrollTop = list.scrollTop;
+                            return reopen();
+                        }
+
+                        // toggle equip mode
+                        if(equipped) App.petDefinition.accessories.splice(App.petDefinition.accessories.indexOf(accessoryName), 1);
+                        else App.petDefinition.accessories.push(accessoryName);
+                        Activities.getDressed(() => App.pet.createAccessories(), reopen);
+
+                        // return reopen();
+                    }
+                })
+            }
+
+            if(!list.length){
+                App.displayPopup(`You don't have any accessories, purchase some from the mall`, 2000);
+                return;
+            }
+
+            sliderInstance = App.displaySlider(
+                list, 
+                activeIndex, 
+                {
+                    accept: buyMode 
+                        ? 'Purchase' 
+                        : 'Toggle'
+                }, 
+                buyMode ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}` : null);
+            return sliderInstance;
+        },
         open_activity_list: function(){
             return App.displayList([
                 {
@@ -2210,6 +2311,16 @@ let App = {
                     name: 'buy items',
                     onclick: () => {
                         App.handlers.open_item_list(true);
+                        return true;
+                    }
+                },
+                {
+                    name: `buy accessories ${App.getBadge()}`,
+                    onclick: () => {
+                        App.handlers.open_accessory_list(true);
+                        if(App.petDefinition.lifeStage != 2){
+                            App.displayPopup(`${App.petDefinition.name} is not old enough to wear accessories yet, but you can buy some for later`);
+                        }
                         return true;
                     }
                 },
