@@ -139,7 +139,21 @@ function generateTree(char, lifeStage, parent){
     }
     // possibleChars.forEach(c => container.innerHTML += getCSprite(c));
     (parent || document.body).appendChild(container);
+
     return container;
+}
+
+function toggleCSpriteVisibility(char) {
+    const all = document.querySelectorAll(`c-sprite[src="/${char}"]`);
+    if ([...all[0].classList].includes('active')) {
+        all.forEach(item => {
+            item.classList.remove('active');
+        })
+    } else {
+        all.forEach(item => {
+            item.classList.add('active');
+        })
+    }
 }
 
 function getCSprite(char, cls){
@@ -148,9 +162,9 @@ function getCSprite(char, cls){
     let size = 16;
 
     if(n >= 17) size = 24;
-    if(n >= 133) size = 32;    
+    if(n >= 133) size = 32;
 
-    return `<c-sprite width="${size}" height="${size}" src="/${char}" class="${cls}"></c-sprite>`
+    return `<c-sprite title="${char}" onclick="toggleCSpriteVisibility('${char}')" width="${size}" height="${size}" src="/${char}" class="${cls}"></c-sprite>`
 }
 
 // PET_BABY_CHARACTERS.forEach(char => {
@@ -171,6 +185,7 @@ PET_TEEN_CHARACTERS.forEach(char => {
 
 let all = [...PET_BABY_CHARACTERS, ...PET_TEEN_CHARACTERS, ...PET_ADULT_CHARACTERS];
 
+console.log(JSON.stringify(growthChart));
 
 let allContainer = document.createElement('div');
     allContainer.className = 'all-cont';

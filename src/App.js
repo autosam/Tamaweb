@@ -825,7 +825,7 @@ let App = {
                     }
                 },
                 {
-                    _ignore: App.isTester(),
+                    _ignore: !App.isTester(),
                     name: `access cam ${App.getBadge('dbg', 'neutral')}`,
                     onclick: () => {
                         App.useWebcam();
@@ -1151,9 +1151,19 @@ let App = {
                                         {
                                             name: 'ok',
                                             onclick: () => {
-                                                navigator.clipboard.writeText(charCode);
-                                                console.log('save code copied', charCode);
-                                                App.displayPopup('Save code copied!', 1000);
+                                                try {
+                                                    if(App.isOnItch) throw 'itch_clipboard';
+                                                    navigator.clipboard.writeText(charCode);
+                                                    console.log('save code copied', charCode);
+                                                    App.displayPopup('Save code copied!', 1000);
+                                                } catch(e) {
+                                                    App.displayPrompt('Copy your save code from the box below:', [
+                                                        {
+                                                            name: 'ok, I copied',
+                                                            onclick: () => {}
+                                                        }
+                                                    ], charCode);
+                                                }
                                             }
                                         },
                                     ]);

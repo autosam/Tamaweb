@@ -43,3 +43,13 @@ body {
 .babies {
     margin-bottom: 30px;
 }
+
+.active {
+    transform: scale(2) !important;
+    /* background-color: rgba(137, 43, 226, 0.515) !important; */
+    outline: 10px solid rgb(0, 0, 0);
+    border-radius: 10px;
+}
+c-sprite {
+    cursor: pointer;
+}

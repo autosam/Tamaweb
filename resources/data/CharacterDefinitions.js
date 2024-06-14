@@ -253,6 +253,7 @@ const PET_ADULT_CHARACTERS = [
     "resources/img/character/chara_382b.png",
     "resources/img/character/chara_383b.png",
     "resources/img/character/chara_384b.png",
+    "resources/img/character/chara_291b.png",
 ];
 
 const PET_TEEN_CHARACTERS = [
@@ -394,5 +395,5 @@ const PET_BABY_CHARACTERS = [
 ];
 
 const NPC_CHARACTERS = [
-    "resources/img/character/chara_291b.png",
+    // "resources/img/character/chara_291b.png",
 ];
