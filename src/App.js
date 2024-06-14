@@ -15,6 +15,14 @@ let App = {
         SLEEP_END: 9,
         PARENT_DAYCARE_START: 8,
         PARENT_DAYCARE_END: 18,
+        
+        FOOD_SPRITESHEET: 'resources/img/item/foods_on.png',
+        FOOD_SPRITESHEET_DIMENSIONS: {
+            cellNumber: 1,
+            cellSize: 24,
+            rows: 33,
+            columns: 33,
+        },
     },
     async init () {
         // init
@@ -73,7 +81,7 @@ let App = {
         //     hidden: true,
         // })
         App.foods = new Object2d({
-            image: App.preloadedResources["resources/img/item/foods_on.png"],
+            image: App.preloadedResources[App.constants.FOOD_SPRITESHEET],
             x: 10, y: 10,
             width: 12, height: 12,
             scale: 24, // todo: add scale functionality
@@ -89,7 +97,7 @@ let App = {
         App.uiFood.setAttribute('width', 24);
         App.uiFood.setAttribute('height', 24);
         App.uiFood.setAttribute('index', 0);
-        App.uiFood.setAttribute('src', "resources/img/item/foods_on.png");
+        App.uiFood.setAttribute('src', App.constants.FOOD_SPRITESHEET);
         App.uiFood.setAttribute('class', 'ui-food');
         App.uiFood.style.visibility = 'hidden';
         document.querySelector('.graphics-wrapper').appendChild(App.uiFood);
@@ -824,13 +832,6 @@ let App = {
                         });
                     }
                 },
-                {
-                    _ignore: !App.isTester(),
-                    name: `access cam ${App.getBadge('dbg', 'neutral')}`,
-                    onclick: () => {
-                        App.useWebcam();
-                    }
-                },
             ])
         },
         open_bathroom_menu: function(){
@@ -1304,7 +1305,12 @@ let App = {
                 if(salesDay) price = Math.round(price / 2);
 
                 list.push({
-                    name: `<c-sprite naturalWidth="792" naturalHeight="792" width="24" height="24" index="${(current.sprite - 1)}" src="resources/img/item/foods_on.png"></c-sprite> ${food.toUpperCase()} (x${App.pet.inventory.food[food] > 0 ? App.pet.inventory.food[food] : (!current.price ? '∞' : 0)}) <b>${buyMode ? `$${price}` : ''}</b>`,
+                    name: `<c-sprite 
+                        naturalWidth="${App.constants.FOOD_SPRITESHEET_DIMENSIONS.rows * App.constants.FOOD_SPRITESHEET_DIMENSIONS.cellSize}" 
+                        naturalHeight="${App.constants.FOOD_SPRITESHEET_DIMENSIONS.rows * App.constants.FOOD_SPRITESHEET_DIMENSIONS.cellSize}" 
+                        width="${App.constants.FOOD_SPRITESHEET_DIMENSIONS.cellSize}" height="${App.constants.FOOD_SPRITESHEET_DIMENSIONS.cellSize}" 
+                        index="${(current.sprite - 1)}"
+                        src="${App.constants.FOOD_SPRITESHEET}"></c-sprite> ${food.toUpperCase()} (x${App.pet.inventory.food[food] > 0 ? App.pet.inventory.food[food] : (!current.price ? '∞' : 0)}) <b>${buyMode ? `$${price}` : ''}</b>`,
                     onclick: (btn, list) => {
                         if(buyMode){
                             if(App.pet.stats.gold < price){
@@ -1312,11 +1318,7 @@ let App = {
                                 return true;
                             }
                             App.pet.stats.gold -= price;
-                            if(!App.pet.inventory.food[food]){
-                                App.pet.inventory.food[food] = 1;
-                            } else {
-                                App.pet.inventory.food[food] += 1;
-                            }
+                            App.addNumToObject(App.pet.inventory.food, food, 1);
                             // console.log(list.scrollTop);
                             let nList = App.handlers.open_food_list(true, sliderInstance?.getCurrentIndex(), filterType);
                                 // nList.scrollTop = list.scrollTop;
@@ -1368,6 +1370,13 @@ let App = {
                         return App.handlers.open_food_list(null, null, 'med');
                     }
                 },
+                {
+                    _ignore: !App.isTester(),
+                    name: `cook ${App.getBadge('preview')}`,
+                    onclick: () => {
+                        Activities.cookingGame();
+                    }
+                }
             ])
         },
         open_stats_menu: function(){
@@ -1527,11 +1536,7 @@ let App = {
                                 return true;
                             }
                             App.pet.stats.gold -= price;
-                            if(!App.pet.inventory.item[item]){
-                                App.pet.inventory.item[item] = 1;
-                            } else {
-                                App.pet.inventory.item[item] += 1;
-                            }
+                            App.addNumToObject(App.pet.inventory.item, item, 1);
                             // console.log(list.scrollTop);
                             let nList = App.handlers.open_item_list(true, sliderInstance?.getCurrentIndex());
                                 // nList.scrollTop = list.scrollTop;
@@ -1624,22 +1629,6 @@ let App = {
                     // name: `<c-sprite width="22" height="22" index="${(current.sprite - 1)}" src="resources/img/item/items.png"></c-sprite> ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>$${buyMode ? `${price}` : ''}</b>`,
                     name: `<img src="${current.image}"></img>`,
                     onclick: (btn, list) => {
-                        // if(current.image === App.scene.home.image){
-                        //     App.displayPopup('You already own this entry');
-                        //     return true;
-                        // }
-
-                        // if(App.pet.stats.gold < price){
-                        //     App.displayPopup(`Don't have enough gold!`);
-                        //     return true;
-                        // }
-                        // App.pet.stats.gold -= price;
-
-                        // App.closeAllDisplays();
-                        // Activities.redecorRoom();
-                        // App.scene.home.image = current.image;
-
-                        // App.sendAnalytics('home_background_change', App.scene.home.image);
                         App.setShellBackground(current.image);
                         return true;
                     }
@@ -1740,7 +1729,7 @@ let App = {
         open_activity_list: function(){
             return App.displayList([
                 {
-                    name: 'mall',
+                    name: `mall ${App.getBadge()}`,
                     onclick: () => {
                         Activities.goToMall();
                     }
@@ -2953,12 +2942,25 @@ let App = {
         document.querySelector('.shell-btn.left').style.backgroundImage = `url(${App.shellBackground})`;
         return true;
     },
-    useWebcam: function(callback){
+    addNumToObject: function(obj, key, amount){
+        if(!obj[key]) obj[key] = amount;
+        else obj[key] += amount;
+    },
+    useWebcam: function(callback, facingMode, shutterDelay){
+        if(!facingMode) facingMode = 'environment';
+
+        function close(data){
+            if(callback) callback(data);
+            videoContainer.remove();
+        }
+
         function showError(){
             App.displayConfirm(`Can't load the camera on this device`, [
                 {
                     name: 'back',
-                    onclick: () => {}
+                    onclick: () => {
+                        close();
+                    }
                 }
             ])
         }
@@ -2969,9 +2971,14 @@ let App = {
 
         const videoElement = videoContainer.querySelector('.webcam-video');
         const webcamButton = videoContainer.querySelector('#webcam-button');
+        const webcamChangeButton = videoContainer.querySelector('#webcam-change-button');
         const canvas = document.createElement('canvas');
 
         document.querySelector('.screen-wrapper').appendChild(videoContainer);
+
+        videoElement.onplaying = () => {
+            webcamButton.style.display = 'initial';
+        }
 
         webcamButton.onclick = () => {
             webcamButton.disabled = true;
@@ -2985,14 +2992,22 @@ let App = {
             const data = canvas.toDataURL("image/png");
 
             setTimeout(() => {
-                if(callback) callback(data);
-                videoContainer.remove();
-            }, 1500);
+                close(data);
+            }, (shutterDelay || 250));
+        }
+
+        webcamChangeButton.onclick = () => {
+            // close();
+            videoContainer.remove();
+            App.useWebcam(callback, facingMode == 'user' ? 'environment' : 'user');
         }
 
         navigator?.mediaDevices
             .getUserMedia({
-                video: true,
+                // video: true,
+                video: {
+                    facingMode: facingMode
+                }
                 // audio: true,
             })
             .then((stream) => {

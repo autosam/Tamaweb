@@ -45,8 +45,7 @@ class Pet extends Object2d {
             width: this.petDefinition.spritesheet.cellSize, height: this.petDefinition.spritesheet.cellSize,
             hidden: true,
             onDraw: (overlay) => {
-                overlay.x = this.x;
-                overlay.y = this.y + this.additionalY;
+                overlay.mimicParent(['inverted', 'upperHalfOffsetY']);
                 Object2d.animations.flip(overlay, 250);
             }
         });
@@ -59,8 +58,7 @@ class Pet extends Object2d {
             width: this.petDefinition.spritesheet.cellSize, height: this.petDefinition.spritesheet.cellSize,
             hidden: true,
             onDraw: (overlay) => {
-                overlay.x = this.x;
-                overlay.y = this.y + this.additionalY;
+                overlay.mimicParent(['inverted', 'upperHalfOffsetY']);
                 Object2d.animations.flip(overlay, 300);
             }
         });
@@ -385,6 +383,12 @@ class Pet extends Object2d {
     playAngryAnimation(onEndFn){
         this.stopMove();
         this.triggerScriptedState('angry', 2000, null, true, () => {
+            if(onEndFn) onEndFn();
+        });
+    }
+    playUncomfortableAnimation(onEndFn){
+        this.stopMove();
+        this.triggerScriptedState('uncomfortable', 2000, null, true, () => {
             if(onEndFn) onEndFn();
         });
     }

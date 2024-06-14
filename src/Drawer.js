@@ -118,10 +118,28 @@ class Drawer {
             } */
 
             function drawSprite(object, x, y, context) {
-                const { image, spritesheet, inverted, upperHalfOffsetY, scale, width, height } = object;
+                const { image, spritesheet, inverted, upperHalfOffsetY, scale, width, height, clipCircle, rotation } = object;
                 if (!image) return;
 
                 context.save();
+
+                const spriteCenterX = x + (spritesheet ? spritesheet.cellSize / 2 : (width || image.width) / 2);
+                const spriteCenterY = y + (spritesheet ? spritesheet.cellSize / 2 : (height || image.height) / 2);
+                
+                if (rotation) {
+                    const rotationRadians = rotation * (Math.PI / 180);
+                    context.translate(spriteCenterX, spriteCenterY);
+                    context.rotate(rotationRadians);
+                    context.translate(-spriteCenterX, -spriteCenterY);
+                }
+
+                if (clipCircle) {
+                    const radius = Math.min((width || image.width), (height || image.height)) / 2; // for a circle, radius is half of the smaller dimension
+
+                    context.beginPath();
+                    context.arc(spriteCenterX, spriteCenterY, radius, 0, Math.PI * 2, false);
+                    context.clip();
+                }
 
                 if (inverted) {
                     context.scale(-1, 1);
@@ -130,8 +148,6 @@ class Drawer {
 
                 if (scale) {
                     // scaling from center
-                    const spriteCenterX = x + (spritesheet ? spritesheet.cellSize / 2 : (width || image.width) / 2);
-                    const spriteCenterY = y + (spritesheet ? spritesheet.cellSize / 2 : (height || image.height) / 2);
                     context.translate(spriteCenterX, spriteCenterY);
                     context.scale(scale, scale);
                     context.translate(-spriteCenterX, -spriteCenterY);

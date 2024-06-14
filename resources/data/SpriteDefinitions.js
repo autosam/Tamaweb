@@ -54,6 +54,12 @@ const SPRITES = [
     "resources/img/misc/heart_particle_01.png",
     "resources/img/misc/heart_particle_02.png",
     "resources/img/misc/dresser_curtain_01.png",
+    "resources/img/misc/light_rays_01.png",
+    "resources/img/misc/star_01.png",
+    "resources/img/misc/cooking_pot_p01.png",
+    "resources/img/misc/cooking_pot_p02.png",
+    "resources/img/misc/cooking_pot_p03.png",
+    "resources/img/misc/exclam_01.png",
 
     // accessories
     "resources/img/accessory/crown_01.png",

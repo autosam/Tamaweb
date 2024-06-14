@@ -10,9 +10,10 @@ class Object2d {
             }
         }
 
-        // basic position
+        // basic
         this.x = '50%';
         this.y = '50%';
+        this.rotation = 0;
 
         // props
         for (let key of Object.keys(config)) {
@@ -42,15 +43,20 @@ class Object2d {
     removeObject(){
         this.drawer.removeObject(this);
     }
-    mimicParent(){
+    mimicParent(ignoreList = []){
         if(!this.parent) return;
+
+        function should(val){
+            return !ignoreList.includes(val);
+        }
         
-        this.x = this.parent.x;
-        this.y = this.parent.y + this.parent.additionalY;
-        this.spritesheet.cellNumber = this.parent.spritesheet.cellNumber;
-        this.inverted = this.parent.inverted;
-        this.upperHalfOffsetY = this.parent.upperHalfOffsetY;
-        this.scale = this.parent.scale;
+        if(should('x')) this.x = this.parent.x;
+        if(should('y')) this.y = this.parent.y + this.parent.additionalY;
+        if(should('inverted')) this.inverted = this.parent.inverted;
+        if(should('upperHalfOffsetY')) this.upperHalfOffsetY = this.parent.upperHalfOffsetY;
+        if(should('scale')) this.scale = this.parent.scale;
+
+        if(should('spritesheet')) if(this.spritesheet) this.spritesheet.cellNumber = this.parent.spritesheet.cellNumber;
     }
     stopMove(){
         this.targetX = undefined;
@@ -127,5 +133,27 @@ class Object2d {
             }
             me.breathFloat += speed * App.deltaTime;
         },
+        circleAround: function(me, radius, deg, originX, originY){
+            let y = -Math.ceil(radius * Math.cos(deg));
+            let x = Math.ceil(radius * Math.sin(deg));
+
+            me.x = originX + x; 
+            me.y = originY + y;
+        },
+        pulseScale: function(me, speed, strength){
+            if(!me.scale) me.scale = 1;
+            if(!speed) speed = 0.01;
+            if(!strength) strength = 0.4;
+            if(!me.pulseScaleFloat || me.pulseScaleFloat >= App.PI2) me.pulseScaleFloat = 0;
+            me.pulseScaleFloat += speed * App.deltaTime;
+            let currentFloat = Math.sin(me.pulseScaleFloat) * strength;
+            me.scale += currentFloat;
+        },
+        rotateAround: function(me, speed){
+            if(!speed) speed = 0.05;
+            if(!me.rotateAroundFloat) me.rotateAroundFloat = 0;
+            // me.rotateAroundFloat += speed * App.deltaTime;
+            me.rotation += speed * App.deltaTime;
+        }
     }
 }

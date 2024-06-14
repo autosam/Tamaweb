@@ -991,3 +991,16 @@ input#background-color-picker {
     background-color: rgb(138, 138, 138);
     /* outline-color: white; */
 }
+#webcam-change-button {
+    position: absolute;
+    left: 10px;
+    bottom: 12px;
+    color: white;
+    width: 30px;
+    height: 30px;
+    background: #0000002e;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 100%;
+}
