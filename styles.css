@@ -171,7 +171,6 @@ body {
     content: "";
     position: absolute;
     left: 5px;
-    background-color: red;
     background: url(resources/img/ui/pointer_right.png);
     background-position: 50% 50%;
     image-rendering: pixelated;
@@ -470,10 +469,16 @@ button {
     font-family: 'Pixel';
     cursor: pointer;
 }
+.list-item.back-btn {
+    color: white;
+}
+.list-item.back-btn::before {
+    background-color: #222285;
+    outline: none;
+}
 .back-btn {
     margin-top: auto;
     border-bottom: none;
-    font-weight: bold;
 }
 .disabled {
     color: gray;
@@ -803,6 +808,14 @@ input#background-color-picker {
 .w-btn {
     box-shadow: inset 0px -4px 0px 2px #0000001a;
     outline: 2px solid white;
+}
+.cancel-btn {
+    background: #222285;
+    /* outline: none; */
+    outline-color: #222285;
+    outline-offset: -1px;
+    outline-width: 3px;
+    color: white;
 }
 
 .install-prompt {

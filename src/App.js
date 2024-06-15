@@ -885,7 +885,7 @@ let App = {
                     onclick: () => {
                         const display = App.displayList([
                             {
-                                name: 'Note: <br>install / uninstalling mods will refresh the game.',
+                                name: 'Note: <br>install / uninstalling mods will refresh the game',
                                 type: 'text'
                             },
                             {
@@ -1114,7 +1114,7 @@ let App = {
                                                             return true;
                                                         }
                                                     },
-                                                    {name: 'cancel', onclick: () => {}},
+                                                    {name: 'cancel', class: 'back-btn', onclick: () => {}},
                                                 ]);
                                                 return true;
                                             }
@@ -1146,7 +1146,7 @@ let App = {
                                     return false;
                                 }
                             },
-                            {name: 'cancel', onclick: () => {}},
+                            {name: 'cancel', class: 'back-btn', onclick: () => {}},
                         ]);
                         return true;
                     }
@@ -1171,7 +1171,7 @@ let App = {
                                                 } catch(e) {
                                                     App.displayPrompt('Copy your save code from the box below:', [
                                                         {
-                                                            name: 'ok, I copied',
+                                                            name: 'Ok, I copied the code',
                                                             onclick: () => {}
                                                         }
                                                     ], charCode);
@@ -1223,6 +1223,7 @@ let App = {
                             },
                             {
                                 name: 'cancel',
+                                class: 'back-btn',
                                 onclick: () => {},
                             }
                         ]);
@@ -1353,7 +1354,7 @@ let App = {
             }
 
             if(!list.length){
-                App.displayPopup(`You don't have any consumables, purchase some from the mall`, 2000);
+                App.displayPopup(`You don't have any consumables, purchase some from the market`, 2000);
                 return;
             }
 
@@ -1427,7 +1428,7 @@ let App = {
                                     App.displayPopup(`Name set to "${App.pet.petDefinition.name}"`)
                                 }
                             },
-                            {name: 'cancel', onclick: () => {}},
+                            {name: 'cancel', class: 'back-btn', onclick: () => {}},
                         ], App.pet.petDefinition.name);
                         return true;
                     }
@@ -2096,6 +2097,7 @@ let App = {
                                         
                                         {
                                             name: 'cancel',
+                                            class: 'back-btn',
                                             onclick: () => { }
                                         },
 
@@ -2462,17 +2464,11 @@ let App = {
             App.drawer.canvas.style.cursor = 'pointer';
         }
         return;
-        let gameplayButtons = [...document.querySelectorAll('.main-action-icon')];
-        if(!state){
-            // gameplayButtons.classList.add('disabled');
-            gameplayButtons.forEach(btn => {
-                if(btn.id == 'stats') return;
-                btn.classList.add('disabled');
-            })
-        } else {
-            gameplayButtons.forEach(btn => {
-                btn.classList.remove('disabled');
-            })
+    },
+    getGameplayControlsState: function(){
+        return {
+            state: !App.disableGameplayControls,
+            onclick: App.gameplayControlsOverwrite,
         }
     },
     createProgressbar: function(percent){
@@ -2518,7 +2514,7 @@ let App = {
     displayList: function(listItems, backFn){
         if(backFn !== false)
             listItems.push({
-                name: 'BACK',
+                name: /* '<i class="fa-solid fa-arrow-left"></i>' || */ 'BACK',
                 class: 'back-btn',
                 onclick: () => {
                     if(backFn) backFn();
@@ -2622,7 +2618,7 @@ let App = {
             list.remove();
         }
 
-        cancelBtn.innerHTML = options?.cancel || 'Back';
+        cancelBtn.innerHTML = options?.cancel || /* '<i class="fa-solid fa-arrow-left"></i>' || */ 'Back';
         acceptBtn.innerHTML = options?.accept || 'Accept';
 
         list.getCurrentIndex = () => currentIndex;
@@ -2769,7 +2765,7 @@ let App = {
 
             const btn = document.createElement('button');
             btn.innerHTML = def.name;
-            btn.className = 'list-item';
+            btn.className = `list-item ${def.class || ''}`;
             btn.onclick = () => {
                 if(!def.onclick(input.value)) list.close();
             }
@@ -2960,9 +2956,13 @@ let App = {
     useWebcam: function(callback, facingMode, shutterDelay){
         if(!facingMode) facingMode = 'environment';
 
+        const gameplayControlsState = App.getGameplayControlsState();
+        App.toggleGameplayControls(false);
+
         let openStream;
 
         function close(data){
+            App.toggleGameplayControls(gameplayControlsState.state, gameplayControlsState.onclick);
             if(callback) callback(data);
             openStream?.getTracks().forEach(function(track) {
                 track.stop();
