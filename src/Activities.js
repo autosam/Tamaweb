@@ -29,7 +29,7 @@ class Activities {
             me._current += stirringSpeed * App.deltaTime;
 
             Object2d.animations.circleAround(me, 20, me._current, me._originX, me._originY);
-            Object2d.animations.pulseScale(me, 0.01, stirringSpeed * 10);
+            Object2d.animations.pulseScale(me, 0.01, Math.min(Math.abs(stirringSpeed) * 10, 0.06));
         }
 
         const starObjects = [];
@@ -49,7 +49,7 @@ class Activities {
         App.toggleGameplayControls(false, () => {
             if(currentTargetImgIndex < starObjects.length){
                 App.useWebcam((imgData) => {
-                    if(!imgData){
+                    if(!imgData || imgData == -1){
                         // potObject.removeObject();
                         // App.pet.stopScriptedState();
                         // App.toggleGameplayControls(true);

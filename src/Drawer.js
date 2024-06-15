@@ -125,6 +125,12 @@ class Drawer {
 
                 const spriteCenterX = x + (spritesheet ? spritesheet.cellSize / 2 : (width || image.width) / 2);
                 const spriteCenterY = y + (spritesheet ? spritesheet.cellSize / 2 : (height || image.height) / 2);
+
+                if (scale) {
+                    context.translate(spriteCenterX, spriteCenterY);
+                    context.scale(scale, scale);
+                    context.translate(-spriteCenterX, -spriteCenterY);
+                }
                 
                 if (rotation) {
                     const rotationRadians = rotation * (Math.PI / 180);
@@ -144,13 +150,6 @@ class Drawer {
                 if (inverted) {
                     context.scale(-1, 1);
                     x = -x - (spritesheet ? spritesheet.cellSize : (width || image.width));
-                }
-
-                if (scale) {
-                    // scaling from center
-                    context.translate(spriteCenterX, spriteCenterY);
-                    context.scale(scale, scale);
-                    context.translate(-spriteCenterX, -spriteCenterY);
                 }
 
                 if (spritesheet) {

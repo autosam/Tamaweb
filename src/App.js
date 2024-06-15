@@ -348,7 +348,7 @@ let App = {
         const testers = [
             'Saman', 'samandev',
         ]
-        return testers.indexOf(App.userName) >= 0;
+        return testers.indexOf(App.userName) >= 0 || App.ENV == 'dev';
     },
     addEvent: function(name, payload, force){
         if(App.gameEventsHistory[name] !== true || force){
@@ -781,9 +781,9 @@ let App = {
                     }
                 },
                 {
-                    name: '<i class="fa-solid fa-box"></i>',
+                    name: '<i class="fa-solid fa-box-open"></i>',
                     onclick: () => {
-                        App.handlers.open_item_list();
+                        App.handlers.open_stuff_menu();
                     }
                 },
                 {
@@ -815,6 +815,25 @@ let App = {
                     }
                 },
                 {
+                    name: `pet ${App.getBadge()}`,
+                    onclick: () => {
+                        App.displayPopup(`Tap the screen to pet <b>${App.petDefinition.name}</b><br><br>Don't tap for a few seconds to stop petting`, 2800, () => {
+                            Activities.pet();
+                        });
+                    }
+                },
+            ])
+        },
+        open_stuff_menu: function(){
+            App.displayList([
+                {
+                    name: `items`,
+                    onclick: () => {
+                        App.handlers.open_item_list();
+                        return true;
+                    }
+                },
+                {
                     name: `accessories ${App.getBadge()}`,
                     onclick: () => {
                         if(App.petDefinition.lifeStage != 2){
@@ -822,14 +841,6 @@ let App = {
                         }
                         App.handlers.open_accessory_list();
                         return true;
-                    }
-                },
-                {
-                    name: `pet ${App.getBadge()}`,
-                    onclick: () => {
-                        App.displayPopup(`Tap the screen to pet <b>${App.petDefinition.name}</b><br><br>Don't tap for a few seconds to stop petting`, 2800, () => {
-                            Activities.pet();
-                        });
                     }
                 },
             ])
@@ -1403,7 +1414,7 @@ let App = {
                     }
                 },
                 {
-                    name: 'set pet name',
+                    name: 'set nickname',
                     onclick: () => {
                         App.displayPrompt(`Enter your pet's name:`, [
                             {
@@ -1741,7 +1752,15 @@ let App = {
                     }
                 },
                 {
-                    _ignore: App.petDefinition.lifeStage < 2,
+                    name: 'game center',
+                    onclick: () => {
+                        // App.handlers.open_game_list();
+                        Activities.goToArcade();
+                        // return true;
+                    }
+                },
+                {
+                    _disable: App.petDefinition.lifeStage < 2,
                     name: `work ${App.getBadge()}`,
                     onclick: () => {
                         App.displayList([
@@ -1762,23 +1781,15 @@ let App = {
                     }
                 },
                 {
-                    name: 'game center',
-                    onclick: () => {
-                        // App.handlers.open_game_list();
-                        Activities.goToArcade();
-                        // return true;
+                    name: 'park',
+                    onclick: () => { // going to park with random pet
+                        Activities.goToPark();
                     }
                 },
                 {
                     name: `visit doctor`,
                     onclick: () => {
                         Activities.goToClinic();
-                    }
-                },
-                {
-                    name: 'park',
-                    onclick: () => { // going to park with random pet
-                        Activities.goToPark();
                     }
                 },
                 // {
@@ -2949,8 +2960,13 @@ let App = {
     useWebcam: function(callback, facingMode, shutterDelay){
         if(!facingMode) facingMode = 'environment';
 
+        let openStream;
+
         function close(data){
             if(callback) callback(data);
+            openStream?.getTracks().forEach(function(track) {
+                track.stop();
+            });
             videoContainer.remove();
         }
 
@@ -2959,7 +2975,7 @@ let App = {
                 {
                     name: 'back',
                     onclick: () => {
-                        close();
+                        close(-1);
                     }
                 }
             ])
@@ -2997,8 +3013,8 @@ let App = {
         }
 
         webcamChangeButton.onclick = () => {
-            // close();
-            videoContainer.remove();
+            close();
+            // videoContainer.remove();
             App.useWebcam(callback, facingMode == 'user' ? 'environment' : 'user');
         }
 
@@ -3011,6 +3027,7 @@ let App = {
                 // audio: true,
             })
             .then((stream) => {
+                openStream = stream;
                 videoElement.srcObject = stream;
                 videoElement.addEventListener("loadedmetadata", () => {
                     videoElement.play();

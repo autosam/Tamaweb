@@ -323,6 +323,8 @@ class Pet extends Object2d {
         return true;
     }
     useItem(item){
+        App.closeAllDisplays();
+        
         let itemObject = new Object2d({
             img: "resources/img/item/items.png",
             spritesheet: {
@@ -452,7 +454,7 @@ class Pet extends Object2d {
                 let animation = randomFromArray(animations);
                 this.triggerScriptedState(animation.name, animation.length, random(10000, 20000));
                 this.stopMove();
-            } else if(random(0, 105) < 3){
+            } else if(random(0, 105) < 3 && this.isMainPet){
                 this.jump();
             }
         }
