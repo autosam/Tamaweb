@@ -169,6 +169,7 @@ class Pet extends Object2d {
                 },
                 {
                     name: 'no',
+                    class: 'back-btn',
                     onclick: () => { }
                 },
             ], false);

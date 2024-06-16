@@ -453,6 +453,7 @@ let App = {
                             },
                             {
                                 name: 'no',
+                                class: 'back-btn',
                                 onclick: () => {}
                             },
                         ])
@@ -815,7 +816,7 @@ let App = {
                     }
                 },
                 {
-                    name: `pet ${App.getBadge()}`,
+                    name: `pet`,
                     onclick: () => {
                         App.displayPopup(`Tap the screen to pet <b>${App.petDefinition.name}</b><br><br>Don't tap for a few seconds to stop petting`, 2800, () => {
                             Activities.pet();
@@ -834,7 +835,7 @@ let App = {
                     }
                 },
                 {
-                    name: `accessories ${App.getBadge()}`,
+                    name: `accessories`,
                     onclick: () => {
                         if(App.petDefinition.lifeStage != 2){
                             return App.displayPopup(`${App.petDefinition.name} is not old enough to wear accessories`);
@@ -929,6 +930,7 @@ let App = {
                                                                         },
                                                                         {
                                                                             name: 'no',
+                                                                            class: 'back-btn',
                                                                             onclick: () => {}
                                                                         }
                                                                     ])
@@ -1203,6 +1205,7 @@ let App = {
                             },
                             {
                                 name: 'no',
+                                class: 'back-btn',
                                 onclick: () => { }
                             }
                         ])
@@ -1232,7 +1235,7 @@ let App = {
                 {
                     // _ignore: true,
                     link: 'https://autosam.github.io/Tamaweb/blog/',
-                    name: `<b>see changelog</b> ${App.getBadge()}`,
+                    name: `<b>see changelog</b> ${App.getBadge(null, 'neutral')}`,
                     onclick: () => {
                         // App.pet.stats.gold += 250;
                         return true;
@@ -1386,7 +1389,18 @@ let App = {
                     _ignore: !App.isTester(),
                     name: `cook ${App.getBadge('preview')}`,
                     onclick: () => {
-                        Activities.cookingGame();
+                        return App.displayConfirm(`You take 3 pictures to use as ingredients for your soup! after that, tap to stir until it's mixed!`, [
+                            {
+                                name: 'start',
+                                onclick: () => Activities.cookingGame(),
+                            },
+                            {
+                                name: 'cancel',
+                                class: 'back-btn',
+                                onclick: () => { },
+                            }
+                        ])
+                        
                     }
                 }
             ])
@@ -1455,6 +1469,7 @@ let App = {
             `, [
                 {
                     name: 'back',
+                    class: 'back-btn',
                     onclick: () => {}
                 }
             ])
@@ -1741,7 +1756,7 @@ let App = {
         open_activity_list: function(){
             return App.displayList([
                 {
-                    name: `mall ${App.getBadge()}`,
+                    name: `mall`,
                     onclick: () => {
                         Activities.goToMall();
                     }
@@ -1762,11 +1777,11 @@ let App = {
                 },
                 {
                     _disable: App.petDefinition.lifeStage < 2,
-                    name: `work ${App.getBadge()}`,
+                    name: `work`,
                     onclick: () => {
                         App.displayList([
                             {
-                                name: `stand work ${App.getBadge()}`,
+                                name: `stand work`,
                                 onclick: () => {
                                     Activities.standWork();
                                 }
@@ -1874,6 +1889,7 @@ let App = {
                                                     },
                                                     {
                                                         name: 'no',
+                                                        class: 'back-btn',
                                                         onclick: () => {}
                                                     },
                                                 ]);
@@ -1881,6 +1897,7 @@ let App = {
                                         },
                                         {
                                             name: 'cancel',
+                                            class: 'back-btn',
                                             onclick: () => {}
                                         }
                                     ])
@@ -1919,6 +1936,7 @@ let App = {
                                         },
                                         {
                                             name: 'no',
+                                            class: 'back-btn',
                                             onclick: () => { }
                                         }
                                     ]);
@@ -1940,6 +1958,7 @@ let App = {
                                         },
                                         {
                                             name: 'no',
+                                            class: 'back-btn',
                                             onclick: () => { }
                                         }
                                     ]);
@@ -1979,6 +1998,7 @@ let App = {
                             },
                             {
                                 name: 'no',
+                                class: 'back-btn',
                                 onclick: () => {},
                             }
                         ])
@@ -2018,6 +2038,7 @@ let App = {
                             },
                             {
                                 name: 'no',
+                                class: 'back-btn',
                                 onclick: () => { }
                             }
                         ])
@@ -2086,6 +2107,7 @@ let App = {
                                                         },
                                                         {
                                                             name: 'no',
+                                                            class: 'back-btn',
                                                             onclick: () => {}
                                                         },
                                                     ])
@@ -2284,6 +2306,7 @@ let App = {
                                         },
                                         {
                                             name: 'no',
+                                            class: 'back-btn',
                                             onclick: () => { }
                                         }
                                     ])
@@ -2329,7 +2352,7 @@ let App = {
                     }
                 },
                 {
-                    name: `buy accessories ${App.getBadge()}`,
+                    name: `buy accessories`,
                     onclick: () => {
                         App.handlers.open_accessory_list(true);
                         if(App.petDefinition.lifeStage != 2){
@@ -2724,7 +2747,7 @@ let App = {
                 btn.target = '_blank';
             }
             btn.innerHTML = def.name;
-            btn.className = 'list-item';
+            btn.className = `list-item ${def.class || ''}`;
             if(def.name == 'back') btn.className += ' back-btn';
             btn.onclick = () => {
                 if(!def.onclick()) list.close();
@@ -2961,13 +2984,17 @@ let App = {
 
         let openStream;
 
-        function close(data){
+        function unloadWebcam(){
             App.toggleGameplayControls(gameplayControlsState.state, gameplayControlsState.onclick);
-            if(callback) callback(data);
             openStream?.getTracks().forEach(function(track) {
                 track.stop();
             });
             videoContainer.remove();
+        }
+
+        function close(data){
+            if(callback) callback(data);
+            unloadWebcam();
         }
 
         function showError(){
@@ -3013,7 +3040,7 @@ let App = {
         }
 
         webcamChangeButton.onclick = () => {
-            close();
+            unloadWebcam();
             // videoContainer.remove();
             App.useWebcam(callback, facingMode == 'user' ? 'environment' : 'user');
         }
@@ -3055,6 +3082,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
                 },
                 {
                     name: 'cancel',
+                    class: 'back-btn',
                     onclick: () => {
                         App.displayPopup(`You can install the game as an app anytime from the <b>settings</b>`)
                     }

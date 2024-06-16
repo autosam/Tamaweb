@@ -17,7 +17,7 @@ class Activities {
         });
         const potTopObject = new Object2d({
             img: 'resources/img/misc/cooking_pot_p03.png',
-            z: 30.2, x: 0, y: 0, parent: potObject,
+            z: 30.4, x: 0, y: 0, parent: potObject,
         });
 
         let stirringSpeed = 0.001;
@@ -29,14 +29,14 @@ class Activities {
             me._current += stirringSpeed * App.deltaTime;
 
             Object2d.animations.circleAround(me, 20, me._current, me._originX, me._originY);
-            Object2d.animations.pulseScale(me, 0.01, Math.min(Math.abs(stirringSpeed) * 10, 0.06));
+            Object2d.animations.pulseScale(me, 0.01, Math.min(Math.abs(stirringSpeed) * 10, 0.03));
         }
 
         const starObjects = [];
         for(let i = 0; i < 3; i++){
             const img = new Object2d({
                 img: 'resources/img/misc/star_01.png',
-                width: 22, height: 22, y: '50%', x: '50%', z: 31,
+                width: 22, height: 22, y: '50%', x: '50%', z: 30.5,
                 _current: 2.0944 * i, pulseScaleFloat: i,
                 clipCircle: true, parent: potObject,
                 onDraw: starLogicHandler,
@@ -65,7 +65,7 @@ class Activities {
                 if(stirringSpeed > 0.02){
                     const failed = random(0, 100) < failChance;
                     App.toggleGameplayControls(false);
-                    stirringSpeed = -10;
+                    stirringSpeed = -100;
                     let randomFoodName, backgroundObject;
                     Activities.task_foam(
                         () => { // mid
@@ -374,6 +374,7 @@ class Activities {
                 },
                 {
                     name: 'no',
+                    class: 'back-btn',
                     onclick: () => { }
                 }
             ])
