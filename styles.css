@@ -373,6 +373,7 @@ input:focus {
     display: flex;
     flex-direction: column;
     align-items: center;
+    align-items: stretch;
 }
 .generic-grid-container {
     display: flex;
@@ -474,7 +475,10 @@ button {
 }
 .list-item.back-btn::before {
     background-color: #222285;
-    outline: none;
+    /* outline: none; */
+    outline-color: #222285;
+    outline-offset: -1px;
+    outline-width: 3px;
 }
 .back-btn {
     margin-top: auto;

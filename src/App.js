@@ -230,6 +230,21 @@ let App = {
             App.mouse = { x: x / 2, y: y / 2 };
         })
 
+        /* // routing
+        const historyIndex = window.history.length;
+        window.history.pushState(null, null, window.top.location.pathname + window.top.location.search);
+        window.addEventListener('popstate', (e) => {
+            const activeDisplay = [...document.querySelectorAll('.root .display')].at(-1);
+            const backAction = activeDisplay?.querySelector('.back-btn, .cancel-btn, .back-sound');
+            console.log(e);
+            if(backAction){
+                backAction.click();
+                window.history.pushState(null, null, window.top.location.pathname + window.top.location.search);
+                e.preventDefault();
+            }
+        }); */
+        
+
         // in-game events
         App.gameEventsHistory = loadedData.eventsHistory || {};
         this.handleInGameEvents();
@@ -506,6 +521,15 @@ let App = {
             ])
         })) return;
 
+        if(addEvent(`smallchange_01_notice`, () => {
+            App.displayConfirm('The <b>Stay with parents</b> option is now moved to the <i class="fa-solid fa-house-chimney-user"></i> care menu', [
+                {
+                    name: 'ok',
+                    onclick: () => {}
+                },
+            ])
+        })) return;
+
         /* if(addEvent(`game_suggestions_poll_01`, () => {
             App.displayPrompt(`<b><small>Poll</small></b>what would you like to to be added in the next update?`, [
                 {
@@ -770,7 +794,7 @@ let App = {
                     }
                 },
                 {
-                    name: '<i class="fa-solid fa-house-chimney-user"></i>',
+                    name: `<i class="fa-solid fa-house-chimney-user"></i>`,
                     onclick: () => {
                         App.handlers.open_care_menu();
                     }
@@ -821,6 +845,32 @@ let App = {
                         App.displayPopup(`Tap the screen to pet <b>${App.petDefinition.name}</b><br><br>Don't tap for a few seconds to stop petting`, 2800, () => {
                             Activities.pet();
                         });
+                    }
+                },
+                {
+                    _ignore: !App.petDefinition.getParents(),
+                    name: `stay with parents`,
+                    onclick: () => {
+                        if((App.hour < App.constants.PARENT_DAYCARE_START || App.hour >= App.constants.PARENT_DAYCARE_END)){
+                            return App.displayPopup(`You can only leave ${App.petDefinition.name} at their parents house between <b>${App.formatTo12Hours(App.constants.PARENT_DAYCARE_START)}</b> and <b>${App.formatTo12Hours(App.constants.PARENT_DAYCARE_END)}</b>`, 4000)
+                        }
+
+                        App.displayConfirm(`${App.petDefinition.name} will be with their parents, who will look after them from <b>${App.formatTo12Hours(App.constants.PARENT_DAYCARE_START)}</b> to <b>${App.formatTo12Hours(App.constants.PARENT_DAYCARE_END)}</b>, is that ok?`, [
+                            {
+                                name: 'yes',
+                                onclick: () => {
+                                    App.closeAllDisplays();
+                                    Activities.stayAtParents();
+                                }
+                            },
+                            {
+                                name: 'no',
+                                class: 'back-btn',
+                                onclick: () => { }
+                            }
+                        ])
+                        
+                        return true;
                     }
                 },
             ])
@@ -2021,32 +2071,6 @@ let App = {
                     }
                 },
                 {
-                    _ignore: !App.petDefinition.getParents(),
-                    name: `stay with parents`,
-                    onclick: () => {
-                        if((App.hour < App.constants.PARENT_DAYCARE_START || App.hour >= App.constants.PARENT_DAYCARE_END)){
-                            return App.displayPopup(`You can only leave ${App.petDefinition.name} at their parents house between <b>${App.formatTo12Hours(App.constants.PARENT_DAYCARE_START)}</b> and <b>${App.formatTo12Hours(App.constants.PARENT_DAYCARE_END)}</b>`, 4000)
-                        }
-
-                        App.displayConfirm(`${App.petDefinition.name} will be with their parents, who will look after them from <b>${App.formatTo12Hours(App.constants.PARENT_DAYCARE_START)}</b> to <b>${App.formatTo12Hours(App.constants.PARENT_DAYCARE_END)}</b>, is that ok?`, [
-                            {
-                                name: 'yes',
-                                onclick: () => {
-                                    App.closeAllDisplays();
-                                    Activities.stayAtParents();
-                                }
-                            },
-                            {
-                                name: 'no',
-                                class: 'back-btn',
-                                onclick: () => { }
-                            }
-                        ])
-                        
-                        return true;
-                    }
-                },
-                {
                     name: `friend codes`,
                     onclick: () => {
                         App.displayList([
@@ -2593,7 +2617,7 @@ let App = {
         });
 
         document.querySelector('.screen-wrapper').appendChild(list);
-
+        
         return list;
     },
     displayGrid: function(listItems){
@@ -2815,7 +2839,7 @@ let App = {
         document.body.appendChild(modal);
     },
     getBadge: function(text, color, expirationDate){
-        if(!text) text = 'new!';
+        if(!text && text !== '') text = 'new!';
         if(!color) color = 'red';
 
         if(expirationDate){

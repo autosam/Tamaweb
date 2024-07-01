@@ -164,7 +164,7 @@ class PetDefinition {
         // health
         max_health: 100,
         health_depletion_mult: 0.5, // from 0 to 1, 0 means immune to all health risks
-        health_depletion_rate: 0.25,
+        health_depletion_rate: 0.0055,
         // cleanliness
         max_cleanliness: 100,
         cleanliness_depletion_mult: 20,
@@ -298,6 +298,7 @@ class PetDefinition {
         this.stats.current_cleanliness = 100;
         this.stats.current_death_tick = 100;
         this.stats.has_poop_out = false;
+        this.stats.is_dead = false;
     }
 
     loadAccessories(accessories){

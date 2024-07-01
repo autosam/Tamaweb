@@ -299,18 +299,24 @@ class Pet extends Object2d {
                     this.playCheeringAnimationIfTrue(this.hasMoodlet('healthy'), () => App.setScene(App.scene.home));
                     break;
                 default:
-                    this.playCheeringAnimationIfTrue(this.hasMoodlet('full'), () =>{
+                    const end = (noLongerHungry) => {
                         App.closeAllDisplays();
-                        
-                        App.handlers.open_feeding_menu();
-                        App.handlers.open_food_list(null, null, type);
+                        App.toggleGameplayControls(true);
                         App.setScene(App.scene.home);
-                    });
+                        if(!noLongerHungry){
+                            App.handlers.open_feeding_menu();
+                            App.handlers.open_food_list(null, null, type);
+                        }
+                    }
+                    if(this.hasMoodlet('full')){
+                        App.toggleGameplayControls(false);
+                        this.playCheeringAnimation(() => { end(true) });
+                    } else end();
                     break;
             }
             // App.foods.hidden = true;
             App.uiFood.style.visibility = 'hidden';
-            App.toggleGameplayControls(true);
+            // App.toggleGameplayControls(true);
         }, () => {
             if(App.time - lastFoodSpriteIndexChangeMs > 1200){
                 lastFoodSpriteIndexChangeMs = App.time;
