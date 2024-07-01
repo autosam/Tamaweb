@@ -402,83 +402,108 @@ let App = {
                 })) return showAlreadyUsed();
                 break;
             default:
-                if(rawCode.indexOf('save:') != -1){ // is char code
-                    let b64 = rawCode.replace('save:', '');
-                    try {
-                        b64 = atob(b64);
-                        let json = JSON.parse(b64);
-                        if(!json.pet){
-                            throw 'error';
-                        }
-                        let petDef = JSON.parse(json.pet);
-                        console.log(json.user_id, App.userId, json.user_id===App.userId);
+                const showInvalidError = () => {
+                    App.displayPopup(`Invalid code`);
+                }
 
-                        let def = new PetDefinition().loadStats(petDef);
-                        
-                        App.displayConfirm(`Are you trying to load <div style="font-weight: bold">${def.getCSprite()} ${def.name}?</div>`, [
+                const command = /(\S+?) *: *(.+)/g.exec(rawCode);
+                if(!command){
+                    showInvalidError();
+                    break;
+                }
+                [, commandType, commandPayload] = command;
+                switch(commandType){
+                    case 'save':
+                        try {
+                            const b64 = atob(commandPayload);
+                            let json = JSON.parse(b64);
+                            if(!json.pet){
+                                throw 'error';
+                            }
+                            let petDef = JSON.parse(json.pet);
+                            console.log(json.user_id, App.userId, json.user_id === App.userId);
+    
+                            let def = new PetDefinition().loadStats(petDef);
+                            
+                            App.displayConfirm(`Are you trying to load <div style="font-weight: bold">${def.getCSprite()} ${def.name}?</div>`, [
+                                {
+                                    name: 'yes',
+                                    onclick: () => {
+                                        App.displayConfirm(`What do you want to do with ${def.name}?`, [
+                                            {
+                                                name: 'as active pet',
+                                                onclick: () => {
+                                                    App.displayConfirm(`Are you sure? This will <b>remove</b> your current pet`, [
+                                                        {
+                                                            name: 'yes',
+                                                            onclick: () => {
+                                                                App.save = () => {};
+                                                                window.localStorage.clear();
+                                                                for(let key of Object.keys(json)){
+                                                                    window.localStorage.setItem(key, json[key]);
+                                                                }
+                                                                window.localStorage.setItem('user_id', App.userId);
+                                                                window.localStorage.setItem('play_time', App.playTime);
+                                                                window.localStorage.setItem('last_time', Date.now());
+                                                                App.displayPopup(`${def.name} is now your pet!`, App.INF);
+                                                                setTimeout(() => {
+                                                                    location.reload();  
+                                                                }, 3000);
+                                                            }
+                                                        },
+                                                        {
+                                                            name: 'no',
+                                                            onclick: () => {}
+                                                        },
+    
+                                                    ]);
+                                                    return true;
+                                                }
+                                            },
+                                            {
+                                                _ignore: json.user_id===App.userId,
+                                                name: 'add friend',
+                                                onclick: () => {
+                                                    App.petDefinition.friends.push(def);
+                                                    App.closeAllDisplays();
+                                                    return App.displayPopup(`${def.name} was added to the friends list!`, 3000);
+                                                }
+                                            },
+                                            {
+                                                name: 'cancel',
+                                                onclick: () => {}
+                                            }
+                                        ])
+                                    }
+                                },
+                                {
+                                    name: 'no',
+                                    class: 'back-btn',
+                                    onclick: () => {}
+                                },
+                            ])
+                        } catch(e) {    
+                            return App.displayPopup('Character code is corrupted');
+                        }
+                        break;
+                    
+                    case 'setchar':
+                        App.displayConfirm(`Are you sure you want to change your pet's sprite?`, [
                             {
                                 name: 'yes',
                                 onclick: () => {
-                                    App.displayConfirm(`What do you want to do with ${def.name}?`, [
-                                        {
-                                            name: 'as active pet',
-                                            onclick: () => {
-                                                App.displayConfirm(`Are you sure? This will <b>remove</b> your current pet`, [
-                                                    {
-                                                        name: 'yes',
-                                                        onclick: () => {
-                                                            App.save = () => {};
-                                                            window.localStorage.clear();
-                                                            for(let key of Object.keys(json)){
-                                                                window.localStorage.setItem(key, json[key]);
-                                                            }
-                                                            window.localStorage.setItem('user_id', App.userId);
-                                                            window.localStorage.setItem('play_time', App.playTime);
-                                                            window.localStorage.setItem('last_time', Date.now());
-                                                            App.displayPopup(`${def.name} is now your pet!`, App.INF);
-                                                            setTimeout(() => {
-                                                                location.reload();  
-                                                            }, 3000);
-                                                        }
-                                                    },
-                                                    {
-                                                        name: 'no',
-                                                        onclick: () => {}
-                                                    },
-
-                                                ]);
-                                                return true;
-                                            }
-                                        },
-                                        {
-                                            _ignore: json.user_id===App.userId,
-                                            name: 'add friend',
-                                            onclick: () => {
-                                                App.petDefinition.friends.push(def);
-                                                App.closeAllDisplays();
-                                                return App.displayPopup(`${def.name} was added to the friends list!`, 3000);
-                                            }
-                                        },
-                                        {
-                                            name: 'cancel',
-                                            onclick: () => {}
-                                        }
-                                    ])
+                                    App.petDefinition.sprite = commandPayload;
+                                    window.location.reload();
                                 }
                             },
                             {
                                 name: 'no',
-                                class: 'back-btn',
                                 onclick: () => {}
-                            },
+                            }
                         ])
-                    } catch(e) {    
-                        return App.displayPopup('Character code is corrupted');
-                    }
-                    return;
+                        break;
+                    default: showInvalidError();
                 }
-                App.displayPopup(`Invalid code`);
-                break;
         }
     },
     handleInGameEvents: function(){
