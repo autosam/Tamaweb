@@ -161,6 +161,7 @@ class Activities {
         App.pet.playCheeringAnimation(onEndFn);
     }
     static async pet(){
+        App.sendAnalytics('petting');
         let idleTimer = null, closeTimer = null, y = App.pet.y;
         App.pet.stopMove();
         App.pet.x = '50%';
@@ -195,7 +196,6 @@ class Activities {
             App.pet.scale = 1;
             App.pet.playCheeringAnimation();
         });
-        
     }
     static standWork(){
         App.closeAllDisplays();
@@ -355,6 +355,8 @@ class Activities {
         App.registerOnDrawEvent(drawEvent);
     }
     static stayAtParents(end){
+        App.sendAnalytics('stay_at_parents');
+
         if(end){
             App.toggleGameplayControls(true);
             App.setScene(App.scene.home);

@@ -1000,6 +1000,7 @@ let App = {
                                                                             name: 'yes',
                                                                             onclick: () => {
                                                                                 App.mods.splice(App.mods.indexOf(modInfo), 1);
+                                                                                App.sendAnalytics('mod_uninstall', modInfo.name);
                                                                                 App.displayPopup(`<b>${modInfo.name}</b> uninstalled successfully, refreshing...`, null, () => location.reload());
                                                                             }
                                                                         },
@@ -1037,11 +1038,13 @@ let App = {
                                 const duplicateIndex = App.mods.findIndex(({ id }) => id == json.id);
                                 if(duplicateIndex != -1){
                                     App.mods[duplicateIndex] = json;
+                                    App.sendAnalytics('mod_update', json.name);
                                     App.displayPopup(`<b>${json.name}</b> updated! <br><br> refreshing...`, 2000, () => {
                                         location.reload();
                                     })
                                 } else {
                                     App.mods.push(json);
+                                    App.sendAnalytics('mod_install', json.name);
                                     App.displayPopup(`<b>${json.name}</b> installed! <br><br> refreshing...`, 2000, () => {
                                         location.reload();
                                     })
