@@ -1,0 +1,22 @@
+{
+  "name": "tamaweb",
+  "version": "1.0.0",
+  "description": "A Virtual Pet game project inspired by modern Tamagotchi devices, aiming to bring a pure virtual pet experience to multiple devices.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@parcel/packager-raw-url": "^2.12.0",
+    "@parcel/transformer-webmanifest": "^2.12.0",
+    "parcel": "^2.12.0",
+    "parcel-plugin-static-files-copy": "^2.6.0",
+    "parcel-reporter-static-files-copy": "^1.5.3"
+  },
+  "staticFiles": {
+    "staticPath": "resources",
+    "watcherGlob": "**/*",
+    "staticOutPath": "/resources"
+  }
+}
