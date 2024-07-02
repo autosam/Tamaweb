@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "A Virtual Pet game project inspired by modern Tamagotchi devices, aiming to bring a pure virtual pet experience to multiple devices.",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npx parcel build index.html --dist-dir public/build/",
+    "dev": "npx parcel index.html --dist-dir public/dev/"
   },
   "author": "",
   "license": "ISC",
