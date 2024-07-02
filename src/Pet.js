@@ -788,7 +788,6 @@ class Pet extends Object2d {
             this.animation.currentFrame = (this.animation.currentFrame + 1) % frameRound;
             this.spritesheet.cellNumber = set.start + this.animation.currentFrame;
 
-            // document.querySelector('#debug').innerHTML = this.animation.currentFrame;
             if(set.sound){
                 if(!set.sound._counter) set.sound._counter = 0;
                 if(++set.sound._counter == set.sound.interval){

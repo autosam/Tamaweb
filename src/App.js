@@ -2587,20 +2587,44 @@ let App = {
         });
     },
     displayList: function(listItems, backFn){
-        if(backFn !== false)
-            listItems.push({
-                name: /* '<i class="fa-solid fa-arrow-left"></i>' || */ 'BACK',
-                class: 'back-btn',
-                onclick: () => {
-                    if(backFn) backFn();
-                    return false;
-                }
-            })
+        // if(backFn !== false)
+        //     listItems.push({
+        //         name: /* '<i class="fa-solid fa-arrow-left"></i>' || */ 'BACK',
+        //         class: 'back-btn solid primary bold',
+        //         onclick: () => {
+        //             if(backFn) backFn();
+        //             return false;
+        //         }
+        //     });
 
         let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
 
         list.close = function(){
             list.remove();
+        }
+
+        if(backFn !== false){
+            list.style.paddingTop = '32px';
+            UI.create({
+                parent: list,
+                componentType: 'button',
+                innerHTML: 'Back',
+                className: 'back-btn generic-btn solid primary bold floating-top',
+                onclick: () => {
+                    if(backFn) backFn();
+                    list.close();
+                },
+                children: [
+                    {
+                        componentType: 'i',
+                        className: 'fa-solid fa-arrow-left',
+                        style: `
+                            margin-right: 4px;
+                        `,  
+                        parentInsertBefore: true,
+                    }
+                ]
+            })
         }
 
         listItems.forEach((item, i) => {
@@ -2636,7 +2660,7 @@ let App = {
                             list.close();
                         }
                     };
-                    defaultClassName = 'list-item';
+                    defaultClassName = 'generic-btn';
             }
 
             element.className = defaultClassName + (item.class ? ' ' + item.class : '');
