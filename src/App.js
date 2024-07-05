@@ -1353,7 +1353,7 @@ let App = {
 
             const content = UI.empty();
             content.innerHTML = `
-            <div class="inner-padding bg-white b-radius-10 m surface-stylized">
+            <div class="inner-padding b-radius-10 m surface-stylized">
                 <b>GOLD:</b> $${App.pet.stats.gold}
                 <br>
                 <b>HUNGER:</b> ${App.createProgressbar( App.pet.stats.current_hunger / App.pet.stats.max_hunger * 100 ).node.outerHTML}
@@ -2616,7 +2616,7 @@ let App = {
                 case "title":
                     element = document.createElement('h3');
                     element.innerHTML = item.name;
-                    defaultClassName = 'inner-padding bg-white b-radius-10 uppercase list-title';
+                    defaultClassName = 'inner-padding b-radius-10 uppercase list-title solid-surface-stylized';
                     break;
                 case "text":
                     element = document.createElement('p');
@@ -2631,7 +2631,7 @@ let App = {
                     }
                     if(i == listItems.length - 2) element.className += ' last-btn';
                     // '⤳ ' + 
-                    if(item.name.indexOf('</') == -1) item.name = ellipsis(item.name);
+                    if(item.name.indexOf('<') == -1 && item.name.indexOf('/') == -1) item.name = ellipsis(item.name);
                     element.innerHTML = item.name;
                     element.disabled = item._disable;
                     element.onclick = () => {
@@ -2691,14 +2691,14 @@ let App = {
         let maxIndex = listItems.length,
             currentIndex = activeIndex || 0,
             contentElement = list.querySelector('.content'),
-            acceptBtn = list.querySelector('.accept-btn'),
-            cancelBtn = list.querySelector('.cancel-btn');
+            acceptBtn = list.querySelector('#accept-btn'),
+            cancelBtn = list.querySelector('#cancel-btn');
 
         list.close = function(){
             list.remove();
         }
 
-        cancelBtn.innerHTML = options?.cancel || /* '<i class="fa-solid fa-arrow-left"></i>' || */ 'Back';
+        cancelBtn.innerHTML = options?.cancel || /* '<i class="fa-solid fa-arrow-left"></i>' || */ '<i class="fa-solid fa-arrow-left"></i>';
         acceptBtn.innerHTML = options?.accept || 'Accept';
 
         list.getCurrentIndex = () => currentIndex;
@@ -2761,7 +2761,7 @@ let App = {
             list.classList.add('popup');
             list.innerHTML = `
                 <div class="uppercase flex-center">
-                    <div class="inner-padding bg-white b-radius-10">
+                    <div class="inner-padding b-radius-10 surface-stylized">
                         ${content}
                     </div>
                 </div>
@@ -2781,7 +2781,7 @@ let App = {
             list.classList.add('confirm');
             list.innerHTML = `
                 <div class="uppercase flex-center b-radius-10 surface-stylized">
-                    <div class="inner-padding bg-white b-radius-10">
+                    <div class="inner-padding b-radius-10">
                         ${text}
                     </div>
                 </div>
@@ -2820,7 +2820,7 @@ let App = {
             list.classList.add('prompt');
             list.innerHTML = `
                 <div class="uppercase flex-center">
-                    <div class="inner-padding bg-white b-radius-10">
+                    <div class="inner-padding b-radius-10 surface-stylized">
                         ${text}
                     </div>
                 </div>
@@ -2845,7 +2845,7 @@ let App = {
 
             const btn = document.createElement('button');
             btn.innerHTML = def.name;
-            btn.className = `list-item ${def.class || ''}`;
+            btn.className = `generic-btn stylized ${def.class || ''}`;
             btn.onclick = () => {
                 if(!def.onclick(input.value)) list.close();
             }

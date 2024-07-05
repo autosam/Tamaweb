@@ -284,14 +284,15 @@ body {
     justify-content: space-between;
     width: calc(100% - 10px);
     padding-bottom: 5px;
+    align-items: flex-end;
 }
 
 .generic-slider-container .content {
     text-align: -webkit-center;
-    background: white;
+    /* background: white; */
     border-radius: 20px;
     padding: 10px 0px;
-    min-width: 70%;
+    min-width: 50%;
     overflow: hidden;
 }
 
@@ -745,7 +746,6 @@ c-sprite.ui-food {
     top: 0px;
     font-size: x-small;
     padding: 5px;
-    background: #ffffff;
     border-bottom-right-radius: 5px;
 }
 
@@ -1000,6 +1000,10 @@ input#background-color-picker {
     margin: 6px;
 }
 
+.text-center {
+    text-align: center;
+}
+
 .modal {
     position: fixed;
     top: 0px;
@@ -1201,6 +1205,12 @@ body {
     animation: unset !important;
 }
 
+.generic-btn:disabled, .generic-btn.disabled {
+    pointer-events: none;
+    /* opacity: 0.8; */
+    filter: saturate(0.0) contrast(0.8);
+}
+
 .generic-btn.stylized {
     border: 2px solid #b0beff;
     border-color: #ffb362;
@@ -1229,7 +1239,7 @@ body {
     image-rendering: pixelated;
 }
 .generic-btn.stylized:hover {
-    padding-left: 14px;
+    /* padding-left: 14px; */
 }
 .generic-btn.stylized:active {
     background: #ffecd7;
@@ -1248,6 +1258,7 @@ body {
     top: 5px */
 }
 
+.generic-btn.stylized.back-btn,
 .generic-btn.primary.solid {
     background: #3d00ff;
     color: white;
@@ -1256,10 +1267,6 @@ body {
     border-color: rgba(0, 0, 0, 0.418) !important;
 
     /* background-color: var(--color-d); */
-}
-.generic-btn.stylized.back-btn {
-    background: #6022ff;
-    border-color: #6022ff;
 }
 
 .generic-btn.primary.soft {
@@ -1296,4 +1303,18 @@ body {
     box-shadow: 10px -20px 0px -15px inset wheat;
     text-shadow: 1px 1px 0px #ffcf9d;
     /* overflow: hidden; */
+}
+
+.solid-surface-stylized {
+    margin: 5px 5px;
+    background: #ff8000;
+    color: #fff7ee;
+    text-shadow: 1px 1px 0px #934a00;
+}
+
+.slide-action {
+    width: 35px;
+    height: 35px;
+    box-sizing: border-box;
+    border-radius: 100% !important;
 }
