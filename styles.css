@@ -304,8 +304,8 @@ body {
     border-radius: 5px;
     margin-bottom: 5px;
     image-rendering: pixelated;
-    max-height: 130px;
-    object-fit: cover;
+    max-height: 64px;
+    object-fit: none;
 }
 
 .slide-btn {
@@ -451,6 +451,10 @@ input:focus {
     padding: 2px 5px;
     border-radius: 5px;
     animation: fade-in-anim 0.2s;
+    text-wrap: nowrap;
+    font-size: smaller;
+    left: 0px;
+    top: 0px;
 }
 
 @keyframes fade-in-anim {
@@ -1287,12 +1291,16 @@ body {
 } */
 .generic-list-container {
     /* background: #ffe4bc; */
-    background: repeating-linear-gradient(45deg, #ffb1ee 0 10px, #ffcf9d 10px 20px);
+    background: repeating-linear-gradient(-45deg, #ffb1ee 0 10px, #ffcf9d 10px 20px);
     padding: 4px;
     box-sizing: border-box;
     overflow-x: hidden;
 
     /* background: var(--color-a); */
+}
+.generic-grid-container {
+    background: linear-gradient(0deg, #ffe5ca, #ffdaf7);
+    background: repeating-linear-gradient(-45deg, #ffddb8 0 15px, #ffe5ca 15px 30px);
 }
 
 .back-btn {

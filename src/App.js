@@ -1668,7 +1668,7 @@ let App = {
 
                 list.push({
                     // name: `<c-sprite width="22" height="22" index="${(current.sprite - 1)}" src="resources/img/item/items.png"></c-sprite> ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>$${buyMode ? `${price}` : ''}</b>`,
-                    name: `<img src="${image}"></img> ${room.toUpperCase()} <b>$${price}</b> ${current.isNew ? App.getBadge() : ''}`,
+                    name: `<img style="min-height: 64px" src="${image}"></img> ${room.toUpperCase()} <b>$${price}</b> ${current.isNew ? App.getBadge() : ''}`,
                     onclick: (btn, list) => {
                         if(image === App.scene.home.image){
                             App.displayPopup('You already own this room');
@@ -1967,6 +1967,7 @@ let App = {
                                                     friendDef.increaseFriendship(Math.floor(item.price / 2.7));
                                                     Activities.inviteGiveGift(friendDef);
                                                 })
+                                                return true;
                                             }
                                         },
                                         {
@@ -2878,6 +2879,7 @@ let App = {
         return hour > 12 ? hour - 12 + 'pm' : hour + 'am';
     },
     isSalesDay: function(){
+        // return true;
         let day = new Date().getDate();
         return [7, 12, 18, 20, 25, 29, 30].includes(day);
     },
