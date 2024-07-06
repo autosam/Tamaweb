@@ -223,16 +223,28 @@ body {
 }
 
 .list-item:active:after,
-.list-item:hover:after {
+.list-item:hover:after,
+.grid-item:active:after,
+.grid-item:hover:after,
+.generic-btn:active:after,
+.generic-btn:hover:after
+{
     width: 11px;
     height: 9px;
     content: "";
     position: absolute;
-    left: 5px;
+    left: -2px;
     background: url(resources/img/ui/pointer_right.png);
     background-position: 50% 50%;
     image-rendering: pixelated;
     background-repeat: no-repeat;
+    animation: infinite 0.5s pointer-anim alternate;
+}
+
+@keyframes pointer-anim {
+    from {
+        left: -5px;
+    }
 }
 
 .list-item:disabled {
