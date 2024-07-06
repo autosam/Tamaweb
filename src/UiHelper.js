@@ -52,9 +52,6 @@ const UI = {
         element.close = () => element.remove();
         return element;
     },
-    backButton: (props) => {
-
-    },
     empty: () => {
         return document.createElement('div');
     },
@@ -65,6 +62,7 @@ const UI = {
         UI.lastClickedListItem = null;
 
         const list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
+        // list.style['z-index'] = 3;
         list.close = function(){
             list.remove();
         }
@@ -83,7 +81,7 @@ const UI = {
                 onclick: () => {
                     if(backFn) backFn();
                     list.close();
-                    if(previousListItem && previousListItem.transitionAnim) previousListItem.transitionAnim();
+                    // if(previousListItem && previousListItem.transitionAnim) previousListItem.transitionAnim();
                 },
                 children: [
                     {
@@ -97,7 +95,13 @@ const UI = {
                 ]
             })
         }
-        document.querySelector('.screen-wrapper');
+        document.querySelector('.screen-wrapper').appendChild(list);
         return list;
+    },
+    genericListContainerContent: (contentString, listContainer) => {
+        const content = UI.empty();
+        content.innerHTML = contentString;
+        listContainer?.appendChild(content);
+        return content;
     }
 }

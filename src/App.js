@@ -1339,18 +1339,7 @@ let App = {
             ])
         },
         open_stats: function(){
-            // let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
             const list = UI.genericListContainer();
-            // list.innerHTML = `
-            // <div class="inner-padding">
-            //     <b>GOLD:</b> $${App.pet.stats.gold}
-            //     <br>
-            //     <b>HUNGER:</b> ${App.createProgressbar( App.pet.stats.current_hunger / App.pet.stats.max_hunger * 100 ).node.outerHTML}
-            //     <b>SLEEP:</b> ${App.createProgressbar( App.pet.stats.current_sleep / App.pet.stats.max_sleep * 100 ).node.outerHTML}
-            //     <b>FUN:</b> ${App.createProgressbar( App.pet.stats.current_fun / App.pet.stats.max_fun * 100 ).node.outerHTML}
-            // </div>
-            // `;
-
             const content = UI.empty();
             content.innerHTML = `
             <div class="inner-padding b-radius-10 m surface-stylized">
@@ -1362,18 +1351,6 @@ let App = {
             </div>
             `;
             list.appendChild(content);
-
-            // let backBtn = document.createElement('button');
-            //     backBtn.className = 'generic-btn stylized back-btn';
-            //     backBtn.innerHTML = 'BACK';
-            //     backBtn.onclick = () => {
-            //         list.remove();
-            //     };
-
-            // list.appendChild(backBtn);
-            list.style['z-index'] = 3;
-
-            document.querySelector('.screen-wrapper').appendChild(list);
         },
         open_food_list: function(buyMode, activeIndex, filterType){
             let list = [];
@@ -1918,37 +1895,15 @@ let App = {
                             {
                                 name: 'info',
                                 onclick: () => {
-                                    let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
-            
-                                    // list.innerHTML = `
-                                    // <div class="inner-padding">
-                                    //     <b>GOLD:</b> $${App.pet.stats.gold}
-                                    //     <br>
-                                    //     <b>HUNGER:</b> ${App.createProgressbar( App.pet.stats.current_hunger / App.pet.stats.max_hunger * 100 ).node.outerHTML}
-                                    //     <b>SLEEP:</b> ${App.createProgressbar( App.pet.stats.current_sleep / App.pet.stats.max_sleep * 100 ).node.outerHTML}
-                                    //     <b>FUN:</b> ${App.createProgressbar( App.pet.stats.current_fun / App.pet.stats.max_fun * 100 ).node.outerHTML}
-                                    // </div>
-                                    // `;
-                        
-                                    list.innerHTML = `
-                                    <div class="inner-padding uppercase">
+                                    const list = UI.genericListContainer();
+                                    UI.genericListContainerContent(`
+                                    <div class="inner-padding uppercase surface-stylized b-radius-10">
                                         ${icon} ${friendDef.name}
                                         <br>
                                         <b>Friendship:</b> ${App.createProgressbar( friendDef.getFriendship() / 100 * 100 ).node.outerHTML}
                                     </div>
-                                    `;
-                        
-                                    let backBtn = document.createElement('button');
-                                        backBtn.className = 'list-item back-btn';
-                                        backBtn.innerHTML = 'BACK';
-                                        backBtn.onclick = () => {
-                                            list.remove();
-                                        };
-                        
-                                    list.appendChild(backBtn);
-                                    list.style['z-index'] = 3;
-                        
-                                    document.querySelector('.screen-wrapper').appendChild(list);
+                                    `, list);
+
                                     return true;
                                 }
                             },
@@ -2520,7 +2475,8 @@ let App = {
                 y: -100,
                 z: 100,
                 width: 96, height: 96,
-                onDraw: function(){
+                onDraw: function(me){
+                    Object2d.animations.flip(me);
                     this.y += 1;
                     if(this.y >= 50){
                         App.pet.stopScriptedState();
@@ -2634,6 +2590,7 @@ let App = {
                     if(item.name.indexOf('<') == -1 && item.name.indexOf('/') == -1) item.name = ellipsis(item.name);
                     element.innerHTML = item.name;
                     element.disabled = item._disable;
+                    element.style = `--child-index:${Math.min(i, 10) + 1}`;
                     element.onclick = () => {
                         UI.lastClickedListItem = element;
                         let result = item.onclick(element, list);
@@ -2904,12 +2861,20 @@ let App = {
         const clickSoundClassNames = ['click-sound', 'list-item'];
         const backSoundClassNames = ['back-btn', 'back-sound'];
         document.addEventListener('click', (e) => {
+
+            // sfx
             if(clickSoundClassNames.some(n => e.target.classList.contains(n)) || e.target.nodeName.toLowerCase() === 'button' || e.target.parentElement?.nodeName.toLowerCase() === 'button'){
                 App.vibrate();
                 if(backSoundClassNames.some(n => e.target.classList.contains(n)) || e.target.textContent.toLowerCase() == 'back')
                     this.playSound(`resources/sounds/ui_click_02.ogg`, true);
                 else
                     this.playSound(`resources/sounds/ui_click_01.ogg`, true);
+            }
+
+            // menu animation
+            if(e.target.classList.contains('back-btn') || e.target.parentElement?.classList.contains('back-btn')){
+                const previousListItem = [...document.querySelectorAll('.screen-wrapper .generic-list-container')].at(-1);
+                if(previousListItem && previousListItem.transitionAnim) previousListItem.transitionAnim();
             }
         })
     },

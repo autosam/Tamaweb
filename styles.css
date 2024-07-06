@@ -134,6 +134,9 @@ body {
 .generic-list-container > * {
     animation: menu-animation 0.2s both !important;
 }
+.generic-list-container > *:nth-child(n+2) {
+    animation-delay: calc(0.025s * (var(--child-index) - 1)) !important;
+}
 .generic-list-container > *:nth-child(2) {
     animation-delay: 0.025s !important;
 }
