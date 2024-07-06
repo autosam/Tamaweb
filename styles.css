@@ -305,7 +305,7 @@ body {
     margin-bottom: 5px;
     image-rendering: pixelated;
     max-height: 64px;
-    object-fit: none;
+    object-fit: cover;
 }
 
 .slide-btn {
