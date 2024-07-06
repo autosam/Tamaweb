@@ -1509,17 +1509,11 @@ let App = {
             ])
         },
         open_profile: function(){
-            let age = 'baby';
-            switch(App.petDefinition.getLifeStage()){
-                case 1: age = 'teen'; break;
-                case 2: age = 'adult'; break;
-            }
-
             const content = `
             <div class="flex-center inner-padding" style="margin-top: 0px">
                 ${App.petDefinition.getCSprite()}
                 <brr>
-                <b>${App.petDefinition.name} <br><small>(${age})</small></b>
+                <b>${App.petDefinition.name} <br><small>(${App.petDefinition.getLifeStageLabel()})</small></b>
                 <br>
                 Born ${moment(App.petDefinition.birthday).utc().fromNow()}
                 <div class="user-id">
@@ -1901,6 +1895,8 @@ let App = {
                                         ${icon} ${friendDef.name}
                                         <br>
                                         <b>Friendship:</b> ${App.createProgressbar( friendDef.getFriendship() / 100 * 100 ).node.outerHTML}
+                                        <hr>
+                                        <b>Age:</b> ${friendDef.getLifeStageLabel()}
                                     </div>
                                     `, list);
 

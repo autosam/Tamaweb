@@ -293,7 +293,7 @@ body {
 .generic-slider-container .content {
     text-align: -webkit-center;
     /* background: white; */
-    border-radius: 20px;
+    /* border-radius: 20px; */
     padding: 10px 0px;
     min-width: 50%;
     overflow: hidden;
@@ -503,9 +503,9 @@ input:focus {
     background: var(--container-background);
     z-index: -1;
     border-radius: 100px;
-    box-shadow: inset -10px 20px rgba(255, 255, 255, 0.158);
-
+    box-shadow: inset -10px 20px rgba(255, 255, 255, 0.158), 0 0px 12px 1px #ffe5ca;
     background: linear-gradient(45deg, #ffb362, #ff72e0);
+    /* outline: 1px solid #ffffff; */
     /* outline: 3px solid #ffffff63; */
 }
 
@@ -1286,7 +1286,8 @@ body {
     box-sizing: border-box;
 } */
 .generic-list-container {
-    background: #ffe4bc;
+    /* background: #ffe4bc; */
+    background: repeating-linear-gradient(45deg, #ffb1ee 0 10px, #ffcf9d 10px 20px);
     padding: 4px;
     box-sizing: border-box;
     overflow-x: hidden;
@@ -1306,6 +1307,9 @@ body {
     box-shadow: 10px -20px 0px -15px inset wheat;
     text-shadow: 1px 1px 0px #ffcf9d;
     /* overflow: hidden; */
+    border-radius: 10px;
+    border-top-left-radius: 20px;
+    border-bottom-right-radius: 20px;
 }
 
 .solid-surface-stylized {
@@ -1320,4 +1324,10 @@ body {
     height: 35px;
     box-sizing: border-box;
     border-radius: 100% !important;
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background: #ffb362;
 }

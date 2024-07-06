@@ -327,6 +327,15 @@ class PetDefinition {
         return 2;
     }
 
+    getLifeStageLabel(){
+        let age = 'baby';
+        switch(App.petDefinition.getLifeStage()){
+            case 1: age = 'teen'; break;
+            case 2: age = 'adult'; break;
+        }
+        return age;
+    }
+
     prepareSprite(){
         this.lifeStage = this.getLifeStage();
         this.getSpritesheetDefinition();  
