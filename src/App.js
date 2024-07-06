@@ -2879,7 +2879,6 @@ let App = {
         return hour > 12 ? hour - 12 + 'pm' : hour + 'am';
     },
     isSalesDay: function(){
-        // return true;
         let day = new Date().getDate();
         return [7, 12, 18, 20, 25, 29, 30].includes(day);
     },
