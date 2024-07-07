@@ -67,9 +67,9 @@ const UI = {
             list.remove();
         }
         list.transitionAnim = () => {
-            list.classList.remove('generic-list-container');
+            list.classList.remove('menu-animation');
             list.offsetWidth;
-            list.classList.add('generic-list-container');
+            list.classList.add('menu-animation');
         }
         if(backFn !== false){
             list.style.paddingTop = '32px';
@@ -103,5 +103,17 @@ const UI = {
         content.innerHTML = contentString;
         listContainer?.appendChild(content);
         return content;
+    },
+    fadeOut: (element, timeMs, onEnd) => {
+        if(!timeMs) timeMs = 300;
+        element.classList.add('fade-out');
+        element.style['animation-duration'] = `${timeMs}ms`;
+        setTimeout(() => {
+            UI.hide(element);
+            if(onEnd) onEnd(element);
+        }, timeMs);
+    },
+    hide: (element) => {
+        element.style.display = 'none';
     }
 }

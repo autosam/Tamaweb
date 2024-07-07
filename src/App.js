@@ -258,7 +258,10 @@ let App = {
         }, 5000);
 
         // hide loading
-        document.querySelector('.loading-text').style.display = 'none';  
+        setTimeout(() => {
+            // document.querySelector('.loading-text').style.display = 'none';
+            UI.fadeOut(document.querySelector('.loading-text'));
+        })
     },
     applySettings: function(){
         // background
@@ -541,6 +544,7 @@ let App = {
                 {
                     link: 'https://autosam.github.io/Tamaweb/blog',
                     name: 'see whats new',
+                    class: 'solid primary',
                     onclick: () => {}
                 },
             ])
@@ -550,6 +554,7 @@ let App = {
             App.displayConfirm('The <b>Stay with parents</b> option is now moved to the <i class="fa-solid fa-house-chimney-user"></i> care menu', [
                 {
                     name: 'ok',
+                    class: 'solid primary',
                     onclick: () => {}
                 },
             ])
@@ -608,6 +613,7 @@ let App = {
                 App.displayConfirm(`<b>discount day!</b><br>Shops are selling their products at a discounted rate! Check them out and pile up on them!`, [
                     {
                         name: 'ok',
+                        class: 'solid primary',
                         onclick: () => {},
                     }
                 ]);
@@ -1444,8 +1450,8 @@ let App = {
                     }
                 },
                 {
-                    _ignore: !App.isTester(),
-                    name: `cook ${App.getBadge('preview')}`,
+                    // _ignore: !App.isTester(),
+                    name: `cook ${App.getBadge('new')}`,
                     onclick: () => {
                         return App.displayConfirm(`You take 3 pictures to use as ingredients for your soup! after that, tap to stir until it's mixed!`, [
                             {
@@ -2642,6 +2648,10 @@ let App = {
     displaySlider: function(listItems, activeIndex, options, additionalText){
         let list = document.querySelector('.cloneables .generic-slider-container').cloneNode(true);
 
+        if(activeIndex !== 0 && !activeIndex){
+            list.classList.add('menu-animation');
+        }
+
         let maxIndex = listItems.length,
             currentIndex = activeIndex || 0,
             contentElement = list.querySelector('.content'),
@@ -2721,6 +2731,7 @@ let App = {
                 </div>
             `;
             list.style['z-index'] = 3;
+            list.style['background'] = 'var(--background-c)';
         setTimeout(() => {
             list.remove();
             if(onEndFn){
@@ -2742,7 +2753,7 @@ let App = {
                 <div class="buttons-container"></div>
             `;
             list.style['z-index'] = 3;
-            list.style['background'] = 'linear-gradient(0deg, #aec6ff, #dec0ff)';
+            list.style['background'] = 'var(--background-d)';
             
             list.close = function(){
                 list.remove();
