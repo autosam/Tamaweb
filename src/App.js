@@ -777,6 +777,42 @@ let App = {
         pRandom.load();
         return pet;
     },
+    getPetDefFromParents: function(parentA, parentB){
+        // parents are petDefinition
+        // parentA is the main parent
+        
+        parentA.stats.player_friendship = 100;
+        parentA.stats.is_player_family = true;
+        parentB.stats.player_friendship = 80;
+        parentB.stats.is_player_family = true;
+
+        // new pet
+        newPetDefinition = new PetDefinition({
+            name: getRandomName(),
+            sprite: randomFromArray(PET_BABY_CHARACTERS),
+        }).setStats({is_egg: true});
+
+        newPetDefinition.friends = [
+            parentA,
+            parentB
+        ];
+        newPetDefinition.family = [
+            ...parentA.family,
+            [parentA, parentB].map(parent => {
+                return {
+                    sprite: parent.sprite,
+                    name: parent.name,
+                    birthday: parent.birthday,
+                }
+            })
+        ]
+        console.log({'newFam': newPetDefinition.family});
+        newPetDefinition.inventory = parentA.inventory;
+        newPetDefinition.stats.gold = parentA.stats.gold + random(50, 150);
+        newPetDefinition.stats.current_health = 100;
+
+        return newPetDefinition;
+    },
     handlers: {
         show_set_pet_name_dialog: function(){
             App.displayPrompt(`Name your new egg:`, [
@@ -1355,6 +1391,34 @@ let App = {
                 <b>SLEEP:</b> ${App.createProgressbar( App.pet.stats.current_sleep / App.pet.stats.max_sleep * 100 ).node.outerHTML}
                 <b>FUN:</b> ${App.createProgressbar( App.pet.stats.current_fun / App.pet.stats.max_fun * 100 ).node.outerHTML}
             </div>
+            `;
+            list.appendChild(content);
+        },
+        open_family_tree: function(){
+            const list = UI.genericListContainer();
+            const content = UI.empty();
+
+            const getPortrait = (def) => {
+                return `
+                    <div class="surface-stylized">
+                        <c-sprite width="20" height="20" index="0" src="${def.sprite}" pos-x="6" pos-y="4"></c-sprite>
+                    </div>
+                `;
+            }
+
+            content.innerHTML = `
+                <div class="inner-padding b-radius-10 m surface-stylized">
+                    ${
+                        App.petDefinition.family.map(partners => {
+                            const [a, b] = partners;
+                            return `
+                                <div class="solid-surface-stylized inner-padding">
+                                    ${partners.map(p => getPortrait(p))}
+                                </div>
+                            `
+                        })
+                    }
+                </div>
             `;
             list.appendChild(content);
         },

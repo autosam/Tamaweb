@@ -199,6 +199,7 @@ class PetDefinition {
         is_dead: false,
     }
     friends = [];
+    family = [];
     inventory = {
         food: {
             'bread': 1,
@@ -221,7 +222,17 @@ class PetDefinition {
         this.spritesheet = this.spritesheetDefinitions[this.lifeStage + ''];
     }
     
-    serializables = [ 'name', 'stats', 'inventory', 'friends', 'sprite', 'birthday', 'lastBirthday', 'accessories' ];
+    serializables = [
+        'name', 
+        'stats', 
+        'inventory', 
+        'friends', 
+        'family', 
+        'sprite', 
+        'birthday', 
+        'lastBirthday', 
+        'accessories'
+    ];
     serializeStats(noStringify){
         let s = {};
         this.serializables.forEach(serializable => {

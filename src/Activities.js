@@ -583,24 +583,7 @@ class Activities {
                 let parentA = App.petDefinition,
                     parentB = otherPetDef;
 
-                parentA.stats.player_friendship = 100;
-                parentA.stats.is_player_family = true;
-                parentB.stats.player_friendship = 80;
-                parentB.stats.is_player_family = true;
-
-                // new pet
-                App.petDefinition = new PetDefinition({
-                    name: getRandomName(),
-                    sprite: randomFromArray(PET_BABY_CHARACTERS),
-                }).setStats({is_egg: true});
-
-                App.petDefinition.friends = [
-                    parentA,
-                    parentB
-                ];
-                App.petDefinition.inventory = parentA.inventory;
-                App.petDefinition.stats.gold = parentA.stats.gold + random(50, 150);
-                App.petDefinition.stats.current_health = 100;
+                App.petDefinition = App.getPetDefFromParents(parentA, parentB);
 
                 App.pet.stopMove();
 
@@ -613,6 +596,19 @@ class Activities {
                 App.handlers.show_set_pet_name_dialog();
             })
         }, 18000);
+    }
+    static dbg_randomMarriage(){
+        App.pet.removeObject();
+
+        let parentA = App.petDefinition;
+
+        App.petDefinition = App.getPetDefFromParents(parentA, App.getRandomPetDef(2));
+
+        App.pet.stopMove();
+
+        App.setScene(App.scene.home);
+
+        App.pet = new Pet(App.petDefinition);
     }
     static birthday(){
         App.setScene(App.scene.home);
