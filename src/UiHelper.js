@@ -57,9 +57,12 @@ const UI = {
     },
     genericListContainer: (backFn) => {
         let backBtnName = 'Back';
-        const previousListItem = [...document.querySelectorAll('.screen-wrapper .generic-list-container')].at(-1);
-        backBtnName = UI.lastClickedListItem?.textContent?.trim() || previousListItem?._listItems?.at(0)?.name || backBtnName;
-        UI.lastClickedListItem = null;
+        const activeListContainers = [...document.querySelectorAll('.screen-wrapper .generic-list-container')];
+        const previousListItem = activeListContainers.at(-1);
+        if(activeListContainers.length > 0){ // to make sure it always display "back" when only one layer deep in the interaction tree
+            backBtnName = UI.lastClickedButton?.textContent?.trim() || previousListItem?._listItems?.at(0)?.name || backBtnName;
+        }
+        UI.lastClickedButton = null;
 
         const list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
         // list.style['z-index'] = 3;

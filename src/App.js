@@ -801,7 +801,7 @@ let App = {
                 }
                 return;
             }
-            UI.lastClickedListItem = null;
+            UI.lastClickedButton = null;
             App.playSound(`resources/sounds/ui_click_01.ogg`, true);
             App.vibrate();
             App.displayGrid([
@@ -2562,7 +2562,7 @@ let App = {
         //         }
         //     });
 
-        const list = UI.genericListContainer();
+        const list = UI.genericListContainer(backFn);
         list._listItems = listItems;
 
         listItems.forEach((item, i) => {
@@ -2595,7 +2595,7 @@ let App = {
                     element.disabled = item._disable;
                     element.style = `--child-index:${Math.min(i, 10) + 1}`;
                     element.onclick = () => {
-                        UI.lastClickedListItem = element;
+                        UI.lastClickedButton = element;
                         let result = item.onclick(element, list);
                         if(!result){
                             list.close();
@@ -2883,6 +2883,7 @@ let App = {
             if(e.target.classList.contains('back-btn') || e.target.parentElement?.classList.contains('back-btn')){
                 const previousListItem = [...document.querySelectorAll('.screen-wrapper .generic-list-container')].at(-1);
                 if(previousListItem && previousListItem.transitionAnim) previousListItem.transitionAnim();
+                UI.lastClickedButton = null;
             }
         })
     },

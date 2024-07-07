@@ -296,7 +296,10 @@ class Pet extends Object2d {
         this.triggerScriptedState('eating', 4000, null, true, () => {
             switch(type){
                 case "med":
-                    this.playCheeringAnimationIfTrue(this.hasMoodlet('healthy'), () => App.setScene(App.scene.home));
+                    this.playCheeringAnimationIfTrue(this.hasMoodlet('healthy'), () => {
+                        App.setScene(App.scene.home);
+                        App.toggleGameplayControls(true);
+                    });
                     break;
                 default:
                     const end = (noLongerHungry) => {
