@@ -601,6 +601,9 @@ class Activities {
         App.pet.removeObject();
 
         let parentA = App.petDefinition;
+        const parentAFamily = parentA.family;
+        parentA = App.getRandomPetDef(2);
+        parentA.family = parentAFamily;
 
         App.petDefinition = App.getPetDefFromParents(parentA, App.getRandomPetDef(2));
 
@@ -609,6 +612,7 @@ class Activities {
         App.setScene(App.scene.home);
 
         App.pet = new Pet(App.petDefinition);
+        App.pet.stats.is_egg = false;
     }
     static birthday(){
         App.setScene(App.scene.home);

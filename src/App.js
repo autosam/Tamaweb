@@ -798,20 +798,21 @@ let App = {
         ];
         newPetDefinition.family = [
             ...parentA.family,
-            [parentA, parentB].map(parent => {
-                return {
-                    sprite: parent.sprite,
-                    name: parent.name,
-                    birthday: parent.birthday,
-                }
-            })
+            [parentA, parentB].map(parent => App.convertPetDefToFamilyDef(parent))
         ]
-        console.log({'newFam': newPetDefinition.family});
+
         newPetDefinition.inventory = parentA.inventory;
         newPetDefinition.stats.gold = parentA.stats.gold + random(50, 150);
         newPetDefinition.stats.current_health = 100;
 
         return newPetDefinition;
+    },
+    convertPetDefToFamilyDef: function(petDef){
+        return {
+            sprite: petDef.sprite,
+            name: petDef.name,
+            birthday: petDef.birthday,
+        }
     },
     handlers: {
         show_set_pet_name_dialog: function(){
@@ -1395,31 +1396,75 @@ let App = {
             list.appendChild(content);
         },
         open_family_tree: function(){
+            // populating family tree for the first time
+            // for backwards compatibility
+            if(!App.petDefinition.family.length){
+                const parents = App.petDefinition.getParents();
+                if(parents?.length == 2){
+                    App.petDefinition.family = [parents.map(parent => App.convertPetDefToFamilyDef(parent))]
+                    console.log('found family', parents, App.petDefinition.family);
+                }
+            }
+
+            if(!App.petDefinition.family.length){
+                return App.displayPopup(`${App.petDefinition.name} is the pioneer of the family!<br> comeback when your family has grown!`)
+            }
+
             const list = UI.genericListContainer();
             const content = UI.empty();
 
-            const getPortrait = (def) => {
-                return `
-                    <div class="surface-stylized">
-                        <c-sprite width="20" height="20" index="0" src="${def.sprite}" pos-x="6" pos-y="4"></c-sprite>
-                    </div>
-                `;
-            }
+            const oldestAncestor = App.petDefinition.family[0][0];
 
             content.innerHTML = `
-                <div class="inner-padding b-radius-10 m surface-stylized">
+                <div class="b-radius-10 m surface-stylized flex-center height-auto inner-padding">
                     ${
-                        App.petDefinition.family.map(partners => {
+                        App.petDefinition.family.map((partners, i) => {
                             const [a, b] = partners;
                             return `
-                                <div class="solid-surface-stylized inner-padding">
-                                    ${partners.map(p => getPortrait(p))}
+                                <div class="family-tree__partners-container">
+                                    <div class="family-tree__gen-badge">${i + 1}</div>
+
+                                    <div class="family-tree__member-container">
+                                        ${PetDefinition.generateFullCSprite(b.sprite)}
+                                        <small>${b.name}</small>
+                                    </div>
+
+                                    <div class="family-tree__vertical-line"></div>  
+
+                                    <div class="family-tree__member-container">
+                                        ${PetDefinition.generateFullCSprite(a.sprite)}
+                                        <small>${a.name}</small>
+                                    </div>
                                 </div>
-                            `
-                        })
+                                <div class="family-tree__horizontal-line"></div>
+                            `;
+                        }).join('')
                     }
+                    <div style="margin-left: 76px" class="family-tree__member-container">
+                        ${App.petDefinition.getFullCSprite()}
+                        <small>${App.petDefinition.name}</small>
+                    </div>
+                </div>
+
+                <div class="b-radius-10 m surface-stylized height-auto inner-padding">
+                    This family has been running for
+                    <br>
+                    <b>${App.petDefinition.family.length} generations</b>
+                    <br>
+                    since
+                    <br>
+                    <b>${moment(oldestAncestor.birthday).utc().fromNow()}</b>
                 </div>
             `;
+
+
+            // <div class="b-radius-10 m solid-surface-stylized inner-padding">
+            // <p>This family has been running for</p>
+            // <div class="inner-padding">${App.petDefinition.family.length} generations</div>
+            // <p>since</p>
+            // <div class="inner-padding">${moment(oldestAncestor.birthday).utc().fromNow()}</div>
+            // </div>
+
             list.appendChild(content);
         },
         open_food_list: function(buyMode, activeIndex, filterType){
@@ -1515,7 +1560,7 @@ let App = {
                 },
                 {
                     // _ignore: !App.isTester(),
-                    name: `cook ${App.getBadge('new')}`,
+                    name: `cook ${App.getBadge()}`,
                     onclick: () => {
                         return App.displayConfirm(`You take 3 pictures to use as ingredients for your soup! after that, tap to stir until it's mixed!`, [
                             {
@@ -1550,6 +1595,13 @@ let App = {
                     }
                 },
                 {
+                    name: `family tree ${App.getBadge()}`,
+                    onclick: () => {
+                        App.handlers.open_family_tree();
+                        return true;
+                    }
+                },
+                {
                     name: 'achievements',
                     onclick: () => {
                         App.handlers.open_achievements_list();
@@ -1579,25 +1631,25 @@ let App = {
             ])
         },
         open_profile: function(){
-            const content = `
-            <div class="flex-center inner-padding" style="margin-top: 0px">
-                ${App.petDefinition.getCSprite()}
-                <brr>
-                <b>${App.petDefinition.name} <br><small>(${App.petDefinition.getLifeStageLabel()})</small></b>
-                <br>
-                Born ${moment(App.petDefinition.birthday).utc().fromNow()}
-                <div class="user-id">
+            const list = UI.genericListContainer();
+            const content = UI.empty();
+            content.style.height = '100%';
+            content.innerHTML = `
+                <div class="user-id surface-stylized">
                     uid:${App.userName + '-' + App.userId}
                 </div>
-            </div>
-            `;
+                <div class="flex-center inner-padding surface-stylized height-auto">
+                    ${App.petDefinition.getCSprite()}
+                    <b>
+                        ${App.petDefinition.name} 
+                        <br>
+                        <small>${App.petDefinition.getLifeStageLabel()} - gen${App.petDefinition.friends.length}</small>
+                    </b>
+                    Born ${moment(App.petDefinition.birthday).utc().fromNow()}
+                </div>
+            `
 
-            App.displayList([
-                {
-                    name: content,
-                    type: 'text',
-                }
-            ])
+            list.appendChild(content);
         },
         open_achievements_list: function(){
             const configureAchievement = (name, id, condition) => {

@@ -413,6 +413,7 @@ input {
     border-radius: 10px;
     border: 1px solid #ffcf9d;
     text-transform: uppercase;
+    color: #3d00ff;
 }
 
 input:focus {
@@ -769,11 +770,11 @@ c-sprite.ui-food {
 
 .user-id {
     position: absolute;
-    left: 0px;
-    top: 0px;
+    right: 0px;
+    bottom: 0px;
     font-size: x-small;
     padding: 5px;
-    border-bottom-right-radius: 5px;
+    text-shadow: none !important;
 }
 
 .post-container {
@@ -1004,6 +1005,14 @@ input#background-color-picker {
 
 .flex-dir-col {
     flex-direction: column;
+}
+
+.flex-dir-row {
+    flex-direction: row;
+}
+
+.height-auto {
+    height: auto;
 }
 
 .bg-white {
@@ -1397,4 +1406,55 @@ hr {
 .fade-out {
     animation-name: fade-out;
     animation-fill-mode: forwards;
+}
+
+.family-tree__partners-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.family-tree__vertical-line {
+    width: 30px;
+    height: 2px;
+    background: #3d00ff;
+    margin: 0 5px;
+}
+
+.family-tree__horizontal-line {
+    width: 2px;
+    height: 30px;
+    background: #ff00c6;
+    margin: 5px 0;
+    margin-left: 76px;
+}
+
+.family-tree__member-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 36px;
+    /* height: 36px; */
+    flex-direction: column;
+}
+
+.family-tree__member-container small {
+    font-size: x-small;
+    font-weight: bold;
+    color: var(--color-d);
+    text-shadow: none;
+}
+
+.family-tree__gen-badge {
+    position: absolute;
+    left: calc(50% - 8px);
+    width: 16px;
+    height: 16px;
+    background: #ffb1ee;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 100%;
+    color: #ff00c6;
+    font-size: x-small;
 }
