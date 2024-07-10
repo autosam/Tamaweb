@@ -1678,11 +1678,12 @@ let App = {
                     isNewlyUnlocked: condition && !unlockEventState,
                     onclick: () => { 
                         if(!condition) return true;
-                        App.displayConfirm(`<b>${name}</b> <br> ${description}`, [
+                        App.displayConfirm(`<b>${name}</b> <br><br> ${description}`, [
                             {
-                                name: 'collect reward',
+                                name: unlockEventState ? 'reward collected' : 'collect reward',
                                 class: unlockEventState && 'disabled',
                                 onclick: () => {
+                                    App.sendAnalytics('achievement_reward_collect', name);
                                     App.addEvent(unlockEventName, null);
                                     // do this to remove the badge from achievements 
                                     // button in stats menu
