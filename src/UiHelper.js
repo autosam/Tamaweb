@@ -55,12 +55,12 @@ const UI = {
     empty: () => {
         return document.createElement('div');
     },
-    genericListContainer: (backFn) => {
+    genericListContainer: (backFn, backFnTitle) => {
         let backBtnName = 'Back';
         const activeListContainers = [...document.querySelectorAll('.screen-wrapper .generic-list-container')];
         const previousListItem = activeListContainers.at(-1);
         if(activeListContainers.length > 0){ // to make sure it always display "back" when only one layer deep in the interaction tree
-            backBtnName = UI.lastClickedButton?.textContent?.trim() || previousListItem?._listItems?.at(0)?.name || backBtnName;
+            backBtnName = backFnTitle || UI.lastClickedButton?.textContent?.trim() || previousListItem?._listItems?.at(0)?.name || backBtnName;
         }
         UI.lastClickedButton = null;
 

@@ -175,6 +175,7 @@ class Activities {
         App.pet.scale = 3;
         App.pet.targetY = 60;
         App.toggleGameplayControls(false, () => {
+            App.definitions.achievements.pat_x_times.advance();
             App.pet.setState('blush');
             App.pet.stats.current_fun += random(1, 4) * 0.1;
             if(idleTimer) clearTimeout(idleTimer);
@@ -200,6 +201,7 @@ class Activities {
     static standWork(){
         App.closeAllDisplays();
         App.setScene(App.scene.stand);
+        App.definitions.achievements.work_x_times.advance();
         let totalMoneyMade = 0;
 
         let standObject = new Object2d({
@@ -505,6 +507,8 @@ class Activities {
             return;
         }
 
+        App.definitions.achievements.use_toilet_x_times.advance();
+
         App.pet.needsToiletOverlay.hidden = false;
         App.pet.stats.current_bladder = App.pet.stats.max_bladder;
         App.pet.stopMove();
@@ -525,6 +529,8 @@ class Activities {
         App.setScene(App.scene.wedding);
         App.toggleGameplayControls(false);
         App.petDefinition.maxStats();
+
+        App.definitions.achievements.marry_x_times.advance();
 
         const otherPet = new Pet(otherPetDef);
 
@@ -619,6 +625,7 @@ class Activities {
         App.toggleGameplayControls(false);
         App.pet.stats.has_poop_out = false;
         App.pet.stats.current_bladder = 100;
+        App.definitions.achievements.birthday_x_times.advance();
 
         let otherPetDefs =  [...App.petDefinition.friends]
                             .map(value => ({ value, sort: Math.random() }))
@@ -706,6 +713,7 @@ class Activities {
             sprite: 'resources/img/character/chara_290b.png',
         })
         let otherPet = new Pet(otherPetDef);
+        App.definitions.achievements.redecor_x_times.advance();
 
         otherPet.stopMove();
         otherPet.x = '100%';
@@ -763,6 +771,7 @@ class Activities {
         App.setScene(App.scene.home);
         App.toggleGameplayControls(false);
         let otherPet = new Pet(otherPetDef);
+        App.definitions.achievements.give_gifts_x_times.advance();
 
         otherPet.stopMove();
         otherPet.x = '100%';
@@ -823,6 +832,7 @@ class Activities {
     static officeWork(){
         App.closeAllDisplays();
         App.setScene(App.scene.office);
+        App.definitions.achievements.work_x_times.advance();
 
         App.toggleGameplayControls(false, () => {
             App.pet.stopScriptedState();
@@ -1201,6 +1211,9 @@ class Activities {
                             // App.pet.triggerScriptedState('uncomfortable', 3000, 0, true, onEnd);
                             App.pet.playAngryAnimation(onEnd);
                         } else {
+                            if(roundsWin == 3){
+                                App.definitions.achievements.perfect_minigame_rodrush_win_x_times.advance();
+                            }
                             App.pet.playCheeringAnimationIfTrue(roundsWin == 3, onEnd);
                         }
                     });

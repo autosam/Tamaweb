@@ -553,5 +553,87 @@ App.definitions = {
             front: false,
             price: 200,
         },
+    },
+    achievements: {
+        pat_x_times: {
+            name: 'Pat! Pat! Pat!',
+            description: 'Pet your buddy 100 times!',
+            checkProgress: () => App.getRecord('times_patted') >= 100,
+            advance: (amount) => App.addRecord('times_patted', amount),
+            getReward: () => {
+                App.pet.stats.gold += 150;
+                App.displayPopup(`You've recieved 150 golds!`);
+            }
+        },
+        use_toilet_x_times: {
+            name: 'Toilet Master',
+            description: 'Have your pets go to the toilet 5 times',
+            checkProgress: () => App.getRecord('times_used_toilet') >= 5,
+            advance: (amount) => App.addRecord('times_used_toilet', amount),
+            getReward: () => {
+                App.pet.stats.gold += 150;
+                App.displayPopup(`You've recieved 150 golds!`);
+            }
+        },
+        marry_x_times: {
+            name: 'Serial Marrier',
+            description: 'Marry off your pets 5 times',
+            checkProgress: () => App.getRecord('times_married') >= 5,
+            advance: (amount) => App.addRecord('times_married', amount),
+            getReward: () => {
+                App.pet.stats.gold += 1000;
+                App.displayPopup(`You've recieved 1000 golds!`);
+            }
+        },
+        birthday_x_times: {
+            name: 'Happy Birthday!',
+            description: 'Age up your pet',
+            checkProgress: () => App.getRecord('times_had_birthday') >= 1,
+            advance: (amount) => App.addRecord('times_had_birthday', amount),
+            getReward: () => {
+                App.pet.stats.gold += 150;
+                App.displayPopup(`You've recieved 150 golds!`);
+            }
+        },
+        redecor_x_times: {
+            name: 'Interior Designer',
+            description: 'Redecor your room',
+            checkProgress: () => App.getRecord('times_redecorated_background') >= 1,
+            advance: (amount) => App.addRecord('times_redecorated_background', amount),
+            getReward: () => {
+                App.pet.stats.gold += 100;
+                App.displayPopup(`You've recieved 100 golds!`);
+            }
+        },
+        give_gifts_x_times: {
+            name: 'Giftspreader',
+            description: 'Give 5 gifts to your friends',
+            checkProgress: () => App.getRecord('times_gave_gift') >= 5,
+            advance: (amount) => App.addRecord('times_gave_gift', amount),
+            getReward: () => {
+                App.pet.stats.gold += 500;
+                App.displayPopup(`You've recieved 500 golds!`);
+            }
+        },
+        work_x_times: {
+            name: 'Workaholic',
+            description: 'Work for 10 shifts',
+            checkProgress: () => App.getRecord('times_worked') >= 10,
+            advance: (amount) => App.addRecord('times_worked', amount),
+            getReward: () => {
+                App.pet.stats.gold += 350;
+                App.displayPopup(`You've recieved 350 golds!`);
+            }
+        },
+        perfect_minigame_rodrush_win_x_times: {
+            name: 'Rod Rush Pro',
+            description: 'Win with perfect score in Rod Rush 10 times',
+            checkProgress: () => App.getRecord('times_perfected_rodrush_minigame') >= 10,
+            advance: (amount) => App.addRecord('times_perfected_rodrush_minigame', amount),
+            getReward: () => {
+                App.pet.stats.gold += 500;
+                App.displayPopup(`You've recieved 500 golds!`);
+            }
+        },
     }
 }

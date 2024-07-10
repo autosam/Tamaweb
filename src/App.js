@@ -1,7 +1,7 @@
 let App = {
     PI2: Math.PI * 2, INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', userName: null, ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
     gameEventsHistory: [], deferredInstallPrompt: null, shellBackground: '', isOnItch: false, hour: 12,
-    misc: {}, mods: [],
+    misc: {}, mods: [], records: {},
     settings: {
         screenSize: 1,
         playSound: true,
@@ -252,6 +252,9 @@ let App = {
         // load room customizations
         this.applyRoomCustomizations(loadedData.roomCustomizations);
 
+        // records
+        App.records = loadedData.records;
+
         // saver
         setInterval(() => {
             App.save();
@@ -371,10 +374,22 @@ let App = {
     addEvent: function(name, payload, force){
         if(App.gameEventsHistory[name] !== true || force){
             App.gameEventsHistory[name] = true;
-            payload();
+            if(payload) payload();
             return true;
         }
         return false;
+    },
+    getEvent: function(name){
+        return App.gameEventsHistory[name];
+    },
+    addRecord: function(name, newValue, shouldReplaceValue){
+        if(newValue === undefined) newValue = 1;
+        const currentValue = this.getRecord(name) || 0;
+        this.records[name] = shouldReplaceValue ? newValue : currentValue + newValue;
+        return this.records[name];
+    },
+    getRecord: function(name){
+        return this.records[name];
     },
     handleInputCode: function(rawCode){
         const addEvent = App.addEvent;
@@ -440,14 +455,7 @@ let App = {
                                                         {
                                                             name: 'yes',
                                                             onclick: () => {
-                                                                App.save = () => {};
-                                                                window.localStorage.clear();
-                                                                for(let key of Object.keys(json)){
-                                                                    window.localStorage.setItem(key, json[key]);
-                                                                }
-                                                                window.localStorage.setItem('user_id', App.userId);
-                                                                window.localStorage.setItem('play_time', App.playTime);
-                                                                window.localStorage.setItem('last_time', Date.now());
+                                                                App.loadFromJson(json);
                                                                 App.displayPopup(`${def.name} is now your pet!`, App.INF);
                                                                 setTimeout(() => {
                                                                     location.reload();  
@@ -1579,6 +1587,7 @@ let App = {
             ])
         },
         open_stats_menu: function(){
+            const hasNewlyUnlockedAchievements = App.handlers.open_achievements_list(true);
             App.displayList([
                 {
                     name: 'stats',
@@ -1602,7 +1611,7 @@ let App = {
                     }
                 },
                 {
-                    name: 'achievements',
+                    name: `achievements ${hasNewlyUnlockedAchievements ? App.getBadge('Rewards!') : ''}`,
                     onclick: () => {
                         App.handlers.open_achievements_list();
                         return true;
@@ -1651,70 +1660,75 @@ let App = {
 
             list.appendChild(content);
         },
-        open_achievements_list: function(){
-            const configureAchievement = (name, id, condition) => {
-                let btn = {
-                    name: `<small>???</small>`,
-                    onclick: () => { return true },
+        open_achievements_list: function(checkIfHasNewUnlocks){
+            const configureAchievement = (id, name, description, condition, rewardFn) => {
+                const unlockEventName = `unlocked_${id}_achievement`;
+                const unlockEventState = App.getEvent(unlockEventName);
+
+                let badge = App.getBadge('★', 'gray');
+                if(!unlockEventState){
+                    badge = App.getBadge('★');
                 }
-                
-                if(condition){
-                    btn.name = `<small>${name}</small>${App.getBadge('★', 'gray')}`;
+
+                const btn = {
+                    name: condition
+                            ? `<small>${name}</small>${badge}`
+                            : `<small><i class="fa-solid fa-lock"></i> ${name}</small>`,
+                    _disable: !condition,
+                    isNewlyUnlocked: condition && !unlockEventState,
+                    onclick: () => { 
+                        if(!condition) return true;
+                        App.displayConfirm(`<b>${name}</b> <br> ${description}`, [
+                            {
+                                name: 'collect reward',
+                                class: unlockEventState && 'disabled',
+                                onclick: () => {
+                                    App.addEvent(unlockEventName, null);
+                                    // do this to remove the badge from achievements 
+                                    // button in stats menu
+                                    App.closeAllDisplays();
+                                    UI.lastClickedButton = null;
+                                    App.handlers.open_stats_menu();
+                                    App.handlers.open_achievements_list();
+
+                                    if(rewardFn) rewardFn();
+                                }
+                            },
+                            {
+                                name: 'close',
+                                class: 'back-btn',
+                                onclick: () => {
+                                    App.handlers.open_achievements_list();
+                                }
+                            }
+                        ])
+                        return false;
+                    },
                 }
 
                 return btn;
             }
-            let list = [
-                configureAchievement('a week with you', `pass_10_days_with_pet`, moment().diff(App.petDefinition.birthday, 'days') >= 7),
-                configureAchievement('rich kid', `rich_kid`, App.pet.stats.gold > 2000),
-                configureAchievement('play for 10 minutes', `10_mins`, (App.playTime / 1000 / 60) >= 10),
-                configureAchievement('play for 2 hours', `2_hours`, (App.playTime / 1000 / 60 / 60) >= 2),
-                configureAchievement('play for 5 hours', `5_hours`, (App.playTime / 1000 / 60 / 60) >= 5),
-                configureAchievement('play for 10 hours', `10_hours`, (App.playTime / 1000 / 60 / 60) >= 10),
 
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-                configureAchievement('placeholder', `_placeholder_`, false),
-            ];
+            const list = 
+                Object.keys(App.definitions.achievements)
+                .map(id => {
+                    const { name, description, checkProgress, getReward } = App.definitions.achievements[id];
+                    return configureAchievement(
+                        id,
+                        name,
+                        description,
+                        checkProgress(),
+                        getReward
+                    )
+                })
+                .sort((a, b) => (a._disable == b._disable) ? 0 : a._disable ? 1 : -1)
+                .sort((a, b) => (a.isNewlyUnlocked == b.isNewlyUnlocked) ? 0 : a.isNewlyUnlocked ? -1 : 1);
 
-            return App.displayList(list);
+            if(checkIfHasNewUnlocks){
+                return list.some(a => a.isNewlyUnlocked);
+            }
+
+            return App.displayList(list, null, 'Achievements');
         },
         open_item_list: function(buyMode, activeIndex, customPayload){
             let list = [];
@@ -2667,7 +2681,7 @@ let App = {
             }
         });
     },
-    displayList: function(listItems, backFn){
+    displayList: function(listItems, backFn, backFnTitle){
         // if(backFn !== false)
         //     listItems.push({
         //         name: /* '<i class="fa-solid fa-arrow-left"></i>' || */ 'BACK',
@@ -2678,7 +2692,7 @@ let App = {
         //         }
         //     });
 
-        const list = UI.genericListContainer(backFn);
+        const list = UI.genericListContainer(backFn, backFnTitle);
         list._listItems = listItems;
 
         listItems.forEach((item, i) => {
@@ -3033,6 +3047,7 @@ let App = {
         window.localStorage.setItem('play_time', App.playTime);
         window.localStorage.setItem('shell_background_v2.1', App.shellBackground);
         window.localStorage.setItem('mods', JSON.stringify(App.mods));
+        window.localStorage.setItem('records', JSON.stringify(App.records));
         window.localStorage.setItem('room_customization', JSON.stringify({
             home: {
                 image: App.scene.home.image,
@@ -3058,6 +3073,9 @@ let App = {
         let mods = window.localStorage.getItem('mods');
         mods = mods ? JSON.parse(mods) : App.mods;
 
+        let records = window.localStorage.getItem('records');
+        records = records ? JSON.parse(records) : App.records;
+
         // user
         let userId = window.localStorage.getItem('user_id') || Math.round(Math.random() * 9999999999);
         App.userId = userId;
@@ -3076,10 +3094,32 @@ let App = {
             roomCustomizations, 
             shellBackground, 
             playTime: App.playTime, 
-            mods
+            mods,
+            records,
         };
 
         return App.loadedData;
+    },
+    loadFromJson: function(json){
+        const ignoreKeys = [
+            'user_name',
+            'user_id',
+            'play_time',
+            'last_time',
+            'mods',
+        ]
+        App.save();
+        App.save = () => {};
+        for(let key of Object.keys(json)){
+            if(ignoreKeys.includes(key)) continue;
+            window.localStorage.setItem(key, json[key]);
+        }
+        const allowedKeys = [...Object.keys(json), ...ignoreKeys];
+        Object.keys(localStorage).forEach(key => {
+            if(!allowedKeys.includes(key)){
+                window.localStorage.removeItem(key);
+            }
+        })
     },
     vibrate: function(dur){
         if(!App.settings.vibrate) return;
