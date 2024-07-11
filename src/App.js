@@ -3190,6 +3190,7 @@ let App = {
         })
     },
     vibrate: function(dur){
+        if(!navigator?.vibrate) return;
         if(!App.settings.vibrate) return;
         navigator?.vibrate(dur || 35);
     },
