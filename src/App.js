@@ -7,7 +7,7 @@ let App = {
         playSound: true,
         vibrate: true,
         displayShell: true,
-        displayShellButtons: false,
+        displayShellButtons: true,
         backgroundColor: '#FFDEAD',
     },
     constants: {
@@ -3190,8 +3190,7 @@ let App = {
         })
     },
     vibrate: function(dur){
-        if(!navigator?.vibrate) return;
-        if(!App.settings.vibrate) return;
+        if(!navigator?.vibrate || !App.settings.vibrate) return;
         navigator?.vibrate(dur || 35);
     },
     sendAnalytics: function(type, value, force){
