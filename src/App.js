@@ -1144,6 +1144,7 @@ let App = {
                         return true;
                     },
                 },
+                { type: 'seperator' },
                 {
                     name: `system settings`,
                     onclick: () => {
@@ -1315,6 +1316,7 @@ let App = {
                         return true;
                     }
                 },
+                { type: 'seperator' },
                 {
                     name: 'get save code',
                     onclick: () => {
@@ -1374,6 +1376,7 @@ let App = {
                         return true;
                     }
                 },
+                { type: 'seperator' },
                 {
                     name: `send feedback`,
                     onclick: () => {
@@ -1412,6 +1415,7 @@ let App = {
                         return true;
                     },
                 },
+                { type: 'seperator' },
                 {
                     _disable: true,
                     name: `Version ${VERSION || '???'}`,
@@ -2770,6 +2774,10 @@ let App = {
                     element = document.createElement('p');
                     element.innerHTML = item.name;
                     defaultClassName = 'inner-padding b-radius-10 uppercase list-text surface-stylized';
+                    break;
+                case "seperator":
+                    element = document.createElement('hr');
+                    defaultClassName = 'content-seperator';
                     break;
                 default:
                     element = document.createElement(item.link ? 'a' : 'button');
