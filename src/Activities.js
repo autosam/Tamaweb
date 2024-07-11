@@ -58,6 +58,7 @@ class Activities {
     static async cookingGame(){
         App.closeAllDisplays();
         App.pet.triggerScriptedState('idle', App.INF, 0, false);
+        App.sendAnalytics('cooking_game');
         // App.setScene(App.scene.kitchen);
 
         const potObject = new Object2d({
@@ -193,6 +194,7 @@ class Activities {
     static async getDressed(middleFn, onEndFn){
         App.closeAllDisplays();
         App.toggleGameplayControls(false);
+        App.sendAnalytics('getting_dressed');
 
         let curtainTargetElevation = 16, step = 0;
         const curtainObject = new Object2d({

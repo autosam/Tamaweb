@@ -1510,6 +1510,7 @@ let App = {
             // </div>
 
             list.appendChild(content);
+            App.sendAnalytics('opened_family_tree');
         },
         open_food_list: function(buyMode, activeIndex, filterType){
             let list = [];
