@@ -635,5 +635,15 @@ App.definitions = {
                 App.displayPopup(`You've recieved 500 golds!`);
             }
         },
+        go_to_vacation_x_times: {
+            name: 'Sightsee-er',
+            description: 'Take a vacation!',
+            checkProgress: () => App.getRecord('times_went_on_vacation') >= 1,
+            advance: (amount) => App.addRecord('times_went_on_vacation', amount),
+            getReward: () => {
+                App.pet.stats.gold += 150;
+                App.displayPopup(`You've recieved 150 golds!`);
+            }  
+        }
     }
 }

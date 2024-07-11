@@ -166,6 +166,11 @@ let App = {
             Activities.stayAtParents();
         }
 
+        // check if at vacation
+        if(App.pet.stats.is_at_vacation){
+            Activities.seaVacation();
+        }
+
         // entries
         window.onload = function () {
             // function update(time) {
@@ -712,6 +717,33 @@ let App = {
             onUnload: () => {
                 // this.parents.forEach(parent => parent.removeObject());
                 this.parent?.removeObject();
+            }
+        }),
+        seaVacation: new Scene({
+            image: 'resources/img/background/outside/vacation_sea_l_01.png',
+            onLoad: () => {
+                this.seaCreatureObject = new Object2d({
+                    img: 'resources/img/background/outside/vacation_sea_l_02.png',
+                    x: 0, y: 15, z: 7, bobFloat: 0,
+                    onDraw: (me) => {
+                        Object2d.animations.bob(me, 0.001, 0.04);
+                    }
+                })
+        
+                this.boatObject = new Object2d({
+                    img: 'resources/img/background/outside/vacation_sea_l_03.png',
+                    x: 0, y: 0, z: 6, bobFloat: 1
+                })
+        
+                this.overlay = new Object2d({
+                    img: 'resources/img/misc/picture_overlay_01.png',
+                    x: 0, y: 0, z: 30
+                })
+            },
+            onUnload: () => {
+                this.seaCreatureObject.removeObject();
+                this.boatObject.removeObject();
+                this.overlay.removeObject();
             }
         }),
         graveyard: new Scene({
@@ -2194,6 +2226,33 @@ let App = {
                     }
                 },
                 {
+                    _disable: App.petDefinition.lifeStage == 0,
+                    name: `go on vacation ${App.getBadge()}`,
+                    onclick: () => {
+                        const price = 250;
+                        const { goToVacation } = Activities;
+                        App.displayConfirm(`Are you sure you want to send ${App.petDefinition.name} on a vacation? <br> it will cost you $${price} and ${App.petDefinition.name} will stay there until you decide to end their vacation <hr> <b>while on vacation, ${App.petDefinition.name}'s needs will not drop</b>`, [
+                            {
+                                name: `yes ($${price})`,
+                                onclick: () => {
+                                    if(App.pet.stats.gold - price < 0) {
+                                        App.displayPopup(`You don't have enough gold!`);
+                                        return;
+                                    }
+                                    App.pet.stats.gold -= price;
+                                    goToVacation(Activities.seaVacation)
+                                }
+                            },
+                            {
+                                name: 'no',
+                                class: 'primary solid',
+                                onclick: () => {}
+                            }
+                        ])
+                        return true;
+                    }
+                },
+                {
                     name: `friend codes`,
                     onclick: () => {
                         App.displayList([
@@ -2240,7 +2299,6 @@ let App = {
 
                                                     let petDef = JSON.parse(json.pet);
 
-                            
                                                     let def = new PetDefinition().loadStats(petDef);
                                                     
                                                     App.displayConfirm(`Are you trying to add <div style="font-weight: bold">${def.getCSprite()} ${def.name}?</div> as a friend?`, [
@@ -2876,7 +2934,7 @@ let App = {
         let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
             list.classList.add('confirm');
             list.innerHTML = `
-                <div class="uppercase flex-center b-radius-10 surface-stylized">
+                <div class="uppercase flex-center height-auto b-radius-10 surface-stylized">
                     <div class="inner-padding b-radius-10">
                         ${text}
                     </div>

@@ -1,4 +1,60 @@
 class Activities {
+    static goToVacation(vacationFn){
+        App.closeAllDisplays();
+        App.toggleGameplayControls(false);
+        App.pet.stopMove();
+        App.pet.triggerScriptedState('idle', App.INF, 0, true, null);
+        Activities.task_foam(
+            () => {
+                vacationFn()
+            },
+        )
+    }
+    static seaVacation(){
+        App.sendAnalytics('at_vacation');
+        App.setScene(App.scene.seaVacation);
+
+        App.definitions.achievements.go_to_vacation_x_times.advance();
+
+        const end = () => {
+            App.toggleGameplayControls(false);
+            Activities.task_foam(() => {
+                App.toggleGameplayControls(true);
+                App.pet.stats.is_at_vacation = false;
+                App.pet.stopScriptedState();
+                App.setScene(App.scene.home);
+                App.pet.playCheeringAnimation();
+                App.save();
+            })
+        }
+
+        App.pet.triggerScriptedState('idle', App.INF, 0, true, null, 
+            Pet.scriptedEventDrivers.playingWithItem.bind({pet: App.pet})
+        );
+
+        setTimeout(() => {
+            App.pet.x = '65%';
+            App.pet.y = '67%';
+            App.pet.stopMove();
+        })
+
+        App.toggleGameplayControls(false, () => {
+            App.displayConfirm(`Are you sure you want to end ${App.petDefinition.name}'s vacation?`, [
+                {
+                    name: 'yes',
+                    onclick: end
+                },
+                {
+                    name: 'no',
+                    class: 'back-btn',
+                    onclick: () => { }
+                }
+            ])
+        });
+
+        App.pet.stats.is_at_vacation = true;
+        App.save();
+    }
     static async cookingGame(){
         App.closeAllDisplays();
         App.pet.triggerScriptedState('idle', App.INF, 0, false);
