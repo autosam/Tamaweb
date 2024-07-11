@@ -300,6 +300,7 @@ class Pet extends Object2d {
                         App.setScene(App.scene.home);
                         App.toggleGameplayControls(true);
                     });
+                    break;
                 default:
                     const end = (noLongerHungry) => {
                         App.closeAllDisplays();
@@ -513,6 +514,8 @@ class Pet extends Object2d {
             }
         }
         if(!offlineAndIsNight && this.stats.is_at_parents) depletion_mult = -0.1;
+
+        if(this.stats.is_at_vacation) depletion_mult = -0.1;
 
         let hunger_depletion_rate = stats.hunger_depletion_rate * depletion_mult;
         let sleep_depletion_rate = stats.sleep_depletion_rate * depletion_mult;
@@ -790,7 +793,6 @@ class Pet extends Object2d {
             this.animation.currentFrame = (this.animation.currentFrame + 1) % frameRound;
             this.spritesheet.cellNumber = set.start + this.animation.currentFrame;
 
-            // document.querySelector('#debug').innerHTML = this.animation.currentFrame;
             if(set.sound){
                 if(!set.sound._counter) set.sound._counter = 0;
                 if(++set.sound._counter == set.sound.interval){
@@ -957,13 +959,12 @@ class Pet extends Object2d {
                 this.pet.targetX = -20;
             }
         },
-        playingWithItem: function(start){
-            if(!this.item) return false;
+        playingWithItem: function(){
+            // if(!this.item) return false;
 
-            
-            switch(this.item.name){
+            switch(this.item?.name){
                 default:
-                    var possibleStates = ['cheering', 'eating', 'shocked', 'sitting', 'blush'];
+                    const possibleStates = ['cheering', 'eating', 'shocked', 'sitting', 'blush'];
                     if(Math.random() < 0.007){
                         this.pet.setState(randomFromArray(possibleStates));
                         // this.pet.inverted = random(0, 1) ? true : false;

@@ -67,6 +67,12 @@ const randomFromArray = function(arr){
 const pRandomFromArray = function(arr){
     return arr[pRandom.getIntBetween(0, arr.length - 1)];
 }
+const ellipsis = (str, length = 18) => {
+    if(str?.length > length){
+        return str?.slice(0, length).concat('...');
+    }
+    return str;
+}
 function setCookie(cname, cvalue, exdays) {
     const d = new Date();
     d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));

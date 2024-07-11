@@ -24,7 +24,6 @@ const ASSETS = [
     'src/Scene.js',
     'src/Definitions.js',
     'src/Utils.js',
-    'src/ApiHelper.js',
     'src/Version.js',
     // libs
     'src/libs/jquery-3.7.1.min.js',

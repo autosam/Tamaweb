@@ -197,8 +197,10 @@ class PetDefinition {
         is_player_family: false,
         is_at_parents: false,
         is_dead: false,
+        is_at_vacation: false,
     }
     friends = [];
+    family = [];
     inventory = {
         food: {
             'bread': 1,
@@ -221,7 +223,17 @@ class PetDefinition {
         this.spritesheet = this.spritesheetDefinitions[this.lifeStage + ''];
     }
     
-    serializables = [ 'name', 'stats', 'inventory', 'friends', 'sprite', 'birthday', 'lastBirthday', 'accessories' ];
+    serializables = [
+        'name', 
+        'stats', 
+        'inventory', 
+        'friends', 
+        'family', 
+        'sprite', 
+        'birthday', 
+        'lastBirthday', 
+        'accessories'
+    ];
     serializeStats(noStringify){
         let s = {};
         this.serializables.forEach(serializable => {
@@ -241,6 +253,7 @@ class PetDefinition {
                     is_player_family: this.stats.is_player_family,
                     player_friendship: this.stats.player_friendship,
                     is_at_parents: this.stats.is_at_parents,
+                    is_at_vacation: this.stats.is_at_vacation,
                     is_dead: this.stats.is_dead,
                 }
                 return;
@@ -322,9 +335,16 @@ class PetDefinition {
     }
 
     getLifeStage(){
-        if(PET_BABY_CHARACTERS.some(char => char === this.sprite)) return 0;
-        else if(PET_TEEN_CHARACTERS.some(char => char === this.sprite)) return 1;
-        return 2;
+        return PetDefinition._getLifeStage(this.sprite);
+    }
+
+    getLifeStageLabel(){
+        let age = 'baby';
+        switch(App.petDefinition.getLifeStage()){
+            case 1: age = 'teen'; break;
+            case 2: age = 'adult'; break;
+        }
+        return age;
     }
 
     prepareSprite(){
@@ -441,15 +461,11 @@ class PetDefinition {
     }
 
     getCSprite(){
-        if(this.lifeStage == 0) return `<c-sprite width="16" height="16" index="0" src="${this.sprite}" pos-x="0" pos-y="0" style="margin-right: 10px;"></c-sprite>`;
-        if(this.lifeStage == 1) return `<c-sprite width="16" height="16" index="0" src="${this.sprite}" pos-x="4" pos-y="4" style="margin-right: 10px;"></c-sprite>`;
-        return `<c-sprite width="20" height="20" index="0" src="${this.sprite}" pos-x="6" pos-y="4" style="margin-right: 10px;"></c-sprite>`;
+        return PetDefinition.generateCSprite(this.sprite);
     }
 
     getFullCSprite(){
-        if(this.lifeStage == 0) return `<c-sprite width="16" height="16" index="0" src="${this.sprite}" pos-x="0" pos-y="0"></c-sprite>`;
-        if(this.lifeStage == 1) return `<c-sprite width="24" height="24" index="0" src="${this.sprite}" pos-x="0" pos-y="0"></c-sprite>`;
-        return `<c-sprite width="32" height="32" index="0" src="${this.sprite}" pos-x="0" pos-y="0"></c-sprite>`;
+        return PetDefinition.generateFullCSprite(this.sprite);
     }
 
     getParents(){
@@ -482,5 +498,26 @@ class PetDefinition {
             rows: 4,
             columns: 4,
         }
+    }
+
+    static generateCSprite(sprite, noMargin){
+        const margin = noMargin ? 0 : 10;
+        const lifeStage = PetDefinition._getLifeStage(sprite);
+        if(lifeStage == 0) return `<c-sprite width="16" height="16" index="0" src="${sprite}" pos-x="0" pos-y="0" style="margin-right: ${margin}px;"></c-sprite>`;
+        if(lifeStage == 1) return `<c-sprite width="16" height="16" index="0" src="${sprite}" pos-x="4" pos-y="4" style="margin-right: ${margin}px;"></c-sprite>`;
+        return `<c-sprite width="20" height="20" index="0" src="${sprite}" pos-x="6" pos-y="4" style="margin-right: ${margin}px;"></c-sprite>`;
+    }
+
+    static generateFullCSprite(sprite){
+        const lifeStage = PetDefinition._getLifeStage(sprite);
+        if(lifeStage == 0) return `<c-sprite width="16" height="16" index="0" src="${sprite}" pos-x="0" pos-y="0"></c-sprite>`;
+        if(lifeStage == 1) return `<c-sprite width="24" height="24" index="0" src="${sprite}" pos-x="0" pos-y="0"></c-sprite>`;
+        return `<c-sprite width="32" height="32" index="0" src="${sprite}" pos-x="0" pos-y="0"></c-sprite>`;
+    }
+
+    static _getLifeStage(sprite){
+        if(PET_BABY_CHARACTERS.some(char => char === sprite)) return 0;
+        else if(PET_TEEN_CHARACTERS.some(char => char === sprite)) return 1;
+        return 2;
     }
 }

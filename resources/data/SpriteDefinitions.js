@@ -24,6 +24,9 @@ const SPRITES = [
     "resources/img/background/outside/graveyard_01.png",
     "resources/img/background/outside/walkway_01.png",
     "resources/img/background/outside/stand_01.png",
+    "resources/img/background/outside/vacation_sea_l_01.png",
+    "resources/img/background/outside/vacation_sea_l_02.png",
+    "resources/img/background/outside/vacation_sea_l_03.png",
 
     // items
     "resources/img/item/foods.png",
@@ -60,6 +63,7 @@ const SPRITES = [
     "resources/img/misc/cooking_pot_p02.png",
     "resources/img/misc/cooking_pot_p03.png",
     "resources/img/misc/exclam_01.png",
+    "resources/img/misc/picture_overlay_01.png",
 
     // accessories
     "resources/img/accessory/crown_01.png",

@@ -1,7 +1,64 @@
 class Activities {
+    static goToVacation(vacationFn){
+        App.closeAllDisplays();
+        App.toggleGameplayControls(false);
+        App.pet.stopMove();
+        App.pet.triggerScriptedState('idle', App.INF, 0, true, null);
+        Activities.task_foam(
+            () => {
+                vacationFn()
+            },
+        )
+    }
+    static seaVacation(){
+        App.sendAnalytics('at_vacation');
+        App.setScene(App.scene.seaVacation);
+
+        App.definitions.achievements.go_to_vacation_x_times.advance();
+
+        const end = () => {
+            App.toggleGameplayControls(false);
+            Activities.task_foam(() => {
+                App.toggleGameplayControls(true);
+                App.pet.stats.is_at_vacation = false;
+                App.pet.stopScriptedState();
+                App.setScene(App.scene.home);
+                App.pet.playCheeringAnimation();
+                App.save();
+            })
+        }
+
+        App.pet.triggerScriptedState('idle', App.INF, 0, true, null, 
+            Pet.scriptedEventDrivers.playingWithItem.bind({pet: App.pet})
+        );
+
+        setTimeout(() => {
+            App.pet.x = '65%';
+            App.pet.y = '67%';
+            App.pet.stopMove();
+        })
+
+        App.toggleGameplayControls(false, () => {
+            App.displayConfirm(`Are you sure you want to end ${App.petDefinition.name}'s vacation?`, [
+                {
+                    name: 'yes',
+                    onclick: end
+                },
+                {
+                    name: 'no',
+                    class: 'back-btn',
+                    onclick: () => { }
+                }
+            ])
+        });
+
+        App.pet.stats.is_at_vacation = true;
+        App.save();
+    }
     static async cookingGame(){
         App.closeAllDisplays();
         App.pet.triggerScriptedState('idle', App.INF, 0, false);
+        App.sendAnalytics('cooking_game');
         // App.setScene(App.scene.kitchen);
 
         const potObject = new Object2d({
@@ -137,6 +194,7 @@ class Activities {
     static async getDressed(middleFn, onEndFn){
         App.closeAllDisplays();
         App.toggleGameplayControls(false);
+        App.sendAnalytics('getting_dressed');
 
         let curtainTargetElevation = 16, step = 0;
         const curtainObject = new Object2d({
@@ -175,6 +233,7 @@ class Activities {
         App.pet.scale = 3;
         App.pet.targetY = 60;
         App.toggleGameplayControls(false, () => {
+            App.definitions.achievements.pat_x_times.advance();
             App.pet.setState('blush');
             App.pet.stats.current_fun += random(1, 4) * 0.1;
             if(idleTimer) clearTimeout(idleTimer);
@@ -200,6 +259,7 @@ class Activities {
     static standWork(){
         App.closeAllDisplays();
         App.setScene(App.scene.stand);
+        App.definitions.achievements.work_x_times.advance();
         let totalMoneyMade = 0;
 
         let standObject = new Object2d({
@@ -505,6 +565,8 @@ class Activities {
             return;
         }
 
+        App.definitions.achievements.use_toilet_x_times.advance();
+
         App.pet.needsToiletOverlay.hidden = false;
         App.pet.stats.current_bladder = App.pet.stats.max_bladder;
         App.pet.stopMove();
@@ -525,6 +587,8 @@ class Activities {
         App.setScene(App.scene.wedding);
         App.toggleGameplayControls(false);
         App.petDefinition.maxStats();
+
+        App.definitions.achievements.marry_x_times.advance();
 
         const otherPet = new Pet(otherPetDef);
 
@@ -583,24 +647,7 @@ class Activities {
                 let parentA = App.petDefinition,
                     parentB = otherPetDef;
 
-                parentA.stats.player_friendship = 100;
-                parentA.stats.is_player_family = true;
-                parentB.stats.player_friendship = 80;
-                parentB.stats.is_player_family = true;
-
-                // new pet
-                App.petDefinition = new PetDefinition({
-                    name: getRandomName(),
-                    sprite: randomFromArray(PET_BABY_CHARACTERS),
-                }).setStats({is_egg: true});
-
-                App.petDefinition.friends = [
-                    parentA,
-                    parentB
-                ];
-                App.petDefinition.inventory = parentA.inventory;
-                App.petDefinition.stats.gold = parentA.stats.gold + random(50, 150);
-                App.petDefinition.stats.current_health = 100;
+                App.petDefinition = App.getPetDefFromParents(parentA, parentB);
 
                 App.pet.stopMove();
 
@@ -614,11 +661,29 @@ class Activities {
             })
         }, 18000);
     }
+    static dbg_randomMarriage(){
+        App.pet.removeObject();
+
+        let parentA = App.petDefinition;
+        const parentAFamily = parentA.family;
+        parentA = App.getRandomPetDef(2);
+        parentA.family = parentAFamily;
+
+        App.petDefinition = App.getPetDefFromParents(parentA, App.getRandomPetDef(2));
+
+        App.pet.stopMove();
+
+        App.setScene(App.scene.home);
+
+        App.pet = new Pet(App.petDefinition);
+        App.pet.stats.is_egg = false;
+    }
     static birthday(){
         App.setScene(App.scene.home);
         App.toggleGameplayControls(false);
         App.pet.stats.has_poop_out = false;
         App.pet.stats.current_bladder = 100;
+        App.definitions.achievements.birthday_x_times.advance();
 
         let otherPetDefs =  [...App.petDefinition.friends]
                             .map(value => ({ value, sort: Math.random() }))
@@ -706,6 +771,7 @@ class Activities {
             sprite: 'resources/img/character/chara_290b.png',
         })
         let otherPet = new Pet(otherPetDef);
+        App.definitions.achievements.redecor_x_times.advance();
 
         otherPet.stopMove();
         otherPet.x = '100%';
@@ -763,6 +829,7 @@ class Activities {
         App.setScene(App.scene.home);
         App.toggleGameplayControls(false);
         let otherPet = new Pet(otherPetDef);
+        App.definitions.achievements.give_gifts_x_times.advance();
 
         otherPet.stopMove();
         otherPet.x = '100%';
@@ -823,6 +890,7 @@ class Activities {
     static officeWork(){
         App.closeAllDisplays();
         App.setScene(App.scene.office);
+        App.definitions.achievements.work_x_times.advance();
 
         App.toggleGameplayControls(false, () => {
             App.pet.stopScriptedState();
@@ -1201,6 +1269,9 @@ class Activities {
                             // App.pet.triggerScriptedState('uncomfortable', 3000, 0, true, onEnd);
                             App.pet.playAngryAnimation(onEnd);
                         } else {
+                            if(roundsWin == 3){
+                                App.definitions.achievements.perfect_minigame_rodrush_win_x_times.advance();
+                            }
                             App.pet.playCheeringAnimationIfTrue(roundsWin == 3, onEnd);
                         }
                     });
