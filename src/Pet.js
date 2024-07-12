@@ -149,7 +149,7 @@ class Pet extends Object2d {
                 {
                     name: 'yes',
                     onclick: () => {
-                        let lastPet = App.petDefinition;
+                        const lastPet = App.petDefinition;
                         App.pet.removeObject();
                         App.petDefinition = new PetDefinition({
                             name: getRandomName(),
@@ -158,6 +158,14 @@ class Pet extends Object2d {
 
                         App.petDefinition.inventory = lastPet.inventory;
                         App.petDefinition.stats.gold = lastPet.stats.gold;
+                        App.petDefinition.deceasedPredecessors = [...lastPet.deceasedPredecessors, 
+                            {
+                                birthday: lastPet.birthday,
+                                family: lastPet.family,
+                                sprite: lastPet.sprite,
+                                name: lastPet.name,
+                            }
+                        ];
 
                         App.pet = new Pet(App.petDefinition);
                         setTimeout(() => {

@@ -201,6 +201,7 @@ class PetDefinition {
     }
     friends = [];
     family = [];
+    deceasedPredecessors = [];
     inventory = {
         food: {
             'bread': 1,
@@ -232,7 +233,8 @@ class PetDefinition {
         'sprite', 
         'birthday', 
         'lastBirthday', 
-        'accessories'
+        'accessories',
+        'deceasedPredecessors',
     ];
     serializeStats(noStringify){
         let s = {};

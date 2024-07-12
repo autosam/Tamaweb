@@ -1439,30 +1439,52 @@ let App = {
             `;
             list.appendChild(content);
         },
-        open_family_tree: function(){
+        open_family_tree: function(petDefinition, usePastTense){
+            if(!petDefinition) petDefinition = App.petDefinition;
+
             // populating family tree for the first time
             // for backwards compatibility
-            if(!App.petDefinition.family.length){
-                const parents = App.petDefinition.getParents();
+            if(!petDefinition.family.length){
+                const parents = petDefinition.getParents();
                 if(parents?.length == 2){
-                    App.petDefinition.family = [parents.map(parent => App.convertPetDefToFamilyDef(parent))]
-                    console.log('found family', parents, App.petDefinition.family);
+                    petDefinition.family = [parents.map(parent => App.convertPetDefToFamilyDef(parent))]
                 }
             }
 
-            if(!App.petDefinition.family.length){
-                return App.displayPopup(`${App.petDefinition.name} is the pioneer of the family!<br> comeback when your family has grown!`)
+            if(!petDefinition.family.length && !usePastTense){
+                return App.displayPopup(`${petDefinition.name} is the pioneer of the family!<br> comeback when your family has grown!`)
             }
 
             const list = UI.genericListContainer();
             const content = UI.empty();
 
-            const oldestAncestor = App.petDefinition.family[0][0];
+            const oldestAncestor = petDefinition.family.length ? petDefinition.family[0][0] : petDefinition;
+
+            const infoPanelContent = 
+                usePastTense
+                ?   `
+                        This family began on
+                        <br>
+                        <b>${moment(oldestAncestor.birthday).format('MMMM DD YYYY')}</b>
+                        <br>
+                        and ran for
+                        <br>
+                        <b>${petDefinition.family.length + 1} generations</b>
+                    `
+                :   `
+                        This family has been running for
+                        <br>
+                        <b>${petDefinition.family.length + 1} generations</b>
+                        <br>
+                        since
+                        <br>
+                        <b>${moment(oldestAncestor.birthday).utc().fromNow()}</b>
+                    `;
 
             content.innerHTML = `
                 <div class="b-radius-10 m surface-stylized flex-center height-auto inner-padding">
                     ${
-                        App.petDefinition.family.map((partners, i) => {
+                        petDefinition.family.map((partners, i) => {
                             const [a, b] = partners;
                             return `
                                 <div class="family-tree__partners-container">
@@ -1485,29 +1507,15 @@ let App = {
                         }).join('')
                     }
                     <div style="margin-left: 76px" class="family-tree__member-container">
-                        ${App.petDefinition.getFullCSprite()}
-                        <small>${App.petDefinition.name}</small>
+                        ${petDefinition.getFullCSprite()}
+                        <small>${petDefinition.name}</small>
                     </div>
                 </div>
 
                 <div class="b-radius-10 m surface-stylized height-auto inner-padding">
-                    This family has been running for
-                    <br>
-                    <b>${App.petDefinition.family.length} generations</b>
-                    <br>
-                    since
-                    <br>
-                    <b>${moment(oldestAncestor.birthday).utc().fromNow()}</b>
+                    ${infoPanelContent}
                 </div>
             `;
-
-
-            // <div class="b-radius-10 m solid-surface-stylized inner-padding">
-            // <p>This family has been running for</p>
-            // <div class="inner-padding">${App.petDefinition.family.length} generations</div>
-            // <p>since</p>
-            // <div class="inner-padding">${moment(oldestAncestor.birthday).utc().fromNow()}</div>
-            // </div>
 
             list.appendChild(content);
             App.sendAnalytics('opened_family_tree');
@@ -1655,6 +1663,32 @@ let App = {
                     }
                 },
                 {
+                    _disable: !App.petDefinition.deceasedPredecessors?.length,
+                    name: `past generations ${App.getBadge()}`,
+                    onclick: () => {
+                        const generations = 
+                            App.petDefinition.deceasedPredecessors
+                                .map(def => {
+                                    const petDefinition = new PetDefinition(def);
+                                    return {
+                                        name: `${petDefinition.getCSprite()} ${petDefinition.name}`,
+                                        onclick: () => {
+                                            App.handlers.open_family_tree(petDefinition, true);
+                                            return true;
+                                        }
+                                    }
+                                })
+                        App.displayList([
+                            {
+                                name: 'Select the generation',
+                                type: 'text'
+                            },
+                            ...generations
+                        ])
+                        return true;
+                    }
+                },
+                {
                     name: 'set nickname',
                     onclick: () => {
                         App.displayPrompt(`Enter your pet's name:`, [
@@ -1689,7 +1723,7 @@ let App = {
                     <b>
                         ${App.petDefinition.name} 
                         <br>
-                        <small>${App.petDefinition.getLifeStageLabel()} - gen${App.petDefinition.friends.length}</small>
+                        <small>${App.petDefinition.getLifeStageLabel()} - gen ${App.petDefinition.family.length + 1}</small>
                     </b>
                     Born ${moment(App.petDefinition.birthday).utc().fromNow()}
                 </div>
