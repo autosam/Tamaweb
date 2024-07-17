@@ -118,5 +118,5 @@ const UI = {
     },
     hide: (element) => {
         element.style.display = 'none';
-    }
+    },
 }

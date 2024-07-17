@@ -262,7 +262,7 @@ let App = {
 
         // saver
         setInterval(() => {
-            App.save();
+            App.save(true);
         }, 5000);
 
         // hide loading
@@ -3136,7 +3136,7 @@ let App = {
         this.audioElement.play();
         this.audioChannelIsBusy = true;
     },
-    save: function(){
+    save: function(noIndicator){
         // return;
         // setCookie('pet', App.pet.serializeStats(), 365);
         window.localStorage.setItem('pet', App.pet.serializeStats());
@@ -3156,6 +3156,11 @@ let App = {
             }
         }))
         // -3600000
+        if(!noIndicator){
+            const saveIcon = document.querySelector('.save-indicator');
+            saveIcon.style.display = '';
+            setTimeout(() => saveIcon.style.display = 'none', 2000);
+        }
     },
     load: function(){
         let pet = window.localStorage.getItem('pet');

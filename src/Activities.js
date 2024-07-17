@@ -1,5 +1,6 @@
 class Activities {
     static goToVacation(vacationFn){
+        App.definitions.achievements.go_to_vacation_x_times.advance();
         App.closeAllDisplays();
         App.toggleGameplayControls(false);
         App.pet.stopMove();
@@ -11,10 +12,10 @@ class Activities {
         )
     }
     static seaVacation(){
-        App.sendAnalytics('at_vacation');
+        App.pet.stats.is_at_vacation = true;
+        App.save();
         App.setScene(App.scene.seaVacation);
-
-        App.definitions.achievements.go_to_vacation_x_times.advance();
+        App.sendAnalytics('at_vacation');
 
         const end = () => {
             App.toggleGameplayControls(false);
@@ -51,9 +52,6 @@ class Activities {
                 }
             ])
         });
-
-        App.pet.stats.is_at_vacation = true;
-        App.save();
     }
     static async cookingGame(){
         App.closeAllDisplays();

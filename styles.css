@@ -1465,3 +1465,27 @@ hr {
     background: transparent !important;
     border-radius: 100%;
 }
+
+.save-indicator {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    width: 10px;
+    height: 10px;
+    animation: fade-pulse-anim 0.5s ease-in infinite;
+    padding: 6px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 100%;
+    font-size: small;
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0.25;
+    text-shadow: 
+        1px 1px 0px #ff00c6,
+        2px 2px 0px #ff00c6,
+        -1px 1px 0px #ff00c6,
+        1px -1px 0px #ff00c6,
+        -1px -1px 0px #ff00c6;
+}

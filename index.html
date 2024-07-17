@@ -38,6 +38,9 @@
             <button class="shell-btn right" onclick="App.handlers.shell_button()" onmousedown="setTimeout(() => App.playSound('resources/sounds/shell_button_down.ogg', true))" onmouseup="setTimeout(() => App.playSound('resources/sounds/shell_button_up.ogg', true))"></button>
         </div>
         <div class="graphics-wrapper">
+            <div style="display: none;" class="save-indicator">
+                <i class="fa-solid fa-save fa-spin_"></i>
+            </div>
             <div class="screen-wrapper">
                 <canvas style="cursor: pointer;" onclick="App.handlers.open_main_menu()" class="graphics-canvas" width="96" height="96"></canvas>
                 <div class="loading-text">
