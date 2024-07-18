@@ -651,7 +651,7 @@ class Activities {
 
                 App.setScene(App.scene.home);
 
-                App.pet = new Pet(App.petDefinition);
+                App.pet = App.createActivePet(App.petDefinition);
             }, () => {
                 App.toggleGameplayControls(true);
 

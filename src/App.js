@@ -23,6 +23,8 @@ let App = {
             rows: 33,
             columns: 33,
         },
+
+        ACTIVE_PET_Z: 5,
     },
     async init () {
         // init
@@ -122,9 +124,8 @@ let App = {
             .setStats({is_egg: true})
             .loadStats(loadedData.pet)
             .loadAccessories(loadedData.accessories);
-        App.pet = new Pet(App.petDefinition, {
-            z: 5, scale: 1, castShadow: true,
-        });
+        
+        App.pet = App.createActivePet(App.petDefinition);
 
         if(!loadedData.pet || !Object.keys(loadedData.pet).length) { // first time
             setTimeout(() => {
@@ -712,6 +713,7 @@ let App = {
 
                 this.parent = new Pet(randomFromArray(parentDefs), {
                     y: 65,
+                    z: 4
                 });
             },
             onUnload: () => {
@@ -852,7 +854,15 @@ let App = {
             sprite: petDef.sprite,
             name: petDef.name,
             birthday: petDef.birthday,
+            accessories: petDef.accessories || []
         }
+    },
+    createActivePet: function(petDef){
+        return new Pet(petDef, {
+            z: App.constants.ACTIVE_PET_Z, 
+            scale: 1, 
+            castShadow: true,
+        });
     },
     handlers: {
         show_set_pet_name_dialog: function(){
