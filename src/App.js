@@ -279,6 +279,7 @@ let App = {
         // screen size
         document.querySelector('.graphics-wrapper').style.transform = `scale(${this.settings.screenSize})`;
         document.querySelector('.dom-shell').style.transform = `scale(${this.settings.screenSize})`;
+        // document.querySelector('.dom-shell').classList.add('shell-shape-0');
         
         // shell
         document.querySelector('.dom-shell').style.display = App.settings.displayShell ? '' : 'none';

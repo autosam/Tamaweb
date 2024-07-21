@@ -720,7 +720,7 @@ button {
 }
 
 :root {
-    --shell-btn-size: 28px;
+    --shell-btn-size: 32px;
     --shell-btn-space: 64px;
 }
 
@@ -733,7 +733,9 @@ button {
     width: var(--shell-btn-size);
     position: absolute;
     filter: brightness(0.9);
-    outline: 2px solid rgba(255, 255, 255, 0.357);
+    outline: 2px solid;
+    outline-color: rgba(255, 255, 255, 0.3);
+    /* outline-offset: -2px; */
 }
 
 .dom-shell .shell-btn:active {
@@ -743,19 +745,19 @@ button {
 
 .dom-shell .shell-btn.main {
     left: calc(50% - (var(--shell-btn-size) / 2));
-    bottom: 10%;
+    bottom: 9%;
     background-position: 0%;
 }
 
 .dom-shell .shell-btn.right {
     left: calc(50% - (var(--shell-btn-size) / 2) + var(--shell-btn-space));
-    bottom: 14%;
+    bottom: 13%;
     background-position: 0%;
 }
 
 .dom-shell .shell-btn.left {
     left: calc(50% - (var(--shell-btn-size) / 2) - var(--shell-btn-space));
-    bottom: 14%;
+    bottom: 13%;
     background-position: 0%;
 }
 
@@ -1488,4 +1490,14 @@ hr {
         -1px 1px 0px #ff00c6,
         1px -1px 0px #ff00c6,
         -1px -1px 0px #ff00c6;
+}
+
+.shell-shape-2 {
+    border-radius: 30%;
+}
+.shell-shape-3 {
+    border-radius: 10% 10% 50% 50%;
+}
+.shell-shape-4 {
+    border-radius: 50% 50% 10% 10%;
 }
