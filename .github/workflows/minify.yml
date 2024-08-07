@@ -6,7 +6,8 @@ name: minify
 run-name: Minify JS/CSS/HTML [gh-pages branch]
 
 # Run on pushes to `main` branch
-on:
+on: 
+  workflow_dispatch:
   push:
     branches:
       - 'main'
