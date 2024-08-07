@@ -9,6 +9,7 @@ let App = {
         displayShell: true,
         displayShellButtons: true,
         backgroundColor: '#FFDEAD',
+        notifications: false,
     },
     constants: {
         SLEEP_START: 22,
@@ -279,6 +280,7 @@ let App = {
         // screen size
         document.querySelector('.graphics-wrapper').style.transform = `scale(${this.settings.screenSize})`;
         document.querySelector('.dom-shell').style.transform = `scale(${this.settings.screenSize})`;
+        // document.querySelector('.dom-shell').classList.add('shell-shape-0');
         
         // shell
         document.querySelector('.dom-shell').style.display = App.settings.displayShell ? '' : 'none';
@@ -1045,6 +1047,26 @@ let App = {
                     onclick: () => {
                         // App.pet.stats.gold += 250;
                         App.installAsPWA();
+                        return true;
+                    },
+                },
+                {
+                    _ignore: !window?.Notification || !App.isTester(),
+                    _mount: (e) => e.textContent = `notifications: ${App.settings.notifications ? 'on' : 'off'}`,
+                    name: `notifications`,
+                    onclick: (btn) => {
+                        if(App.settings.notifications) {
+                            App.settings.notifications = false;
+                            btn._mount();
+                        } else {
+                            Notification.requestPermission().then((result) => {
+                                if (result === "granted") {
+                                  App.settings.notifications = true;
+                                }
+                                btn._mount();
+                            });
+                        }
+
                         return true;
                     },
                 },
@@ -2848,6 +2870,8 @@ let App = {
 
             element.className = defaultClassName + (item.class ? ' ' + item.class : '');
 
+            item._mount?.(element);
+            element._mount = () => item._mount?.(element);
             list.appendChild(element);
         })
 
@@ -3368,7 +3392,25 @@ let App = {
                 videoContainer.remove();
                 showError();
             });
-    }
+    },
+    createNotification: function(title, body){
+        if(!App.settings.notifications) return false;
+
+        const options = {
+          body: body,
+          icon: `android-icon-48x48.png`,
+        }
+        new Notification(title, options);
+    },
+    checkPetStats: function(){
+        if(!App.isTester()) return;
+
+        console.log('checking pet stat');
+        App.createNotification('this is on testing interval', `Hello my name is ${Math.random()}`)
+        setTimeout(() => {
+            App.checkPetStats()
+        }, 10000)
+    },
 }
 
 window.addEventListener('beforeinstallprompt', (e) => {

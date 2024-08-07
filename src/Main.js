@@ -50,7 +50,12 @@ function handleServiceWorker(){
     if(!navigator?.serviceWorker || App.isOnItch) return;
     
     let shownControllerChangeModal = false;
-    navigator?.serviceWorker?.register('service-worker.js').then(() => console.log('Service Worker Registered'));
+    navigator?.serviceWorker?.register('service-worker.js').then((registration) => {
+        console.log('Service Worker Registered')
+        if(registration.active){
+            App.checkPetStats();
+        }
+    });
     navigator?.serviceWorker?.addEventListener('controllerchange', () => {
         if(!shownControllerChangeModal && !App.isOnItch){
             shownControllerChangeModal = true;
