@@ -1051,19 +1051,22 @@ let App = {
                     },
                 },
                 {
-                    _ignore: !window?.Notification,
-                    name: `notifications: ${App.settings.notifications ? 'on' : 'off'}`,
+                    _ignore: !window?.Notification || !App.isTester(),
+                    _mount: (e) => e.textContent = `notifications: ${App.settings.notifications ? 'on' : 'off'}`,
+                    name: `notifications`,
                     onclick: (btn) => {
-                        if(App.settings.notifications){
-                            App.createNotification('this is title', `${App.petDefinition.name} is not feeling good`);
-                            return true;
+                        if(App.settings.notifications) {
+                            App.settings.notifications = false;
+                            btn._mount();
+                        } else {
+                            Notification.requestPermission().then((result) => {
+                                if (result === "granted") {
+                                  App.settings.notifications = true;
+                                }
+                                btn._mount();
+                            });
                         }
 
-                        Notification.requestPermission().then((result) => {
-                            if (result === "granted") {
-                              App.settings.notifications = true;
-                            }
-                        });
                         return true;
                     },
                 },
@@ -2867,6 +2870,8 @@ let App = {
 
             element.className = defaultClassName + (item.class ? ' ' + item.class : '');
 
+            item._mount?.(element);
+            element._mount = () => item._mount?.(element);
             list.appendChild(element);
         })
 
@@ -3389,11 +3394,22 @@ let App = {
             });
     },
     createNotification: function(title, body){
+        if(!App.settings.notifications) return false;
+
         const options = {
           body: body,
           icon: `android-icon-48x48.png`,
         }
         new Notification(title, options);
+    },
+    checkPetStats: function(){
+        if(!App.isTester()) return;
+
+        console.log('checking pet stat');
+        App.createNotification('this is on testing interval', `Hello my name is ${Math.random()}`)
+        setTimeout(() => {
+            App.checkPetStats()
+        }, 10000)
     },
 }
 
