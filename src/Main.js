@@ -53,7 +53,7 @@ function handleServiceWorker(){
     navigator?.serviceWorker?.register('service-worker.js').then((registration) => {
         console.log('Service Worker Registered')
         if(registration.active){
-            App.checkPetStats();
+            setTimeout(() => App.checkPetStats(), 500)
         }
     });
     navigator?.serviceWorker?.addEventListener('controllerchange', () => {

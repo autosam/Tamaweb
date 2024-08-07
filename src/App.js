@@ -3409,7 +3409,7 @@ let App = {
         new Notification(title, options);
     },
     checkPetStats: function(){
-        if(!App.isTester()) return;
+        if(!App.isTester()) return setTimeout(() => App.checkPetStats(), 10000);
 
         console.log('checking pet stat');
         App.createNotification('this is on testing interval', `Hello my name is ${Math.random()}`)
