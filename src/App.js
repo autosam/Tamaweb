@@ -26,6 +26,9 @@ let App = {
 
         ACTIVE_PET_Z: 5,
     },
+    routes: {
+        BLOG: 'https://tamawebgame.github.io/blog/',
+    },
     async init () {
         // init
         this.initSound();
@@ -545,34 +548,36 @@ let App = {
             return;
         }
 
-        if(addEvent(`update_07_notice`, () => {
-            App.displayList([
-                {
-                    name: 'New update is available!',
-                    type: 'title',
-                },
-                {
-                    name: 'Check out the new accessories, jobs, petting feature, animations, visual and sound effect changes and much more in this update!',
-                    type: 'text',
-                },
-                {
-                    link: 'https://autosam.github.io/Tamaweb/blog',
-                    name: 'see whats new',
-                    class: 'solid primary',
-                    onclick: () => {}
-                },
-            ])
-        })) return;
+        // if(addEvent(`update_07_notice`, () => {
+        //     App.displayList([
+        //         {
+        //             name: 'New update is available!',
+        //             type: 'title',
+        //         },
+        //         {
+        //             name: 'Check out the new accessories, jobs, petting feature, animations, visual and sound effect changes and much more in this update!',
+        //             type: 'text',
+        //         },
+        //         {
+        //             link: App.routes.BLOG,
+        //             name: 'see whats new',
+        //             class: 'solid primary',
+        //             onclick: () => {
+        //                 App.sendAnalytics('go_to_blog');
+        //             }
+        //         },
+        //     ])
+        // })) return;
 
-        if(addEvent(`smallchange_01_notice`, () => {
-            App.displayConfirm('The <b>Stay with parents</b> option is now moved to the <i class="fa-solid fa-house-chimney-user"></i> care menu', [
-                {
-                    name: 'ok',
-                    class: 'solid primary',
-                    onclick: () => {}
-                },
-            ])
-        })) return;
+        // if(addEvent(`smallchange_01_notice`, () => {
+        //     App.displayConfirm('The <b>Stay with parents</b> option is now moved to the <i class="fa-solid fa-house-chimney-user"></i> care menu', [
+        //         {
+        //             name: 'ok',
+        //             class: 'solid primary',
+        //             onclick: () => {}
+        //         },
+        //     ])
+        // })) return;
 
         /* if(addEvent(`game_suggestions_poll_01`, () => {
             App.displayPrompt(`<b><small>Poll</small></b>what would you like to to be added in the next update?`, [
@@ -1409,10 +1414,11 @@ let App = {
                 },
                 {
                     // _ignore: true,
-                    link: 'https://autosam.github.io/Tamaweb/blog/',
+                    link: App.routes.BLOG,
                     name: `<b>see changelog</b> ${App.getBadge(null, 'neutral')}`,
                     onclick: () => {
                         // App.pet.stats.gold += 250;
+                        App.sendAnalytics('go_to_blog');
                         return true;
                     },
                 },
@@ -1623,7 +1629,7 @@ let App = {
                 },
                 {
                     // _ignore: !App.isTester(),
-                    name: `cook ${App.getBadge()}`,
+                    name: `cook`,
                     onclick: () => {
                         return App.displayConfirm(`You take 3 pictures to use as ingredients for your soup! after that, tap to stir until it's mixed!`, [
                             {
@@ -1659,7 +1665,7 @@ let App = {
                     }
                 },
                 {
-                    name: `family tree ${App.getBadge()}`,
+                    name: `family tree`,
                     onclick: () => {
                         App.handlers.open_family_tree();
                         return true;
@@ -1674,7 +1680,7 @@ let App = {
                 },
                 {
                     _disable: !App.petDefinition.deceasedPredecessors?.length,
-                    name: `past generations ${App.getBadge()}`,
+                    name: `past generations`,
                     onclick: () => {
                         const generations = 
                             App.petDefinition.deceasedPredecessors
@@ -2276,7 +2282,7 @@ let App = {
                 },
                 {
                     _disable: App.petDefinition.lifeStage == 0,
-                    name: `go on vacation ${App.getBadge()}`,
+                    name: `go on vacation`,
                     onclick: () => {
                         const price = 250;
                         const { goToVacation } = Activities;
