@@ -9,6 +9,7 @@ let App = {
         displayShell: true,
         displayShellButtons: true,
         backgroundColor: '#FFDEAD',
+        notifications: false,
     },
     constants: {
         SLEEP_START: 22,
@@ -1046,6 +1047,23 @@ let App = {
                     onclick: () => {
                         // App.pet.stats.gold += 250;
                         App.installAsPWA();
+                        return true;
+                    },
+                },
+                {
+                    _ignore: !window?.Notification,
+                    name: `notifications: ${App.settings.notifications ? 'on' : 'off'}`,
+                    onclick: (btn) => {
+                        if(App.settings.notifications){
+                            App.createNotification('this is title', `${App.petDefinition.name} is not feeling good`);
+                            return true;
+                        }
+
+                        Notification.requestPermission().then((result) => {
+                            if (result === "granted") {
+                              App.settings.notifications = true;
+                            }
+                        });
                         return true;
                     },
                 },
@@ -3369,7 +3387,14 @@ let App = {
                 videoContainer.remove();
                 showError();
             });
-    }
+    },
+    createNotification: function(title, body){
+        const options = {
+          body: body,
+          icon: `android-icon-48x48.png`,
+        }
+        new Notification(title, options);
+    },
 }
 
 window.addEventListener('beforeinstallprompt', (e) => {
