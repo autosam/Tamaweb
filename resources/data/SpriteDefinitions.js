@@ -28,6 +28,18 @@ const SPRITES = [
     "resources/img/background/outside/vacation_sea_l_02.png",
     "resources/img/background/outside/vacation_sea_l_03.png",
 
+    // sky and weather
+    "resources/img/background/sky/morning.png",
+    "resources/img/background/sky/morning_overlay.png",
+    "resources/img/background/sky/afternoon.png",
+    "resources/img/background/sky/afternoon_overlay.png",
+    "resources/img/background/sky/evening.png",
+    "resources/img/background/sky/evening_overlay.png",
+    "resources/img/background/sky/night.png",
+    "resources/img/background/sky/night_overlay.png",
+
+    "resources/img/background/sky/rain_01.png",
+
     // items
     "resources/img/item/foods.png",
     "resources/img/item/foods_on.png",

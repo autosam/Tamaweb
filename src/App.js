@@ -121,6 +121,24 @@ let App = {
                 Object2d.animations.flip(me, 300);
             }
         })
+        App.sky = new Object2d({
+            image: App.preloadedResources["resources/img/background/sky/night.png"],
+            x: 0, y: 0, z: -999
+        })
+        App.skyOverlay = new Object2d({
+            image: App.preloadedResources["resources/img/background/sky/night_overlay.png"],
+            x: 0, y: 0, z: 999,
+            composite: 'multiply',
+            opacity: 0.75,
+        })
+        App.skyWeather = new Object2d({
+            image: App.preloadedResources["resources/img/background/sky/rain_01.png"],
+            x: 0, y: 0, z: 999.1,
+            // hidden: true,
+            onDraw: (me) => {
+                Object2d.animations.flip(me, 200);
+            }
+        })
         App.petDefinition = new PetDefinition({
             name: getRandomName(),
             sprite: randomFromArray(PET_BABY_CHARACTERS),
@@ -137,6 +155,7 @@ let App = {
             }, 100);
         }
         App.setScene(App.scene.home);
+        this.applySky()
 
         // simulating offline progression
         if(loadedData.lastTime){
@@ -746,7 +765,7 @@ let App = {
         
                 this.overlay = new Object2d({
                     img: 'resources/img/misc/picture_overlay_01.png',
-                    x: 0, y: 0, z: 30
+                    x: 0, y: 0, z: 1000
                 })
             },
             onUnload: () => {
@@ -782,6 +801,34 @@ let App = {
         if(scene.onLoad){
             scene.onLoad();
         }
+
+        this.applySky();
+    },
+    applySky() {
+        const date = new Date();
+        const h = new Date().getHours();
+
+        // sky
+        let sky;
+        if(h >= 12 && h < 18) sky = 'afternoon';
+        else if(h >= 18 && h < 21) sky = 'evening';
+        else if(h >= 21 || h < 6) sky = 'night';
+        else sky = 'morning'
+        App.sky.setImage(App.preloadedResources[`resources/img/background/sky/${sky}.png`]);
+        App.skyOverlay.setImage(App.preloadedResources[`resources/img/background/sky/${sky}.png`]);
+        const isOutside = App.background.image?.src?.indexOf('outside/') != -1;
+        App.skyOverlay.hidden = !isOutside;
+        if(sky == 'afternoon' || sky == 'morning') App.skyOverlay.hidden = true;
+
+        // weather
+        App.skyWeather.z = isOutside ? 999.1 : -998;
+        const seed = h + date.getDate() + App.userId;
+        pRandom.save();
+        pRandom.seed = seed;
+        App.skyWeather.hidden = !pRandom.getPercent(15);
+        
+        pRandom.load();
+
     },
     applyRoomCustomizations(data){
         if(!data) return;
@@ -1056,7 +1103,7 @@ let App = {
                     },
                 },
                 {
-                    _ignore: !window?.Notification || !App.isTester(),
+                    _ignore: true || !window?.Notification || !App.isTester(),
                     _mount: (e) => e.textContent = `notifications: ${App.settings.notifications ? 'on' : 'off'}`,
                     name: `notifications`,
                     onclick: (btn) => {
