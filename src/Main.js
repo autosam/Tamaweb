@@ -15,6 +15,7 @@ class SpriteElement extends HTMLElement {
         this.attachShadow({ mode: "open" });
         this.image = document.createElement("img");
         this.shadowRoot.appendChild(this.image);
+        this.image.style['-webkit-user-drag'] = 'none'
     }
     updateImage() {
         const src = this.getAttribute("src");

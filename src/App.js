@@ -825,7 +825,7 @@ let App = {
         const seed = h + date.getDate() + App.userId;
         pRandom.save();
         pRandom.seed = seed;
-        App.skyWeather.hidden = !pRandom.getPercent(15);
+        App.skyWeather.hidden = !pRandom.getPercent(3);
         
         pRandom.load();
 
@@ -3062,10 +3062,10 @@ let App = {
     },
     displayConfirm: function(text, buttons){
         let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
-            list.classList.add('confirm');
+            list.classList.add('confirm', 'inline-flex-between');
             list.innerHTML = `
-                <div class="uppercase flex-center height-auto b-radius-10 surface-stylized">
-                    <div class="inner-padding b-radius-10">
+                <div class="uppercase flex-center flex-1 height-auto">
+                    <div class="inner-padding b-radius-10 surface-stylized">
                         ${text}
                     </div>
                 </div>
