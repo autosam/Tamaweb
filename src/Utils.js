@@ -44,7 +44,15 @@ const clamp = function(n, min, max) {
     if (n > max) n = max;
     return n;
 }
-const random = function(min, max){
+const random = function(min, max, seeded){
+    if(seeded){
+        pRandom.save()
+        pRandom.seed = seeded;
+        const r = pRandom.getIntBetween(min, max);
+        pRandom.load()
+        return r;
+    }
+
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;

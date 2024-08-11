@@ -511,6 +511,11 @@ App.definitions = {
             price: 250,
             isNew: false,
         },
+        "wooden": {
+            image: 'resources/img/background/house/07.png',
+            price: 350,
+            isNew: true,
+        },
     },
     shell_background: {
         "1": {

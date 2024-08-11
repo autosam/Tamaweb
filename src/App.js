@@ -814,7 +814,7 @@ let App = {
     applySky() {
         const date = new Date();
         // const h = new Date().getHours();
-        const h = 20
+        const h = 18
 
         // todo: remove hardcoded h and change weather percent to 3
 
@@ -832,11 +832,11 @@ let App = {
 
         // weather
         App.skyWeather.z = isOutside ? 999.1 : -998;
+        const weatherEffectChance = random(3, 10, date.getDate())
         const seed = h + date.getDate() + App.userId;
         pRandom.save();
         pRandom.seed = seed;
-        App.skyWeather.hidden = !pRandom.getPercent(300);
-        
+        App.skyWeather.hidden = !pRandom.getPercent(weatherEffectChance);
         pRandom.load();
 
     },
@@ -1984,6 +1984,7 @@ let App = {
 
                 list.push({
                     // name: `<c-sprite width="22" height="22" index="${(current.sprite - 1)}" src="resources/img/item/items.png"></c-sprite> ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>$${buyMode ? `${price}` : ''}</b>`,
+                    isNew: current.isNew,
                     name: `<img style="min-height: 64px" src="${image}"></img> ${room.toUpperCase()} <b>$${price}</b> ${current.isNew ? App.getBadge() : ''}`,
                     onclick: (btn, list) => {
                         if(image === App.scene.home.image){
@@ -2008,6 +2009,7 @@ let App = {
                 })
             }
 
+            list = list.sort((a, b) => b.isNew - a.isNew)
             sliderInstance = App.displaySlider(list, null, {accept: 'Purchase'}, `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}`);
             return sliderInstance;
             return App.displayList(list);
