@@ -147,7 +147,7 @@ let App = {
             .loadStats(loadedData.pet)
             .loadAccessories(loadedData.accessories);
         
-        App.pet = App.createActivePet(App.petDefinition);
+        App.pet = App.createActivePet(App.petDefinition, {state: ''});
 
         if(!loadedData.pet || !Object.keys(loadedData.pet).length) { // first time
             setTimeout(() => {
@@ -911,11 +911,12 @@ let App = {
             accessories: petDef.accessories || []
         }
     },
-    createActivePet: function(petDef){
+    createActivePet: function(petDef, props){
         return new Pet(petDef, {
             z: App.constants.ACTIVE_PET_Z, 
             scale: 1, 
             castShadow: true,
+            ...props
         });
     },
     handlers: {

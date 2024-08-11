@@ -159,7 +159,6 @@ class Drawer {
 
             if(object.dirtyPatches){
                 let hCell = object.spritesheet.cellSize / 2;
-                this.context.globalCompositeOperation = "color";
                 this.context.globalCompositeOperation = "multiply";
 
                 let areas = [
@@ -172,7 +171,7 @@ class Drawer {
 
                 pRandom.save();
                 pRandom.seed = 1;
-                for(let i = 0; i < 8; i++){
+                for(let i = 0; i < 6; i++){
                     areas.push([
                         hCell - pRandom.getIntBetween(-6, 6),
                         hCell - pRandom.getIntBetween(-6, 6),
@@ -183,7 +182,7 @@ class Drawer {
                 
                 areas.forEach(area => {
                     this.context.beginPath();
-                    this.context.arc(x + area[0], y + area[1], area[2], 0, 2 * Math.PI, false);
+                    this.context.arc(x + area[0], y + object.upperHalfOffsetY + area[1], area[2], 0, 2 * Math.PI, false);
                     this.context.fillStyle = 'rgba(124, 55, 29, 0.6)';
                     this.context.fill();
                     this.context.lineWidth = 0;
