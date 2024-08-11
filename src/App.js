@@ -813,8 +813,8 @@ let App = {
     },
     applySky() {
         const date = new Date();
-        // const h = new Date().getHours();
-        const h = 18
+        const h = new Date().getHours();
+        // const h = 15
 
         // todo: remove hardcoded h and change weather percent to 3
 
@@ -1320,7 +1320,7 @@ let App = {
                     }
                 },
                 {
-                    name: `change shell`,
+                    name: `change shell ${App.getBadge()}`,
                     onclick: () => {
                         // App.handlers.open_shell_background_list();
                         // return true;
