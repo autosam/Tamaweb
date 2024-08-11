@@ -138,6 +138,7 @@ let App = {
         App.skyWeather = new Object2d({
             image: App.preloadedResources["resources/img/background/sky/rain_01.png"],
             x: 0, y: 0, z: 999.1,
+            composite: "xor",
             // hidden: true,
             onDraw: (me) => {
                 Object2d.animations.flip(me, 200);
@@ -815,6 +816,8 @@ let App = {
         // const h = new Date().getHours();
         const h = 20
 
+        // todo: remove hardcoded h and change weather percent to 3
+
         // sky
         let sky;
         if(h >= 12 && h < 18) sky = 'afternoon';
@@ -832,7 +835,7 @@ let App = {
         const seed = h + date.getDate() + App.userId;
         pRandom.save();
         pRandom.seed = seed;
-        App.skyWeather.hidden = !pRandom.getPercent(3);
+        App.skyWeather.hidden = !pRandom.getPercent(300);
         
         pRandom.load();
 
