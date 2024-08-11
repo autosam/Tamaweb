@@ -8,6 +8,7 @@ let App = {
         vibrate: true,
         displayShell: true,
         displayShellButtons: true,
+        shellShape: 1,
         backgroundColor: '#FFDEAD',
         notifications: false,
     },
@@ -26,6 +27,7 @@ let App = {
         },
 
         ACTIVE_PET_Z: 5,
+        MAX_SHELL_SHAPES: 4,
     },
     routes: {
         BLOG: 'https://tamawebgame.github.io/blog/',
@@ -305,7 +307,9 @@ let App = {
         // document.querySelector('.dom-shell').classList.add('shell-shape-0');
         
         // shell
-        document.querySelector('.dom-shell').style.display = App.settings.displayShell ? '' : 'none';
+        const domShell = document.querySelector('.dom-shell');
+        domShell.style.display = App.settings.displayShell ? '' : 'none';
+        domShell.className = `dom-shell shell-shape-${this.settings.shellShape}`
         document.querySelector('.shell-btn.main').style.display = App.settings.displayShellButtons ? '' : 'none';
         document.querySelector('.shell-btn.right').style.display = App.settings.displayShellButtons ? '' : 'none';
         document.querySelector('.shell-btn.left').style.display = App.settings.displayShellButtons ? '' : 'none';
@@ -1104,8 +1108,8 @@ let App = {
                     },
                 },
                 {
-                    _ignore: true || !window?.Notification || !App.isTester(),
-                    _mount: (e) => e.textContent = `notifications: ${App.settings.notifications ? 'on' : 'off'}`,
+                    _ignore: true || !window?.Notification || !App.isTester(), // unused
+                    _mount: (e) => e.innerHTML = `notifications: <i>${App.settings.notifications ? 'on' : 'off'}</i>`,
                     name: `notifications`,
                     onclick: (btn) => {
                         if(App.settings.notifications) {
@@ -1331,6 +1335,18 @@ let App = {
                                     App.settings.displayShellButtons = !App.settings.displayShellButtons;
                                     item.innerHTML = `shell button: <i>${App.settings.displayShellButtons ? 'yes' : 'no'}</i>`;  
                                     App.applySettings();
+                                    return true;
+                                }
+                            },
+                            {
+                                _mount: (e) => e.innerHTML = `shell shape: <i>${App.settings.shellShape}</i>${App.getBadge()}`,
+                                onclick: (item) => {
+                                    App.settings.shellShape++;
+                                    if(App.settings.shellShape > App.constants.MAX_SHELL_SHAPES){
+                                        App.settings.shellShape = 1;
+                                    }
+                                    App.applySettings();
+                                    item._mount()
                                     return true;
                                 }
                             },
@@ -2881,6 +2897,7 @@ let App = {
 
         listItems.forEach((item, i) => {
             if(item._ignore) return;
+            if(!item.name) item.name = '';
 
             let element;
             let defaultClassName;
@@ -2908,7 +2925,7 @@ let App = {
                     }
                     if(i == listItems.length - 2) element.className += ' last-btn';
                     // '⤳ ' + 
-                    if(item.name.indexOf('<') == -1 && item.name.indexOf('/') == -1) item.name = ellipsis(item.name);
+                    if(item.name.indexOf('<') == -1 && item.name.indexOf('/') == -1) item.name = ellipsis(item.name, item.ellipsisLength);
                     element.innerHTML = item.name;
                     element.disabled = item._disable;
                     element.style = `--child-index:${Math.min(i, 10) + 1}`;
