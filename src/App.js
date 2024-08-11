@@ -125,13 +125,15 @@ let App = {
         })
         App.sky = new Object2d({
             image: App.preloadedResources["resources/img/background/sky/night.png"],
-            x: 0, y: 0, z: -999
+            x: 0, y: 0, z: 99999,
+            composite: "destination-over",
+            // absHidden: true
         })
         App.skyOverlay = new Object2d({
             image: App.preloadedResources["resources/img/background/sky/night_overlay.png"],
             x: 0, y: 0, z: 999,
-            composite: 'multiply',
-            opacity: 0.75,
+            composite: "source-atop",
+            opacity: 1,
         })
         App.skyWeather = new Object2d({
             image: App.preloadedResources["resources/img/background/sky/rain_01.png"],
@@ -810,7 +812,8 @@ let App = {
     },
     applySky() {
         const date = new Date();
-        const h = new Date().getHours();
+        // const h = new Date().getHours();
+        const h = 20
 
         // sky
         let sky;
@@ -819,7 +822,7 @@ let App = {
         else if(h >= 21 || h < 6) sky = 'night';
         else sky = 'morning'
         App.sky.setImage(App.preloadedResources[`resources/img/background/sky/${sky}.png`]);
-        App.skyOverlay.setImage(App.preloadedResources[`resources/img/background/sky/${sky}.png`]);
+        App.skyOverlay.setImage(App.preloadedResources[`resources/img/background/sky/${sky}_overlay.png`]);
         const isOutside = App.background.image?.src?.indexOf('outside/') != -1;
         App.skyOverlay.hidden = !isOutside;
         if(sky == 'afternoon' || sky == 'morning') App.skyOverlay.hidden = true;
