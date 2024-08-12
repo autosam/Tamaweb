@@ -69,7 +69,7 @@ let App = {
         this.preloadedResources = {};
         preloadedResources.forEach((resource, i) => {
             // let name = forPreload[i].slice(forPreload[i].lastIndexOf('/') + 1);
-            let name = forPreload[i];
+            const name = forPreload[i];
             this.preloadedResources[name] = resource;
         });
 
@@ -388,7 +388,7 @@ let App = {
             return new Promise((resolve, reject) => {
                 const image = new Image();
     
-                image.src = url;
+                image.src = App.checkResourceOverride(url);
     
                 image.onload = () => resolve(image);
                 image.onerror = () => reject(`Image failed to load: ${url}`);
@@ -826,7 +826,7 @@ let App = {
         else sky = 'morning'
         App.sky.setImage(App.preloadedResources[`resources/img/background/sky/${sky}.png`]);
         App.skyOverlay.setImage(App.preloadedResources[`resources/img/background/sky/${sky}_overlay.png`]);
-        const isOutside = App.background.image?.src?.indexOf('outside/') != -1;
+        const isOutside = App.background.imageSrc?.indexOf('outside/') != -1;
         App.skyOverlay.hidden = !isOutside;
         if(sky == 'afternoon' || sky == 'morning') App.skyOverlay.hidden = true;
 
