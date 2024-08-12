@@ -63,7 +63,8 @@ body {
 }
 
 .graphics-canvas {
-    background-color: #ffe5ca;
+    /* background-color: #ffe5ca; */
+    background-color: #000000;
     image-rendering: pixelated;
     width: 100%;
     /* border-top-left-radius: 1000px;
