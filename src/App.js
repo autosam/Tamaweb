@@ -2823,6 +2823,7 @@ let App = {
             App.pet.stopMove();
             App.pet.triggerScriptedState('idle', App.INF, false, true);
             App.pet.x = 20;
+            App.pet.y = App.scene.home.petY;
             App.toggleGameplayControls(false);
             const mop = new Object2d({
                 image: App.preloadedResources["resources/img/misc/cleaner.png"],
