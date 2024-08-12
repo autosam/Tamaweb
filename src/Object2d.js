@@ -60,6 +60,13 @@ class Object2d {
         // this.image.src = resource;
     } */
     setImg(img){ // this one gets image url
+        if(!img) return;
+
+        const preloaded = App.preloadedResources[img];
+        if(preloaded){
+            return this.setImage(preloaded);
+        }
+
         this.imageSrc = img;
         this.image.src = App.checkResourceOverride(img);
     }

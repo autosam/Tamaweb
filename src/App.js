@@ -824,10 +824,14 @@ let App = {
         else if(h >= 18 && h < 21) sky = 'evening';
         else if(h >= 21 || h < 6) sky = 'night';
         else sky = 'morning'
-        App.sky.setImage(App.preloadedResources[`resources/img/background/sky/${sky}.png`]);
-        App.skyOverlay.setImage(App.preloadedResources[`resources/img/background/sky/${sky}_overlay.png`]);
+        // App.sky.setImage(App.preloadedResources[`resources/img/background/sky/${sky}.png`]);
+        // App.skyOverlay.setImage(App.preloadedResources[`resources/img/background/sky/${sky}_overlay.png`]);
+
+        App.sky.setImg(`resources/img/background/sky/${sky}.png`);
+        App.skyOverlay.setImg(`resources/img/background/sky/${sky}_overlay.png`);
         const isOutside = App.background.imageSrc?.indexOf('outside/') != -1;
-        App.skyOverlay.hidden = !isOutside;
+        setTimeout(() => App.skyOverlay.hidden = !isOutside)
+        // App.skyOverlay.hidden = !isOutside;
         if(sky == 'afternoon' || sky == 'morning') App.skyOverlay.hidden = true;
 
         // weather
