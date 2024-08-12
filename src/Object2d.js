@@ -35,6 +35,8 @@ class Object2d {
         this.id = this.drawer.addObject(this);
     }
     setImg(img){ // this one gets image url
+        if(!img) return;
+
         const preloaded = App.preloadedResources[img];
         if(preloaded){
             console.log('is preloaded', img)
@@ -49,6 +51,8 @@ class Object2d {
         }
     }
     setImage(image){ // this one gets img object (presume preloadedResource)
+        if(!image) return;
+        
         this.imageSrc = image.src;
         const resource = App.checkResourceOverride(image.src);
         this.image = image;

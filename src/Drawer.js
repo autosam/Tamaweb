@@ -92,7 +92,7 @@ class Drawer {
                     context.globalCompositeOperation = composite ?? "multiply";
                 }
 
-                if (opacity) {
+                if (opacity !== undefined) {
                     context.globalAlpha = opacity;
                 }
 
