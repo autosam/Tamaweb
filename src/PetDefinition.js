@@ -149,7 +149,7 @@ class PetDefinition {
         max_sleep: 100,
         sleep_satisfaction: 70,
         sleep_min_desire: 20,
-        sleep_depletion_rate: 0.03,
+        sleep_depletion_rate: 0.0034,
         sleep_replenish_rate: 0.1,
         light_sleepiness: 0.01,
         activity_sleep_depletion: 0.3,

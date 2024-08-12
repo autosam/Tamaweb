@@ -253,9 +253,11 @@ class Pet extends Object2d {
     }
     sleep(){
         if(this.stats.is_sleeping) return;
+        const hour = new Date().getHours();
+        const isSleepHour = (hour >= App.constants.SLEEP_START || hour < App.constants.SLEEP_END);
         this.stopMove();
         this.x = '50%';
-        if(this.hasMoodlet('rested')){
+        if(this.hasMoodlet('rested') && !isSleepHour){
             this.playRefuseAnimation();
             return;
         }
@@ -728,6 +730,10 @@ class Pet extends Object2d {
         return !!this.scriptedEventTime;
     }
     stateManager(){
+        const date = new Date();
+        const hour = date.getHours()
+        const isSleepHour = (hour >= App.constants.SLEEP_START || hour < App.constants.SLEEP_END);
+
         if(this.scriptedEventTime){
             if(this.scriptedEventTime < App.lastTime){ // ending scripted event time
                 if(this.stopScriptedState()) return;
@@ -742,7 +748,11 @@ class Pet extends Object2d {
         }
 
         if(this.stats.is_sleeping){
-            if(this.stats.current_sleep >= this.stats.max_sleep || (this.hasMoodlet('rested') && Math.random() < this.stats.light_sleepiness * 0.01)){
+            if(
+                (this.stats.current_sleep >= this.stats.max_sleep 
+                || (this.hasMoodlet('rested') && Math.random() < this.stats.light_sleepiness * 0.01)) 
+                && !isSleepHour
+            ){
                 this.stats.is_sleeping = false;
                 App.toggleGameplayControls(true);
                 return;

@@ -1124,6 +1124,7 @@ class Activities {
         let otherPet;
         if(otherPetDef){
             otherPet = new Pet(otherPetDef);
+            otherPet.nextRandomTargetSelect = 0;
             App.petDefinition.addFriend(otherPetDef, 1);
             otherPetDef.increaseFriendship();
         }

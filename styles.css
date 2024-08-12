@@ -917,8 +917,14 @@ input#background-color-picker {
     font-weight: bold;
 }
 
+.badge {
+    text-shadow: none !important;
+}
 .badge.red {
     background: red;
+}
+.badge.night {
+    background: #180067;
 }
 
 /* .dom-shell > * {

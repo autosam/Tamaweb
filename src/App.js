@@ -14,9 +14,14 @@ let App = {
     },
     constants: {
         SLEEP_START: 22,
+        // SLEEP_START: 20,
         SLEEP_END: 9,
         PARENT_DAYCARE_START: 8,
         PARENT_DAYCARE_END: 18,
+
+        AFTERNOON_TIME: [12, 18],
+        EVENING_TIME: [18, 21],
+        NIGHT_TIME: [21, 6],
         
         FOOD_SPRITESHEET: 'resources/img/item/foods_on.png',
         FOOD_SPRITESHEET_DIMENSIONS: {
@@ -113,7 +118,8 @@ let App = {
         App.darkOverlay = new Object2d({
             img: "resources/img/background/house/dark_overlay.png",
             hidden: true,
-            z: 10,
+            z: 10, opacity: 0.85,
+            composite: "source-atop",
         })
         App.poop = new Object2d({
             image: App.preloadedResources["resources/img/misc/poop.png"],
@@ -151,8 +157,15 @@ let App = {
             .setStats({is_egg: true})
             .loadStats(loadedData.pet)
             .loadAccessories(loadedData.accessories);
-        
-        App.pet = App.createActivePet(App.petDefinition, {state: ''});
+
+        // put pet to sleep on start if is sleeping hour
+        const hour = new Date().getHours();
+        App.isSleepHour = (hour >= App.constants.SLEEP_START || hour < App.constants.SLEEP_END);
+        App.petDefinition.stats.is_sleeping = App.isSleepHour && !loadedData.pet?.stats?.is_egg;
+
+        App.pet = App.createActivePet(App.petDefinition, {
+            state: '',
+        });
 
         if(!loadedData.pet || !Object.keys(loadedData.pet).length) { // first time
             setTimeout(() => {
@@ -812,26 +825,23 @@ let App = {
         this.applySky();
     },
     applySky() {
+        const { AFTERNOON_TIME, EVENING_TIME, NIGHT_TIME } = App.constants;
         const date = new Date();
         const h = new Date().getHours();
-        // const h = 15
+        // const h = 17
 
         // todo: remove hardcoded h and change weather percent to 3
 
         // sky
         let sky;
-        if(h >= 12 && h < 18) sky = 'afternoon';
-        else if(h >= 18 && h < 21) sky = 'evening';
-        else if(h >= 21 || h < 6) sky = 'night';
+        if(h >= AFTERNOON_TIME[0] && h < AFTERNOON_TIME[1]) sky = 'afternoon';
+        else if(h >= EVENING_TIME[0] && h < EVENING_TIME[1]) sky = 'evening';
+        else if(h >= NIGHT_TIME[0] || h < NIGHT_TIME[1]) sky = 'night';
         else sky = 'morning'
-        // App.sky.setImage(App.preloadedResources[`resources/img/background/sky/${sky}.png`]);
-        // App.skyOverlay.setImage(App.preloadedResources[`resources/img/background/sky/${sky}_overlay.png`]);
-
-        App.sky.setImg(`resources/img/background/sky/${sky}.png`);
-        App.skyOverlay.setImg(`resources/img/background/sky/${sky}_overlay.png`);
+        App.sky.setImage(App.preloadedResources[`resources/img/background/sky/${sky}.png`]);
+        App.skyOverlay.setImage(App.preloadedResources[`resources/img/background/sky/${sky}_overlay.png`]);
         const isOutside = App.background.imageSrc?.indexOf('outside/') != -1;
         setTimeout(() => App.skyOverlay.hidden = !isOutside)
-        // App.skyOverlay.hidden = !isOutside;
         if(sky == 'afternoon' || sky == 'morning') App.skyOverlay.hidden = true;
 
         // weather
@@ -1022,7 +1032,7 @@ let App = {
         open_care_menu: function(){
             App.displayList([
                 {
-                    name: `sleep`,
+                    name: `sleep ${App.isSleepHour ? App.getBadge('<div style="margin-left: auto; padding: 2px"> <i class="fa-solid fa-moon"></i> <small>bedtime!</small> </div>', 'night') : ''}`,
                     onclick: () => {
                         App.handlers.sleep();
                     }
@@ -3193,7 +3203,7 @@ let App = {
             if(moment(expirationDate).isBefore(moment())) return '';
         }
 
-        return `<span class="badge ${color}">${text.toUpperCase()}<span>`;
+        return `<span class="badge ${color}">${text}<span>`;
     },
     drawUI: function(){
         App.drawer.drawImmediate({
