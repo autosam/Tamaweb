@@ -34,7 +34,7 @@ class Object2d {
 
         this.id = this.drawer.addObject(this);
     }
-    setImg(img){ // this one gets image url
+    /* setImg(img){ // this one gets image url
         if(!img) return;
 
         const preloaded = App.preloadedResources[img];
@@ -42,6 +42,7 @@ class Object2d {
             console.log('is preloaded', img)
             return this.setImage(preloaded);
         }
+        console.log('not preloaded', img)
         this.imageSrc = img;
         const resource = App.checkResourceOverride(img);
         const newImage = new Image();
@@ -56,7 +57,16 @@ class Object2d {
         this.imageSrc = image.src;
         const resource = App.checkResourceOverride(image.src);
         this.image = image;
-        this.image.src = resource;
+        // this.image.src = resource;
+    } */
+    setImg(img){ // this one gets image url
+        this.imageSrc = img;
+        this.image.src = App.checkResourceOverride(img);
+    }
+    setImage(image){ // this one gets img object (presume preloadedResource)
+        this.imageSrc = image.src;
+        this.image = image;
+        this.image.src = App.checkResourceOverride(this.image.src);
     }
     removeObject(){
         this.drawer.removeObject(this);

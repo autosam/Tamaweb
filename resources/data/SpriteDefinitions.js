@@ -77,6 +77,7 @@ const SPRITES = [
     "resources/img/misc/cooking_pot_p03.png",
     "resources/img/misc/exclam_01.png",
     "resources/img/misc/picture_overlay_01.png",
+    "resources/img/misc/shadow_01.png",
 
     // accessories
     "resources/img/accessory/crown_01.png",
