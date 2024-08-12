@@ -34,7 +34,11 @@ class Object2d {
         this.id = this.drawer.addObject(this);
     }
     setImg(img){ // this one gets image url
-        this.image.src = App.checkResourceOverride(img);
+        const newImage = new Image();
+        newImage.src = App.checkResourceOverride(img);
+        newImage.onload = () => {
+            this.image = newImage;
+        }
     }
     setImage(image){ // this one gets img object (presume preloadedResource)
         this.image = image;
