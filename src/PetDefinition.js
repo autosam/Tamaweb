@@ -173,7 +173,7 @@ class PetDefinition {
         max_death_tick: 100, // ~ 54 hours
         baby_max_death_tick: 44, // ~ 24 hours
         teen_max_death_tick: 74, // ~ 40 hours
-        death_tick_rate: 0.00026,
+        death_tick_rate: 0.000289,
         // wander (sec)
         wander_min: 1.5,
         wander_max: 8,
