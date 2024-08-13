@@ -167,9 +167,7 @@ let App = {
         }
 
         // put pet to sleep on start if is sleeping hour
-        const hour = new Date().getHours();
-        App.isSleepHour = (hour >= App.constants.SLEEP_START || hour < App.constants.SLEEP_END);
-        App.petDefinition.stats.is_sleeping = App.isSleepHour && !loadedData.pet?.stats?.is_egg;
+        App.petDefinition.stats.is_sleeping = App.isSleepHour() && !loadedData.pet?.stats?.is_egg;
 
         App.pet = App.createActivePet(App.petDefinition, {
             state: '',
@@ -1040,7 +1038,7 @@ let App = {
         open_care_menu: function(){
             App.displayList([
                 {
-                    name: `sleep ${App.isSleepHour ? App.getBadge('<div style="margin-left: auto; padding: 2px"> <i class="fa-solid fa-moon"></i> <small>bedtime!</small> </div>', 'night') : ''}`,
+                    name: `sleep ${App.isSleepHour() ? App.getBadge('<div style="margin-left: auto; padding: 2px"> <i class="fa-solid fa-moon"></i> <small>bedtime!</small> </div>', 'night') : ''}`,
                     onclick: () => {
                         App.handlers.sleep();
                     }
@@ -3276,6 +3274,10 @@ let App = {
     isSalesDay: function(){
         let day = new Date().getDate();
         return [7, 12, 18, 20, 25, 29, 30].includes(day);
+    },
+    isSleepHour: function(){
+        const hour = new Date().getHours();
+        return (hour >= App.constants.SLEEP_START || hour < App.constants.SLEEP_END);
     },
     playSound: function(path, force){
         if(!App.settings.playSound) return;

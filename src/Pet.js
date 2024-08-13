@@ -253,11 +253,9 @@ class Pet extends Object2d {
     }
     sleep(){
         if(this.stats.is_sleeping) return;
-        const hour = new Date().getHours();
-        const isSleepHour = (hour >= App.constants.SLEEP_START || hour < App.constants.SLEEP_END);
         this.stopMove();
         this.x = '50%';
-        if(this.hasMoodlet('rested') && !isSleepHour){
+        if(this.hasMoodlet('rested') && !App.isSleepHour()){
             this.playRefuseAnimation();
             return;
         }
@@ -504,7 +502,7 @@ class Pet extends Object2d {
         if(isOfflineProgression){
             depletion_mult = 0.25;
 
-            if((hour >= App.constants.SLEEP_START || hour < App.constants.SLEEP_END)){
+            if(App.isSleepHour()){
                 offlineAndIsNight = true;
                 depletion_mult = 0.05;
             }
@@ -730,10 +728,6 @@ class Pet extends Object2d {
         return !!this.scriptedEventTime;
     }
     stateManager(){
-        const date = new Date();
-        const hour = date.getHours()
-        const isSleepHour = (hour >= App.constants.SLEEP_START || hour < App.constants.SLEEP_END);
-
         if(this.scriptedEventTime){
             if(this.scriptedEventTime < App.lastTime){ // ending scripted event time
                 if(this.stopScriptedState()) return;
@@ -751,7 +745,7 @@ class Pet extends Object2d {
             if(
                 (this.stats.current_sleep >= this.stats.max_sleep 
                 || (this.hasMoodlet('rested') && Math.random() < this.stats.light_sleepiness * 0.01)) 
-                && !isSleepHour
+                && !App.isSleepHour()
             ){
                 this.stats.is_sleeping = false;
                 App.toggleGameplayControls(true);
@@ -897,7 +891,7 @@ class Pet extends Object2d {
             let date = new Date(startTime - elapsedTime);
             let hour = date.getHours();
 
-            // suppying hour because from 22:00 to 9:00 the starts will drop much slower and pet will get sleep
+            // supplying hour because from 22:00 to 9:00 the starts will drop much slower and pet will get sleep
             if(this.stats.is_egg){
                 this.handleEgg();
                 continue;
