@@ -11,18 +11,9 @@ let App = {
         shellShape: 1,
         backgroundColor: '#FFDEAD',
         notifications: false,
+        automaticAging: false,
     },
     constants: {
-        SLEEP_START: 22,
-        // SLEEP_START: 20,
-        SLEEP_END: 9,
-        PARENT_DAYCARE_START: 8,
-        PARENT_DAYCARE_END: 18,
-
-        AFTERNOON_TIME: [12, 18],
-        EVENING_TIME: [18, 21],
-        NIGHT_TIME: [21, 6],
-        
         FOOD_SPRITESHEET: 'resources/img/item/foods_on.png',
         FOOD_SPRITESHEET_DIMENSIONS: {
             cellNumber: 1,
@@ -30,9 +21,19 @@ let App = {
             rows: 33,
             columns: 33,
         },
-
+        SLEEP_START: 22,
+        SLEEP_END: 9,
+        PARENT_DAYCARE_START: 8,
+        PARENT_DAYCARE_END: 18,
         ACTIVE_PET_Z: 5,
         MAX_SHELL_SHAPES: 4,
+        AFTERNOON_TIME: [12, 18],
+        EVENING_TIME: [18, 21],
+        NIGHT_TIME: [21, 6],
+        MANUAL_AGE_HOURS_BABY: 2,
+        MANUAL_AGE_HOURS_TEEN: 12,
+        AUTO_AGE_HOURS_BABY: 24,
+        AUTO_AGE_HOURS_TEEN: 48,
     },
     routes: {
         BLOG: 'https://tamawebgame.github.io/blog/',
@@ -158,6 +159,13 @@ let App = {
             .loadStats(loadedData.pet)
             .loadAccessories(loadedData.accessories);
 
+        // check automatic age up
+        if(App.settings.automaticAging){
+            while(moment().utc().isAfter( App.petDefinition.getNextAutomaticBirthdayDate() )){
+                App.petDefinition.ageUp()
+            }
+        }
+
         // put pet to sleep on start if is sleeping hour
         const hour = new Date().getHours();
         App.isSleepHour = (hour >= App.constants.SLEEP_START || hour < App.constants.SLEEP_END);
@@ -179,7 +187,7 @@ let App = {
         if(loadedData.lastTime){
             let elapsedTime = Date.now() - loadedData.lastTime;
             
-            if(App.ENV !== 'dev') App.pet.simulateOfflineProgression(elapsedTime);
+            /* if(App.ENV !== 'dev')  */App.pet.simulateOfflineProgression(elapsedTime);
             
             let awaySeconds = Math.round(elapsedTime / 1000);
             let awayMinutes = Math.round(awaySeconds / 60);
@@ -1254,6 +1262,21 @@ let App = {
                     },
                 },
                 { type: 'seperator' },
+                {
+                    name: `gameplay settings ${App.getBadge()}`,
+                    onclick: () => {
+                        return App.displayList([
+                            {
+                                _mount: (e) => e.innerHTML = `Auto aging: <i>${App.settings.automaticAging ? 'On' : 'Off'}</i>${App.getBadge()}`,
+                                onclick: (e) => {
+                                    App.settings.automaticAging = !App.settings.automaticAging;
+                                    e._mount();
+                                    return true;
+                                }
+                            }
+                        ])
+                    }
+                },
                 {
                     name: `system settings`,
                     onclick: () => {
@@ -2353,7 +2376,7 @@ let App = {
                     _ignore: App.petDefinition.lifeStage >= 2,
                     name: 'have birthday',
                     onclick: () => {
-                        let nextBirthday = App.petDefinition.nextBirthdayDate();
+                        let nextBirthday = App.petDefinition.getNextBirthdayDate();
                         if(moment().utc().isBefore( nextBirthday )){
                             return App.displayPopup(`${App.petDefinition.name} hasn't grown enough to age up<br><br>come back <b>${(moment(nextBirthday).utc().fromNow())}</b>`, 5000);
                         }
@@ -3265,7 +3288,7 @@ let App = {
         this.audioChannelIsBusy = true;
     },
     save: function(noIndicator){
-        // return;
+        return;
         // setCookie('pet', App.pet.serializeStats(), 365);
         window.localStorage.setItem('pet', App.pet.serializeStats());
         window.localStorage.setItem('settings', JSON.stringify(App.settings));

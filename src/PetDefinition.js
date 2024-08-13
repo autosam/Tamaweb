@@ -354,26 +354,26 @@ class PetDefinition {
         this.getSpritesheetDefinition();  
     }
 
-    nextBirthdayDate(){
+    getNextBirthdayDate(){
         let m = moment(this.lastBirthday).utc();
         switch(this.lifeStage){
             case 0:
-                return m.add(2, 'hours');
+                return m.add(App.constants.MANUAL_AGE_HOURS_BABY, 'hours');
             case 1:
-                return m.add(12, 'hours');
+                return m.add(App.constants.MANUAL_AGE_HOURS_TEEN, 'hours');
         }
+        return false;
     }
-    _nextBirthdayDate(){
-        let d = new Date(this.lastBirthday);
 
+    getNextAutomaticBirthdayDate(){
+        let m = moment(this.birthday).utc();
         switch(this.lifeStage){
             case 0:
-                return  d.setHours(d.getHours());
-                break;
+                return m.add(App.constants.AUTO_AGE_HOURS_BABY, 'hours');
             case 1:
-                return  d.setHours(d.getHours());
-                break;
+                return m.add(App.constants.AUTO_AGE_HOURS_TEEN, 'hours');
         }
+        return false;
     }
 
     ageUp(isNpc){
