@@ -31,7 +31,7 @@ let App = {
         AFTERNOON_TIME: [12, 18],
         EVENING_TIME: [18, 21],
         NIGHT_TIME: [21, 6],
-        MANUAL_AGE_HOURS_BABY: 2,
+        MANUAL_AGE_HOURS_BABY: 6,
         MANUAL_AGE_HOURS_TEEN: 12,
         AUTO_AGE_HOURS_BABY: 24,
         AUTO_AGE_HOURS_TEEN: 48,
@@ -1268,7 +1268,26 @@ let App = {
                             {
                                 _mount: (e) => e.innerHTML = `Auto aging: <i>${App.settings.automaticAging ? 'On' : 'Off'}</i>${App.getBadge()}`,
                                 onclick: (e) => {
-                                    App.settings.automaticAging = !App.settings.automaticAging;
+                                    if(!App.settings.automaticAging){
+                                        App.displayConfirm(`Are you sure? This will make your pets automatically age up after a certain amount of time`, [
+                                            {
+                                                name: 'yes',
+                                                onclick: () => {
+                                                    App.settings.automaticAging = true;
+                                                    App.displayPopup(`Automatic aging turned on`);
+                                                    e._mount();
+                                                }
+                                            },
+                                            {
+                                                name: 'no',
+                                                class: 'back-btn',
+                                                onclick: () => {}
+                                            }
+                                        ])
+                                    } else {
+                                        App.settings.automaticAging = false;
+                                        App.displayPopup(`Automatic aging turned off`);
+                                    }
                                     e._mount();
                                     return true;
                                 }
@@ -1282,11 +1301,11 @@ let App = {
                                     content.innerHTML = `
                                         <div class="inner-padding b-radius-10 surface-stylized">
                                             <div class="inline-flex-between width-full items-center">
-                                                <button id="add" class="generic-btn stylized"> <i class="fa-solid fa-plus"></i> </button>
+                                                <button id="subtract" class="generic-btn stylized primary solid"> <i class="fa-solid fa-minus"></i> </button>
                                                 <div style="font-size: medium">
                                                     <b id="amount">${App.settings.sleepingHoursOffset}</b>
                                                 </div>
-                                                <button id="subtract" class="generic-btn stylized primary solid"> <i class="fa-solid fa-minus"></i> </button>
+                                                <button id="add" class="generic-btn stylized"> <i class="fa-solid fa-plus"></i> </button>
                                             </div>
                                         </div>
 
