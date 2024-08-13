@@ -186,7 +186,7 @@ let App = {
         if(loadedData.lastTime){
             let elapsedTime = Date.now() - loadedData.lastTime;
             
-            /* if(App.ENV !== 'dev')  */App.pet.simulateOfflineProgression(elapsedTime);
+            if(App.ENV !== 'dev') App.pet.simulateOfflineProgression(elapsedTime);
             
             let awaySeconds = Math.round(elapsedTime / 1000);
             let awayMinutes = Math.round(awaySeconds / 60);
