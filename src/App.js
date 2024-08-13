@@ -12,6 +12,7 @@ let App = {
         backgroundColor: '#FFDEAD',
         notifications: false,
         automaticAging: false,
+        sleepingHoursOffset: 0,
     },
     constants: {
         FOOD_SPRITESHEET: 'resources/img/item/foods_on.png',
@@ -21,8 +22,8 @@ let App = {
             rows: 33,
             columns: 33,
         },
-        SLEEP_START: 22,
-        SLEEP_END: 9,
+        SLEEP_START: 21,
+        SLEEP_END: 8,
         PARENT_DAYCARE_START: 8,
         PARENT_DAYCARE_END: 18,
         ACTIVE_PET_Z: 5,
@@ -1271,7 +1272,63 @@ let App = {
                                     e._mount();
                                     return true;
                                 }
-                            }
+                            },
+                            {
+                                name: `Sleeping Hours${App.getBadge()}`,
+                                onclick: (e) => {
+                                    const list = UI.genericListContainer();
+                                    const content = UI.empty();
+
+                                    content.innerHTML = `
+                                        <div class="inner-padding b-radius-10 surface-stylized">
+                                            <div class="inline-flex-between width-full items-center">
+                                                <button id="add" class="generic-btn stylized"> <i class="fa-solid fa-plus"></i> </button>
+                                                <div style="font-size: medium">
+                                                    <b id="amount">${App.settings.sleepingHoursOffset}</b>
+                                                </div>
+                                                <button id="subtract" class="generic-btn stylized primary solid"> <i class="fa-solid fa-minus"></i> </button>
+                                            </div>
+                                        </div>
+
+                                        <div id="info" class="inner-padding b-radius-10 solid-surface-stylized">
+                                        </div>
+                                    `
+
+                                    const amount = content.querySelector('#amount');
+                                    const info = content.querySelector('#info');
+                                    const updateUI = () => {
+                                        amount.textContent = App.settings.sleepingHoursOffset;
+                                        const startTime = App.constants.SLEEP_START + App.settings.sleepingHoursOffset,
+                                            endTime = App.constants.SLEEP_END + App.settings.sleepingHoursOffset;
+                                        const rangeStyle = `display: flex;justify-content: space-between;`
+                                        info.innerHTML = `
+                                            sleeping
+                                            <br>
+                                            <b> 
+                                                <div style="${rangeStyle}">
+                                                    from <div>${App.clampWithin24HourFormat(startTime)}:00</div>
+                                                </div>
+                                                <div style="${rangeStyle}">
+                                                    to <div>${App.clampWithin24HourFormat(endTime)}:00</div>
+                                                </div>
+                                            </b>
+                                        `
+                                    }
+                                    content.querySelector('#add').onclick = () => {
+                                        App.settings.sleepingHoursOffset++;
+                                        updateUI();
+                                    }
+                                    content.querySelector('#subtract').onclick = () => {
+                                        App.settings.sleepingHoursOffset--;
+                                        updateUI();
+                                    }
+                                    updateUI();
+
+                                    list.appendChild(content);
+                                    return true;
+                                }
+                            },
+
                         ])
                     }
                 },
@@ -3277,7 +3334,26 @@ let App = {
     },
     isSleepHour: function(){
         const hour = new Date().getHours();
-        return (hour >= App.constants.SLEEP_START || hour < App.constants.SLEEP_END);
+        return App.isWithinHour(
+            hour,
+            App.constants.SLEEP_START + App.settings.sleepingHoursOffset,
+            App.constants.SLEEP_END + App.settings.sleepingHoursOffset
+        );
+    },
+    isWithinHour: function(current, start, end){
+        start = App.clampWithin24HourFormat(start);
+        end = App.clampWithin24HourFormat(end);
+        current = App.clampWithin24HourFormat(current);
+        if (start <= end) {
+            return current >= start && current < end;
+        } else {
+            return current >= start || current < end;
+        }
+    },
+    clampWithin24HourFormat: function(hour){
+        if(hour >= 24) return hour - 24;
+        else if(hour < 0) return hour + 24;
+        return hour;
     },
     playSound: function(path, force){
         if(!App.settings.playSound) return;
@@ -3290,7 +3366,6 @@ let App = {
         this.audioChannelIsBusy = true;
     },
     save: function(noIndicator){
-        return;
         // setCookie('pet', App.pet.serializeStats(), 365);
         window.localStorage.setItem('pet', App.pet.serializeStats());
         window.localStorage.setItem('settings', JSON.stringify(App.settings));

@@ -1033,6 +1033,12 @@ input#background-color-picker {
 .height-auto {
     height: auto;
 }
+.width-full {
+    width: 100%;
+}
+.items-center {
+    align-items: center;
+}
 
 .bg-white {
     background: white;
