@@ -835,18 +835,8 @@ let App = {
         const { AFTERNOON_TIME, EVENING_TIME, NIGHT_TIME } = App.constants;
         const date = new Date();
         const h = new Date().getHours();
-        
-        // sky
-        let sky;
-        if(h >= AFTERNOON_TIME[0] && h < AFTERNOON_TIME[1]) sky = 'afternoon';
-        else if(h >= EVENING_TIME[0] && h < EVENING_TIME[1]) sky = 'evening';
-        else if(h >= NIGHT_TIME[0] || h < NIGHT_TIME[1]) sky = 'night';
-        else sky = 'morning'
-        App.sky.setImage(App.preloadedResources[`resources/img/background/sky/${sky}.png`]);
-        App.skyOverlay.setImage(App.preloadedResources[`resources/img/background/sky/${sky}_overlay.png`]);
+
         const isOutside = App.background.imageSrc?.indexOf('outside/') != -1;
-        setTimeout(() => App.skyOverlay.hidden = !isOutside)
-        if(sky == 'afternoon' || sky == 'morning') App.skyOverlay.hidden = true;
 
         // weather
         App.skyWeather.z = isOutside ? 999.1 : -998;
@@ -856,7 +846,17 @@ let App = {
         pRandom.seed = seed;
         App.skyWeather.hidden = !pRandom.getPercent(weatherEffectChance);
         pRandom.load();
-
+        
+        // sky
+        let sky;
+        if(h >= AFTERNOON_TIME[0] && h < AFTERNOON_TIME[1] && App.skyWeather.hidden) sky = 'afternoon';
+        else if(h >= EVENING_TIME[0] && h < EVENING_TIME[1]) sky = 'evening';
+        else if(h >= NIGHT_TIME[0] || h < NIGHT_TIME[1]) sky = 'night';
+        else sky = 'morning'
+        App.sky.setImage(App.preloadedResources[`resources/img/background/sky/${sky}.png`]);
+        App.skyOverlay.setImage(App.preloadedResources[`resources/img/background/sky/${sky}_overlay.png`]);
+        setTimeout(() => App.skyOverlay.hidden = !isOutside)
+        if(sky == 'afternoon' || sky == 'morning') App.skyOverlay.hidden = true;
     },
     applyRoomCustomizations(data){
         if(!data) return;
