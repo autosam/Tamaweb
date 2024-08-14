@@ -835,10 +835,7 @@ let App = {
         const { AFTERNOON_TIME, EVENING_TIME, NIGHT_TIME } = App.constants;
         const date = new Date();
         const h = new Date().getHours();
-        // const h = 17
-
-        // todo: remove hardcoded h and change weather percent to 3
-
+        
         // sky
         let sky;
         if(h >= AFTERNOON_TIME[0] && h < AFTERNOON_TIME[1]) sky = 'afternoon';
