@@ -596,26 +596,26 @@ let App = {
             return;
         }
 
-        // if(addEvent(`update_07_notice`, () => {
-        //     App.displayList([
-        //         {
-        //             name: 'New update is available!',
-        //             type: 'title',
-        //         },
-        //         {
-        //             name: 'Check out the new accessories, jobs, petting feature, animations, visual and sound effect changes and much more in this update!',
-        //             type: 'text',
-        //         },
-        //         {
-        //             link: App.routes.BLOG,
-        //             name: 'see whats new',
-        //             class: 'solid primary',
-        //             onclick: () => {
-        //                 App.sendAnalytics('go_to_blog');
-        //             }
-        //         },
-        //     ])
-        // })) return;
+        if(addEvent(`update_08_notice`, () => {
+            App.displayList([
+                {
+                    name: 'New update is available!',
+                    type: 'title',
+                },
+                {
+                    name: 'Check out the new day and night cycle, weather effects, gameplay settings, new and reworked sprites and more!',
+                    type: 'text',
+                },
+                {
+                    link: App.routes.BLOG,
+                    name: 'see whats new',
+                    class: 'solid primary',
+                    onclick: () => {
+                        App.sendAnalytics('go_to_blog');
+                    }
+                },
+            ])
+        })) return;
 
         // if(addEvent(`smallchange_01_notice`, () => {
         //     App.displayConfirm('The <b>Stay with parents</b> option is now moved to the <i class="fa-solid fa-house-chimney-user"></i> care menu', [
