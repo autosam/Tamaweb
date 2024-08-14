@@ -590,6 +590,7 @@ let App = {
                         if(!username) return true;
                         App.userName = username;
                         App.save();
+                        App.sendAnalytics('new_user', username);
                     }
                 }
             ])
