@@ -1525,6 +1525,9 @@ hr {
 .shell-shape-4 {
     border-radius: 50% 50% 10% 10%;
 }
+.shell-shape-5 {
+    border-radius: 17% 7% 17% 7%;
+}
 
 /* scrollbar */
 @media screen and (min-width: 480px) {

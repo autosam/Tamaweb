@@ -27,7 +27,7 @@ let App = {
         PARENT_DAYCARE_START: 8,
         PARENT_DAYCARE_END: 18,
         ACTIVE_PET_Z: 5,
-        MAX_SHELL_SHAPES: 4,
+        MAX_SHELL_SHAPES: 5,
         AFTERNOON_TIME: [12, 18],
         EVENING_TIME: [18, 21],
         NIGHT_TIME: [21, 6],
@@ -1468,7 +1468,10 @@ let App = {
                                 }
                             },
                             {
-                                name: `select shell`,
+                                _mount: (e) => {
+                                    const hasNew = App.definitions.shell_background.some((entry) => entry.isNew);
+                                    e.innerHTML = `change shell ${hasNew && App.getBadge()}`
+                                },
                                 onclick: () => {
                                     App.handlers.open_shell_background_list();
                                     return true;
@@ -2123,32 +2126,21 @@ let App = {
             list = list.sort((a, b) => b.isNew - a.isNew)
             sliderInstance = App.displaySlider(list, null, {accept: 'Purchase'}, `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}`);
             return sliderInstance;
-            return App.displayList(list);
         },
         open_shell_background_list: function(){
-            let list = [];
             let sliderInstance;
-            let salesDay = App.isSalesDay();
-            for(let entry of Object.keys(App.definitions.shell_background)){
-                let current = App.definitions.shell_background[entry];
-
-                // 50% off on sales day
-                let price = current.price;
-                if(salesDay) price = Math.round(price / 2);
-
-                list.push({
-                    // name: `<c-sprite width="22" height="22" index="${(current.sprite - 1)}" src="resources/img/item/items.png"></c-sprite> ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>$${buyMode ? `${price}` : ''}</b>`,
-                    name: `<img src="${current.image}"></img>`,
+            const list = App.definitions.shell_background.map(current => {
+                return {
+                    name: `<img src="${current.image}"></img>${current.isNew ? App.getBadge() : ''}`,
                     onclick: (btn, list) => {
                         App.setShellBackground(current.image);
                         return true;
                     }
-                })
-            }
+                }
+            })
 
             sliderInstance = App.displaySlider(list, null, {accept: 'Set'});
             return sliderInstance;
-            return App.displayList(list);
         },
         open_accessory_list: function(buyMode, activeIndex, customPayload){
             let list = [];
@@ -3438,7 +3430,7 @@ let App = {
 
         App.playTime = parseInt(window.localStorage.getItem('play_time') || 0);
 
-        let shellBackground = window.localStorage.getItem('shell_background_v2.1') || App.definitions.shell_background['1'].image;
+        let shellBackground = window.localStorage.getItem('shell_background_v2.1') || App.definitions.shell_background[0].image;
 
         App.loadedData = {
             pet, 
