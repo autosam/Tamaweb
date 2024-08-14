@@ -6,6 +6,7 @@ const SPRITES = [
     "resources/img/background/house/04.png",
     "resources/img/background/house/05.png",
     "resources/img/background/house/06.png",
+    "resources/img/background/house/07.png",
     "resources/img/background/house/office_01.png",
     "resources/img/background/house/kitchen_01.png",
     "resources/img/background/house/kitchen_02.png",
@@ -27,6 +28,18 @@ const SPRITES = [
     "resources/img/background/outside/vacation_sea_l_01.png",
     "resources/img/background/outside/vacation_sea_l_02.png",
     "resources/img/background/outside/vacation_sea_l_03.png",
+
+    // sky and weather
+    "resources/img/background/sky/morning.png",
+    "resources/img/background/sky/morning_overlay.png",
+    "resources/img/background/sky/afternoon.png",
+    "resources/img/background/sky/afternoon_overlay.png",
+    "resources/img/background/sky/evening.png",
+    "resources/img/background/sky/evening_overlay.png",
+    "resources/img/background/sky/night.png",
+    "resources/img/background/sky/night_overlay.png",
+
+    "resources/img/background/sky/rain_01.png",
 
     // items
     "resources/img/item/foods.png",
@@ -64,6 +77,7 @@ const SPRITES = [
     "resources/img/misc/cooking_pot_p03.png",
     "resources/img/misc/exclam_01.png",
     "resources/img/misc/picture_overlay_01.png",
+    "resources/img/misc/shadow_01.png",
 
     // accessories
     "resources/img/accessory/crown_01.png",

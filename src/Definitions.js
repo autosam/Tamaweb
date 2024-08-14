@@ -511,27 +511,52 @@ App.definitions = {
             price: 250,
             isNew: false,
         },
+        "wooden": {
+            image: 'resources/img/background/house/07.png',
+            price: 350,
+            isNew: true,
+        },
     },
-    shell_background: {
-        "1": {
+    shell_background: [
+        {
+            image: 'resources/img/ui/shell_background_07.png',
+            isNew: true,
+        },
+        {
+            image: 'resources/img/ui/shell_background_08.png',
+            isNew: true,
+        },
+        {
+            image: 'resources/img/ui/shell_background_09.png',
+            isNew: true,
+        },
+        {
+            image: 'resources/img/ui/shell_background_10.png',
+            isNew: true,
+        },
+        {
+            image: 'resources/img/ui/shell_background_11.png',
+            isNew: true,
+        },
+        {
             image: 'resources/img/ui/shell_background_02.png',
         },
-        "2": {
+        {
             image: 'resources/img/ui/shell_background_01.png',
         },
-        "3": {
+        {
             image: 'resources/img/ui/shell_background_03.png',
         },
-        "4": {
+        {
             image: 'resources/img/ui/shell_background_04.png',
         },
-        "5": {
+        {
             image: 'resources/img/ui/shell_background_05.png',
         },
-        "6": {
+        {
             image: 'resources/img/ui/shell_background_06.png',
         },
-    },
+    ],
     accessories: {
         "crown": {
             image: 'resources/img/accessory/crown_01.png',

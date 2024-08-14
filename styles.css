@@ -63,7 +63,8 @@ body {
 }
 
 .graphics-canvas {
-    background-color: #ffe5ca;
+    /* background-color: #ffe5ca; */
+    background-color: #000000;
     image-rendering: pixelated;
     width: 100%;
     /* border-top-left-radius: 1000px;
@@ -379,6 +380,7 @@ body {
     display: flex;
     flex-direction: column;
     width: 80%;
+    position: relative;
 }
 
 .slide-btn:before {
@@ -413,7 +415,7 @@ input {
     border-radius: 10px;
     border: 1px solid #ffcf9d;
     text-transform: uppercase;
-    color: #3d00ff;
+    color: #ff8000;
 }
 
 input:focus {
@@ -620,6 +622,15 @@ button {
     align-items: center;
     height: 100%;
     text-align: center;
+}
+
+.inline-flex-between {
+    display: inline-flex;
+    justify-content: space-between;
+}
+
+.flex-1 {
+    flex: 1
 }
 
 .hidden {
@@ -906,8 +917,14 @@ input#background-color-picker {
     font-weight: bold;
 }
 
+.badge {
+    text-shadow: none !important;
+}
 .badge.red {
     background: red;
+}
+.badge.night {
+    background: #180067;
 }
 
 /* .dom-shell > * {
@@ -1016,6 +1033,12 @@ input#background-color-picker {
 .height-auto {
     height: auto;
 }
+.width-full {
+    width: 100%;
+}
+.items-center {
+    align-items: center;
+}
 
 .bg-white {
     background: white;
@@ -1027,7 +1050,7 @@ input#background-color-picker {
 }
 
 .bg-bef-1:before {
-    background: #e5acde !important;
+    background: #fcae7c !important;
 }
 
 .inner-padding {
@@ -1492,6 +1515,7 @@ hr {
         -1px -1px 0px #ff00c6;
 }
 
+/* shell shapes */
 .shell-shape-2 {
     border-radius: 30%;
 }
@@ -1500,4 +1524,35 @@ hr {
 }
 .shell-shape-4 {
     border-radius: 50% 50% 10% 10%;
+}
+.shell-shape-5 {
+    border-radius: 17% 7% 17% 7%;
+}
+
+/* scrollbar */
+@media screen and (min-width: 480px) {
+    ::-webkit-scrollbar {
+        width: 7px;
+        background-color: transparent;
+    }
+    ::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.5);
+        border-left: 1px solid #ff840080;
+        /* background: white; */
+        /* background: linear-gradient(90deg, rgb(255, 181, 97), rgba(255, 255, 255, 0.521)); */
+    }
+    ::-webkit-scrollbar-thumb {
+        /* background: repeating-linear-gradient(
+            #ffffff00 5px, 
+            #ff8300 7px,
+            #ff8300 9px
+            ); */
+        background: #ff8300;
+        border-top-right-radius: 10px;
+        border-bottom-right-radius: 10px;
+        /* background: linear-gradient(90deg, #ff931f, #ff8300); */
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #3d00ff;
+    }
 }

@@ -149,7 +149,7 @@ class PetDefinition {
         max_sleep: 100,
         sleep_satisfaction: 70,
         sleep_min_desire: 20,
-        sleep_depletion_rate: 0.03,
+        sleep_depletion_rate: 0.0034,
         sleep_replenish_rate: 0.1,
         light_sleepiness: 0.01,
         activity_sleep_depletion: 0.3,
@@ -173,7 +173,7 @@ class PetDefinition {
         max_death_tick: 100, // ~ 54 hours
         baby_max_death_tick: 44, // ~ 24 hours
         teen_max_death_tick: 74, // ~ 40 hours
-        death_tick_rate: 0.00026,
+        death_tick_rate: 0.000289,
         // wander (sec)
         wander_min: 1.5,
         wander_max: 8,
@@ -354,26 +354,26 @@ class PetDefinition {
         this.getSpritesheetDefinition();  
     }
 
-    nextBirthdayDate(){
+    getNextBirthdayDate(){
         let m = moment(this.lastBirthday).utc();
         switch(this.lifeStage){
             case 0:
-                return m.add(2, 'hours');
+                return m.add(App.constants.MANUAL_AGE_HOURS_BABY, 'hours');
             case 1:
-                return m.add(12, 'hours');
+                return m.add(App.constants.MANUAL_AGE_HOURS_TEEN, 'hours');
         }
+        return false;
     }
-    _nextBirthdayDate(){
-        let d = new Date(this.lastBirthday);
 
+    getNextAutomaticBirthdayDate(){
+        let m = moment(this.birthday).utc();
         switch(this.lifeStage){
             case 0:
-                return  d.setHours(d.getHours());
-                break;
+                return m.add(App.constants.AUTO_AGE_HOURS_BABY, 'hours');
             case 1:
-                return  d.setHours(d.getHours());
-                break;
+                return m.add(App.constants.AUTO_AGE_HOURS_TEEN, 'hours');
         }
+        return false;
     }
 
     ageUp(isNpc){

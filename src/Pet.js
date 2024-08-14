@@ -255,7 +255,7 @@ class Pet extends Object2d {
         if(this.stats.is_sleeping) return;
         this.stopMove();
         this.x = '50%';
-        if(this.hasMoodlet('rested')){
+        if(this.hasMoodlet('rested') && !App.isSleepHour()){
             this.playRefuseAnimation();
             return;
         }
@@ -502,7 +502,7 @@ class Pet extends Object2d {
         if(isOfflineProgression){
             depletion_mult = 0.25;
 
-            if((hour >= App.constants.SLEEP_START || hour < App.constants.SLEEP_END)){
+            if(App.isSleepHour()){
                 offlineAndIsNight = true;
                 depletion_mult = 0.05;
             }
@@ -742,7 +742,11 @@ class Pet extends Object2d {
         }
 
         if(this.stats.is_sleeping){
-            if(this.stats.current_sleep >= this.stats.max_sleep || (this.hasMoodlet('rested') && Math.random() < this.stats.light_sleepiness * 0.01)){
+            if(
+                (this.stats.current_sleep >= this.stats.max_sleep 
+                || (this.hasMoodlet('rested') && Math.random() < this.stats.light_sleepiness * 0.01)) 
+                && !App.isSleepHour()
+            ){
                 this.stats.is_sleeping = false;
                 App.toggleGameplayControls(true);
                 return;
@@ -887,7 +891,7 @@ class Pet extends Object2d {
             let date = new Date(startTime - elapsedTime);
             let hour = date.getHours();
 
-            // suppying hour because from 22:00 to 9:00 the starts will drop much slower and pet will get sleep
+            // supplying hour because from 22:00 to 9:00 the starts will drop much slower and pet will get sleep
             if(this.stats.is_egg){
                 this.handleEgg();
                 continue;

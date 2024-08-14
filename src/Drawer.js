@@ -53,72 +53,8 @@ class Drawer {
             y = Math.round(y);
             x = Math.round(x);
 
-            /* if (object.image){
-                if (object.inverted) {
-                    this.context.save();
-                    this.context.scale(-1, 1);
-                    if(object.spritesheet){
-                        let cellNumber = object.spritesheet.cellNumber - 1;
-                        this.context.drawImage(
-                            object.image,
-                            (cellNumber % object.spritesheet.rows) * object.spritesheet.cellSize,
-                            Math.floor(cellNumber / object.spritesheet.columns) * object.spritesheet.cellSize,
-                            object.spritesheet.cellSize,
-                            object.spritesheet.cellSize/2,
-                            -x - object.spritesheet.cellSize,
-                            y,
-                            object.spritesheet.cellSize,
-                            object.spritesheet.cellSize/2
-                        );
-                        this.context.drawImage(
-                            object.image,
-                            (cellNumber % object.spritesheet.rows) * object.spritesheet.cellSize,
-                            Math.floor(cellNumber / object.spritesheet.columns) * object.spritesheet.cellSize + object.spritesheet.cellSize / 2, // Start clipping from the middle
-                            object.spritesheet.cellSize,
-                            object.spritesheet.cellSize / 2,
-                            -x - object.spritesheet.cellSize,
-                            y + object.spritesheet.cellSize / 2,
-                            object.spritesheet.cellSize,
-                            object.spritesheet.cellSize / 2
-                        );
-                    } else {
-                        this.context.drawImage(
-                            object.image,
-                            -x,
-                            y,
-                            -object.width || -object.image.width,
-                            object.height || object.image.height
-                        )
-                    }
-                    this.context.restore();
-                } else {
-                    if(object.spritesheet){
-                        let cellNumber = object.spritesheet.cellNumber - 1;
-                        this.context.drawImage(
-                            object.image,
-                            (cellNumber % object.spritesheet.rows) * object.spritesheet.cellSize,
-                            Math.floor(cellNumber / object.spritesheet.columns) * object.spritesheet.cellSize,
-                            object.spritesheet.cellSize,
-                            object.spritesheet.cellSize,
-                            x,
-                            y,
-                            object.spritesheet.cellSize,
-                            object.spritesheet.cellSize,
-                        );
-                    } else {
-                        this.context.drawImage(
-                            object.image,
-                            x,
-                            y,
-                            object.width || object.image.width,
-                            object.height || object.image.height
-                        )
-                    }
-                }
-            } */
-
             function drawSprite(object, x, y, context) {
-                const { image, spritesheet, inverted, upperHalfOffsetY, scale, width, height, clipCircle, rotation } = object;
+                const { image, spritesheet, inverted, upperHalfOffsetY, scale, width, height, clipCircle, rotation, composite, opacity, isSkybox } = object;
                 if (!image) return;
 
                 context.save();
@@ -150,6 +86,14 @@ class Drawer {
                 if (inverted) {
                     context.scale(-1, 1);
                     x = -x - (spritesheet ? spritesheet.cellSize : (width || image.width));
+                }
+
+                if (composite) {
+                    context.globalCompositeOperation = composite ?? "multiply";
+                }
+
+                if (opacity !== undefined) {
+                    context.globalAlpha = opacity;
                 }
 
                 if (spritesheet) {
@@ -215,7 +159,6 @@ class Drawer {
 
             if(object.dirtyPatches){
                 let hCell = object.spritesheet.cellSize / 2;
-                this.context.globalCompositeOperation = "color";
                 this.context.globalCompositeOperation = "multiply";
 
                 let areas = [
@@ -228,7 +171,7 @@ class Drawer {
 
                 pRandom.save();
                 pRandom.seed = 1;
-                for(let i = 0; i < 8; i++){
+                for(let i = 0; i < 6; i++){
                     areas.push([
                         hCell - pRandom.getIntBetween(-6, 6),
                         hCell - pRandom.getIntBetween(-6, 6),
@@ -239,7 +182,7 @@ class Drawer {
                 
                 areas.forEach(area => {
                     this.context.beginPath();
-                    this.context.arc(x + area[0], y + area[1], area[2], 0, 2 * Math.PI, false);
+                    this.context.arc(x + area[0], y + object.upperHalfOffsetY + area[1], area[2], 0, 2 * Math.PI, false);
                     this.context.fillStyle = 'rgba(124, 55, 29, 0.6)';
                     this.context.fill();
                     this.context.lineWidth = 0;

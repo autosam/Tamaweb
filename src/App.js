@@ -8,15 +8,13 @@ let App = {
         vibrate: true,
         displayShell: true,
         displayShellButtons: true,
+        shellShape: 1,
         backgroundColor: '#FFDEAD',
         notifications: false,
+        automaticAging: false,
+        sleepingHoursOffset: 0,
     },
     constants: {
-        SLEEP_START: 22,
-        SLEEP_END: 9,
-        PARENT_DAYCARE_START: 8,
-        PARENT_DAYCARE_END: 18,
-        
         FOOD_SPRITESHEET: 'resources/img/item/foods_on.png',
         FOOD_SPRITESHEET_DIMENSIONS: {
             cellNumber: 1,
@@ -24,8 +22,19 @@ let App = {
             rows: 33,
             columns: 33,
         },
-
+        SLEEP_START: 21,
+        SLEEP_END: 8,
+        PARENT_DAYCARE_START: 8,
+        PARENT_DAYCARE_END: 18,
         ACTIVE_PET_Z: 5,
+        MAX_SHELL_SHAPES: 5,
+        AFTERNOON_TIME: [12, 18],
+        EVENING_TIME: [18, 21],
+        NIGHT_TIME: [21, 6],
+        MANUAL_AGE_HOURS_BABY: 6,
+        MANUAL_AGE_HOURS_TEEN: 12,
+        AUTO_AGE_HOURS_BABY: 24,
+        AUTO_AGE_HOURS_TEEN: 48,
     },
     routes: {
         BLOG: 'https://tamawebgame.github.io/blog/',
@@ -67,7 +76,7 @@ let App = {
         this.preloadedResources = {};
         preloadedResources.forEach((resource, i) => {
             // let name = forPreload[i].slice(forPreload[i].lastIndexOf('/') + 1);
-            let name = forPreload[i];
+            const name = forPreload[i];
             this.preloadedResources[name] = resource;
         });
 
@@ -111,7 +120,8 @@ let App = {
         App.darkOverlay = new Object2d({
             img: "resources/img/background/house/dark_overlay.png",
             hidden: true,
-            z: 10,
+            z: 10, opacity: 0.85,
+            composite: "source-atop",
         })
         App.poop = new Object2d({
             image: App.preloadedResources["resources/img/misc/poop.png"],
@@ -121,6 +131,27 @@ let App = {
                 Object2d.animations.flip(me, 300);
             }
         })
+        App.sky = new Object2d({
+            image: App.preloadedResources["resources/img/background/sky/night.png"],
+            x: 0, y: 0, z: 99999,
+            composite: "destination-over",
+            // absHidden: true
+        })
+        App.skyOverlay = new Object2d({
+            image: App.preloadedResources["resources/img/background/sky/night_overlay.png"],
+            x: 0, y: 0, z: 999,
+            composite: "source-atop",
+            opacity: 1,
+        })
+        App.skyWeather = new Object2d({
+            image: App.preloadedResources["resources/img/background/sky/rain_01.png"],
+            x: 0, y: 0, z: 999.1,
+            composite: "xor",
+            // hidden: true,
+            onDraw: (me) => {
+                Object2d.animations.flip(me, 200);
+            }
+        })
         App.petDefinition = new PetDefinition({
             name: getRandomName(),
             sprite: randomFromArray(PET_BABY_CHARACTERS),
@@ -128,8 +159,20 @@ let App = {
             .setStats({is_egg: true})
             .loadStats(loadedData.pet)
             .loadAccessories(loadedData.accessories);
-        
-        App.pet = App.createActivePet(App.petDefinition);
+
+        // check automatic age up
+        if(App.settings.automaticAging){
+            while(moment().utc().isAfter( App.petDefinition.getNextAutomaticBirthdayDate() )){
+                App.petDefinition.ageUp()
+            }
+        }
+
+        // put pet to sleep on start if is sleeping hour
+        App.petDefinition.stats.is_sleeping = App.isSleepHour() && !loadedData.pet?.stats?.is_egg;
+
+        App.pet = App.createActivePet(App.petDefinition, {
+            state: '',
+        });
 
         if(!loadedData.pet || !Object.keys(loadedData.pet).length) { // first time
             setTimeout(() => {
@@ -137,6 +180,7 @@ let App = {
             }, 100);
         }
         App.setScene(App.scene.home);
+        this.applySky()
 
         // simulating offline progression
         if(loadedData.lastTime){
@@ -286,7 +330,9 @@ let App = {
         // document.querySelector('.dom-shell').classList.add('shell-shape-0');
         
         // shell
-        document.querySelector('.dom-shell').style.display = App.settings.displayShell ? '' : 'none';
+        const domShell = document.querySelector('.dom-shell');
+        domShell.style.display = App.settings.displayShell ? '' : 'none';
+        domShell.className = `dom-shell shell-shape-${this.settings.shellShape}`
         document.querySelector('.shell-btn.main').style.display = App.settings.displayShellButtons ? '' : 'none';
         document.querySelector('.shell-btn.right').style.display = App.settings.displayShellButtons ? '' : 'none';
         document.querySelector('.shell-btn.left').style.display = App.settings.displayShellButtons ? '' : 'none';
@@ -362,7 +408,7 @@ let App = {
             return new Promise((resolve, reject) => {
                 const image = new Image();
     
-                image.src = url;
+                image.src = App.checkResourceOverride(url);
     
                 image.onload = () => resolve(image);
                 image.onerror = () => reject(`Image failed to load: ${url}`);
@@ -544,32 +590,33 @@ let App = {
                         if(!username) return true;
                         App.userName = username;
                         App.save();
+                        App.sendAnalytics('new_user', username);
                     }
                 }
             ])
             return;
         }
 
-        // if(addEvent(`update_07_notice`, () => {
-        //     App.displayList([
-        //         {
-        //             name: 'New update is available!',
-        //             type: 'title',
-        //         },
-        //         {
-        //             name: 'Check out the new accessories, jobs, petting feature, animations, visual and sound effect changes and much more in this update!',
-        //             type: 'text',
-        //         },
-        //         {
-        //             link: App.routes.BLOG,
-        //             name: 'see whats new',
-        //             class: 'solid primary',
-        //             onclick: () => {
-        //                 App.sendAnalytics('go_to_blog');
-        //             }
-        //         },
-        //     ])
-        // })) return;
+        if(addEvent(`update_08_notice`, () => {
+            App.displayList([
+                {
+                    name: 'New update is available!',
+                    type: 'title',
+                },
+                {
+                    name: 'Check out the new day and night cycle, weather effects, gameplay settings, new and reworked sprites and more!',
+                    type: 'text',
+                },
+                {
+                    link: App.routes.BLOG,
+                    name: 'see whats new',
+                    class: 'solid primary',
+                    onclick: () => {
+                        App.sendAnalytics('go_to_blog');
+                    }
+                },
+            ])
+        })) return;
 
         // if(addEvent(`smallchange_01_notice`, () => {
         //     App.displayConfirm('The <b>Stay with parents</b> option is now moved to the <i class="fa-solid fa-house-chimney-user"></i> care menu', [
@@ -746,7 +793,7 @@ let App = {
         
                 this.overlay = new Object2d({
                     img: 'resources/img/misc/picture_overlay_01.png',
-                    x: 0, y: 0, z: 30
+                    x: 0, y: 0, z: 1000
                 })
             },
             onUnload: () => {
@@ -782,6 +829,35 @@ let App = {
         if(scene.onLoad){
             scene.onLoad();
         }
+
+        this.applySky();
+    },
+    applySky() {
+        const { AFTERNOON_TIME, EVENING_TIME, NIGHT_TIME } = App.constants;
+        const date = new Date();
+        const h = new Date().getHours();
+
+        const isOutside = App.background.imageSrc?.indexOf('outside/') != -1;
+
+        // weather
+        App.skyWeather.z = isOutside ? 999.1 : -998;
+        const weatherEffectChance = random(3, 10, date.getDate())
+        const seed = h + date.getDate() + App.userId;
+        pRandom.save();
+        pRandom.seed = seed;
+        App.skyWeather.hidden = !pRandom.getPercent(weatherEffectChance);
+        pRandom.load();
+        
+        // sky
+        let sky;
+        if(h >= AFTERNOON_TIME[0] && h < AFTERNOON_TIME[1] && App.skyWeather.hidden) sky = 'afternoon';
+        else if(h >= EVENING_TIME[0] && h < EVENING_TIME[1]) sky = 'evening';
+        else if(h >= NIGHT_TIME[0] || h < NIGHT_TIME[1]) sky = 'night';
+        else sky = 'morning'
+        App.sky.setImage(App.preloadedResources[`resources/img/background/sky/${sky}.png`]);
+        App.skyOverlay.setImage(App.preloadedResources[`resources/img/background/sky/${sky}_overlay.png`]);
+        setTimeout(() => App.skyOverlay.hidden = !isOutside)
+        if(sky == 'afternoon' || sky == 'morning') App.skyOverlay.hidden = true;
     },
     applyRoomCustomizations(data){
         if(!data) return;
@@ -864,11 +940,12 @@ let App = {
             accessories: petDef.accessories || []
         }
     },
-    createActivePet: function(petDef){
+    createActivePet: function(petDef, props){
         return new Pet(petDef, {
             z: App.constants.ACTIVE_PET_Z, 
             scale: 1, 
             castShadow: true,
+            ...props
         });
     },
     handlers: {
@@ -960,7 +1037,7 @@ let App = {
         open_care_menu: function(){
             App.displayList([
                 {
-                    name: `sleep`,
+                    name: `sleep ${App.isSleepHour() ? App.getBadge('<div style="margin-left: auto; padding: 2px"> <i class="fa-solid fa-moon"></i> <small>bedtime!</small> </div>', 'night') : ''}`,
                     onclick: () => {
                         App.handlers.sleep();
                     }
@@ -1056,8 +1133,8 @@ let App = {
                     },
                 },
                 {
-                    _ignore: !window?.Notification || !App.isTester(),
-                    _mount: (e) => e.textContent = `notifications: ${App.settings.notifications ? 'on' : 'off'}`,
+                    _ignore: true || !window?.Notification || !App.isTester(), // unused
+                    _mount: (e) => e.innerHTML = `notifications: <i>${App.settings.notifications ? 'on' : 'off'}</i>`,
                     name: `notifications`,
                     onclick: (btn) => {
                         if(App.settings.notifications) {
@@ -1183,6 +1260,96 @@ let App = {
                 },
                 { type: 'seperator' },
                 {
+                    name: `gameplay settings ${App.getBadge()}`,
+                    onclick: () => {
+                        return App.displayList([
+                            {
+                                _mount: (e) => e.innerHTML = `Auto aging: <i>${App.settings.automaticAging ? 'On' : 'Off'}</i>${App.getBadge()}`,
+                                onclick: (e) => {
+                                    if(!App.settings.automaticAging){
+                                        App.displayConfirm(`Are you sure? This will make your pets automatically age up after a certain amount of time`, [
+                                            {
+                                                name: 'yes',
+                                                onclick: () => {
+                                                    App.settings.automaticAging = true;
+                                                    App.displayPopup(`Automatic aging turned on`);
+                                                    e._mount();
+                                                }
+                                            },
+                                            {
+                                                name: 'no',
+                                                class: 'back-btn',
+                                                onclick: () => {}
+                                            }
+                                        ])
+                                    } else {
+                                        App.settings.automaticAging = false;
+                                        App.displayPopup(`Automatic aging turned off`);
+                                    }
+                                    e._mount();
+                                    return true;
+                                }
+                            },
+                            {
+                                name: `Sleeping Hours${App.getBadge()}`,
+                                onclick: (e) => {
+                                    const list = UI.genericListContainer();
+                                    const content = UI.empty();
+
+                                    content.innerHTML = `
+                                        <div class="inner-padding b-radius-10 surface-stylized">
+                                            <div class="inline-flex-between width-full items-center">
+                                                <button id="subtract" class="generic-btn stylized primary solid"> <i class="fa-solid fa-minus"></i> </button>
+                                                <div style="font-size: medium">
+                                                    <b id="amount">${App.settings.sleepingHoursOffset}</b>
+                                                </div>
+                                                <button id="add" class="generic-btn stylized"> <i class="fa-solid fa-plus"></i> </button>
+                                            </div>
+                                        </div>
+
+                                        <div id="info" class="inner-padding b-radius-10 solid-surface-stylized">
+                                        </div>
+                                    `
+
+                                    const amount = content.querySelector('#amount');
+                                    const info = content.querySelector('#info');
+                                    const updateUI = () => {
+                                        amount.textContent = App.settings.sleepingHoursOffset;
+                                        const startTime = App.constants.SLEEP_START + App.settings.sleepingHoursOffset,
+                                            endTime = App.constants.SLEEP_END + App.settings.sleepingHoursOffset;
+                                        const rangeStyle = `display: flex;justify-content: space-between;`
+                                        info.innerHTML = `
+                                            sleeping
+                                            <br>
+                                            <b> 
+                                                <div style="${rangeStyle}">
+                                                    from <div>${App.clampWithin24HourFormat(startTime)}:00</div>
+                                                </div>
+                                                <div style="${rangeStyle}">
+                                                    to <div>${App.clampWithin24HourFormat(endTime)}:00</div>
+                                                </div>
+                                            </b>
+                                        `
+                                    }
+                                    content.querySelector('#add').onclick = () => {
+                                        App.settings.sleepingHoursOffset++;
+                                        updateUI();
+                                    }
+                                    content.querySelector('#subtract').onclick = () => {
+                                        App.settings.sleepingHoursOffset--;
+                                        updateUI();
+                                    }
+                                    updateUI();
+
+                                    list.appendChild(content);
+                                    return true;
+                                }
+                            },
+
+                        ])
+                    }
+                },
+                {
                     name: `system settings`,
                     onclick: () => {
                         App.displayList([
@@ -1262,7 +1429,7 @@ let App = {
                     }
                 },
                 {
-                    name: `change shell`,
+                    name: `change shell ${App.getBadge()}`,
                     onclick: () => {
                         // App.handlers.open_shell_background_list();
                         // return true;
@@ -1287,7 +1454,22 @@ let App = {
                                 }
                             },
                             {
-                                name: `select shell`,
+                                _mount: (e) => e.innerHTML = `shell shape: <i>${App.settings.shellShape}</i>${App.getBadge()}`,
+                                onclick: (item) => {
+                                    App.settings.shellShape++;
+                                    if(App.settings.shellShape > App.constants.MAX_SHELL_SHAPES){
+                                        App.settings.shellShape = 1;
+                                    }
+                                    App.applySettings();
+                                    item._mount()
+                                    return true;
+                                }
+                            },
+                            {
+                                _mount: (e) => {
+                                    const hasNew = App.definitions.shell_background.some((entry) => entry.isNew);
+                                    e.innerHTML = `change shell ${hasNew && App.getBadge()}`
+                                },
                                 onclick: () => {
                                     App.handlers.open_shell_background_list();
                                     return true;
@@ -1914,6 +2096,7 @@ let App = {
 
                 list.push({
                     // name: `<c-sprite width="22" height="22" index="${(current.sprite - 1)}" src="resources/img/item/items.png"></c-sprite> ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>$${buyMode ? `${price}` : ''}</b>`,
+                    isNew: current.isNew,
                     name: `<img style="min-height: 64px" src="${image}"></img> ${room.toUpperCase()} <b>$${price}</b> ${current.isNew ? App.getBadge() : ''}`,
                     onclick: (btn, list) => {
                         if(image === App.scene.home.image){
@@ -1938,34 +2121,24 @@ let App = {
                 })
             }
 
+            list = list.sort((a, b) => b.isNew - a.isNew)
             sliderInstance = App.displaySlider(list, null, {accept: 'Purchase'}, `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}`);
             return sliderInstance;
-            return App.displayList(list);
         },
         open_shell_background_list: function(){
-            let list = [];
             let sliderInstance;
-            let salesDay = App.isSalesDay();
-            for(let entry of Object.keys(App.definitions.shell_background)){
-                let current = App.definitions.shell_background[entry];
-
-                // 50% off on sales day
-                let price = current.price;
-                if(salesDay) price = Math.round(price / 2);
-
-                list.push({
-                    // name: `<c-sprite width="22" height="22" index="${(current.sprite - 1)}" src="resources/img/item/items.png"></c-sprite> ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>$${buyMode ? `${price}` : ''}</b>`,
-                    name: `<img src="${current.image}"></img>`,
+            const list = App.definitions.shell_background.map(current => {
+                return {
+                    name: `<img src="${current.image}"></img>${current.isNew ? App.getBadge() : ''}`,
                     onclick: (btn, list) => {
                         App.setShellBackground(current.image);
                         return true;
                     }
-                })
-            }
+                }
+            })
 
             sliderInstance = App.displaySlider(list, null, {accept: 'Set'});
             return sliderInstance;
-            return App.displayList(list);
         },
         open_accessory_list: function(buyMode, activeIndex, customPayload){
             let list = [];
@@ -2267,7 +2440,7 @@ let App = {
                     _ignore: App.petDefinition.lifeStage >= 2,
                     name: 'have birthday',
                     onclick: () => {
-                        let nextBirthday = App.petDefinition.nextBirthdayDate();
+                        let nextBirthday = App.petDefinition.getNextBirthdayDate();
                         if(moment().utc().isBefore( nextBirthday )){
                             return App.displayPopup(`${App.petDefinition.name} hasn't grown enough to age up<br><br>come back <b>${(moment(nextBirthday).utc().fromNow())}</b>`, 5000);
                         }
@@ -2737,6 +2910,7 @@ let App = {
             App.pet.stopMove();
             App.pet.triggerScriptedState('idle', App.INF, false, true);
             App.pet.x = 20;
+            App.pet.y = App.scene.home.petY;
             App.toggleGameplayControls(false);
             const mop = new Object2d({
                 image: App.preloadedResources["resources/img/misc/cleaner.png"],
@@ -2833,6 +3007,7 @@ let App = {
 
         listItems.forEach((item, i) => {
             if(item._ignore) return;
+            if(!item.name) item.name = '';
 
             let element;
             let defaultClassName;
@@ -2860,7 +3035,7 @@ let App = {
                     }
                     if(i == listItems.length - 2) element.className += ' last-btn';
                     // '⤳ ' + 
-                    if(item.name.indexOf('<') == -1 && item.name.indexOf('/') == -1) item.name = ellipsis(item.name);
+                    if(item.name.indexOf('<') == -1 && item.name.indexOf('/') == -1) item.name = ellipsis(item.name, item.ellipsisLength);
                     element.innerHTML = item.name;
                     element.disabled = item._disable;
                     element.style = `--child-index:${Math.min(i, 10) + 1}`;
@@ -3015,10 +3190,10 @@ let App = {
     },
     displayConfirm: function(text, buttons){
         let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
-            list.classList.add('confirm');
+            list.classList.add('confirm', 'inline-flex-between');
             list.innerHTML = `
-                <div class="uppercase flex-center height-auto b-radius-10 surface-stylized">
-                    <div class="inner-padding b-radius-10">
+                <div class="uppercase flex-center flex-1 height-auto">
+                    <div class="inner-padding b-radius-10 surface-stylized">
                         ${text}
                     </div>
                 </div>
@@ -3116,7 +3291,7 @@ let App = {
             if(moment(expirationDate).isBefore(moment())) return '';
         }
 
-        return `<span class="badge ${color}">${text.toUpperCase()}<span>`;
+        return `<span class="badge ${color}">${text}<span>`;
     },
     drawUI: function(){
         App.drawer.drawImmediate({
@@ -3166,6 +3341,29 @@ let App = {
         let day = new Date().getDate();
         return [7, 12, 18, 20, 25, 29, 30].includes(day);
     },
+    isSleepHour: function(){
+        const hour = new Date().getHours();
+        return App.isWithinHour(
+            hour,
+            App.constants.SLEEP_START + App.settings.sleepingHoursOffset,
+            App.constants.SLEEP_END + App.settings.sleepingHoursOffset
+        );
+    },
+    isWithinHour: function(current, start, end){
+        start = App.clampWithin24HourFormat(start);
+        end = App.clampWithin24HourFormat(end);
+        current = App.clampWithin24HourFormat(current);
+        if (start <= end) {
+            return current >= start && current < end;
+        } else {
+            return current >= start || current < end;
+        }
+    },
+    clampWithin24HourFormat: function(hour){
+        if(hour >= 24) return hour - 24;
+        else if(hour < 0) return hour + 24;
+        return hour;
+    },
     playSound: function(path, force){
         if(!App.settings.playSound) return;
 
@@ -3177,7 +3375,6 @@ let App = {
         this.audioChannelIsBusy = true;
     },
     save: function(noIndicator){
-        // return;
         // setCookie('pet', App.pet.serializeStats(), 365);
         window.localStorage.setItem('pet', App.pet.serializeStats());
         window.localStorage.setItem('settings', JSON.stringify(App.settings));
@@ -3231,7 +3428,7 @@ let App = {
 
         App.playTime = parseInt(window.localStorage.getItem('play_time') || 0);
 
-        let shellBackground = window.localStorage.getItem('shell_background_v2.1') || App.definitions.shell_background['1'].image;
+        let shellBackground = window.localStorage.getItem('shell_background_v2.1') || App.definitions.shell_background[0].image;
 
         App.loadedData = {
             pet, 

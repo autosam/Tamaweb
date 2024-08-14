@@ -1124,6 +1124,7 @@ class Activities {
         let otherPet;
         if(otherPetDef){
             otherPet = new Pet(otherPetDef);
+            otherPet.nextRandomTargetSelect = 0;
             App.petDefinition.addFriend(otherPetDef, 1);
             otherPetDef.increaseFriendship();
         }
@@ -1311,7 +1312,7 @@ class Activities {
     static task_foam(middleFn, endFn){
         let foam = new Object2d({
             img: 'resources/img/misc/foam_01.png',
-            x: 0, y: 0, z: 99,
+            x: 0, y: 0, z: 1001,
             onDraw: (me) => {
                 Object2d.animations.flip(me, 400)
             }
