@@ -428,12 +428,12 @@ let App = {
         const testers = [
             'Saman', 'samandev',
         ]
-        return testers.indexOf(App.userName) >= 0 || App.ENV == 'dev';
+        return testers.includes(App.userName) || App.ENV == 'dev';
     },
     addEvent: function(name, payload, force){
         if(!App.gameEventsHistory[name] || force){
-            App.gameEventsHistory[name] = '1';
-            if(payload) payload();
+            App.gameEventsHistory[name] = true;
+            payload?.();
             return true;
         }
         return false;
@@ -1125,6 +1125,49 @@ let App = {
         },
         open_settings: function(){
             const settings = App.displayList([
+                {
+                    _ignore: !App.isTester(),
+                    name: `devtools ${App.getBadge('debug', 'neutral')}`,
+                    onclick: () => {
+                        return App.displayList([
+                            {
+                                name: 'eventshistory',
+                                onclick: () => {
+                                    const ui = UI.genericListContainer();
+                                    const content = UI.empty()
+                                    ui.appendChild(content);
+                                    content.innerHTML = JSON.stringify(App.gameEventsHistory, null, 2);
+                                    return true;
+                                }
+                            },
+                            {
+                                name: 'localStorage size',
+                                onclick: () => {
+                                    let total = [];
+                                    var _lsTotal = 0,
+                                        _xLen, _x;
+                                    for (_x in localStorage) {
+                                        if (!localStorage.hasOwnProperty(_x)) {
+                                            continue;
+                                        }
+                                        _xLen = ((localStorage[_x].length + _x.length) * 2);
+                                        _lsTotal += _xLen;
+                                        const text = (_x.substr(0, 50) + " = " + (_xLen / 1024).toFixed(2) + " KB")
+                                        total.push(text);
+                                    };
+                                    const totalText = (_lsTotal / 1024).toFixed(2) + " KB";
+
+                                    const ui = UI.genericListContainer();
+                                    const content = UI.empty()
+                                    ui.appendChild(content);
+                                    content.innerHTML = [...total, `total = ${totalText}`].join('<br>');
+
+                                    return true;
+                                }
+                            },
+                        ])
+                    }
+                },
                 {
                     _ignore: !App.deferredInstallPrompt,
                     name: 'install app',
