@@ -63,7 +63,7 @@ class Object2d {
         if(!img) return;
 
         const preloaded = App.preloadedResources[img];
-        if(preloaded){
+        if(preloaded && !this.noPreload){
             return this.setImage(preloaded);
         }
 

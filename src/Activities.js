@@ -94,6 +94,7 @@ class Activities {
                 width: 22, height: 22, y: '50%', x: '50%', z: 30.5,
                 _current: 2.0944 * i, pulseScaleFloat: i,
                 clipCircle: true, parent: potObject,
+                noPreload: true,
                 onDraw: starLogicHandler,
             })
             starObjects.push(img);
@@ -213,8 +214,10 @@ class Activities {
         curtainTargetElevation = -100;
         await App.pet.triggerScriptedState('idle', 2000, 0, true);
         curtainObject.removeObject();
-        App.toggleGameplayControls(true);
-        App.pet.playCheeringAnimation(onEndFn);
+        App.pet.playCheeringAnimation(() => {
+            App.toggleGameplayControls(true);
+            onEndFn();
+        });
     }
     static async pet(){
         App.sendAnalytics('petting');

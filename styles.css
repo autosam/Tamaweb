@@ -915,11 +915,10 @@ input#background-color-picker {
     align-items: center;
     margin-left: 2px;
     font-weight: bold;
+    text-shadow: none !important;
+    pointer-events: none;
 }
 
-.badge {
-    text-shadow: none !important;
-}
 .badge.red {
     background: red;
 }
