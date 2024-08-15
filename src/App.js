@@ -300,7 +300,9 @@ let App = {
         
 
         // in-game events
-        App.gameEventsHistory = loadedData.eventsHistory || {};
+        if(loadedData.eventsHistory){
+            App.gameEventsHistory = loadedData.eventsHistory;
+        }
         this.handleInGameEvents();
 
         // load room customizations
@@ -429,8 +431,8 @@ let App = {
         return testers.indexOf(App.userName) >= 0 || App.ENV == 'dev';
     },
     addEvent: function(name, payload, force){
-        if(App.gameEventsHistory[name] !== true || force){
-            App.gameEventsHistory[name] = true;
+        if(!App.gameEventsHistory[name] || force){
+            App.gameEventsHistory[name] = '1';
             if(payload) payload();
             return true;
         }
@@ -1274,6 +1276,7 @@ let App = {
                                                     App.settings.automaticAging = true;
                                                     App.displayPopup(`Automatic aging turned on`);
                                                     e._mount();
+                                                    App.save();
                                                 }
                                             },
                                             {
@@ -1285,6 +1288,7 @@ let App = {
                                     } else {
                                         App.settings.automaticAging = false;
                                         App.displayPopup(`Automatic aging turned off`);
+                                        App.save();
                                     }
                                     e._mount();
                                     return true;
@@ -1975,7 +1979,7 @@ let App = {
                                 class: unlockEventState && 'disabled',
                                 onclick: () => {
                                     App.sendAnalytics('achievement_reward_collect', name);
-                                    App.addEvent(unlockEventName, null);
+                                    App.addEvent(unlockEventName);
                                     // do this to remove the badge from achievements 
                                     // button in stats menu
                                     App.closeAllDisplays();
