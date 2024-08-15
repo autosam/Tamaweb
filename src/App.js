@@ -300,7 +300,7 @@ let App = {
         
 
         // in-game events
-        if(loadedData.eventsHistory){
+        if(loadedData.eventsHistory && !Array.isArray(loadedData.eventsHistory)){
             App.gameEventsHistory = loadedData.eventsHistory;
         }
         this.handleInGameEvents();
@@ -1137,6 +1137,7 @@ let App = {
                                     const content = UI.empty()
                                     ui.appendChild(content);
                                     content.innerHTML = JSON.stringify(App.gameEventsHistory, null, 2);
+                                    App.displayPopup('array? ' + Array.isArray(App.gameEventsHistory))
                                     return true;
                                 }
                             },
