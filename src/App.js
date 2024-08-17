@@ -72,8 +72,8 @@ let App = {
             ...PET_BABY_CHARACTERS,
             ...NPC_CHARACTERS,
         ];
-        let preloadedResources = await this.preloadImages(forPreload);
         this.preloadedResources = {};
+        const preloadedResources = await this.preloadImages(forPreload);
         preloadedResources.forEach((resource, i) => {
             // let name = forPreload[i].slice(forPreload[i].lastIndexOf('/') + 1);
             const name = forPreload[i];
@@ -222,15 +222,6 @@ let App = {
 
         // entries
         window.onload = function () {
-            // function update(time) {
-            //     App.deltaTime = time - App.lastTime;
-            //     App.lastTime = time;
-
-            //     App.drawer.draw(App.deltaTime);
-            //     requestAnimationFrame(update);
-            //     // document.querySelector('.background-canvas').getContext('2d').drawImage(App.drawer.canvas, 0, 0);
-            // }
-
             const analyticsData = {
                 session_id: App.sessionId,
                 play_time_mins: (Math.round(App.playTime) / 1000 / 60).toFixed(2),
@@ -311,6 +302,9 @@ let App = {
         // records
         App.records = loadedData.records;
 
+        // random encounters
+        App.runRandomEncounters();
+
         // saver
         setInterval(() => {
             App.save(true);
@@ -318,7 +312,6 @@ let App = {
 
         // hide loading
         setTimeout(() => {
-            // document.querySelector('.loading-text').style.display = 'none';
             UI.fadeOut(document.querySelector('.loading-text'));
         })
     },
@@ -949,6 +942,9 @@ let App = {
             castShadow: true,
             ...props
         });
+    },
+    runRandomEncounters: function(){
+        if(Activities.encounter()) return;
     },
     handlers: {
         show_set_pet_name_dialog: function(){
