@@ -3271,7 +3271,7 @@ let App = {
         document.querySelector('.screen-wrapper').appendChild(list);
         return list;
     },
-    displayPrompt: function(text, buttons, defualtValue){
+    displayPrompt: function(text, buttons, defaultValue){
         let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
             list.classList.add('prompt');
             list.innerHTML = `
@@ -3292,7 +3292,7 @@ let App = {
 
         let input = document.createElement('input');
             input.setAttribute('spellcheck', false);
-        if(defualtValue !== undefined) input.value = defualtValue;
+        if(defaultValue !== undefined) input.value = defaultValue;
 
         list.insertBefore(input, btnContainer);
 
