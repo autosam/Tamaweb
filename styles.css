@@ -545,37 +545,45 @@ input:focus {
     outline: 5px solid #ffffff3b;
 }
 
+.classic-main-menu__item:nth-child(1):hover,
 .grid-item:nth-child(1):before {
     background: #fa9189;
 }
 
+.classic-main-menu__item:nth-child(2):hover,
 .grid-item:nth-child(2):before {
     background: #fcae7c
 }
 
+.classic-main-menu__item:nth-child(3):hover,
 .grid-item:nth-child(3):before {
 
     background: #99ccff
 }
 
+.classic-main-menu__item:nth-child(4):hover,
 .grid-item:nth-child(4):before {
     background: #ffcc99
 }
 
+.classic-main-menu__item:nth-child(5):hover,
 .grid-item:nth-child(5):before {
     background: rgb(164, 228, 169)
 }
 
+.classic-main-menu__item:nth-child(6):hover,
 .grid-item:nth-child(6):before {
 
     /* background: #ffe699 */
     background: #fb88ff
 }
 
+.classic-main-menu__item:nth-child(7):hover,
 .grid-item:nth-child(7):before {
     background: #ff99cc
 }
 
+.classic-main-menu__item:nth-child(8):hover,
 .grid-item:nth-child(8):before {
     background: #d1bdff
 }
@@ -1558,4 +1566,59 @@ hr {
     ::-webkit-scrollbar-thumb:hover {
         background: #3d00ff;
     }
+}
+
+/* classic main menu */
+.classic-main-menu__container {
+    position: absolute;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    flex-wrap: wrap;
+    align-content: space-between;
+    pointer-events: none;
+    /* background: var(--background-d); */
+    /* background: linear-gradient(black, transparent, black); */
+}
+.classic-main-menu__item {
+    width: 25%;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    height: 24px;
+    color: #ffffff;
+    pointer-events: initial;
+    cursor: pointer;
+    text-shadow: 0px 0px 6px #0000004a;
+    position: relative;
+    z-index: 1;
+    /* backdrop-filter: grayscale(); */
+}
+/* .classic-main-menu__item::before {
+    width: 12px;
+    height: 12px;
+    left: 18px;
+    top: 6px;
+    content: "";
+    background-color: rgb(255, 255, 255);
+    position: absolute;
+    border-radius: 100%;
+    z-index: -1;
+    border: 1px solid rgb(169, 169, 169);
+} */
+.classic-main-menu__item:hover,
+.classic-main-menu__item:active {
+    color: white
+}
+
+.graphics-wrapper.classic-main-menu .graphics-canvas {
+    position: absolute;
+    top: 24px;
+    cursor: initial !important;
+    height: calc(100% - 48px);
+    object-fit: cover;
+    object-position: bottom;
+    /* object-position: 0 -24px; */
 }

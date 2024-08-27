@@ -318,11 +318,13 @@ let App = {
         })
     },
     applySettings: function(){
+        const graphicsWrapper = document.querySelector('.graphics-wrapper');
+
         // background
         document.body.style.backgroundColor = this.settings.backgroundColor;
 
         // screen size
-        document.querySelector('.graphics-wrapper').style.transform = `scale(${this.settings.screenSize})`;
+        graphicsWrapper.style.transform = `scale(${this.settings.screenSize})`;
         document.querySelector('.dom-shell').style.transform = `scale(${this.settings.screenSize})`;
         // document.querySelector('.dom-shell').classList.add('shell-shape-0');
         
@@ -333,6 +335,39 @@ let App = {
         document.querySelector('.shell-btn.main').style.display = App.settings.displayShellButtons ? '' : 'none';
         document.querySelector('.shell-btn.right').style.display = App.settings.displayShellButtons ? '' : 'none';
         document.querySelector('.shell-btn.left').style.display = App.settings.displayShellButtons ? '' : 'none';
+
+        // classic main menu layout
+        const classic = true;
+
+        let classicMainMenuContainer = document.querySelector('.classic-main-menu__container');
+        classicMainMenuContainer?.remove();
+        graphicsWrapper.classList.remove('classic-main-menu');
+        if(classic){
+            graphicsWrapper.classList.add('classic-main-menu');
+            classicMainMenuContainer = UI.create({
+                componentType: 'div',
+                className: 'classic-main-menu__container',
+                parent: graphicsWrapper,
+                // style: `background-size: contain`,
+                parentInsertBefore: true,
+                children: App.definitions.main_menu.map(def => {
+                    return {
+                        className: 'classic-main-menu__item',
+                        innerHTML: def.name,
+                        onclick: def.onclick
+                    }
+                })
+            })
+            // const setBackground = () => {
+            //     classicMainMenuContainer.style.backgroundImage = `url(${App.currentScene?.image})`;
+            // }
+            // setInterval(() => {
+            //     setBackground();
+            // }, 100)
+            // setTimeout(() => {
+            //     setBackground();
+            // }, 100)
+        }
     },
     loadMods: function(mods){
         if(!mods || !mods.length) return;
@@ -976,62 +1011,12 @@ let App = {
             App.playSound(`resources/sounds/ui_click_01.ogg`, true);
             App.vibrate();
             App.displayGrid([
-                {
-                    name: '<i class="fa-solid fa-line-chart"></i>',
-                    name: '<i class="fa-solid fa-dashboard"></i>',
-                    onclick: () => {
-                        App.handlers.open_stats_menu();
-                    }
-                },
-                {
-                    name: '<i class="fa-solid fa-cutlery"></i>',
-                    onclick: () => {
-                        App.handlers.open_feeding_menu();
-                    }
-                },
-                {
-                    name: '<i class="fa-solid fa-bath"></i>',
-                    onclick: () => {
-                        // App.handlers.clean();
-                        App.handlers.open_bathroom_menu();
-                    }
-                },
-                {
-                    name: `<i class="fa-solid fa-house-chimney-user"></i>`,
-                    onclick: () => {
-                        App.handlers.open_care_menu();
-                    }
-                },
-                {
-                    name: '<i class="fa-solid fa-door-open"></i>',
-                    onclick: () => {
-                        App.handlers.open_activity_list();
-                    }
-                },
-                {
-                    name: '<i class="fa-solid fa-box-open"></i>',
-                    onclick: () => {
-                        App.handlers.open_stuff_menu();
-                    }
-                },
-                {
-                    name: '<i class="fa-solid fa-mobile-alt"></i>',
-                    onclick: () => {
-                        App.handlers.open_phone();
-                    }
-                },
-                {
-                    name: `<i class="fa-solid fa-gear"></i>`,
-                    onclick: () => {
-                        App.handlers.open_settings();
-                    }
-                }, 
+                ...App.definitions.main_menu,
                 {
                     name: '<i class="fa-solid fa-arrow-left back-sound"></i>',
                     class: 'back-sound',
                     onclick: () => { }
-                }, 
-                
+                }
             ])
         },
         open_care_menu: function(){

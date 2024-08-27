@@ -1,4 +1,56 @@
 App.definitions = {
+    main_menu: [
+        {
+            name: '<i class="fa-solid fa-line-chart"></i>',
+            name: '<i class="fa-solid fa-dashboard"></i>',
+            onclick: () => {
+                App.handlers.open_stats_menu();
+            }
+        },
+        {
+            name: '<i class="fa-solid fa-cutlery"></i>',
+            onclick: () => {
+                App.handlers.open_feeding_menu();
+            }
+        },
+        {
+            name: '<i class="fa-solid fa-bath"></i>',
+            onclick: () => {
+                // App.handlers.clean();
+                App.handlers.open_bathroom_menu();
+            }
+        },
+        {
+            name: `<i class="fa-solid fa-house-chimney-user"></i>`,
+            onclick: () => {
+                App.handlers.open_care_menu();
+            }
+        },
+        {
+            name: '<i class="fa-solid fa-door-open"></i>',
+            onclick: () => {
+                App.handlers.open_activity_list();
+            }
+        },
+        {
+            name: '<i class="fa-solid fa-box-open"></i>',
+            onclick: () => {
+                App.handlers.open_stuff_menu();
+            }
+        },
+        {
+            name: '<i class="fa-solid fa-mobile-alt"></i>',
+            onclick: () => {
+                App.handlers.open_phone();
+            }
+        },
+        {
+            name: `<i class="fa-solid fa-gear"></i>`,
+            onclick: () => {
+                App.handlers.open_settings();
+            }
+        },
+    ],
     food: {
         // foods
         "bread": {
