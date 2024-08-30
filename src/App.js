@@ -1304,11 +1304,11 @@ let App = {
                 },
                 { type: 'seperator' },
                 {
-                    name: `gameplay settings ${App.getBadge()}`,
+                    name: `gameplay settings`,
                     onclick: () => {
                         return App.displayList([
                             {
-                                _mount: (e) => e.innerHTML = `Auto aging: <i>${App.settings.automaticAging ? 'On' : 'Off'}</i>${App.getBadge()}`,
+                                _mount: (e) => e.innerHTML = `Auto aging: <i>${App.settings.automaticAging ? 'On' : 'Off'}</i>`,
                                 onclick: (e) => {
                                     if(!App.settings.automaticAging){
                                         App.displayConfirm(`Are you sure? This will make your pets automatically age up after a certain amount of time`, [
@@ -1337,7 +1337,7 @@ let App = {
                                 }
                             },
                             {
-                                name: `Sleeping Hours${App.getBadge()}`,
+                                name: `Sleeping Hours`,
                                 onclick: (e) => {
                                     const list = UI.genericListContainer();
                                     const content = UI.empty();
@@ -1475,7 +1475,7 @@ let App = {
                     }
                 },
                 {
-                    name: `change shell ${App.getBadge()}`,
+                    name: `change shell`,
                     onclick: () => {
                         // App.handlers.open_shell_background_list();
                         // return true;
@@ -1500,7 +1500,7 @@ let App = {
                                 }
                             },
                             {
-                                _mount: (e) => e.innerHTML = `shell shape: <i>${App.settings.shellShape}</i>${App.getBadge()}`,
+                                _mount: (e) => e.innerHTML = `shell shape: <i>${App.settings.shellShape}</i>`,
                                 onclick: (item) => {
                                     App.settings.shellShape++;
                                     if(App.settings.shellShape > App.constants.MAX_SHELL_SHAPES){
@@ -1514,7 +1514,7 @@ let App = {
                             {
                                 _mount: (e) => {
                                     const hasNew = App.definitions.shell_background.some((entry) => entry.isNew);
-                                    e.innerHTML = `change shell ${hasNew && App.getBadge()}`
+                                    e.innerHTML = `change shell ${hasNew ? App.getBadge() : ''}`
                                 },
                                 onclick: () => {
                                     App.handlers.open_shell_background_list();

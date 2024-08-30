@@ -514,29 +514,29 @@ App.definitions = {
         "wooden": {
             image: 'resources/img/background/house/07.png',
             price: 350,
-            isNew: true,
+            isNew: false,
         },
     },
     shell_background: [
         {
             image: 'resources/img/ui/shell_background_07.png',
-            isNew: true,
+            isNew: false,
         },
         {
             image: 'resources/img/ui/shell_background_08.png',
-            isNew: true,
+            isNew: false,
         },
         {
             image: 'resources/img/ui/shell_background_09.png',
-            isNew: true,
+            isNew: false,
         },
         {
             image: 'resources/img/ui/shell_background_10.png',
-            isNew: true,
+            isNew: false,
         },
         {
             image: 'resources/img/ui/shell_background_11.png',
-            isNew: true,
+            isNew: false,
         },
         {
             image: 'resources/img/ui/shell_background_02.png',
