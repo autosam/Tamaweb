@@ -337,7 +337,7 @@ let App = {
         document.querySelector('.shell-btn.left').style.display = App.settings.displayShellButtons ? '' : 'none';
 
         // classic main menu layout
-        const classic = true;
+        const classic = false;
 
         let classicMainMenuContainer = document.querySelector('.classic-main-menu__container');
         classicMainMenuContainer?.remove();
