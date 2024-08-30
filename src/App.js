@@ -168,7 +168,9 @@ let App = {
         }
 
         // put pet to sleep on start if is sleeping hour
-        App.petDefinition.stats.is_sleeping = App.isSleepHour() && !loadedData.pet?.stats?.is_egg;
+        if(!App.petDefinition.stats.is_sleeping){
+            App.petDefinition.stats.is_sleeping = App.isSleepHour() && !loadedData.pet?.stats?.is_egg;
+        }
 
         App.pet = App.createActivePet(App.petDefinition, {
             state: '',
