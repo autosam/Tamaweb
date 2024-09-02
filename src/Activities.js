@@ -788,6 +788,8 @@ class Activities {
                         App.toggleGameplayControls(true);
                         App.pet.playCheeringAnimation();
                     });
+
+                    App.sendAnalytics('age_up', App.petDefinition.lifeStage, true);
                 });
             });
         });

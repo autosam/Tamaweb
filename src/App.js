@@ -164,6 +164,7 @@ let App = {
         if(App.settings.automaticAging){
             while(moment().utc().isAfter( App.petDefinition.getNextAutomaticBirthdayDate() )){
                 App.petDefinition.ageUp()
+                App.sendAnalytics('auto_age_up', App.petDefinition.lifeStage);
             }
         }
 
@@ -1287,7 +1288,7 @@ let App = {
                         return true;
                     },
                 },
-                { type: 'seperator' },
+                { type: 'separator' },
                 {
                     name: `gameplay settings`,
                     onclick: () => {
@@ -1566,7 +1567,7 @@ let App = {
                         return true;
                     }
                 },
-                { type: 'seperator' },
+                { type: 'separator' },
                 {
                     name: 'get save code',
                     onclick: () => {
@@ -1626,7 +1627,7 @@ let App = {
                         return true;
                     }
                 },
-                { type: 'seperator' },
+                { type: 'separator' },
                 {
                     name: `send feedback`,
                     onclick: () => {
@@ -1666,7 +1667,7 @@ let App = {
                         return true;
                     },
                 },
-                { type: 'seperator' },
+                { type: 'separator' },
                 {
                     _disable: true,
                     name: `Version ${VERSION || '???'}`,
@@ -1847,19 +1848,22 @@ let App = {
                 {
                     name: 'food',
                     onclick: () => {
-                        return App.handlers.open_food_list(null, null, 'food');
+                        App.handlers.open_food_list(null, null, 'food');
+                        return true;
                     }
                 },
                 {
                     name: 'snacks',
                     onclick: () => {
-                        return App.handlers.open_food_list(null, null, 'treat');
+                        App.handlers.open_food_list(null, null, 'treat');
+                        return true;
                     }
                 },
                 {
                     name: 'meds',
                     onclick: () => {
-                        return App.handlers.open_food_list(null, null, 'med');
+                        App.handlers.open_food_list(null, null, 'med');
+                        return true;
                     }
                 },
                 {
@@ -2825,9 +2829,13 @@ let App = {
             ])
         },
         open_mall_activity_list: function(){
-            let hasNewDecor = Object.keys(App.definitions.room_background).some(key => {
+            const hasNewDecor = Object.keys(App.definitions.room_background).some(key => {
                 return App.definitions.room_background[key].isNew;
             });
+
+            const backFn = () => { // unused
+                setTimeout(() => App.handlers.open_activity_list(), 0)
+            }
 
             App.displayList([
                 {
@@ -3054,9 +3062,9 @@ let App = {
                     element.innerHTML = item.name;
                     defaultClassName = 'inner-padding b-radius-10 uppercase list-text surface-stylized';
                     break;
-                case "seperator":
+                case "separator":
                     element = document.createElement('hr');
-                    defaultClassName = 'content-seperator';
+                    defaultClassName = 'content-separator';
                     break;
                 default:
                     element = document.createElement(item.link ? 'a' : 'button');

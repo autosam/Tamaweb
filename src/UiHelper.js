@@ -101,6 +101,9 @@ const UI = {
         document.querySelector('.screen-wrapper').appendChild(list);
         return list;
     },
+    clearLastClicked: () => {
+        UI.lastClickedButton = null;
+    },
     genericListContainerContent: (contentString, listContainer) => {
         const content = UI.empty();
         content.innerHTML = contentString;
