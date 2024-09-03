@@ -955,6 +955,10 @@ input#background-color-picker {
     height: 192px;
 }
 
+.screen-wrapper img {
+    image-rendering: pixelated;
+}
+
 /* battle */
 .battle-participant-wrapper {
     display: flex;
@@ -1070,6 +1074,10 @@ input#background-color-picker {
 
 .m {
     margin: 6px;
+}
+
+.relative {
+    position: relative;
 }
 
 .text-center {

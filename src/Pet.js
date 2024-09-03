@@ -14,6 +14,7 @@ class Pet extends Object2d {
     animObjectsQueue = [];
     accessoryObjects = [];
     castShadow = true;
+    speedOverride = 0;
 
     constructor(petDefinition, additionalProps){
         const config = {
@@ -134,7 +135,7 @@ class Pet extends Object2d {
         if(this.stats.is_egg) return this.handleEgg();
 
         this.think();
-        this.moveToTarget(this.stats.speed);
+        this.moveToTarget(this.speedOverride || this.stats.speed);
         this.stateManager();
         this.animationHandler();
 

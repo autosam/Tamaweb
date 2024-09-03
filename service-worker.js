@@ -40,6 +40,7 @@ const ASSETS = [
     'resources/sounds/jump.ogg',
     'resources/sounds/task_complete.ogg',
     'resources/sounds/task_complete_02.ogg',
+    'resources/sounds/task_fail_01.ogg',
     'resources/sounds/ui_click_01.ogg',
     'resources/sounds/ui_click_02.ogg',
     'resources/sounds/ui_click_03.ogg',
@@ -58,6 +59,9 @@ const ASSETS = [
     'resources/img/ui/shell_background_04.png',
     'resources/img/ui/shell_background_05.png',
     'resources/img/ui/shell_background_06.png',
+    'resources/img/ui/facing_left.png',
+    'resources/img/ui/facing_right.png',
+    'resources/img/ui/facing_center.png',
     // def data
     'resources/data/CharacterDefinitions.js',
     'resources/data/SpriteDefinitions.js',

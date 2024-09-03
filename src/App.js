@@ -267,16 +267,7 @@ let App = {
         }
 
         // touch / mouse pos on canvas
-        document.addEventListener('mousemove', (evt) => {
-            var rect = App.drawer.canvas.getBoundingClientRect();
-            let x = evt.clientX - rect.left, y = evt.clientY - rect.top;
-            if(x < 0) x = 0;
-            if(x > rect.width) x = rect.width;
-            if(y < 0) y = 0;
-            if(y > rect.height) y = rect.height;
-
-            App.mouse = { x: x / 2, y: y / 2 };
-        })
+        App.registerInputUpdates();
 
         /* // routing
         const historyIndex = window.history.length;
@@ -316,6 +307,29 @@ let App = {
         // hide loading
         setTimeout(() => {
             UI.fadeOut(document.querySelector('.loading-text'));
+        })
+    },
+    registerInputUpdates: function(){
+        document.addEventListener('mousemove', (evt) => {
+            const rect = App.drawer.canvas.getBoundingClientRect();
+            let x = evt.clientX - rect.left, y = evt.clientY - rect.top;
+            if(x < 0) x = 0;
+            if(x > rect.width) x = rect.width;
+            if(y < 0) y = 0;
+            if(y > rect.height) y = rect.height;
+
+            App.mouse = { x: x / 2, y: y / 2 };
+        })
+        document.addEventListener('touchmove', (evt) => {
+            const rect = App.drawer.canvas.getBoundingClientRect();
+            const targetTouch = evt.targetTouches[0];
+            let x = targetTouch.clientX - rect.left, y = targetTouch.clientY - rect.top;
+            if(x < 0) x = 0;
+            if(x > rect.width) x = rect.width;
+            if(y < 0) y = 0;
+            if(y > rect.height) y = rect.height;
+    
+            App.mouse = { x: x / 2, y: y / 2 };
         })
     },
     applySettings: function(){
@@ -764,6 +778,9 @@ let App = {
         }),
         arcade: new Scene({
             image: 'resources/img/background/house/arcade_01.png',
+        }),
+        arcade_game01: new Scene({
+            image: 'resources/img/background/house/arcade_02.png',
         }),
         market: new Scene({
             image: 'resources/img/background/outside/market_01.png',
@@ -2892,17 +2909,23 @@ let App = {
         open_game_list: function(){
             App.displayList([
                 {
+                    name: `mimic ${App.getBadge()}`,
+                    onclick: () => {
+                        return Activities.opponentMimicGame();
+                    }
+                },
+                {
+                    name: `falling stuff wip ${App.getBadge()}`,
+                    onclick: () => {
+                        return Activities.fallingStuffGame();
+                    }
+                },
+                {
                     name: 'rod rush',
                     onclick: () => {
                         // return Activities.barTimingGame();
                         App.displayPopup(`Stop the pointer at the perfect time!`, 1500, () => Activities.barTimingGame())
                         return false;
-                    }
-                },
-                {
-                    name: 'park game',
-                    onclick: () => {
-                        return Activities.parkRngGame();
                     }
                 },
                 // {

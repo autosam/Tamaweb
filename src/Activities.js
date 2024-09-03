@@ -1038,7 +1038,9 @@ class Activities {
         // }, Pet.scriptedEventDrivers.movingOut.bind({pet: App.pet}));
     }
     static goToArcade(){
-        App.toggleGameplayControls(false);
+        App.toggleGameplayControls(false, () => {
+            App.pet.stopScriptedState();
+        });
         App.setScene(App.scene.arcade);
 
         let randomNpcs = new Array(2).fill(undefined).map((item, i) => {
@@ -1291,7 +1293,7 @@ class Activities {
                         App.setScene(App.scene.arcade);
                         App.pet.stopMove();
                         App.pet.x = '50%';
-                        let onEnd = () => {
+                        const onEnd = () => {
                             App.toggleGameplayControls(true);
                             App.handlers.open_game_list();
                             App.setScene(App.scene.home);
@@ -1316,27 +1318,289 @@ class Activities {
             }
         }
     }
-    static guessGame(){
+    static fallingStuffGame(){
         App.closeAllDisplays();
-        App.setScene(App.scene.park);
+        App.setScene(App.scene.arcade_game01);
         App.toggleGameplayControls(false);
+        App.mouse.x = null;
         
+        App.pet.speedOverride = 0.07;
         App.pet.x = '50%';
         App.pet.stopMove();
         App.pet.triggerScriptedState('idle', 99999999, 0, true, null, (pet) => {
-            let center = App.mouse.x - pet.spritesheet.cellSize/2;
+            if(App.mouse.x === null) return;
+
+            const center = App.mouse.x - pet.spritesheet.cellSize/2;
 
             if(pet.x != center){
-                let diff = pet.x - center;
-                if(diff > 0) pet.inverted = true;
-                else pet.inverted = false;
-                pet.x = center;
-                if(Math.abs(diff) > 2) pet.setState('moving');
+                const diff = pet.x - center;
+                if(diff > 0) pet.inverted = false;
+                else pet.inverted = true;
+                pet.targetX = center;
+                if(Math.abs(diff) > 0.5) pet.setState('moving');
             } else {
-                pet.setState('idle');
+                pet.setState('idle_side');
+            }
+        });
+
+        let lives = 3, moneyWon = 0;
+        let nextSpawnMs = 0, projectileSpeed = 0.05, spawnDelay = 1250;
+        const petHeight = 80 - App.pet.spritesheet.cellSize/1.2;
+        const petWidth = 32/2;
+        const spawnerObject = new Object2d({
+            x: -999, y: -999,
+            onDraw: () => {
+                if(App.lastTime > nextSpawnMs){
+                    nextSpawnMs = App.lastTime + spawnDelay;
+
+                    projectileSpeed += 0.0018;
+                    if(projectileSpeed > 0.16) projectileSpeed = 0.16;
+                    spawnDelay -= 20;
+                    if(spawnDelay < 700) spawnDelay = 700;
+
+                    // console.log(projectileSpeed, spawnDelay);
+
+                    const percentage = randomFromArray(['10%', '37%', '63%', '90%']);
+
+                    const currentIsFaulty = random(0, 3) == 1;
+                    const projectileObject = new Object2d({
+                        parent: spawnerObject,
+                        img: currentIsFaulty ? 'resources/img/misc/poop.png' : 'resources/img/misc/heart_particle_01.png',
+                        y: -20, x: percentage, rotation: random(0, 180), z: 6, width: 15, height: 13,
+                        speed: projectileSpeed,
+                        onDraw: (me) => {
+                            const xCenter = me.x - me.width/2;
+                            me.y += me.speed * App.deltaTime;
+
+                            me.rotation += me.speed * App.deltaTime;
+
+                            if(
+                                me.y > petHeight && me.y < 80 && 
+                                xCenter > App.pet.x - petWidth && xCenter < App.pet.x + petWidth
+                            ) {
+                                spawnSmoke(xCenter, me.y);
+                                me.removeObject();
+                                me.setImg('resources/img/misc/heart_particle_02.png')
+                                score(currentIsFaulty);
+                            }
+
+                            if(me.y > 90) me.removeObject();
+                        }
+                    })
+                }
+            }
+        })
+
+        const spawnSmoke = (x, y) => {
+            new Object2d({
+                img: 'resources/img/misc/foam_single.png',
+                x, y, z: 6, opacity: 1, scale: 1.2,
+                onDraw: (me) => {
+                    me.rotation += 0.1 * App.deltaTime;
+                    me.opacity -= 0.001 * App.deltaTime;
+                    me.scale -= 0.001 * App.deltaTime;
+                    me.y -= 0.01 * App.deltaTime;
+                    if(me.opacity <= 0.1 || me.scale <= 0.1) me.removeObject();
+                }
+            })
+        }
+
+        const screen = UI.empty();
+        document.querySelector('.screen-wrapper').appendChild(screen);
+        screen.innerHTML = `
+        <div class="width-full" style="position: absolute; bottom: 0; left: 0;">
+            <div class="flex-container" style="justify-content: space-between; padding: 4px">
+            <div class="flex-container">
+                $
+                <div id="moneyWon">${moneyWon}</div>
+            </div>
+            <div class="flex-container">
+                <div id="lives">${lives}</div>
+            </div>
+            </div>
+        </div>
+        `;
+
+        const uiMoneyWon = screen.querySelector('#moneyWon'),
+        uiLives = screen.querySelector('#lives');
+
+        const updateUI = () => {
+            uiMoneyWon.textContent = moneyWon;
+            uiLives.innerHTML = new Array(lives).fill('').map((item) => {
+                return `<img src="resources/img/misc/heart_particle_01.png"></img>`
+            }).join(' ');
+        }
+
+        updateUI();
+
+        const finish = () => {
+            screen.remove();
+            spawnerObject.removeObject();
+            App.pet.stopScriptedState();
+            App.pet.x = '50%';
+
+            const end = () => {
+                App.setScene(App.scene.home);
+                App.handlers.open_game_list();
+                App.toggleGameplayControls(true);
+                App.pet.stats.gold += moneyWon;
+                App.pet.stats.current_fun += moneyWon / 6;
+                App.pet.speedOverride = 0;
+                if(moneyWon)
+                    App.displayPopup(`${App.petDefinition.name} won $${moneyWon}`);
+                else 
+                    App.displayPopup(`${App.petDefinition.name} lost!`);
             }
 
+            if(moneyWon > 30){
+                App.pet.playCheeringAnimation(() => end());
+            } else {
+                App.pet.playUncomfortableAnimation(() => end());
+            }
+        }
+
+        const score = (faulty) => {
+            if(faulty){
+                App.playSound(`resources/sounds/sad.ogg`, true);
+                lives--;
+                if(lives == 0){
+                    lives = 0;
+                    finish();
+                }
+            } else {
+                App.playSound(`resources/sounds/cute.ogg`, true);
+                moneyWon += random(1, 2);
+            }
+
+            updateUI();
+        }
+    }
+    static opponentMimicGame(){
+        App.closeAllDisplays();
+        App.setScene(App.scene.arcade);
+        App.toggleGameplayControls(false);
+
+        const opponentPetDef = new PetDefinition({
+            name: 'park_game_npc',
+            sprite: 'resources/img/character/chara_175b.png',
         });
+
+        let totalRounds = 3, playedRounds = 0, roundsWon = 0;
+
+        const opponentPet = new Pet(opponentPetDef);
+
+        const reset = () => {
+            if(playedRounds >= totalRounds){
+                App.pet.stopScriptedState();
+                opponentPet.removeObject();
+                App.pet.x = '50%';
+
+                const end = () => {
+                    App.setScene(App.scene.home);
+                    App.handlers.open_game_list();
+                    App.toggleGameplayControls(true);
+                    const moneyWon = roundsWon * random(20, 30);
+                    App.pet.stats.gold += moneyWon;
+                    App.pet.stats.current_fun += roundsWon * 15;
+                    if(moneyWon)
+                        App.displayPopup(`${App.petDefinition.name} won $${moneyWon}`);
+                    else 
+                        App.displayPopup(`${App.petDefinition.name} lost!`);
+                }
+
+                if(roundsWon >= 2){
+                    App.pet.playCheeringAnimation(() => end());
+                } else if(roundsWon == 0){
+                    App.pet.playUncomfortableAnimation(() => end());
+                } else {
+                    end();
+                }
+
+                return;
+            }
+
+            opponentPet.stopMove();
+            opponentPet.triggerScriptedState('idle', App.INF, null, true);
+            opponentPet.x = '70%';
+            opponentPet.inverted = true;
+
+            App.pet.x = '30%';
+            App.pet.inverted = false;
+            App.pet.stopMove();
+            App.pet.triggerScriptedState('idle', App.INF, null, true);
+
+            setTimeout(() => {
+                const screen = App.displayEmpty();
+                const imgPath = 'resources/img/ui/';
+                screen.innerHTML = `
+                <div class="flex-container flex-dir-col height-100p" style="background: var(--background-c)">
+                    <div class="solid-surface-stylized inner-padding b-radius-10 relative">
+                        <div class="surface-stylized" style="padding: 0px 10px;position: absolute;top: -20px;left: 0px;">
+                            ${playedRounds + 1}/${totalRounds}
+                        </div>
+                        Which direction will your opponent turn?
+                    </div>
+                    <div>
+                        <button id="left" class="generic-btn stylized"> <img src="${imgPath}facing_left.png"></img> </button>
+                        <button id="center" class="generic-btn stylized"> <img src="${imgPath}facing_center.png"></img> </button>
+                        <button id="right" class="generic-btn stylized"> <img src="${imgPath}facing_right.png"></img> </button>
+                    </div>
+                </div>
+                `;
+                ['left', 'center', 'right'].forEach((dir) => {
+                    const btn = screen.querySelector(`#${dir}`);
+                    btn.onclick = () => {
+                        setPredictedDirection(dir);
+                        screen.close();
+                    }
+                })
+            }, 500)
+        }
+
+        reset();
+
+        const deriveStateFromDirection = (dir) => {
+            switch(dir){
+                case 'center': return {state: 'idle', inverted: false};
+                case 'right': return {state: 'idle_side', inverted: true};
+                case 'left': return {state: 'idle_side', inverted: false};
+            }
+        }
+
+        const setPredictedDirection = (dir) => {
+            const randomDir = randomFromArray(['left', 'center', 'right']);
+            setTimeout(() => {
+                const opponentState = deriveStateFromDirection(randomDir);
+                opponentPet.setState(opponentState.state)
+                opponentPet.inverted = opponentState.inverted;
+
+                const playerState = deriveStateFromDirection(dir);
+                App.pet.setState(playerState.state)
+                App.pet.inverted = playerState.inverted;
+
+                // if(randomDir === dir){
+                //     App.playSound(`resources/sounds/task_complete_02.ogg`, true);
+                // } else {
+                //     App.playSound(`resources/sounds/task_fail_01.ogg`, true);
+                // }
+                App.playSound(`resources/sounds/task_complete.ogg`, true);
+
+                setTimeout(() => {
+                    playedRounds++;
+                    if(randomDir === dir){
+                        App.pet.setState('cheering');
+                        opponentPet.setState('angry');
+                        roundsWon++;
+                    } else {
+                        App.pet.setState('angry');
+                        opponentPet.setState('cheering');
+                    }
+                    setTimeout(reset, 1000);
+                }, 1500);
+            }, 1000);
+        }
+        
+        return false;  
     }
 
 
