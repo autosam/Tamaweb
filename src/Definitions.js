@@ -702,16 +702,6 @@ App.definitions = {
                 App.displayPopup(`You've received $350!`);
             }
         },
-        perfect_minigame_rodrush_win_x_times: {
-            name: 'Rod Rush Pro',
-            description: 'Win with perfect score in Rod Rush game 10 times',
-            checkProgress: () => App.getRecord('times_perfected_rodrush_minigame') >= 10,
-            advance: (amount) => App.addRecord('times_perfected_rodrush_minigame', amount),
-            getReward: () => {
-                App.pet.stats.gold += 500;
-                App.displayPopup(`You've received $500!`);
-            }
-        },
         go_to_vacation_x_times: {
             name: 'Sightsee-er',
             description: 'Take a vacation!',
@@ -721,6 +711,18 @@ App.definitions = {
                 App.pet.stats.gold += 150;
                 App.displayPopup(`You've received $150!`);
             }  
+        },
+
+        // minigames
+        perfect_minigame_rodrush_win_x_times: {
+            name: 'Rod Rush Pro',
+            description: 'Win with perfect score in Rod Rush game 10 times',
+            checkProgress: () => App.getRecord('times_perfected_rodrush_minigame') >= 10,
+            advance: (amount) => App.addRecord('times_perfected_rodrush_minigame', amount),
+            getReward: () => {
+                App.pet.stats.gold += 500;
+                App.displayPopup(`You've received $500!`);
+            }
         },
         perfect_minigame_catch_win_x_gold: {
             name: 'Money Catcher',

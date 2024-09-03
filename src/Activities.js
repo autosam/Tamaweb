@@ -1354,9 +1354,9 @@ class Activities {
                     nextSpawnMs = App.lastTime + spawnDelay;
 
                     projectileSpeed += 0.0018;
-                    if(projectileSpeed > 0.16) projectileSpeed = 0.16;
+                    if(projectileSpeed > 0.15) projectileSpeed = 0.15;
                     spawnDelay -= 20;
-                    if(spawnDelay < 700) spawnDelay = 700;
+                    if(spawnDelay < 800) spawnDelay = 800;
 
                     const xPercentage = randomFromArray(['10%', '37%', '63%', '90%']);
                     const currentIsFaulty = random(0, 3) == 1;
