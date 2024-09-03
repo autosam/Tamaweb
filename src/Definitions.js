@@ -639,7 +639,7 @@ App.definitions = {
             advance: (amount) => App.addRecord('times_patted', amount),
             getReward: () => {
                 App.pet.stats.gold += 150;
-                App.displayPopup(`You've recieved 150 golds!`);
+                App.displayPopup(`You've received $150!`);
             }
         },
         use_toilet_x_times: {
@@ -649,7 +649,7 @@ App.definitions = {
             advance: (amount) => App.addRecord('times_used_toilet', amount),
             getReward: () => {
                 App.pet.stats.gold += 150;
-                App.displayPopup(`You've recieved 150 golds!`);
+                App.displayPopup(`You've received $150!`);
             }
         },
         marry_x_times: {
@@ -659,7 +659,7 @@ App.definitions = {
             advance: (amount) => App.addRecord('times_married', amount),
             getReward: () => {
                 App.pet.stats.gold += 1000;
-                App.displayPopup(`You've recieved 1000 golds!`);
+                App.displayPopup(`You've received $1000!`);
             }
         },
         birthday_x_times: {
@@ -669,7 +669,7 @@ App.definitions = {
             advance: (amount) => App.addRecord('times_had_birthday', amount),
             getReward: () => {
                 App.pet.stats.gold += 150;
-                App.displayPopup(`You've recieved 150 golds!`);
+                App.displayPopup(`You've received $150!`);
             }
         },
         redecor_x_times: {
@@ -679,7 +679,7 @@ App.definitions = {
             advance: (amount) => App.addRecord('times_redecorated_background', amount),
             getReward: () => {
                 App.pet.stats.gold += 100;
-                App.displayPopup(`You've recieved 100 golds!`);
+                App.displayPopup(`You've received $100!`);
             }
         },
         give_gifts_x_times: {
@@ -689,7 +689,7 @@ App.definitions = {
             advance: (amount) => App.addRecord('times_gave_gift', amount),
             getReward: () => {
                 App.pet.stats.gold += 500;
-                App.displayPopup(`You've recieved 500 golds!`);
+                App.displayPopup(`You've received $500!`);
             }
         },
         work_x_times: {
@@ -699,17 +699,17 @@ App.definitions = {
             advance: (amount) => App.addRecord('times_worked', amount),
             getReward: () => {
                 App.pet.stats.gold += 350;
-                App.displayPopup(`You've recieved 350 golds!`);
+                App.displayPopup(`You've received $350!`);
             }
         },
         perfect_minigame_rodrush_win_x_times: {
             name: 'Rod Rush Pro',
-            description: 'Win with perfect score in Rod Rush 10 times',
+            description: 'Win with perfect score in Rod Rush game 10 times',
             checkProgress: () => App.getRecord('times_perfected_rodrush_minigame') >= 10,
             advance: (amount) => App.addRecord('times_perfected_rodrush_minigame', amount),
             getReward: () => {
                 App.pet.stats.gold += 500;
-                App.displayPopup(`You've recieved 500 golds!`);
+                App.displayPopup(`You've received $500!`);
             }
         },
         go_to_vacation_x_times: {
@@ -719,8 +719,29 @@ App.definitions = {
             advance: (amount) => App.addRecord('times_went_on_vacation', amount),
             getReward: () => {
                 App.pet.stats.gold += 150;
-                App.displayPopup(`You've recieved 150 golds!`);
+                App.displayPopup(`You've received $150!`);
             }  
-        }
+        },
+        perfect_minigame_catch_win_x_gold: {
+            name: 'Money Catcher',
+            description: 'Win $125 in single game of Catch!',
+            required: 125,
+            checkProgress: () => App.getRecord('won_x_gold_in_catch_minigame') >= 1,
+            advance: () => App.addRecord('won_x_gold_in_catch_minigame', 1),
+            getReward: () => {
+                App.pet.stats.gold += 400;
+                App.displayPopup(`You've received $400!`);
+            }
+        },
+        perfect_minigame_mimic_win_x_times: {
+            name: 'Perfect Imitator',
+            description: 'Win with perfect score in Mimic game 10 times!',
+            checkProgress: () => App.getRecord('times_perfected_mimic_minigame') >= 10,
+            advance: (amount) => App.addRecord('times_perfected_mimic_minigame', amount),
+            getReward: () => {
+                App.pet.stats.gold += 500;
+                App.displayPopup(`You've received $500!`);
+            }
+        },
     }
 }

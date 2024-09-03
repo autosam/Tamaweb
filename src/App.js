@@ -2294,7 +2294,7 @@ let App = {
                     }
                 },
                 {
-                    name: 'game center',
+                    name: `game center ${App.getBadge()}`,
                     onclick: () => {
                         // App.handlers.open_game_list();
                         Activities.goToArcade();
@@ -2907,24 +2907,32 @@ let App = {
             ])
         },
         open_game_list: function(){
+            const tutorialDisplayTime = 2000;
             App.displayList([
                 {
                     name: `mimic ${App.getBadge()}`,
                     onclick: () => {
-                        return Activities.opponentMimicGame();
+                        const imgPath = 'resources/img/ui/';
+                        const images = `
+                            <img src="${imgPath}facing_left.png"></img>
+                            <img src="${imgPath}facing_center.png"></img>
+                            <img src="${imgPath}facing_right.png"></img>
+                        `
+                        App.displayPopup(`Try to predict your opponents next stance ${images} and mimic them!`, tutorialDisplayTime, () => Activities.opponentMimicGame())
+                        return false;
                     }
                 },
                 {
-                    name: `falling stuff wip ${App.getBadge()}`,
+                    name: `catch ${App.getBadge()}`,
                     onclick: () => {
-                        return Activities.fallingStuffGame();
+                        App.displayPopup(`Catch as much <img src="resources/img/misc/heart_particle_01.png"></img> while avoiding <img src="resources/img/misc/falling_poop.png"></img>`, tutorialDisplayTime, () => Activities.fallingStuffGame())
+                        return false;
                     }
                 },
                 {
                     name: 'rod rush',
                     onclick: () => {
-                        // return Activities.barTimingGame();
-                        App.displayPopup(`Stop the pointer at the perfect time!`, 1500, () => Activities.barTimingGame())
+                        App.displayPopup(`Stop the pointer at the perfect time!`, tutorialDisplayTime, () => Activities.barTimingGame())
                         return false;
                     }
                 },

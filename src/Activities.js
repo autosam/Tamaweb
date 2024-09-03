@@ -1225,7 +1225,7 @@ class Activities {
 
         let screen = App.displayEmpty();
         screen.innerHTML = `
-        <div class="flex-container flex-row-down height-100p" style="background: #e6d4ef">
+        <div class="flex-container flex-row-down height-100p" style="background: url(${App.scene.arcade_game01.image});background-size: contain;image-rendering: pixelated;">
             <div class="timing-bar-container">
                 <div class="timing-bar-rod"></div>
                 <div class="timing-bar-rod"></div>
@@ -1320,7 +1320,7 @@ class Activities {
     }
     static fallingStuffGame(){
         App.closeAllDisplays();
-        App.setScene(App.scene.arcade_game01);
+        App.setScene(App.scene.park);
         App.toggleGameplayControls(false);
         App.mouse.x = null;
         
@@ -1343,7 +1343,7 @@ class Activities {
             }
         });
 
-        let lives = 3, moneyWon = 0;
+        let lives = 2, moneyWon = 0;
         let nextSpawnMs = 0, projectileSpeed = 0.05, spawnDelay = 1250;
         const petHeight = 80 - App.pet.spritesheet.cellSize/1.2;
         const petWidth = 32/2;
@@ -1358,15 +1358,12 @@ class Activities {
                     spawnDelay -= 20;
                     if(spawnDelay < 700) spawnDelay = 700;
 
-                    // console.log(projectileSpeed, spawnDelay);
-
-                    const percentage = randomFromArray(['10%', '37%', '63%', '90%']);
-
+                    const xPercentage = randomFromArray(['10%', '37%', '63%', '90%']);
                     const currentIsFaulty = random(0, 3) == 1;
                     const projectileObject = new Object2d({
                         parent: spawnerObject,
-                        img: currentIsFaulty ? 'resources/img/misc/poop.png' : 'resources/img/misc/heart_particle_01.png',
-                        y: -20, x: percentage, rotation: random(0, 180), z: 6, width: 15, height: 13,
+                        img: currentIsFaulty ? 'resources/img/misc/falling_poop.png' : 'resources/img/misc/heart_particle_01.png',
+                        y: -20, x: xPercentage, rotation: random(0, 180), z: 6, width: 15, height: 13,
                         speed: projectileSpeed,
                         onDraw: (me) => {
                             const xCenter = me.x - me.width/2;
@@ -1410,7 +1407,12 @@ class Activities {
         screen.innerHTML = `
         <div class="width-full" style="position: absolute; bottom: 0; left: 0;">
             <div class="flex-container" style="justify-content: space-between; padding: 4px">
-            <div class="flex-container">
+            <div class="flex-container" style="
+                background: #ff00c647;
+                padding: 0 4px;
+                border-radius: 6px;
+                color: #ffcaf4;
+            ">
                 $
                 <div id="moneyWon">${moneyWon}</div>
             </div>
@@ -1446,6 +1448,9 @@ class Activities {
                 App.pet.stats.gold += moneyWon;
                 App.pet.stats.current_fun += moneyWon / 6;
                 App.pet.speedOverride = 0;
+                if(moneyWon >= App.definitions.achievements.perfect_minigame_catch_win_x_gold.required){
+                    App.definitions.achievements.perfect_minigame_catch_win_x_gold.advance();
+                }
                 if(moneyWon)
                     App.displayPopup(`${App.petDefinition.name} won $${moneyWon}`);
                 else 
@@ -1485,9 +1490,9 @@ class Activities {
             sprite: 'resources/img/character/chara_175b.png',
         });
 
+        const opponentPet = new Pet(opponentPetDef, {x: '70%'});
+        
         let totalRounds = 3, playedRounds = 0, roundsWon = 0;
-
-        const opponentPet = new Pet(opponentPetDef);
 
         const reset = () => {
             if(playedRounds >= totalRounds){
@@ -1506,6 +1511,9 @@ class Activities {
                         App.displayPopup(`${App.petDefinition.name} won $${moneyWon}`);
                     else 
                         App.displayPopup(`${App.petDefinition.name} lost!`);
+                    if(roundsWon == totalRounds){
+                        App.definitions.achievements.perfect_minigame_mimic_win_x_times.advance();
+                    }
                 }
 
                 if(roundsWon >= 2){
@@ -1554,7 +1562,7 @@ class Activities {
                         screen.close();
                     }
                 })
-            }, 500)
+            }, 800)
         }
 
         reset();
