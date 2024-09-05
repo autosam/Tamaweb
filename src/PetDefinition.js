@@ -198,6 +198,13 @@ class PetDefinition {
         is_at_parents: false,
         is_dead: false,
         is_at_vacation: false,
+        current_want: {
+            type: null,
+            item: null,
+            appearTime: null,
+            pendingFulfilled: null,
+            next_refresh_ms: new Date().getTime() + random(5000, 30000),
+        }
     }
     friends = [];
     family = [];
@@ -257,6 +264,7 @@ class PetDefinition {
                     is_at_parents: this.stats.is_at_parents,
                     is_at_vacation: this.stats.is_at_vacation,
                     is_dead: this.stats.is_dead,
+                    current_want: this.stats.current_want,
                 }
                 return;
             }
@@ -477,6 +485,90 @@ class PetDefinition {
         if(!parents.length) return false;
         
         return parents;
+    }
+
+    refreshWant(currentTry = 1, existingCurrentCategory){
+        if(currentTry > 48) return;
+
+        const {current_want} = this.stats;
+
+        if(current_want.type){ // has unfulfilled want
+            this.clearWant(false);
+        }
+
+        const possibleCategories = [
+            'food',
+            'snack',
+            'playdate',
+            'item',
+            'minigame',
+            // 'park',
+            // 'redecor',
+            // 'accessory',
+        ]
+
+        if(App.pet.hasMoodlet('hungry')){
+            possibleCategories.push('hungry', 'hungry', 'hungry');
+        }
+
+        const currentCategory = /* 'minigame' ||  */existingCurrentCategory || randomFromArray(possibleCategories);
+
+        switch(currentCategory){
+            case "food": // item is food name
+                const wantedFood = randomFromArray(Object.keys(App.definitions.food));
+                if(
+                    !App.definitions.food[wantedFood].age.includes(this.lifeStage) 
+                    || ['med', 'treat'].includes(App.definitions.food[wantedFood].type)
+                ) return this.refreshWant(++currentTry, currentCategory);
+                current_want.type = App.constants.WANT_TYPES.food;
+                current_want.item = wantedFood;
+                break;
+            case "snack": // item is food name
+                const wantedSnack = randomFromArray(Object.keys(App.definitions.food));
+                if(
+                    !App.definitions.food[wantedSnack].age.includes(this.lifeStage) 
+                    || !['treat'].includes(App.definitions.food[wantedSnack].type)
+                ) return this.refreshWant(++currentTry, currentCategory);
+                current_want.type = App.constants.WANT_TYPES.food;
+                current_want.item = wantedSnack;
+                break;
+            case "playdate": // item is friend index
+                if(!this.friends.length) return this.refreshWant(++currentTry);
+                const wantedFriendIndex = random(0, this.friends.length - 1);
+                current_want.type = App.constants.WANT_TYPES.playdate;
+                current_want.item = wantedFriendIndex;
+                break;
+            case "item": // item is item name
+                const wantedItem = randomFromArray(Object.keys(App.definitions.item));
+                current_want.type = App.constants.WANT_TYPES.item;
+                current_want.item = wantedItem;
+                break;
+            case "minigame": // item is not used
+                current_want.type = App.constants.WANT_TYPES.minigame;
+                current_want.item = true;
+                break;
+        }
+
+        current_want.appearTime = App.fullTime;
+        current_want.next_refresh_ms = App.fullTime += (1000 * 60 * random(30, 60)); // 30-60 min
+    }
+    clearWant(fulfilled){
+        const {current_want} = this.stats;
+        console.log('WANT CLEARED', {fulfilled, current_want});
+        current_want.type = null;
+        current_want.item = null;
+        current_want.appearTime = null;
+        current_want.pendingFulfilled = fulfilled;
+
+        if(fulfilled){
+            this.stats.current_fun += random(30, 50);
+        }
+    }
+    checkWant(condition, type){
+        if(!condition || type !== this.stats.current_want.type) return false;
+
+        this.clearWant(true);
+        return true;
     }
 
     spritesheetDefinitions = {

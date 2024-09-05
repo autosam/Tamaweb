@@ -35,6 +35,13 @@ let App = {
         MANUAL_AGE_HOURS_TEEN: 12,
         AUTO_AGE_HOURS_BABY: 24,
         AUTO_AGE_HOURS_TEEN: 48,
+        WANT_TYPES: {
+            food: 'food',
+            playdate: 'playdate',
+            item: 'item',
+            minigame: 'minigame',
+            fulfilled: 'fulfilled',
+        }
     },
     routes: {
         BLOG: 'https://tamawebgame.github.io/blog/',
@@ -84,7 +91,7 @@ let App = {
         App.background = new Object2d({
             image: null, x: 0, y: 0, width: 96, height: 96, z: -10,
         })
-        // App.foods = new Object2d({
+        // App.foodsSpritesheet = new Object2d({
         //     image: App.preloadedResources["resources/img/item/foods.png"],
         //     x: 10, y: 10,
         //     spritesheet: {
@@ -99,7 +106,7 @@ let App = {
             image: App.preloadedResources[App.constants.FOOD_SPRITESHEET],
             x: 10, y: 10,
             width: 12, height: 12,
-            scale: 24, // todo: add scale functionality
+            scale: 24,
             spritesheet: {
                 cellNumber: 2,
                 cellSize: 24,
@@ -169,7 +176,7 @@ let App = {
         }
 
         // put pet to sleep on start if is sleeping hour
-        if(!App.petDefinition.stats.is_sleeping){
+        if(!App.petDefinition.stats.is_sleeping && !App.isTester()){
             App.petDefinition.stats.is_sleeping = App.isSleepHour() && !loadedData.pet?.stats?.is_egg;
         }
 
@@ -420,6 +427,7 @@ let App = {
     onFrameUpdate: function(time){
         App.date = new Date();
         App.hour = App.date.getHours();
+        App.fullTime = App.date.getTime();
         App.time = time;
         App.deltaTime = time - App.lastTime;
         App.lastTime = time;
@@ -742,6 +750,10 @@ let App = {
             onLoad: () => {
                 App.poop.absHidden = false;
                 App.pet.staticShadow = false;
+
+                if(random(0, 10) == 0){
+                    App.pet.showCurrentWant();
+                }
             },
             onUnload: () => {
                 App.poop.absHidden = true;
@@ -1077,6 +1089,14 @@ let App = {
                         ])
                         
                         return true;
+                    }
+                },
+                {
+                    _disable: !App.pet.stats.current_want.type,
+                    name: `current want`,
+                    onclick: () => {
+                        App.closeAllDisplays();
+                        App.pet.showCurrentWant();
                     }
                 },
             ])
@@ -3060,6 +3080,9 @@ let App = {
                 else display.remove();
             }
         });
+    },
+    haveAnyDisplays: function(){
+        return !![...document.querySelectorAll('.screen-wrapper .display')].length;
     },
     displayList: function(listItems, backFn, backFnTitle){
         // if(backFn !== false)

@@ -861,6 +861,9 @@ class Activities {
         let otherPet = new Pet(otherPetDef);
         App.definitions.achievements.give_gifts_x_times.advance();
 
+        const wantedFriendDef = App.petDefinition.friends[App.pet.stats.current_want.item];
+        App.petDefinition.checkWant(otherPetDef == wantedFriendDef, App.constants.WANT_TYPES.playdate)
+
         otherPet.stopMove();
         otherPet.x = '100%';
         App.pet.stopMove();
@@ -1097,9 +1100,11 @@ class Activities {
     static inviteHousePlay(otherPetDef){
         App.setScene(App.scene.home);
         App.toggleGameplayControls(false);
-        let otherPet = new Pet(otherPetDef);
-        
         otherPetDef.increaseFriendship(8);
+        let otherPet = new Pet(otherPetDef);
+
+        const wantedFriendDef = App.petDefinition.friends[App.pet.stats.current_want.item];
+        App.petDefinition.checkWant(otherPetDef == wantedFriendDef, App.constants.WANT_TYPES.playdate)
 
         otherPet.stopMove();
         otherPet.x = '100%';
@@ -1151,6 +1156,9 @@ class Activities {
             if(random(1, 100) <= 60){
                 otherPetDef = App.getRandomPetDef(App.petDefinition.lifeStage);
             }
+        } else {
+            const wantedFriendDef = App.petDefinition.friends[App.pet.stats.current_want.item];
+            App.petDefinition.checkWant(otherPetDef == wantedFriendDef, App.constants.WANT_TYPES.playdate)
         }
         App.setScene(App.scene.park);
         App.toggleGameplayControls(false);
@@ -1178,6 +1186,7 @@ class Activities {
         App.closeAllDisplays();
         App.setScene(App.scene.park);
         App.toggleGameplayControls(false);
+        App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
 
         // const randomPetRef = App.getRandomPetDef();
         const randomPetRef = new PetDefinition({
@@ -1222,6 +1231,7 @@ class Activities {
     static barTimingGame(){
         App.closeAllDisplays();
         App.toggleGameplayControls(false);
+        App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
 
         let screen = App.displayEmpty();
         screen.innerHTML = `
@@ -1322,6 +1332,7 @@ class Activities {
         App.closeAllDisplays();
         App.setScene(App.scene.park);
         App.toggleGameplayControls(false);
+        App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
         App.mouse.x = null;
         
         App.pet.speedOverride = 0.07;
@@ -1484,6 +1495,7 @@ class Activities {
         App.closeAllDisplays();
         App.setScene(App.scene.arcade);
         App.toggleGameplayControls(false);
+        App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
 
         const opponentPetDef = new PetDefinition({
             name: 'park_game_npc',

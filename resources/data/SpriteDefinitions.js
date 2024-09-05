@@ -80,6 +80,9 @@ const SPRITES = [
     "resources/img/misc/picture_overlay_01.png",
     "resources/img/misc/shadow_01.png",
     "resources/img/misc/falling_poop.png",
+    "resources/img/misc/thought_bubble_01.png",
+    "resources/img/misc/minigames.png",
+    "resources/img/misc/want_fulfilled.png",
 
     // accessories
     "resources/img/accessory/crown_01.png",
