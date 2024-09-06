@@ -1,14 +1,3 @@
-// <!-- <script src="src/libs/jquery-3.7.1.min.js"></script>
-// <script src="src/Utils.js"></script>
-// <script src="src/Drawer.js"></script>
-// <script src="src/Object2d.js"></script>
-// <script src="src/Pet.js"></script>
-// <script src="src/BattleManager.js"></script>
-// <script src="src/App.js"></script>
-// <script src="src/PetDefinition.js"></script> -->
-
-
-
 class SpriteElement extends HTMLElement {
     constructor() {
         super();
@@ -70,7 +59,11 @@ function handleServiceWorker(){
         switch(event.data.type){
             case "install":
                 if(!App.awayTime || App.isOnItch) break;
-                document.querySelector('#download-container').style.display = '';
+                const downloadContainer = document.querySelector('#download-container');
+                downloadContainer.style.display = '';
+                downloadContainer.onclick = () => {
+                    downloadContainer.style.display = 'none';
+                }
                 break;
         }
     });

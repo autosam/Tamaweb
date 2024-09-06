@@ -1115,6 +1115,7 @@ input#background-color-picker {
     border-top-right-radius: 0px;
     border-bottom-right-radius: 0px;
     font-weight: bold;
+    cursor: pointer;
 }
 
 .side-icon {
@@ -1131,15 +1132,15 @@ input#background-color-picker {
     text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.494);
 }
 
+.side-icon>i {
+    animation: side-icon-anim 0.5s infinite alternate linear;
+}
+
 .side-container a {
     all: unset;
     text-decoration-line: underline;
     color: #F44336;
     cursor: pointer;
-}
-
-.side-icon>i {
-    animation: side-icon-anim 0.5s infinite alternate linear;
 }
 
 @keyframes side-icon-anim {
@@ -1621,13 +1622,19 @@ hr {
     color: white
 }
 
+.classic-main-menu__container.disabled > .classic-main-menu__item {
+    pointer-events: none;
+    opacity: 0.5;
+    display: none;
+}
+
 .graphics-wrapper.classic-main-menu .graphics-canvas {
     position: absolute;
-    top: 24px;
+/*     top: 24px;
     cursor: initial !important;
     height: calc(100% - 48px);
     object-fit: cover;
-    object-position: bottom;
+    object-position: bottom; */
     /* object-position: 0 -24px; */
 }
 

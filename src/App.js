@@ -13,6 +13,7 @@ let App = {
         notifications: false,
         automaticAging: false,
         sleepingHoursOffset: 0,
+        classMainMenuUI: false,
     },
     constants: {
         FOOD_SPRITESHEET: 'resources/img/item/foods_on.png',
@@ -359,12 +360,10 @@ let App = {
         document.querySelector('.shell-btn.left').style.display = App.settings.displayShellButtons ? '' : 'none';
 
         // classic main menu layout
-        const classic = false;
-
         let classicMainMenuContainer = document.querySelector('.classic-main-menu__container');
         classicMainMenuContainer?.remove();
         graphicsWrapper.classList.remove('classic-main-menu');
-        if(classic){
+        if(App.settings.classMainMenuUI){
             graphicsWrapper.classList.add('classic-main-menu');
             classicMainMenuContainer = UI.create({
                 componentType: 'div',
@@ -1029,12 +1028,14 @@ let App = {
             ], App.pet.petDefinition.name || '');
         },
         open_main_menu: function(){
-            if(App.disableGameplayControls) {
-                if(App.gameplayControlsOverwrite) {
-                    App.playSound(`resources/sounds/ui_click_01.ogg`, true);
-                    App.gameplayControlsOverwrite();
-                    App.vibrate();
-                }
+            const runControlOverwrite = () => {
+                if(!App.gameplayControlsOverwrite) return;
+                App.playSound(`resources/sounds/ui_click_01.ogg`, true);
+                App.gameplayControlsOverwrite();
+                App.vibrate();
+            }
+            if(App.disableGameplayControls || App.settings.classMainMenuUI) {
+                runControlOverwrite();
                 return;
             }
             UI.lastClickedButton = null;
@@ -3032,6 +3033,10 @@ let App = {
             App.drawer.canvas.style.cursor = 'not-allowed';
         } else {
             App.drawer.canvas.style.cursor = 'pointer';
+        }
+        if(App.settings.classMainMenuUI){
+            if(state) document.querySelector('.classic-main-menu__container').classList.remove('disabled');
+            else document.querySelector('.classic-main-menu__container').classList.add('disabled');
         }
         return;
     },

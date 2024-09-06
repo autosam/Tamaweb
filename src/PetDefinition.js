@@ -186,6 +186,7 @@ class PetDefinition {
         current_health: 90,
         current_cleanliness: 50,
         current_death_tick: 100,
+        current_bond: 0,
 
         // gold
         gold: 15,
@@ -554,7 +555,7 @@ class PetDefinition {
     }
     clearWant(fulfilled){
         const {current_want} = this.stats;
-        console.log('WANT CLEARED', {fulfilled, current_want});
+        console.log('WANT CLEARED', {fulfilled});
         current_want.type = null;
         current_want.item = null;
         current_want.appearTime = null;
@@ -562,6 +563,7 @@ class PetDefinition {
 
         if(fulfilled){
             this.stats.current_fun += random(30, 50);
+            this.stats.current_bond += 1;
         }
     }
     checkWant(condition, type){
