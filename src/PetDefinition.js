@@ -266,6 +266,7 @@ class PetDefinition {
                     is_at_vacation: this.stats.is_at_vacation,
                     is_dead: this.stats.is_dead,
                     current_want: this.stats.current_want,
+                    current_bond: this.stats.current_bond,
                 }
                 return;
             }
