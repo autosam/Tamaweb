@@ -932,7 +932,7 @@ input#background-color-picker {
 }
 
 .badge.red {
-    background: red;
+    background: #ED254E;
 }
 .badge.night {
     background: #180067;

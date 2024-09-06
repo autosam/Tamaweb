@@ -3052,9 +3052,9 @@ let App = {
         let rod = progressbar.querySelector('.progressbar-rod'), background = progressbar.querySelector('.progressbar-background');
 
         let colors = {
-            green: ['#00ff3978', '#2f793f'],
-            red: ['#ff000075', '#ff0000'],
-            yellow: ['#ffcd71b0', '#ffcd71']
+            green: ['#04E762', '#93C48B'],
+            red: ['#ED254E', '#ED254E'],
+            yellow: ['#FDBA70', '#FF8300']
         }
 
         function setPercent(percent){
@@ -3067,7 +3067,7 @@ let App = {
             let rodColor = `linear-gradient(90deg, ${colorSet[0]}, ${colorSet[1]})`;
             rod.style.background = rodColor;
 
-            background.style.background = `repeating-linear-gradient(90deg, ${colorSet[1]} 5px, transparent, transparent 10px)`;
+            background.style.background = `repeating-linear-gradient(90deg, ${colorSet[1]} 5px, ${colorSet[1]} 7px, transparent 6px, transparent 10px)`;
         }
 
         setPercent(percent);

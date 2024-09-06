@@ -1069,7 +1069,9 @@ class Activities {
         }, Pet.scriptedEventDrivers.movingIn.bind({pet: App.pet}));
     }
     static goToMarket(){
-        App.toggleGameplayControls(false);
+        App.toggleGameplayControls(false, () => {
+            App.pet.stopScriptedState();
+        });
         App.setScene(App.scene.market);
 
         let randomNpcs = new Array(2).fill(undefined).map((item, i) => {
