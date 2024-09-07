@@ -105,7 +105,9 @@ class Pet extends Object2d {
             const accessory = App.definitions.accessories[accName];
             if(!accessory) return;
 
-            const accessoryObject = new Object2d({
+            let accessoryObject;
+
+            accessoryObject = new Object2d({
                 parent: this,
                 img: accessory.image,
                 z: accessory.front ? (this.z + 0.1) || 5.1 : (this.z - 0.1) || 4.9,
@@ -121,6 +123,10 @@ class Pet extends Object2d {
                     overlay.y -= 16;
                 }
             })
+
+            if(accessory.createFn){
+                accessoryObject = accessory.createFn(this);
+            }
 
             this.accessoryObjects.push(accessoryObject);
         })

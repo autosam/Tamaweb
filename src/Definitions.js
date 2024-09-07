@@ -630,6 +630,236 @@ App.definitions = {
             front: false,
             price: 200,
         },
+        'secretary': {
+            icon: 'resources/img/accessory/secretary_01_icon.png',
+            image_sprite: 'resources/img/accessory/secretary_01.png',
+            front: false,
+            price: 500,
+            createFn: function(parent){
+                const Z = parent.z - 0.1 || 4.9;
+                const spritesheet = {
+                    cellSize: 12,
+                    rows: 5,
+                    columns: 4,
+                }
+                const secretary = new Object2d({
+                    parent: parent,
+                    x: -100, y: -100,
+                    animationFloat: 0,
+                    bodyAnimationFloat: 0,
+                    movementMult: -10,
+                    targetMovementMult: 1,
+                    movementMultDirection: 1,
+                    lastScene: App.currentScene,
+                    allowedRooms: [
+                        App.scene.home, 
+                        App.scene.bathroom, 
+                        App.scene.kitchen,
+                        App.scene.graveyard,
+                        App.scene.parentsHome
+                    ],
+                    currentPosition: {
+                        x: 0, y: 0,
+                    },
+                    targetPosition: {
+                        x: 0, y: 0, nextChangeMs: 0,
+                    },
+                    onDraw: (me) => {
+                        if(App.lastTime > me.targetPosition.nextChangeMs){
+                            me.targetPosition.nextChangeMs = App.lastTime + random(250, 3000);
+                            const followsParent = random(0, 1);
+                            if(followsParent && !isNaN(parent.x) && !isNaN(parent.y)){
+                                me.targetPosition.x = parent.x;
+                                me.targetPosition.y = parent.y - 40;
+                            } else {
+                                me.targetPosition.x = random(10, 90);
+                                me.targetPosition.y = random(-10, 50);
+                            }
+                            if(!random(0, 2)){
+                                me.movementMultDirection = -1 * me.movementMultDirection;
+                            }
+                            // me.movementMultDirection = followsParent ? 1 : -1;
+                        }
+
+                        
+                        if(me.lastScene != App.currentScene){
+                            console.log(App.currentScene.image);
+                            me.lastScene = App.currentScene;
+                            me.currentPosition.y = -40;
+                        }
+
+                        if(!me.allowedRooms.includes(App.currentScene)){
+                            me.x = -100;
+                            me.y = -100;
+                            return;
+                        }
+
+                        me.animationFloat += (0.005 * App.nDeltaTime) % App.PI2;
+                        me.bodyAnimationFloat += (0.0025 * App.nDeltaTime) % App.PI2;
+                        me.currentPosition.x = lerp(me.currentPosition.x, me.targetPosition.x, 0.0005 * App.nDeltaTime);
+                        me.x = me.currentPosition.x;
+                        me.currentPosition.y = lerp(me.currentPosition.y, me.targetPosition.y, 0.0005 * App.nDeltaTime);
+                        me.y = me.currentPosition.y + Math.sin(me.animationFloat);
+
+                        const xDiff = Math.abs(me.currentPosition.x - me.targetPosition.x);
+                        const yDiff = Math.abs(me.currentPosition.y - me.targetPosition.y);
+                        me.targetMovementMult = Math.max((xDiff + yDiff) * 0.1, 1);
+                        me.movementMult = lerp(me.movementMult, me.targetMovementMult * me.movementMultDirection, 0.01 * App.nDeltaTime);
+                    }
+                })
+
+                /* body */
+                const handleBody = (me, i) => {
+                    const spread = 6 + (secretary.movementMult * 0.5);
+                    const basePosition = {
+                        x: me.parent.x,
+                        y: me.parent.y
+                    }
+                    const localPosition = {
+                        x: 0, y: 0,
+                    }
+
+                    switch(i){
+                        case (0):
+                            localPosition.x = -spread;
+                            localPosition.y = -spread;
+                            break;
+                        case (1):
+                            localPosition.x = -spread;
+                            localPosition.y = spread;
+                            break;
+                        case (2):
+                            localPosition.x = spread;
+                            localPosition.y = -spread;
+                            break;
+                        case (3):
+                            localPosition.x = spread;
+                            localPosition.y = spread;
+                            break;
+                    }
+
+                    localPosition.y += Math.sin(secretary.bodyAnimationFloat + i) * 0.55;
+                    localPosition.y += Math.sin(secretary.bodyAnimationFloat + i) * 0.55;
+
+                    me.rotation = i * 90;
+
+                    me.x = localPosition.x + basePosition.x;
+                    me.y = localPosition.y + basePosition.y;
+                }
+                for(let i = 0; i < 4; i++){
+                    new Object2d({
+                        parent: secretary,
+                        img: App.checkResourceOverride(this.image_sprite),
+                        x: 0, y: 0, z: Z,
+                        animationFloat: 0,
+                        spritesheet: {
+                            ...spritesheet, cellNumber: 1,
+                        },
+                        onDraw: (me) => handleBody(me, i),
+                        // composite: "hard-light"
+                    })
+                }
+
+                /* body */
+                const handleArrows = (me, i) => {
+                    const spread = 13 + secretary.movementMult;
+                    const basePosition = {
+                        x: me.parent.x,
+                        y: me.parent.y
+                    }
+                    const localPosition = {
+                        x: 0, y: 0
+                    }
+
+                    const offsetMult = 10, strength = 0.8 + (-secretary.movementMult * 0.25);
+                    switch(i){
+                        case (0):
+                            localPosition.x = -spread;
+                            localPosition.y = -spread;
+                            me.inverted = true;
+                            localPosition.x += Math.sin(secretary.animationFloat - i * offsetMult) * strength;
+                            localPosition.y += Math.sin(secretary.animationFloat - i * offsetMult) * strength;
+                            break;
+                        case (1):
+                            localPosition.x = -spread;
+                            localPosition.y = spread;
+                            me.inverted = true;
+                            me.rotation = -90;
+                            localPosition.x += Math.sin(secretary.animationFloat - i * offsetMult) * strength;
+                            localPosition.y -= Math.sin(secretary.animationFloat - i * offsetMult) * strength;
+                            break;
+                        case (2):
+                            localPosition.x = spread;
+                            localPosition.y = -spread;
+                            localPosition.x -= Math.sin(secretary.animationFloat - i * offsetMult) * strength;
+                            localPosition.y += Math.sin(secretary.animationFloat - i * offsetMult) * strength;
+                            break;
+                        case (3):
+                            localPosition.x = spread;
+                            localPosition.y = spread;
+                            me.rotation = 90;
+                            localPosition.x -= Math.sin(secretary.animationFloat - i * offsetMult) * strength;
+                            localPosition.y -= Math.sin(secretary.animationFloat - i * offsetMult) * strength;
+                            break;
+                    }
+
+                    localPosition.y += Math.sin(secretary.bodyAnimationFloat + i) * 0.55;
+                    localPosition.y += Math.sin(secretary.bodyAnimationFloat + i) * 0.55;
+
+                    me.x = localPosition.x + basePosition.x;
+                    me.y = localPosition.y + basePosition.y;
+                }
+                for(let i = 0; i < 4; i++){
+                    new Object2d({
+                        parent: secretary,
+                        img: App.checkResourceOverride(this.image_sprite),
+                        x: 0, y: 0, z: Z,
+                        spritesheet: {
+                            ...spritesheet, cellNumber: 3,
+                        },
+                        onDraw: (me) => handleArrows(me, i),
+                        // composite: "hard-light"
+                    })
+                }
+
+                /* head */
+                new Object2d({
+                    parent: secretary,
+                    img: App.checkResourceOverride(this.image_sprite),
+                    x: 0, y: 0, z: Z,
+                    spritesheet: {
+                        ...spritesheet, cellNumber: 2,
+                    },
+                    onDraw: (me) => {
+                        me.x = me.parent.x;
+                        me.y = me.parent.y;
+                        me.rotation = Math.sin(secretary.bodyAnimationFloat) * 45 * secretary.movementMult;
+                    },
+                    // composite: "hard-light"
+                })
+
+                /* light */
+                new Object2d({
+                    parent: secretary,
+                    img: App.checkResourceOverride(this.image_sprite),
+                    x: 0, y: 0, z: Z - 0.1,
+                    spritesheet: {
+                        ...spritesheet, cellNumber: 4,
+                    },
+                    onDraw: (me) => {
+                        me.x = me.parent.x;
+                        me.y = me.parent.y;
+                        // me.rotation = Math.sin(secretary.bodyAnimationFloat) * 45 * secretary.movementMult;
+                        me.scale = 1.3 + Math.abs(Math.sin(secretary.animationFloat) * 0.1);
+                        me.opacity = Math.abs(Math.sin(secretary.bodyAnimationFloat) * 0.3);
+                    },
+                    composite: "lighten",
+                    opacity: 0.1,
+                })
+
+                return secretary;
+            }
+        },
     },
     achievements: {
         pat_x_times: {

@@ -90,4 +90,6 @@ const SPRITES = [
     "resources/img/accessory/wings_01.png",
     "resources/img/accessory/witch_hat_01.png",
     "resources/img/accessory/mini_band_01.png",
+    "resources/img/accessory/secretary_01_icon.png",
+    "resources/img/accessory/secretary_01.png",
 ]

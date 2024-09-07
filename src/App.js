@@ -2232,10 +2232,10 @@ let App = {
                 const equipped = App.petDefinition.accessories.includes(accessoryName);
                 const owned = App.pet.inventory.accessory[accessoryName];
 
-                const image = App.checkResourceOverride(current.image);
+                const image = App.checkResourceOverride(current.icon || current.image);
 
                 const reopen = () => {
-                    App.handlers.open_care_menu();
+                    App.handlers.open_stuff_menu();
                     App.handlers.open_accessory_list(buyMode, sliderInstance?.getCurrentIndex());
                     return false;
                 }

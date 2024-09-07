@@ -102,7 +102,7 @@ class PetDefinition {
             objects: [
                 {
                     img: 'resources/img/misc/happy_icon.png',
-                    x: 10, y: 10,
+                    x: 10, y: 10, z: 8,
                     interval: 2,
                 }
             ]
