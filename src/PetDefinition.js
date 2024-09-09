@@ -174,6 +174,8 @@ class PetDefinition {
         baby_max_death_tick: 44, // ~ 24 hours
         teen_max_death_tick: 74, // ~ 40 hours
         death_tick_rate: 0.000289,
+        // care
+        max_care: 3,
         // wander (sec)
         wander_min: 1.5,
         wander_max: 8,
@@ -186,7 +188,7 @@ class PetDefinition {
         current_health: 90,
         current_cleanliness: 50,
         current_death_tick: 100,
-        current_bond: 0,
+        current_care: 1,
 
         // gold
         gold: 15,
@@ -205,7 +207,8 @@ class PetDefinition {
             appearTime: null,
             pendingFulfilled: null,
             next_refresh_ms: new Date().getTime() + random(5000, 30000),
-        }
+        },
+        should_care_increase: true,
     }
     friends = [];
     family = [];
@@ -266,7 +269,8 @@ class PetDefinition {
                     is_at_vacation: this.stats.is_at_vacation,
                     is_dead: this.stats.is_dead,
                     current_want: this.stats.current_want,
-                    current_bond: this.stats.current_bond,
+                    current_care: this.stats.current_care,
+                    should_care_increase: this.stats.should_care_increase,
                 }
                 return;
             }
@@ -387,57 +391,28 @@ class PetDefinition {
     }
 
     ageUp(isNpc){
-        /* let charName = this.sprite.slice(this.sprite.lastIndexOf('/') + 1);
-        let seed = charName.replace(/\D+/g, '');
-        seed += '854621';
-
-        const careRating =  (this.stats.current_hunger +
-                            this.stats.current_fun +
-                            this.stats.current_health + 
-                            this.stats.current_sleep) / 4;
-
-        // seed += this.stats.current_hunger >= (this.stats.max_hunger / 2) ? 1 : 2;
-        // seed += this.stats.current_health >= (this.stats.max_health / 2) ? 1 : 2;
-        // seed += this.stats.current_fun >= (this.stats.max_fun / 2) ? 1 : 2;
-        // seed += this.stats.current_sleep >= (this.stats.max_sleep / 2) ? 1 : 2;
-        // seed += this.stats.has_poop_out ? 1 : 2;
-        if(careRating > 80) seed += 861;
-        else if(careRating > 40) seed += 53;
-        else seed += 7;
-        
-        if(isNpc) seed = random(1, 99999999999);
-        
-        pRandom.seed = Number(seed) + 987321654;
-
-        switch(this.getLifeStage()){
-            case 0:
-                this.sprite = pRandomFromArray(PET_TEEN_CHARACTERS);
-                break;
-            case 1:
-                this.sprite = pRandomFromArray(PET_ADULT_CHARACTERS);
-                break;
-            default: return false;
-        } */
-
-        let careRating =  (this.stats.current_hunger +
-            this.stats.current_fun +
-            this.stats.current_sleep) / 3;
-
-        if(isNpc) careRating = random(0, 100);
-
+        const careRating = !isNpc ? this.stats.current_care : random(1, 3);
         let possibleEvolutions = GROWTH_CHART[this.sprite];
+        if(!possibleEvolutions){
+            possibleEvolutions = GROWTH_CHART[randomFromArray(Object.keys(GROWTH_CHART))]
+        }
 
         switch(this.lifeStage){
             case 0:
                 let targetEvolutions;
-                if(careRating > 50) targetEvolutions = possibleEvolutions.slice(4, 8); // high care
-                else targetEvolutions = possibleEvolutions.slice(0, 4); // low care
+                switch(careRating){
+                    case 1: targetEvolutions = possibleEvolutions.slice(0, 2); break; // low care
+                    case 3: targetEvolutions = possibleEvolutions.slice(5); break; // high care
+                    default: targetEvolutions = possibleEvolutions.slice(2, 5); // default medium care
+                }
                 this.sprite = randomFromArray(targetEvolutions);
                 break;
             case 1:
-                if(careRating > 80) this.sprite = possibleEvolutions[2]; // high care
-                else if(careRating > 40) this.sprite = possibleEvolutions[1]; // medium care
-                else this.sprite = possibleEvolutions[0]; // low care
+                switch(careRating){
+                    case 1: this.sprite = possibleEvolutions[0]; break; // low care
+                    case 3: this.sprite = possibleEvolutions[2]; break; // high care
+                    default: this.sprite = possibleEvolutions[1]; // default medium care
+                }
                 break;
             case 2: return;
         }
@@ -445,7 +420,7 @@ class PetDefinition {
         this.lastBirthday = new Date();
         this.prepareSprite();
 
-        this.friends.forEach(friendDef => {
+        this.friends?.forEach(friendDef => {
             if(friendDef.ageUp) friendDef.ageUp(true);
         })
 
@@ -556,7 +531,7 @@ class PetDefinition {
     }
     clearWant(fulfilled){
         const {current_want} = this.stats;
-        console.log('WANT CLEARED', {fulfilled});
+        console.log('want cleared', {fulfilled});
         current_want.type = null;
         current_want.item = null;
         current_want.appearTime = null;
@@ -564,7 +539,9 @@ class PetDefinition {
 
         if(fulfilled){
             this.stats.current_fun += random(30, 50);
-            this.stats.current_bond += 1;
+            if(random(0, 1)) this.adjustCare(true);
+        } else {
+            if(random(0, 1)) this.adjustCare(false);
         }
     }
     checkWant(condition, type){
@@ -572,6 +549,11 @@ class PetDefinition {
 
         this.clearWant(true);
         return true;
+    }
+    adjustCare(add){
+        if(add) this.stats.current_care += 1;
+        else this.stats.current_care -= 1;
+        this.stats.current_care = clamp(this.stats.current_care, 1, this.stats.max_care);
     }
 
     spritesheetDefinitions = {

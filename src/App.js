@@ -13,7 +13,7 @@ let App = {
         notifications: false,
         automaticAging: false,
         sleepingHoursOffset: 0,
-        classMainMenuUI: false,
+        classicMainMenuUI: false,
     },
     constants: {
         FOOD_SPRITESHEET: 'resources/img/item/foods_on.png',
@@ -363,7 +363,7 @@ let App = {
         let classicMainMenuContainer = document.querySelector('.classic-main-menu__container');
         classicMainMenuContainer?.remove();
         graphicsWrapper.classList.remove('classic-main-menu');
-        if(App.settings.classMainMenuUI){
+        if(App.settings.classicMainMenuUI){
             graphicsWrapper.classList.add('classic-main-menu');
             classicMainMenuContainer = UI.create({
                 componentType: 'div',
@@ -529,6 +529,13 @@ let App = {
                         App.scene.home.image = App.definitions.room_background.princess.image;
                     });
                 })) return showAlreadyUsed();
+                break;
+            case "HESOYAM":
+                App.displayPopup(`All you had to do ...`, 5000, () => {
+                    App.pet.stats.gold += 2500;
+                    App.pet.stats.current_care = App.pet.stats.max_care;
+                    App.pet.stats.current_health = App.pet.stats.max_health;
+                });
                 break;
             default:
                 const showInvalidError = () => {
@@ -1034,7 +1041,7 @@ let App = {
                 App.gameplayControlsOverwrite();
                 App.vibrate();
             }
-            if(App.disableGameplayControls || App.settings.classMainMenuUI) {
+            if(App.disableGameplayControls || App.settings.classicMainMenuUI) {
                 runControlOverwrite();
                 return;
             }
@@ -1440,6 +1447,15 @@ let App = {
                                 }
                             },
                             {
+                                _mount: (e) => e.innerHTML = `classic menu: <i>${App.settings.classicMainMenuUI ? 'on' : 'off'}</i> ${App.getBadge()}`,
+                                onclick: (item) => {
+                                    App.settings.classicMainMenuUI = !App.settings.classicMainMenuUI;
+                                    item._mount();
+                                    App.applySettings();
+                                    return true;
+                                }
+                            },
+                            {
                                 name: `background color`,
                                 onclick: () => {
                                     App.displayList([
@@ -1718,13 +1734,32 @@ let App = {
         open_stats: function(){
             const list = UI.genericListContainer();
             const content = UI.empty();
+            const careRatingIcons = new Array(App.pet.stats.max_care).fill('').map((_, i) => {
+                const style = i >= App.pet.stats.current_care ? 'opacity: 0.5; filter:grayscale()' : 'filter:hue-rotate(310deg)';
+                return `<img style="margin-top: 2px; ${style}" src="resources/img/misc/star_01.png"></img>`
+            }).join(' ')
             content.innerHTML = `
             <div class="inner-padding b-radius-10 m surface-stylized">
-                <b>GOLD:</b> $${App.pet.stats.gold}
-                <br>
-                <b>HUNGER:</b> ${App.createProgressbar( App.pet.stats.current_hunger / App.pet.stats.max_hunger * 100 ).node.outerHTML}
-                <b>SLEEP:</b> ${App.createProgressbar( App.pet.stats.current_sleep / App.pet.stats.max_sleep * 100 ).node.outerHTML}
-                <b>FUN:</b> ${App.createProgressbar( App.pet.stats.current_fun / App.pet.stats.max_fun * 100 ).node.outerHTML}
+                <div>
+                    <b>GOLD:</b> $${App.pet.stats.gold}
+                </div>
+                <div>
+                    <b>HUNGER:</b> ${App.createProgressbar( App.pet.stats.current_hunger / App.pet.stats.max_hunger * 100 ).node.outerHTML}
+                </div>
+                <div>
+                    <b>SLEEP:</b> ${App.createProgressbar( App.pet.stats.current_sleep / App.pet.stats.max_sleep * 100 ).node.outerHTML}
+                </div>
+                <div>
+                    <b>FUN:</b> ${App.createProgressbar( App.pet.stats.current_fun / App.pet.stats.max_fun * 100 ).node.outerHTML}
+                </div>
+                <div style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-top: 4px;
+                ">
+                    <b>CARE:</b> <div>${careRatingIcons}</div>
+                </div>
             </div>
             `;
             list.appendChild(content);
@@ -2822,7 +2857,7 @@ let App = {
                                         {
                                             name: 'yes',
                                             onclick: () => {
-                                                let willAcceptFriendRequest = random(0, 2) == 1;
+                                                let willAcceptFriendRequest = random(0, 1) == 1;
                                                 if(!willAcceptFriendRequest){
                                                     App.displayPopup(`${otherPetDef.name} did <b style="color: #ff6e74">not accept</b> ${App.petDefinition.name}'s friend request`)
                                                     return;
@@ -3034,7 +3069,7 @@ let App = {
         } else {
             App.drawer.canvas.style.cursor = 'pointer';
         }
-        if(App.settings.classMainMenuUI){
+        if(App.settings.classicMainMenuUI){
             if(state) document.querySelector('.classic-main-menu__container').classList.remove('disabled');
             else document.querySelector('.classic-main-menu__container').classList.add('disabled');
         }

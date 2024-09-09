@@ -509,6 +509,7 @@ class Pet extends Object2d {
         if(!hour) hour = App.hour;
 
         let stats = this.stats;
+        const previousStats = Object.assign({}, this.stats);
         /*
             Hunger: ${this.stats.current_hunger}
             <br>
@@ -650,6 +651,33 @@ class Pet extends Object2d {
 
         if(stats.current_death_tick <= 0){
             App.pet.stats.is_dead = true;
+        }
+
+        // care rating check
+        const careAffectingStats = [
+            'current_health',
+            'current_fun',
+            'current_hunger',
+        ]
+        careAffectingStats.forEach(statName => {
+            // decreasing
+            if(
+                previousStats[statName] != 0
+                && this.stats[statName] == 0
+            ) {
+                this.petDefinition.adjustCare(false);
+            }
+        })
+        // increasing
+        const eligibleForCareIncrease = careAffectingStats.every(statName => this.stats[statName] > 90);
+        const shouldResetCareIncreaseFlag = careAffectingStats.some(statName => this.stats[statName] < 50);
+        if(eligibleForCareIncrease){
+            if(this.stats.should_care_increase){
+                this.stats.should_care_increase = false;
+                this.petDefinition.adjustCare(true);
+            }
+        } else if(shouldResetCareIncreaseFlag) {
+            this.stats.should_care_increase = true;
         }
 
         // moodlets
@@ -982,7 +1010,7 @@ class Pet extends Object2d {
             shouldFadeout: false,
             onDraw: (me) => {
                 me.x = App.pet.x;
-                me.y = App.pet.y - App.pet.spritesheet.cellSize * 1.5;
+                me.y = App.pet.y - (App.pet.spritesheet.cellSize * 1.5) - (App.pet.spritesheet.offsetY * 1.8 || 0);
                 const opacityTarget = me.shouldFadeout ? 0 : 1;
                 me.opacity = lerp(me.opacity, opacityTarget, App.deltaTime * 0.01);
             }

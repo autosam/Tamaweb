@@ -666,7 +666,7 @@ App.definitions = {
                     },
                     onDraw: (me) => {
                         if(App.lastTime > me.targetPosition.nextChangeMs){
-                            me.targetPosition.nextChangeMs = App.lastTime + random(250, 3000);
+                            me.targetPosition.nextChangeMs = App.lastTime + random(250, 2000);
                             const followsParent = random(0, 1);
                             if(followsParent && !isNaN(parent.x) && !isNaN(parent.y)){
                                 me.targetPosition.x = parent.x;
@@ -683,7 +683,6 @@ App.definitions = {
 
                         
                         if(me.lastScene != App.currentScene){
-                            console.log(App.currentScene.image);
                             me.lastScene = App.currentScene;
                             me.currentPosition.y = -40;
                         }
@@ -723,25 +722,30 @@ App.definitions = {
                         case (0):
                             localPosition.x = -spread;
                             localPosition.y = -spread;
+
                             break;
                         case (1):
                             localPosition.x = -spread;
                             localPosition.y = spread;
+                            me.rotation = 180;
+                            me.inverted = true;
                             break;
                         case (2):
                             localPosition.x = spread;
                             localPosition.y = -spread;
+                            me.inverted = true;
                             break;
                         case (3):
                             localPosition.x = spread;
                             localPosition.y = spread;
+                            me.rotation = 180;
                             break;
                     }
 
                     localPosition.y += Math.sin(secretary.bodyAnimationFloat + i) * 0.55;
                     localPosition.y += Math.sin(secretary.bodyAnimationFloat + i) * 0.55;
 
-                    me.rotation = i * 90;
+                    // me.rotation = i * 90;
 
                     me.x = localPosition.x + basePosition.x;
                     me.y = localPosition.y + basePosition.y;
@@ -756,7 +760,7 @@ App.definitions = {
                             ...spritesheet, cellNumber: 1,
                         },
                         onDraw: (me) => handleBody(me, i),
-                        // composite: "hard-light"
+                        // composite: "darken"
                     })
                 }
 
@@ -818,7 +822,7 @@ App.definitions = {
                             ...spritesheet, cellNumber: 3,
                         },
                         onDraw: (me) => handleArrows(me, i),
-                        // composite: "hard-light"
+                        // composite: "darken"
                     })
                 }
 
@@ -835,7 +839,7 @@ App.definitions = {
                         me.y = me.parent.y;
                         me.rotation = Math.sin(secretary.bodyAnimationFloat) * 45 * secretary.movementMult;
                     },
-                    // composite: "hard-light"
+                    // composite: "darken"
                 })
 
                 /* light */

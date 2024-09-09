@@ -1441,7 +1441,7 @@ class Activities {
 
         const updateUI = () => {
             uiMoneyWon.textContent = moneyWon;
-            uiLives.innerHTML = new Array(lives).fill('').map((item) => {
+            uiLives.innerHTML = new Array(lives).fill('').map(() => {
                 return `<img src="resources/img/misc/heart_particle_01.png"></img>`
             }).join(' ');
         }
