@@ -890,6 +890,9 @@ class Pet extends Object2d {
 
         if (App.lastTime > this.nextRandomTargetSelect) {
             this.targetX = random(this.drawer.getRelativePositionX(0), this.drawer.getRelativePositionX(100) - this.spritesheet.cellSize);
+            if(this.fourDirectionalMovement){
+                this.targetY = random(this.drawer.getRelativePositionY(0), this.drawer.getRelativePositionY(100) - this.spritesheet.cellSize);
+            }
             this.nextRandomTargetSelect = 0;
         }
     }

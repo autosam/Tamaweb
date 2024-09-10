@@ -98,24 +98,44 @@ class Object2d {
         this.targetX = undefined;
         this.targetY = undefined;
     }
+    lerpToTarget(speed = 0.01) {
+        const needsXMovement = (this.targetX !== undefined && Math.abs(this.targetX - this.x) > 1),
+        needsYMovement = (this.targetY !== undefined && Math.abs(this.targetY - this.y) > 1);
+        if (needsXMovement || needsYMovement) {
+            if(needsXMovement && needsYMovement) speed /= 2;
+            this.isMoving = true;
+            if(needsXMovement) this.x = lerp(this.x, this.targetX, speed * App.deltaTime);
+            if(needsYMovement) this.y = lerp(this.y, this.targetY, speed * App.deltaTime);
+        } else {
+            this.isMoving = false;
+        }
+    }
     moveToTarget(speed = 0.01) {
-        if (this.targetX !== undefined && this.targetX != this.x) {
+        const needsXMovement = (this.targetX !== undefined && this.targetX != this.x),
+        needsYMovement = (this.targetY !== undefined && this.targetY != this.y);
+        if (needsXMovement || needsYMovement) {
+            if(needsXMovement && needsYMovement) speed /= 2;
             this.isMoving = true;
             if (this.x > this.targetX)
                 this.moveLeft(this.targetX, speed);
             else if(this.x < this.targetX)
                 this.moveRight(this.targetX, speed);
-        } else {
-            this.isMoving = false;
-        }
 
-        if (this.targetY !== undefined && this.targetY != this.y) {
-            // this.y = lerp(this.y, this.targetY, this.stats.speed * App.deltaTime * 0.1);
             if (this.y > this.targetY)
                 this.moveUp(this.targetY, speed);
             else if(this.y < this.targetY)
                 this.moveDown(this.targetY, speed);
+        } else {
+            this.isMoving = false;
         }
+
+        // if (this.targetY !== undefined && this.targetY != this.y) {
+        //     // this.y = lerp(this.y, this.targetY, this.stats.speed * App.deltaTime * 0.1);
+        //     if (this.y > this.targetY)
+        //         this.moveUp(this.targetY, speed);
+        //     else if(this.y < this.targetY)
+        //         this.moveDown(this.targetY, speed);
+        // }
     }
     moveRight(maxX, speed) {
         const velocity = this.x + speed * App.deltaTime;
@@ -134,6 +154,21 @@ class Object2d {
     moveDown(maxY, speed) {
         const velocity = this.y + speed * 2 * App.deltaTime;
         this.y = velocity > maxY ? maxY : velocity;
+    }
+    getManhattanDistance(otherObject2d, detailedReturn){
+        // this function accepts any object with x and y as otherObject2d
+        const xDistance = Math.abs(this.x - otherObject2d.x);
+        const yDistance = Math.abs(this.y - otherObject2d.y);
+
+        if(detailedReturn){
+            return {xDistance, yDistance};
+        }
+
+        return xDistance + yDistance;
+    }
+    moveTo(normalizedX, normalizedY, force){
+        this.x += normalizedX * force * App.deltaTime;
+        this.y += normalizedY * force * App.deltaTime;
     }
     static setDrawer(drawer) {
         Object2d.defaultDrawer = drawer;

@@ -524,6 +524,64 @@ App.definitions = {
             price: 35,
             interaction_time: 100000,
             interruptable: true,
+            sandboxUpdate: (me, pets) => {
+                if(!me.initialized){
+                    me.initialized = true;
+                    me.currentDirection = {x: 0, y: 0};
+                    me.currentForce = 0;
+                }
+
+                const anyPetIsNear = pets.some(pet => {
+                    const dst = me.getManhattanDistance(pet);
+                    return dst <= 3;
+                })
+
+                function getRandomDirection() {
+                    const totalDirections = 4; // You can adjust this (e.g., 8 for more directions)
+                    const baseAngle = 360 / totalDirections;
+                    const randomAngle = baseAngle * Math.floor(Math.random() * totalDirections);
+                    // Convert angle to radians (for trigonometric functions)
+                    const radians = (randomAngle * Math.PI) / 180;
+                    // Compute the direction vector (normalized)
+                    const dirX = Math.cos(radians);
+                    const dirY = Math.sin(radians);
+                    return { x: dirX, y: dirY };
+                }
+
+                function normalizeVector(x, y) {
+                    const magnitude = Math.sqrt(x * x + y * y);
+                    const tolerance = 1e-10; // A small value to handle precision issues
+                    if (magnitude > tolerance) {
+                        const invMagnitude = 1 / magnitude;
+                        x *= invMagnitude;
+                        y *= invMagnitude;
+                    }
+                    return { x, y };
+                }
+                
+
+                if(anyPetIsNear){
+                    ({x: me.currentDirection.x, y: me.currentDirection.y} = getRandomDirection());
+                    ({x: me.currentDirection.x, y: me.currentDirection.y} = normalizeVector(me.currentDirection.x, me.currentDirection.y));
+                    // me.currentDirection.x = normalizedX;
+                    // me.currentDirection.y = normalizedY;
+                    console.log(me.currentDirection.x, me.currentDirection.y)
+                    me.currentForce = 0.3;
+                }
+
+                // me.lerpToTarget(0.01);
+                me.currentForce -= 0.0001 * App.deltaTime;
+                me.currentForce = clamp(me.currentForce, 0, 10);
+
+                if(me.x + me.spritesheet.cellSize > App.drawer.bounds.width || me.x < 0){
+                    me.currentDirection.x *= -1;
+                }
+                if(me.y + me.spritesheet.cellSize > App.drawer.bounds.height || me.x < 0){
+                    me.currentDirection.y *= -1;
+                }
+
+                me.moveTo(me.currentDirection.x, me.currentDirection.x, me.currentForce)
+            }
         },
         "smartphone": {
             sprite: 5,

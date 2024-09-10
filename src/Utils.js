@@ -98,6 +98,18 @@ function sanitize (string) {
         return '';
     });
 }
+function normalizeVector(x, y) {
+  // const magnitude = Math.sqrt(x * x + y * y);
+  // return [x / magnitude, y / magnitude];
+
+  let magnitude = Math.sqrt(x * x + y * y);
+  if (magnitude != 0) {
+    magnitude = 1 / magnitude;
+    x *= magnitude;
+    y *= magnitude;
+  }
+  return {x, y};
+}
 function setCookie(cname, cvalue, exdays) {
     const d = new Date();
     d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));

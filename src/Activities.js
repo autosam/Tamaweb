@@ -1,4 +1,40 @@
 class Activities {
+    static sandbox(){
+        App.setScene(App.scene.sandbox);
+        App.toggleGameplayControls(false, () => {
+
+        })
+        
+        const itemObjectDef = App.definitions.item.ball;
+        const itemObject = App.createItemObject(itemObjectDef.sprite);
+
+        App.pet.x = '50%';
+        App.pet.y = '70%';
+        let nextRandomWanderMs = 0;
+        const petBehaviorDriver = () => {
+            const p = App.pet;
+            if(App.lastTime > nextRandomWanderMs){
+                nextRandomWanderMs = App.lastTime + random(1500, 3500);
+                if(random(0, 1) || true){
+                    p.targetX = itemObject.x;
+                    p.targetY = itemObject.y;
+                    return;
+                }
+
+                p.targetX = random(App.drawer.getRelativePositionX(0), App.drawer.getRelativePositionX(100) - p.spritesheet.cellSize);
+                p.targetY = random(App.drawer.getRelativePositionY(0) + p.spritesheet.cellSize/2, App.drawer.getRelativePositionY(100) - p.spritesheet.cellSize/2);
+            }
+            
+            if(p.isMoving) p.setState('moving');
+            else p.setState('idle');
+
+            itemObjectDef.sandboxUpdate?.(itemObject, [App.pet]);
+        }
+
+        App.pet.triggerScriptedState('idle', App.INF, false, true, () => {
+            // end fn
+        }, petBehaviorDriver)
+    }
     static onlineHubTransition(onEndFn){
         App.pet.stopMove();
         App.toggleGameplayControls(false);
