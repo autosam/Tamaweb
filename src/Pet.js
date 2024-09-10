@@ -368,17 +368,7 @@ class Pet extends Object2d {
     useItem(item){
         App.closeAllDisplays();
         
-        let itemObject = new Object2d({
-            img: "resources/img/item/items.png",
-            spritesheet: {
-                cellNumber: item.sprite,
-                cellSize: 22,
-                rows: 10,
-                columns: 10
-            },
-            x: 20, y: 20
-        });
-
+        const itemObject = App.createItemObject(item.sprite);
         itemObject.x = '55%', itemObject.y = '47%';
 
         App.toggleGameplayControls(false);
@@ -891,6 +881,9 @@ class Pet extends Object2d {
 
         if (App.lastTime > this.nextRandomTargetSelect) {
             this.targetX = random(this.drawer.getRelativePositionX(0), this.drawer.getRelativePositionX(100) - this.spritesheet.cellSize);
+            if(this.fourDirectionalMovement){
+                this.targetY = random(this.drawer.getRelativePositionY(0), this.drawer.getRelativePositionY(100) - this.spritesheet.cellSize);
+            }
             this.nextRandomTargetSelect = 0;
         }
     }

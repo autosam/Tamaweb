@@ -880,7 +880,10 @@ let App = {
         }),
         stand: new Scene({
             image: 'resources/img/background/outside/stand_01.png',
-        })
+        }),
+        sandbox: new Scene({
+            image: 'resources/img/background/house/sandbox_01.png',
+        }),
     },
     setScene(scene){
         if(App.currentScene && App.currentScene.onUnload){
@@ -1016,6 +1019,19 @@ let App = {
             ...props
         });
     },
+    createItemObject: function(cellNumber){
+        const object = new Object2d({
+            img: "resources/img/item/items.png",
+            spritesheet: {
+                cellNumber: cellNumber,
+                cellSize: 22,
+                rows: 10,
+                columns: 10
+            },
+            x: 20, y: 20
+        });
+        return object;
+    },
     runRandomEncounters: function(){
         if(Activities.encounter()) return;
     },
@@ -1101,7 +1117,7 @@ let App = {
                 },
                 {
                     _disable: !App.pet.stats.current_want.type,
-                    name: `current want`,
+                    name: `current want ${App.getBadge()}`,
                     onclick: () => {
                         App.closeAllDisplays();
                         App.pet.showCurrentWant();
