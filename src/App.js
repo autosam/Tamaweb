@@ -349,7 +349,6 @@ let App = {
         // screen size
         graphicsWrapper.style.transform = `scale(${this.settings.screenSize})`;
         document.querySelector('.dom-shell').style.transform = `scale(${this.settings.screenSize})`;
-        // document.querySelector('.dom-shell').classList.add('shell-shape-0');
         
         // shell
         const domShell = document.querySelector('.dom-shell');
@@ -369,25 +368,15 @@ let App = {
                 componentType: 'div',
                 className: 'classic-main-menu__container',
                 parent: graphicsWrapper,
-                // style: `background-size: contain`,
                 parentInsertBefore: true,
                 children: App.definitions.main_menu.map(def => {
                     return {
-                        className: 'classic-main-menu__item',
+                        className: 'classic-main-menu__item click-sound',
                         innerHTML: def.name,
                         onclick: def.onclick
                     }
                 })
             })
-            // const setBackground = () => {
-            //     classicMainMenuContainer.style.backgroundImage = `url(${App.currentScene?.image})`;
-            // }
-            // setInterval(() => {
-            //     setBackground();
-            // }, 100)
-            // setTimeout(() => {
-            //     setBackground();
-            // }, 100)
         }
     },
     loadMods: function(mods){

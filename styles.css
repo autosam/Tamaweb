@@ -1613,6 +1613,7 @@ hr {
         -2px 0px 0px white, 
         0px 2px 0px white, 
         0px -2px 0px white;
+    pointer-events: none;
 }
 .classic-main-menu__item::before {
     width: 24px;
