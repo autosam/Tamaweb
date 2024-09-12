@@ -789,7 +789,7 @@ class Activities {
                         App.pet.playCheeringAnimation();
                     });
 
-                    App.sendAnalytics('age_up', App.petDefinition.lifeStage, true);
+                    App.sendAnalytics('age_up', App.petDefinition.lifeStage);
                 });
             });
         });
