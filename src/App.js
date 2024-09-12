@@ -892,8 +892,7 @@ let App = {
     applySky() {
         const { AFTERNOON_TIME, EVENING_TIME, NIGHT_TIME } = App.constants;
         const date = new Date();
-        // const h = new Date().getHours();
-        const h = 14;
+        const h = new Date().getHours();
 
         const isOutside = App.background.imageSrc?.indexOf('outside/') != -1;
 
