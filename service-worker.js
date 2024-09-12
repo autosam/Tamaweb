@@ -49,6 +49,7 @@ const ASSETS = [
     'resources/sounds/wedding_song_01.ogg',
     // other
     'resources/font/PixelifySans-VariableFont_wght.ttf',
+    'resources/font/PixelColeco.otf',
     'resources/img/ui/logo_full.png',
     'resources/img/ui/logo_trans_01.png',
     'resources/img/ui/pointer_right.png',

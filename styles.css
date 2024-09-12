@@ -11,7 +11,8 @@
 
 @font-face {
     font-family: 'Pixel';
-    src: url('resources/font/PixelifySans-VariableFont_wght.ttf');
+    /* src: url('resources/font/PixelifySans-VariableFont_wght.ttf'); */
+    src: url('resources/font/PixelColeco.otf');
 }
 
 * {
@@ -22,6 +23,7 @@
 
 html {
     font-family: 'Pixel';
+    /* letter-spacing: -2px; */
 }
 
 body {
@@ -1695,4 +1697,11 @@ hr {
 }
 .classic-main-menu__item:nth-child(8){
     color: #d1bdff
+}
+
+.mimic-game__btn-container {
+    display: flex;
+}
+.mimic-game__btn-container > button {
+    margin: 0 !important;
 }

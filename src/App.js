@@ -1416,7 +1416,7 @@ let App = {
                     }
                 },
                 {
-                    name: `system settings`,
+                    name: `system settings ${App.getBadge()}`,
                     onclick: () => {
                         App.displayList([
                             {
@@ -1745,9 +1745,8 @@ let App = {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    margin-top: 4px;
                 ">
-                    <b>CARE:</b> <div>${careRatingIcons}</div>
+                    <b>CARE:</b> <div style="display: inline-flex; gap: 1px">${careRatingIcons}</div>
                 </div>
             </div>
             `;
@@ -2134,8 +2133,10 @@ let App = {
                 let price = current.price;
                 if(salesDay) price = Math.round(price / 2);
 
+                const iconElement = `<c-sprite width="22" height="22" index="${(current.sprite - 1)}" src="resources/img/item/items.png"></c-sprite>`;
+
                 list.push({
-                    name: `<c-sprite width="22" height="22" index="${(current.sprite - 1)}" src="resources/img/item/items.png"></c-sprite> ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>${buyMode ? `$${price}` : ''}</b>`,
+                    name: `${iconElement} ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>${buyMode ? `$${price}` : ''}</b>`,
                     onclick: (btn, list) => {
                         if(buyMode){
                             if(App.pet.stats.gold < price){
@@ -2193,7 +2194,7 @@ let App = {
 
                 list.push({
                     // name: `<c-sprite width="22" height="22" index="${(current.sprite - 1)}" src="resources/img/item/items.png"></c-sprite> ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>$${buyMode ? `${price}` : ''}</b>`,
-                    isNew: current.isNew,
+                    isNew: !!current.isNew,
                     name: `<img style="min-height: 64px" src="${image}"></img> ${room.toUpperCase()} <b>$${price}</b> ${current.isNew ? App.getBadge() : ''}`,
                     onclick: (btn, list) => {
                         if(image === App.scene.home.image){
@@ -2241,7 +2242,6 @@ let App = {
             let list = [];
             let sliderInstance;
             let salesDay = App.isSalesDay();
-            // buyMode = true;
             for(let accessoryName of Object.keys(App.definitions.accessories)){
                 // check if current pet has this item on its inventory
                 if(!App.pet.inventory.accessory[accessoryName] && !buyMode){
@@ -2258,16 +2258,20 @@ let App = {
 
                 const image = App.checkResourceOverride(current.icon || current.image);
 
-                const reopen = () => {
-                    App.handlers.open_stuff_menu();
+                const reopen = (buyMode) => {
+                    if(!buyMode) App.handlers.open_stuff_menu();
                     App.handlers.open_accessory_list(buyMode, sliderInstance?.getCurrentIndex());
                     return false;
                 }
 
+                const iconElement = current.icon
+                    ? `<div style="width: 1"><img style="width: 36px; outline: none" src="${image}"></img></div>`
+                    : `<c-sprite width="64" height="36" index="0" src="${image}"></c-sprite>`;
+
                 list.push({
-                    // name: `<c-sprite width="22" height="22" index="${(current.sprite - 1)}" src="resources/img/item/items.png"></c-sprite> ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>$${buyMode ? `${price}` : ''}</b>`,
+                    isNew: !!current.isNew,
                     name: `
-                        <c-sprite width="64" height="36" index="0" src="${image}"></c-sprite>
+                        ${iconElement}
                         ${accessoryName.toUpperCase()} 
                         <b>
                         ${
@@ -2295,7 +2299,7 @@ let App = {
                             App.pet.stats.gold -= price;
                             App.pet.inventory.accessory[accessoryName] = true;
                             //     // nList.scrollTop = list.scrollTop;
-                            return reopen();
+                            return reopen(buyMode);
                         }
 
                         // toggle equip mode
@@ -2313,6 +2317,7 @@ let App = {
                 return;
             }
 
+            list = list.sort((a, b) => b.isNew - a.isNew)
             sliderInstance = App.displaySlider(
                 list, 
                 activeIndex, 
@@ -2894,6 +2899,9 @@ let App = {
             const hasNewDecor = Object.keys(App.definitions.room_background).some(key => {
                 return App.definitions.room_background[key].isNew;
             });
+            const hasNewAccessory = Object.keys(App.definitions.accessories).some(key => {
+                return App.definitions.accessories[key].isNew;
+            });
 
             const backFn = () => { // unused
                 setTimeout(() => App.handlers.open_activity_list(), 0)
@@ -2908,7 +2916,7 @@ let App = {
                     }
                 },
                 {
-                    name: `buy accessories`,
+                    name: `buy accessories ${hasNewAccessory ? App.getBadge() : ''}`,
                     onclick: () => {
                         App.handlers.open_accessory_list(true);
                         if(App.petDefinition.lifeStage != 2){

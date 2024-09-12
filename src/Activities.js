@@ -1562,7 +1562,7 @@ class Activities {
                         </div>
                         Which direction will your opponent turn?
                     </div>
-                    <div>
+                    <div class="mimic-game__btn-container">
                         <button id="left" class="generic-btn stylized"> <img src="${imgPath}facing_left.png"></img> </button>
                         <button id="center" class="generic-btn stylized"> <img src="${imgPath}facing_center.png"></img> </button>
                         <button id="right" class="generic-btn stylized"> <img src="${imgPath}facing_right.png"></img> </button>

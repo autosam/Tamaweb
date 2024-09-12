@@ -635,6 +635,7 @@ App.definitions = {
             image_sprite: 'resources/img/accessory/secretary_01.png',
             front: false,
             price: 500,
+            isNew: true,
             createFn: function(parent){
                 const Z = parent.z - 0.1 || 4.9;
                 const spritesheet = {
