@@ -892,7 +892,8 @@ let App = {
     applySky() {
         const { AFTERNOON_TIME, EVENING_TIME, NIGHT_TIME } = App.constants;
         const date = new Date();
-        const h = new Date().getHours();
+        // const h = new Date().getHours();
+        const h = 14;
 
         const isOutside = App.background.imageSrc?.indexOf('outside/') != -1;
 
@@ -2306,8 +2307,7 @@ let App = {
                         if(equipped) App.petDefinition.accessories.splice(App.petDefinition.accessories.indexOf(accessoryName), 1);
                         else App.petDefinition.accessories.push(accessoryName);
                         Activities.getDressed(() => App.pet.createAccessories(), reopen);
-
-                        // return reopen();
+                        App.sendAnalytics('accessory', `${accessoryName} (${!equipped})`);
                     }
                 })
             }
