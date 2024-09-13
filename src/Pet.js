@@ -659,6 +659,7 @@ class Pet extends Object2d {
             'current_health',
             'current_fun',
             'current_hunger',
+            'current_cleanliness',
         ]
         careAffectingStats.forEach(statName => {
             // decreasing
