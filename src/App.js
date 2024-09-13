@@ -647,14 +647,14 @@ let App = {
             return;
         }
 
-        if(addEvent(`update_08_notice`, () => {
+        if(addEvent(`update_09_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
                     type: 'title',
                 },
                 {
-                    name: 'Check out the new day and night cycle, weather effects, gameplay settings, new and reworked sprites and more!',
+                    name: 'Check out the new wants system, care rating points, mini games, companions and accessories, ui changes and much more!',
                     type: 'text',
                 },
                 {
@@ -662,7 +662,7 @@ let App = {
                     name: 'see whats new',
                     class: 'solid primary',
                     onclick: () => {
-                        App.sendAnalytics('go_to_blog');
+                        App.sendAnalytics('go_to_blog_whats_new');
                     }
                 },
             ])
