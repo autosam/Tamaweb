@@ -633,17 +633,7 @@ let App = {
         const dayId = date.getFullYear() + '_' + date.getMonth() + '_' + date.getDate();
 
         if(!App.userName){
-            App.displayPrompt(`Set your username`, [
-                {
-                    name: 'set',
-                    onclick: (username) => {
-                        if(!username) return true;
-                        App.userName = username;
-                        App.save();
-                        App.sendAnalytics('new_user', username);
-                    }
-                }
-            ])
+            App.handlers.show_set_username_dialog();
             return;
         }
 
@@ -1044,6 +1034,19 @@ let App = {
                     }
                 },
             ], App.pet.petDefinition.name || '');
+        },
+        show_set_username_dialog: function(){
+            App.displayPrompt(`Set your username`, [
+                {
+                    name: 'set',
+                    onclick: (username) => {
+                        if(!username) return true;
+                        App.userName = username;
+                        App.save();
+                        App.sendAnalytics('new_user', username);
+                    }
+                }
+            ])
         },
         open_main_menu: function(){
             const runControlOverwrite = () => {
@@ -2555,6 +2558,11 @@ let App = {
                 {
                     name: `<span style="color: #ff00c6"><i class="icon fa-solid fa-globe"></i> hubchi</span> ${App.getBadge()}`,
                     onclick: () => {
+                        if(!App.userName){
+                            App.handlers.show_set_username_dialog();
+                            return true;
+                        }
+
                         if(App.pet.stats.current_sleep < 10) {
                             return App.displayPopup(`${App.petDefinition.name} is too sleepy to go to HUBCHI!`);
                         }

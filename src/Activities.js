@@ -189,7 +189,7 @@ class Activities {
                     _ignore: !hasUploadedPetDef.status,
                     name: 'Sync character',
                     onclick: () => {
-                        const confirm = App.displayConfirm(`Do you want to update your HUBCHI persona to be in sync with ${App.petDefinition.name}'s appearance?`, [
+                        const confirm = App.displayConfirm(`Do you want to update your HUBCHI persona to be in sync with ${App.petDefinition.name}'s latest appearance?`, [
                             {
                                 name: 'yes',
                                 onclick: async () => {
