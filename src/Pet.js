@@ -511,21 +511,6 @@ class Pet extends Object2d {
 
         let stats = this.stats;
         const previousStats = Object.assign({}, this.stats);
-        /*
-            Hunger: ${this.stats.current_hunger}
-            <br>
-            Sleep: ${this.stats.current_sleep}
-            <br>
-        */
-        // document.querySelector('#debug').innerHTML = `
-        // Hunger: ${this.stats.current_hunger}
-        // <br>
-        // Sleep: ${this.stats.current_sleep}
-        // <br>
-        //     State: ${this.state}
-        //     <br>
-        //     Mood: ${this.activeMoodlets.join(' - ') || "normal"}
-        // `;
 
         let depletion_mult = 1, offlineAndIsNight = false;
         if(isOfflineProgression){
@@ -600,7 +585,9 @@ class Pet extends Object2d {
         stats.current_sleep -= sleep_depletion_rate;
         if(stats.current_sleep <= 0){
             stats.current_sleep = 0;
-            this.stats.is_sleeping = true;
+            if(App.currentScene == App.scene.home){
+                this.stats.is_sleeping = true;
+            }
         }
         stats.current_fun -= fun_depletion_rate;
         if(stats.current_fun <= 0){
@@ -757,6 +744,7 @@ class Pet extends Object2d {
             this.scriptedEventTime = App.lastTime + length;
             this.scriptedEventOnEndFn = (...args) => {
                 if(typeof onEndFn === "function") onEndFn(...args);
+                onEndFn = null;
                 resolve();
             };
             this.scriptedEventDriverFn = driverFn;

@@ -19,6 +19,7 @@ const SPRITES = [
     "resources/img/background/house/clinic_01.png",
     "resources/img/background/house/parents_house_01.png",
     "resources/img/background/house/arcade_02.png",
+    "resources/img/background/house/online_hub_01.png",
     
     "resources/img/background/outside/park_02.png",
     "resources/img/background/outside/mall_walkway.png",
@@ -73,6 +74,7 @@ const SPRITES = [
     "resources/img/misc/heart_particle_02.png",
     "resources/img/misc/dresser_curtain_01.png",
     "resources/img/misc/light_rays_01.png",
+    "resources/img/misc/light_rays_02.png",
     "resources/img/misc/star_01.png",
     "resources/img/misc/cooking_pot_p01.png",
     "resources/img/misc/cooking_pot_p02.png",
@@ -84,6 +86,8 @@ const SPRITES = [
     "resources/img/misc/thought_bubble_01.png",
     "resources/img/misc/minigames.png",
     "resources/img/misc/want_fulfilled.png",
+    "resources/img/misc/cyberpunk_overlay_01.png",
+    "resources/img/misc/online_hub_01_front.png",
 
     // accessories
     "resources/img/accessory/crown_01.png",

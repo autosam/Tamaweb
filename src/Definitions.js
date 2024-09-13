@@ -489,6 +489,16 @@ App.definitions = {
             type: 'med',
             age: [0, 1, 2],
         },
+        "sleep replacement": {
+            sprite: 1050,
+            hunger_replenish: -25,
+            fun_replenish: -20,
+            sleep_replenish: 999,
+            price: 120,
+            type: 'med',
+            age: [0, 1, 2],
+            isNew: true,
+        },
     },
     item: {
         "foxy": {
@@ -657,7 +667,7 @@ App.definitions = {
                         App.scene.bathroom, 
                         App.scene.kitchen,
                         App.scene.graveyard,
-                        App.scene.parentsHome
+                        App.scene.parentsHome,
                     ],
                     currentPosition: {
                         x: 0, y: 0,

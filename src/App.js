@@ -1,7 +1,7 @@
 let App = {
     PI2: Math.PI * 2, INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', userName: null, ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
     gameEventsHistory: {}, deferredInstallPrompt: null, shellBackground: '', isOnItch: false, hour: 12,
-    misc: {}, mods: [], records: {},
+    misc: {}, mods: [], records: {}, temp: {},
     settings: {
         screenSize: 1,
         playSound: true,
@@ -870,6 +870,27 @@ let App = {
         }),
         stand: new Scene({
             image: 'resources/img/background/outside/stand_01.png',
+        }),
+        online_hub: new Scene({
+            noShadows: true,
+            image: 'resources/img/background/house/online_hub_01.png',
+            onLoad: () => {
+                this.lightRays = new Object2d({
+                    img: 'resources/img/misc/light_rays_02.png',
+                    opacity: 0.6, x: '50%', y: '50%', composite: 'overlay',
+                    onDraw: (me) => {
+                        me.rotation -= 0.005 * App.deltaTime;
+                    }
+                })
+                this.platform = new Object2d({
+                    img: 'resources/img/misc/online_hub_01_front.png',
+                    x: 0, y: 0,
+                })
+            },
+            onUnload: () => {
+                this.platform.removeObject();
+                this.lightRays.removeObject();
+            }
         })
     },
     setScene(scene){
@@ -1886,11 +1907,12 @@ let App = {
                             if(App.pet.inventory.food[food] > 0)
                                 App.pet.inventory.food[food] -= 1;
 
-                            App.pet.stats.current_fun += current.fun_replenish;
-                            if(App.pet.hasMoodlet('healthy') && current.type === 'med')
+                            App.pet.stats.current_fun += current.fun_replenish ?? 0;
+                            App.pet.stats.current_sleep += current.sleep_replenish ?? 0;
+                            if(App.pet.hasMoodlet('healthy') && food === 'medicine')
                                 App.pet.stats.current_health = App.pet.stats.current_health * 0.6;
                             else
-                                App.pet.stats.current_health += current.health_replenish;
+                                App.pet.stats.current_health += current.health_replenish ?? 0;
                         }
                     }
                 })
@@ -2472,7 +2494,7 @@ let App = {
                                 name: 'invite',
                                 onclick: () => {
                                     App.closeAllDisplays();
-                                    Activities.inviteHousePlay(friendDef);
+                                    Activities.invitePlaydate(friendDef);
                                 }
                             },
                             {
@@ -2531,9 +2553,40 @@ let App = {
         open_phone: function(){
             App.displayList([
                 {
+                    name: `<span style="color: #ff00c6"><i class="icon fa-solid fa-globe"></i> hubchi</span> ${App.getBadge()}`,
+                    onclick: () => {
+                        if(App.pet.stats.current_sleep < 10) {
+                            return App.displayPopup(`${App.petDefinition.name} is too sleepy to go to HUBCHI!`);
+                        }
+
+                        Activities.onlineHubTransition(async (fadeOverlay) => {
+                            setTimeout(() => App.playSound('resources/sounds/task_complete.ogg', true));
+                            const popup = App.displayPopup('Connecting...', App.INF);
+                            App.temp.online = {};
+                            App.temp.online.hasUploadedPetDef = await App.apiService.getPetDef();
+                            App.temp.online.randomPetDefs = await App.apiService.getRandomPetDefs(7);
+                            // App.temp.online = JSON.parse('{"hasUploadedPetDef":{"status":true,"data":"{\\"name\\":\\"Missiechu\\",\\"sprite\\":\\"resources/img/character/chara_248b.png\\",\\"accessories\\":[\\"mini band\\",\\"secretary\\"]}"},"randomPetDefs":{"status":true,"data":[{"name":"farah3","sprite":"resources/img/character/chara_51b.png","accessories":[],"owner":"test3","ownerId":"test3-1234","interactions":0},{"name":"sep2","sprite":"resources/img/character/chara_50b.png","accessories":[],"owner":"test2","ownerId":"test2-1234","interactions":2},{"name":"qoli4","sprite":"resources/img/character/chara_210b.png","accessories":["witch hat"],"owner":"test4","ownerId":"test4-1234","interactions":0},{"name":"<saman1>","sprite":"resources/img/character/chara_28b.png","accessories":[],"owner":"test","ownerId":"test-1234","interactions":0},{"name":"Missiechu","sprite":"resources/img/character/chara_248b.png","accessories":["mini band","secretary"],"owner":"samandev","ownerId":"samandev-3430186","interactions":3}]}}');
+                            popup.close();
+                            App.closeAllDisplays();
+                            fadeOverlay.direction = false;
+    
+                            if(!App.temp.online?.randomPetDefs?.status){
+                                App.displayPopup('Error! Cannot connect.');
+                                App.setScene(App.scene.home);
+                                App.toggleGameplayControls(true);
+                                return false;
+                            }
+                            
+                            setTimeout(() => App.playSound('resources/sounds/task_complete_02.ogg', true));
+                            Activities.goToOnlineHub();
+                        })
+
+                        App.sendAnalytics('go_to_online_hub');
+                    }
+                },
+                {
                     name: 'friends',
                     onclick: () => {
-                        // App.displayPopup('To be implemented...', 1000);
                         App.handlers.open_friends_list();
                         return true;
                     }
@@ -3002,16 +3055,18 @@ let App = {
         },
         shell_button: function(){
             if(App.disableGameplayControls && App.gameplayControlsOverwrite){
-                App.gameplayControlsOverwrite();
-                App.vibrate();
+                if(!App.haveAnyDisplays()){
+                    App.gameplayControlsOverwrite();
+                    App.vibrate();
+                }
                 return;
             }
+
             if(App.disableGameplayControls) return;
-            let displayCount = 0;
+
             let disallow = false;
             [...document.querySelectorAll('.display')].forEach(display => {
                 if(!display.closest('.cloneables')){
-                    displayCount++;
                     if(display.classList.contains('popup')) disallow = true;
                     if(display.classList.contains('confirm')) disallow = true;
                     if(display.classList.contains('prompt')) disallow = true;
@@ -3021,7 +3076,7 @@ let App = {
             if(disallow) return;
 
             App.setScene(App.scene.home);
-            if(displayCount) App.closeAllDisplays();
+            if(App.haveAnyDisplays()) App.closeAllDisplays();
             else App.handlers.open_main_menu();
             App.vibrate();
         },
@@ -3298,25 +3353,28 @@ let App = {
         return list;
     },
     displayPopup: function(content, ms, onEndFn){
-        let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
-            list.classList.add('popup');
-            list.innerHTML = `
+        let popup = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
+            popup.classList.add('popup');
+            popup.innerHTML = `
                 <div class="uppercase flex-center">
                     <div class="inner-padding b-radius-10 surface-stylized">
                         ${content}
                     </div>
                 </div>
             `;
-            list.style['z-index'] = 3;
-            list.style['background'] = 'var(--background-c)';
-        setTimeout(() => {
-            list.remove();
-            if(onEndFn){
-                onEndFn();
+            popup.style['z-index'] = 3;
+            popup.style['background'] = 'var(--background-c)';
+            popup.close = () => {
+                popup.remove();
+                if(onEndFn){
+                    onEndFn();
+                }
             }
+        setTimeout(() => {
+            popup.close();
         }, ms || 2000);
-        document.querySelector('.screen-wrapper').appendChild(list);
-        return list;
+        document.querySelector('.screen-wrapper').appendChild(popup);
+        return popup;
     },
     displayConfirm: function(text, buttons){
         let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
@@ -3744,6 +3802,58 @@ let App = {
             App.checkPetStats()
         }, 10000)
     },
+    apiService: {
+        ENDPOINT: 'https://script.google.com/macros/s/AKfycbxCa6Yo_VdK5t9T7ZCHabxT1EY-xACEC3VUDHgkkwGdduF2U5VMGlp0KXBu9CtE8cWv9Q/exec',
+        ENDPOINT_TEST: 'https://script.google.com/macros/s/AKfycbzvoH9j7Ia0Zc_dCBXXYI6dB9UlUR_tGGr1J5Gsu2DG/dev',
+        _getUid: () => {
+            return App.userName + '-' + App.userId;
+        },
+        sendRequest: async (params) => {
+            return new Promise((resolve, reject) => {
+                fetch(`${App.apiService.ENDPOINT}?${params.toString()}`)
+                .then(response => response.json())
+                .then(json => {
+                    resolve(json);
+                })
+                .catch(e => {
+                    resolve({error: e})
+                })
+            })
+        },
+        addPetDef: (petDef) => {
+            const params = new URLSearchParams({
+                action: 'addPetDef',
+                userId: App.apiService._getUid(),
+                data: JSON.stringify({
+                    name: App.petDefinition.name,
+                    sprite: App.petDefinition.sprite,
+                    accessories: App.petDefinition.accessories,
+                })
+            });
+            return App.apiService.sendRequest(params);
+        },
+        getPetDef: () => {
+            const params = new URLSearchParams({
+                action: 'getPetDef',
+                userId: App.apiService._getUid(),
+            });
+            return App.apiService.sendRequest(params);
+        },
+        getRandomPetDefs: (amount) => {
+            const params = new URLSearchParams({
+                action: 'getRandomPetDefs',
+                amount: amount ?? 10,
+            });
+            return App.apiService.sendRequest(params);
+        },
+        addInteraction: (ownerId) => {
+            const params = new URLSearchParams({
+                action: 'addUserInteraction',
+                ownerId 
+            });
+            return App.apiService.sendRequest(params);``
+        }
+    }
 }
 
 window.addEventListener('beforeinstallprompt', (e) => {

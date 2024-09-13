@@ -47,6 +47,7 @@ const ASSETS = [
     'resources/sounds/ui_click_04.ogg',
     'resources/sounds/walk_01.ogg',
     'resources/sounds/wedding_song_01.ogg',
+    'resources/sounds/online_hub_transition_01.ogg',
     // other
     'resources/font/PixelifySans-VariableFont_wght.ttf',
     'resources/font/PixelColeco.otf',

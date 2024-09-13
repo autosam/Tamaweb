@@ -81,6 +81,23 @@ const ellipsis = (str, length = 15) => {
     }
     return str;
 }
+
+function sanitize (string) {
+    // var entityMap = {
+    //     '&': '&amp;',
+    //     '<': '&lt;',
+    //     '>': '&gt;',
+    //     '"': '&quot;',
+    //     "'": '&#39;',
+    //     '/': '&#x2F;',
+    //     '`': '&#x60;',
+    //     '=': '&#x3D;'
+    // };
+    return String(string).replace(/[&<>"'`=]/g, function (s) {
+        // return entityMap[s];
+        return '';
+    });
+}
 function setCookie(cname, cvalue, exdays) {
     const d = new Date();
     d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));

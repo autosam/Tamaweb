@@ -601,9 +601,6 @@ input:focus {
 button {
     appearance: none;
     all: unset;
-}
-
-button {
     font-family: 'Pixel';
     cursor: pointer;
 }
@@ -1307,6 +1304,11 @@ a.generic-btn:before {
 
 .generic-btn i {
     pointer-events: none;
+}
+
+.generic-btn > .icon {
+    font-size: small;
+    margin-right: 5px;
 }
 
 .generic-btn.no-anim {
