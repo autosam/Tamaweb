@@ -10,6 +10,7 @@ const SPRITES = [
     "resources/img/background/house/office_01.png",
     "resources/img/background/house/kitchen_01.png",
     "resources/img/background/house/kitchen_02.png",
+    "resources/img/background/house/kitchen_03.png",
     "resources/img/background/house/dark_overlay.png",
     "resources/img/background/house/wedding_01.png",
     "resources/img/background/house/wedding_overlay.png",
@@ -90,6 +91,7 @@ const SPRITES = [
     "resources/img/accessory/wings_01.png",
     "resources/img/accessory/witch_hat_01.png",
     "resources/img/accessory/mini_band_01.png",
-    "resources/img/accessory/secretary_01_icon.png",
+    "resources/img/accessory/mini_band_01_icon.png",
     "resources/img/accessory/secretary_01.png",
+    "resources/img/accessory/secretary_01_icon.png",
 ]

@@ -15,6 +15,12 @@
     src: url('resources/font/PixelColeco.otf');
 }
 
+@font-face {
+    font-family: 'PixelOld';
+    src: url('resources/font/PixelifySans-VariableFont_wght.ttf');
+    unicode-range: U+221E;
+}
+
 * {
     -webkit-tap-highlight-color: transparent;
     user-select: none;
@@ -22,7 +28,7 @@
 }
 
 html {
-    font-family: 'Pixel';
+    font-family: 'PixelOld', 'Pixel', serif;
     /* letter-spacing: -2px; */
 }
 

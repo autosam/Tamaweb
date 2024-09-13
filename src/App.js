@@ -756,9 +756,10 @@ let App = {
             }
         }),
         kitchen: new Scene({
-            image: 'resources/img/background/house/kitchen_02.png',
+            image: 'resources/img/background/house/kitchen_03.png',
             foodsX: '50%', foodsY: 44,
             petX: '75%', petY: '81%',
+            noShadows: true,
             onLoad: () => {
                 App.pet.staticShadow = false;
             },
@@ -1227,7 +1228,7 @@ let App = {
                                 type: 'text'
                             },
                             {
-                                name: '<label class="custom-file-upload"><input id="mod-file" type="file"></input>Add mod</label>',
+                                name: '<label class="custom-file-upload"><input id="mod-file" type="file"></input>+ Add mod</label>',
                                 onclick: (btn) => {
                                     return true;
                                 }
@@ -2305,7 +2306,7 @@ let App = {
                         // toggle equip mode
                         if(equipped) App.petDefinition.accessories.splice(App.petDefinition.accessories.indexOf(accessoryName), 1);
                         else App.petDefinition.accessories.push(accessoryName);
-                        Activities.getDressed(() => App.pet.createAccessories(), reopen);
+                        Activities.getDressed(() => App.pet.createAccessories(), reopen, !equipped);
                         App.sendAnalytics('accessory', `${accessoryName} (${!equipped})`);
                     }
                 })

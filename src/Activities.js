@@ -217,7 +217,7 @@ class Activities {
 
     }
     // activities
-    static async getDressed(middleFn, onEndFn){
+    static async getDressed(middleFn, onEndFn, cheer){
         App.closeAllDisplays();
         App.toggleGameplayControls(false);
         App.sendAnalytics('getting_dressed');
@@ -241,7 +241,7 @@ class Activities {
         curtainTargetElevation = -100;
         await App.pet.triggerScriptedState('idle', 2000, 0, true);
         curtainObject.removeObject();
-        App.pet.playCheeringAnimation(() => {
+        App.pet.playCheeringAnimationIfTrue(cheer, () => {
             App.toggleGameplayControls(true);
             onEndFn();
         });

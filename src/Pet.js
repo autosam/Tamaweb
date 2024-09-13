@@ -69,7 +69,8 @@ class Pet extends Object2d {
             img: 'resources/img/misc/shadow_01.png',
             width: this.petDefinition.spritesheet.cellSize, 
             height: this.petDefinition.spritesheet.cellSize,
-            z: (this.z - 0.1) || 4.9,
+            // z: (this.z - 0.1) || 4.9,
+            z: 4.89,
             hidden: !this.castShadow,
             onDraw: (overlay) => {
                 overlay.x = this.x;

@@ -865,6 +865,13 @@ App.definitions = {
                 return secretary;
             }
         },
+        'mini band': {
+            icon: 'resources/img/accessory/mini_band_01_icon.png',
+            image: 'resources/img/accessory/mini_band_01.png',
+            front: true,
+            price: 200,
+            isNew: true,
+        },
     },
     achievements: {
         pat_x_times: {
