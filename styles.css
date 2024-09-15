@@ -650,6 +650,10 @@ button {
     flex: 1
 }
 
+.text-bold {
+    font-weight: bold;
+}
+
 .hidden {
     display: none !important;
 }
@@ -1432,11 +1436,23 @@ a.generic-btn:before {
     border-bottom-right-radius: 20px;
 }
 
-.solid-surface-stylized {
+/* .solid-surface-stylized {
     margin: 5px 5px;
     background: #ff8000;
     color: #fff7ee;
     text-shadow: 1px 1px 0px #934a00;
+} */
+
+.solid-surface-stylized {
+    margin: 5px 5px;
+    background: #ff9d3a;
+    color: #fff7ee;
+    text-shadow: 1px 1px 0px #cf6800;
+    background: repeating-linear-gradient(45deg, #ff9d3a 0 15px, #ff952b 15px 30px, #ffa952 30px 45px);
+    border: 2px solid #ff572257;
+}
+.solid-surface-stylized:has(+.surface-stylized) {
+    margin-bottom: 0;
 }
 
 .slide-action {

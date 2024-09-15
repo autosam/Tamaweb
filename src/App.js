@@ -641,7 +641,9 @@ let App = {
             App.displayList([
                 {
                     name: 'New update is available!',
-                    type: 'title',
+                    type: 'text',
+                    solid: true,
+                    bold: true,
                 },
                 {
                     name: 'Check out the new wants system, care rating points, mini games, companions and accessories, ui changes and much more!',
@@ -1278,7 +1280,7 @@ let App = {
                                                         const modInfoScreen = App.displayList([
                                                             {
                                                                 name: `${modInfo.name} <br> <small style="font-size: small">by ${modInfo.author}</small>`,
-                                                                type: 'title',
+                                                                type: 'text', solid: true, bold: true,
                                                             },
                                                             {
                                                                 _ignore: !modInfo.description,
@@ -2873,11 +2875,6 @@ let App = {
 
             App.displayList([
                 {
-                    _ignore: true,
-                    name: 'Social Media',
-                    type: 'title',
-                },
-                {
                     name: 'make post',
                     onclick: () => {
                         App.petDefinition.stats.current_fun += random(1, 5);
@@ -3212,15 +3209,10 @@ let App = {
             let defaultClassName;
 
             switch(item.type){
-                case "title":
-                    element = document.createElement('h3');
-                    element.innerHTML = item.name;
-                    defaultClassName = 'inner-padding b-radius-10 uppercase list-title solid-surface-stylized';
-                    break;
                 case "text":
                     element = document.createElement('p');
                     element.innerHTML = item.name;
-                    defaultClassName = 'inner-padding b-radius-10 uppercase list-text surface-stylized';
+                    defaultClassName = `inner-padding b-radius-10 uppercase list-text ${item.solid ? 'solid-' : ''}surface-stylized ${item.bold ? 'text-bold' : ''}`;
                     break;
                 case "separator":
                     element = document.createElement('hr');

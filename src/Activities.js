@@ -22,6 +22,7 @@ class Activities {
             onDraw: (me) => {
                 me.opacity = fadeOverlay.opacity * 3;
                 me.rotation += 0.01 * App.deltaTime;
+                me.x = '50%'; me.y = '50%';
             }
         })
 
@@ -64,6 +65,7 @@ class Activities {
                 {
                     _ignore: !hasUploadedPetDef.status,
                     type: 'text',
+                    solid: true,
                     name: `
                         <div style="
                             display: flex;
@@ -111,6 +113,7 @@ class Activities {
                                             </div>
                                             `,
                                             type: 'text',
+                                            solid: true,
                                         },
                                         {
                                             name: 'hang out',
