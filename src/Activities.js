@@ -129,8 +129,12 @@ class Activities {
                                                             onclick: () => {
                                                                 App.closeAllDisplays();
                                                                 const addedFriend = App.petDefinition.addFriend(def, 1);
-                                                                if(addedFriend) App.displayPopup(`${def.getCSprite()} ${def.name} has been added to the friends list!`, 3000);
-                                                                else App.displayPopup(`You are already friends with ${def.name}`, 3000);
+                                                                if(addedFriend) {
+                                                                    App.displayPopup(`${def.getCSprite()} ${def.name} has been added to the friends list!`, 3000);
+                                                                    App.apiService.addInteraction(def.ownerId);
+                                                                } else {
+                                                                    App.displayPopup(`You are already friends with ${def.name}`, 3000);
+                                                                }
                                                                 return false;
                                                             }
                                                         },

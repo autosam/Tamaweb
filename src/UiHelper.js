@@ -122,4 +122,7 @@ const UI = {
     hide: (element) => {
         element.style.display = 'none';
     },
+    show: (element) => {
+        element.style.display = '';
+    },
 }

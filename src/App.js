@@ -625,7 +625,10 @@ let App = {
         }
     },
     handleInGameEvents: function(){
-        if(!App.awayTime || App.awayTime == -1) return;
+        if(!App.awayTime || App.awayTime == -1) {
+            App.handlers.show_onboarding();
+            return;
+        }
 
         const addEvent = App.addEvent;
 
@@ -1023,6 +1026,20 @@ let App = {
         if(Activities.encounter()) return;
     },
     handlers: {
+        show_onboarding: function(){
+            const screenWrapper = document.querySelector('.screen-wrapper');
+            const interval = setInterval(() => {
+                if(!App.pet.stats.is_egg){
+                    UI.show(document.querySelector('.tap-reminder'));
+                    const tapReminderRemoveHandler = () => {
+                        UI.hide(document.querySelector('.tap-reminder'));
+                        screenWrapper.removeEventListener('click', tapReminderRemoveHandler);
+                    }
+                    screenWrapper.addEventListener('click', tapReminderRemoveHandler);
+                    clearInterval(interval);
+                }
+            }, 1000);
+        },
         show_set_pet_name_dialog: function(){
             App.displayPrompt(`Name your new egg:`, [
                 {
@@ -2066,7 +2083,7 @@ let App = {
             content.style.height = '100%';
             content.innerHTML = `
                 <div class="user-id surface-stylized">
-                    uid:<span type="password">${App.userName + '-' + App.userId.slice(0, 5)}</span>
+                    uid:<span>${App.userName + '-' + App.userId.slice(0, 5)}</span>
                 </div>
                 <div class="flex-center inner-padding surface-stylized height-auto">
                     ${App.petDefinition.getCSprite()}

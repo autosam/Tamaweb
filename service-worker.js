@@ -54,6 +54,7 @@ const ASSETS = [
     'resources/img/ui/logo_full.png',
     'resources/img/ui/logo_trans_01.png',
     'resources/img/ui/pointer_right.png',
+    'resources/img/ui/tap_01.png',
     // shell background
     'resources/img/ui/shell_background_01.png',
     'resources/img/ui/shell_background_02.png',
