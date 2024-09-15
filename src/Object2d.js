@@ -90,6 +90,7 @@ class Object2d {
         if(should('inverted')) this.inverted = this.parent.inverted;
         if(should('upperHalfOffsetY')) this.upperHalfOffsetY = this.parent.upperHalfOffsetY;
         if(should('scale')) this.scale = this.parent.scale;
+        if(should('opacity')) this.opacity = this.parent.opacity;
 
         if(should('spritesheet')) if(this.spritesheet) this.spritesheet.cellNumber = this.parent.spritesheet.cellNumber;
     }

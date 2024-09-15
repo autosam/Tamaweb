@@ -238,7 +238,8 @@ class Drawer {
         this.objects[object.drawerId] = null;
         this.objects.forEach(otherObject => {
             if(otherObject?.parent?.drawerId === object.drawerId){
-                this.objects[otherObject.drawerId] = null;
+                // this.objects[otherObject.drawerId] = null;
+                this.removeObject(otherObject);
             }
         })
     }

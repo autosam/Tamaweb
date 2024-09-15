@@ -10,6 +10,7 @@ const SPRITES = [
     "resources/img/background/house/office_01.png",
     "resources/img/background/house/kitchen_01.png",
     "resources/img/background/house/kitchen_02.png",
+    "resources/img/background/house/kitchen_03.png",
     "resources/img/background/house/dark_overlay.png",
     "resources/img/background/house/wedding_01.png",
     "resources/img/background/house/wedding_overlay.png",
@@ -17,6 +18,8 @@ const SPRITES = [
     "resources/img/background/house/bathroom_01.png",
     "resources/img/background/house/clinic_01.png",
     "resources/img/background/house/parents_house_01.png",
+    "resources/img/background/house/arcade_02.png",
+    "resources/img/background/house/online_hub_01.png",
     
     "resources/img/background/outside/park_02.png",
     "resources/img/background/outside/mall_walkway.png",
@@ -71,6 +74,7 @@ const SPRITES = [
     "resources/img/misc/heart_particle_02.png",
     "resources/img/misc/dresser_curtain_01.png",
     "resources/img/misc/light_rays_01.png",
+    "resources/img/misc/light_rays_02.png",
     "resources/img/misc/star_01.png",
     "resources/img/misc/cooking_pot_p01.png",
     "resources/img/misc/cooking_pot_p02.png",
@@ -78,6 +82,12 @@ const SPRITES = [
     "resources/img/misc/exclam_01.png",
     "resources/img/misc/picture_overlay_01.png",
     "resources/img/misc/shadow_01.png",
+    "resources/img/misc/falling_poop.png",
+    "resources/img/misc/thought_bubble_01.png",
+    "resources/img/misc/minigames.png",
+    "resources/img/misc/want_fulfilled.png",
+    "resources/img/misc/cyberpunk_overlay_01.png",
+    "resources/img/misc/online_hub_01_front.png",
 
     // accessories
     "resources/img/accessory/crown_01.png",
@@ -85,4 +95,7 @@ const SPRITES = [
     "resources/img/accessory/wings_01.png",
     "resources/img/accessory/witch_hat_01.png",
     "resources/img/accessory/mini_band_01.png",
+    "resources/img/accessory/mini_band_01_icon.png",
+    "resources/img/accessory/secretary_01.png",
+    "resources/img/accessory/secretary_01_icon.png",
 ]

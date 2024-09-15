@@ -75,11 +75,28 @@ const randomFromArray = function(arr){
 const pRandomFromArray = function(arr){
     return arr[pRandom.getIntBetween(0, arr.length - 1)];
 }
-const ellipsis = (str, length = 18) => {
+const ellipsis = (str, length = 15) => {
     if(str?.length > length){
-        return str?.slice(0, length).concat('...');
+        return str?.slice(0, length).concat('…');
     }
     return str;
+}
+
+function sanitize (string) {
+    // var entityMap = {
+    //     '&': '&amp;',
+    //     '<': '&lt;',
+    //     '>': '&gt;',
+    //     '"': '&quot;',
+    //     "'": '&#39;',
+    //     '/': '&#x2F;',
+    //     '`': '&#x60;',
+    //     '=': '&#x3D;'
+    // };
+    return String(string).replace(/[&<>"'`=]/g, function (s) {
+        // return entityMap[s];
+        return '';
+    });
 }
 function setCookie(cname, cvalue, exdays) {
     const d = new Date();

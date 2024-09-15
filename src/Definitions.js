@@ -1,4 +1,56 @@
 App.definitions = {
+    main_menu: [
+        {
+            name: '<i class="fa-solid fa-line-chart"></i>',
+            name: '<i class="fa-solid fa-dashboard"></i>',
+            onclick: () => {
+                App.handlers.open_stats_menu();
+            }
+        },
+        {
+            name: '<i class="fa-solid fa-cutlery"></i>',
+            onclick: () => {
+                App.handlers.open_feeding_menu();
+            }
+        },
+        {
+            name: '<i class="fa-solid fa-bath"></i>',
+            onclick: () => {
+                // App.handlers.clean();
+                App.handlers.open_bathroom_menu();
+            }
+        },
+        {
+            name: `<i class="fa-solid fa-house-chimney-user"></i>`,
+            onclick: () => {
+                App.handlers.open_care_menu();
+            }
+        },
+        {
+            name: '<i class="fa-solid fa-door-open"></i>',
+            onclick: () => {
+                App.handlers.open_activity_list();
+            }
+        },
+        {
+            name: '<i class="fa-solid fa-box-open"></i>',
+            onclick: () => {
+                App.handlers.open_stuff_menu();
+            }
+        },
+        {
+            name: '<i class="fa-solid fa-mobile-alt"></i>',
+            onclick: () => {
+                App.handlers.open_phone();
+            }
+        },
+        {
+            name: `<i class="fa-solid fa-gear"></i>`,
+            onclick: () => {
+                App.handlers.open_settings();
+            }
+        },
+    ],
     food: {
         // foods
         "bread": {
@@ -437,6 +489,16 @@ App.definitions = {
             type: 'med',
             age: [0, 1, 2],
         },
+        "sleep replacement": {
+            sprite: 1050,
+            hunger_replenish: -25,
+            fun_replenish: -20,
+            sleep_replenish: 999,
+            price: 120,
+            type: 'med',
+            age: [0, 1, 2],
+            isNew: true,
+        },
     },
     item: {
         "foxy": {
@@ -578,6 +640,248 @@ App.definitions = {
             front: false,
             price: 200,
         },
+        'secretary': {
+            icon: 'resources/img/accessory/secretary_01_icon.png',
+            image_sprite: 'resources/img/accessory/secretary_01.png',
+            front: false,
+            price: 500,
+            isNew: true,
+            createFn: function(parent){
+                const Z = parent.z - 0.1 || 4.9;
+                const spritesheet = {
+                    cellSize: 12,
+                    rows: 5,
+                    columns: 4,
+                }
+                const secretary = new Object2d({
+                    parent: parent,
+                    x: -100, y: -100,
+                    animationFloat: 0,
+                    bodyAnimationFloat: 0,
+                    movementMult: -10,
+                    targetMovementMult: 1,
+                    movementMultDirection: 1,
+                    lastScene: App.currentScene,
+                    allowedRooms: [
+                        App.scene.home, 
+                        App.scene.bathroom, 
+                        App.scene.kitchen,
+                        App.scene.graveyard,
+                        App.scene.parentsHome,
+                    ],
+                    currentPosition: {
+                        x: 0, y: 0,
+                    },
+                    targetPosition: {
+                        x: 0, y: 0, nextChangeMs: 0,
+                    },
+                    onDraw: (me) => {
+                        if(App.lastTime > me.targetPosition.nextChangeMs){
+                            me.targetPosition.nextChangeMs = App.lastTime + random(250, 2000);
+                            const followsParent = random(0, 1);
+                            if(followsParent && !isNaN(parent.x) && !isNaN(parent.y)){
+                                me.targetPosition.x = parent.x;
+                                me.targetPosition.y = parent.y - 40;
+                            } else {
+                                me.targetPosition.x = random(10, 90);
+                                me.targetPosition.y = random(-10, 50);
+                            }
+                            if(!random(0, 2)){
+                                me.movementMultDirection = -1 * me.movementMultDirection;
+                            }
+                            // me.movementMultDirection = followsParent ? 1 : -1;
+                        }
+
+                        
+                        if(me.lastScene != App.currentScene){
+                            me.lastScene = App.currentScene;
+                            me.currentPosition.y = -40;
+                        }
+
+                        if(!me.allowedRooms.includes(App.currentScene)){
+                            me.x = -100;
+                            me.y = -100;
+                            return;
+                        }
+
+                        me.animationFloat += (0.005 * App.nDeltaTime) % App.PI2;
+                        me.bodyAnimationFloat += (0.0025 * App.nDeltaTime) % App.PI2;
+                        me.currentPosition.x = lerp(me.currentPosition.x, me.targetPosition.x, 0.0005 * App.nDeltaTime);
+                        me.x = me.currentPosition.x;
+                        me.currentPosition.y = lerp(me.currentPosition.y, me.targetPosition.y, 0.0005 * App.nDeltaTime);
+                        me.y = me.currentPosition.y + Math.sin(me.animationFloat);
+
+                        const xDiff = Math.abs(me.currentPosition.x - me.targetPosition.x);
+                        const yDiff = Math.abs(me.currentPosition.y - me.targetPosition.y);
+                        me.targetMovementMult = Math.max((xDiff + yDiff) * 0.1, 1);
+                        me.movementMult = lerp(me.movementMult, me.targetMovementMult * me.movementMultDirection, 0.01 * App.nDeltaTime);
+                    }
+                })
+
+                /* body */
+                const handleBody = (me, i) => {
+                    const spread = 6 + (secretary.movementMult * 0.5);
+                    const basePosition = {
+                        x: me.parent.x,
+                        y: me.parent.y
+                    }
+                    const localPosition = {
+                        x: 0, y: 0,
+                    }
+
+                    switch(i){
+                        case (0):
+                            localPosition.x = -spread;
+                            localPosition.y = -spread;
+
+                            break;
+                        case (1):
+                            localPosition.x = -spread;
+                            localPosition.y = spread;
+                            me.rotation = 180;
+                            me.inverted = true;
+                            break;
+                        case (2):
+                            localPosition.x = spread;
+                            localPosition.y = -spread;
+                            me.inverted = true;
+                            break;
+                        case (3):
+                            localPosition.x = spread;
+                            localPosition.y = spread;
+                            me.rotation = 180;
+                            break;
+                    }
+
+                    localPosition.y += Math.sin(secretary.bodyAnimationFloat + i) * 0.55;
+                    localPosition.y += Math.sin(secretary.bodyAnimationFloat + i) * 0.55;
+
+                    // me.rotation = i * 90;
+
+                    me.x = localPosition.x + basePosition.x;
+                    me.y = localPosition.y + basePosition.y;
+                }
+                for(let i = 0; i < 4; i++){
+                    new Object2d({
+                        parent: secretary,
+                        img: App.checkResourceOverride(this.image_sprite),
+                        x: 0, y: 0, z: Z,
+                        animationFloat: 0,
+                        spritesheet: {
+                            ...spritesheet, cellNumber: 1,
+                        },
+                        onDraw: (me) => handleBody(me, i),
+                        // composite: "darken"
+                    })
+                }
+
+                /* body */
+                const handleArrows = (me, i) => {
+                    const spread = 13 + secretary.movementMult;
+                    const basePosition = {
+                        x: me.parent.x,
+                        y: me.parent.y
+                    }
+                    const localPosition = {
+                        x: 0, y: 0
+                    }
+
+                    const offsetMult = 10, strength = 0.8 + (-secretary.movementMult * 0.25);
+                    switch(i){
+                        case (0):
+                            localPosition.x = -spread;
+                            localPosition.y = -spread;
+                            me.inverted = true;
+                            localPosition.x += Math.sin(secretary.animationFloat - i * offsetMult) * strength;
+                            localPosition.y += Math.sin(secretary.animationFloat - i * offsetMult) * strength;
+                            break;
+                        case (1):
+                            localPosition.x = -spread;
+                            localPosition.y = spread;
+                            me.inverted = true;
+                            me.rotation = -90;
+                            localPosition.x += Math.sin(secretary.animationFloat - i * offsetMult) * strength;
+                            localPosition.y -= Math.sin(secretary.animationFloat - i * offsetMult) * strength;
+                            break;
+                        case (2):
+                            localPosition.x = spread;
+                            localPosition.y = -spread;
+                            localPosition.x -= Math.sin(secretary.animationFloat - i * offsetMult) * strength;
+                            localPosition.y += Math.sin(secretary.animationFloat - i * offsetMult) * strength;
+                            break;
+                        case (3):
+                            localPosition.x = spread;
+                            localPosition.y = spread;
+                            me.rotation = 90;
+                            localPosition.x -= Math.sin(secretary.animationFloat - i * offsetMult) * strength;
+                            localPosition.y -= Math.sin(secretary.animationFloat - i * offsetMult) * strength;
+                            break;
+                    }
+
+                    localPosition.y += Math.sin(secretary.bodyAnimationFloat + i) * 0.55;
+                    localPosition.y += Math.sin(secretary.bodyAnimationFloat + i) * 0.55;
+
+                    me.x = localPosition.x + basePosition.x;
+                    me.y = localPosition.y + basePosition.y;
+                }
+                for(let i = 0; i < 4; i++){
+                    new Object2d({
+                        parent: secretary,
+                        img: App.checkResourceOverride(this.image_sprite),
+                        x: 0, y: 0, z: Z,
+                        spritesheet: {
+                            ...spritesheet, cellNumber: 3,
+                        },
+                        onDraw: (me) => handleArrows(me, i),
+                        // composite: "darken"
+                    })
+                }
+
+                /* head */
+                new Object2d({
+                    parent: secretary,
+                    img: App.checkResourceOverride(this.image_sprite),
+                    x: 0, y: 0, z: Z,
+                    spritesheet: {
+                        ...spritesheet, cellNumber: 2,
+                    },
+                    onDraw: (me) => {
+                        me.x = me.parent.x;
+                        me.y = me.parent.y;
+                        me.rotation = Math.sin(secretary.bodyAnimationFloat) * 45 * secretary.movementMult;
+                    },
+                    // composite: "darken"
+                })
+
+                /* light */
+                new Object2d({
+                    parent: secretary,
+                    img: App.checkResourceOverride(this.image_sprite),
+                    x: 0, y: 0, z: Z - 0.1,
+                    spritesheet: {
+                        ...spritesheet, cellNumber: 4,
+                    },
+                    onDraw: (me) => {
+                        me.x = me.parent.x;
+                        me.y = me.parent.y;
+                        // me.rotation = Math.sin(secretary.bodyAnimationFloat) * 45 * secretary.movementMult;
+                        me.scale = 1.3 + Math.abs(Math.sin(secretary.animationFloat) * 0.1);
+                        me.opacity = Math.abs(Math.sin(secretary.bodyAnimationFloat) * 0.3);
+                    },
+                    composite: "lighten",
+                    opacity: 0.1,
+                })
+
+                return secretary;
+            }
+        },
+        'mini band': {
+            icon: 'resources/img/accessory/mini_band_01_icon.png',
+            image: 'resources/img/accessory/mini_band_01.png',
+            front: true,
+            price: 200,
+            isNew: true,
+        },
     },
     achievements: {
         pat_x_times: {
@@ -587,7 +891,7 @@ App.definitions = {
             advance: (amount) => App.addRecord('times_patted', amount),
             getReward: () => {
                 App.pet.stats.gold += 150;
-                App.displayPopup(`You've recieved 150 golds!`);
+                App.displayPopup(`You've received $150!`);
             }
         },
         use_toilet_x_times: {
@@ -597,7 +901,7 @@ App.definitions = {
             advance: (amount) => App.addRecord('times_used_toilet', amount),
             getReward: () => {
                 App.pet.stats.gold += 150;
-                App.displayPopup(`You've recieved 150 golds!`);
+                App.displayPopup(`You've received $150!`);
             }
         },
         marry_x_times: {
@@ -607,7 +911,7 @@ App.definitions = {
             advance: (amount) => App.addRecord('times_married', amount),
             getReward: () => {
                 App.pet.stats.gold += 1000;
-                App.displayPopup(`You've recieved 1000 golds!`);
+                App.displayPopup(`You've received $1000!`);
             }
         },
         birthday_x_times: {
@@ -617,7 +921,7 @@ App.definitions = {
             advance: (amount) => App.addRecord('times_had_birthday', amount),
             getReward: () => {
                 App.pet.stats.gold += 150;
-                App.displayPopup(`You've recieved 150 golds!`);
+                App.displayPopup(`You've received $150!`);
             }
         },
         redecor_x_times: {
@@ -627,7 +931,7 @@ App.definitions = {
             advance: (amount) => App.addRecord('times_redecorated_background', amount),
             getReward: () => {
                 App.pet.stats.gold += 100;
-                App.displayPopup(`You've recieved 100 golds!`);
+                App.displayPopup(`You've received $100!`);
             }
         },
         give_gifts_x_times: {
@@ -637,7 +941,7 @@ App.definitions = {
             advance: (amount) => App.addRecord('times_gave_gift', amount),
             getReward: () => {
                 App.pet.stats.gold += 500;
-                App.displayPopup(`You've recieved 500 golds!`);
+                App.displayPopup(`You've received $500!`);
             }
         },
         work_x_times: {
@@ -647,17 +951,7 @@ App.definitions = {
             advance: (amount) => App.addRecord('times_worked', amount),
             getReward: () => {
                 App.pet.stats.gold += 350;
-                App.displayPopup(`You've recieved 350 golds!`);
-            }
-        },
-        perfect_minigame_rodrush_win_x_times: {
-            name: 'Rod Rush Pro',
-            description: 'Win with perfect score in Rod Rush 10 times',
-            checkProgress: () => App.getRecord('times_perfected_rodrush_minigame') >= 10,
-            advance: (amount) => App.addRecord('times_perfected_rodrush_minigame', amount),
-            getReward: () => {
-                App.pet.stats.gold += 500;
-                App.displayPopup(`You've recieved 500 golds!`);
+                App.displayPopup(`You've received $350!`);
             }
         },
         go_to_vacation_x_times: {
@@ -667,8 +961,41 @@ App.definitions = {
             advance: (amount) => App.addRecord('times_went_on_vacation', amount),
             getReward: () => {
                 App.pet.stats.gold += 150;
-                App.displayPopup(`You've recieved 150 golds!`);
+                App.displayPopup(`You've received $150!`);
             }  
-        }
+        },
+
+        // minigames
+        perfect_minigame_rodrush_win_x_times: {
+            name: 'Rod Rush Pro',
+            description: 'Win with perfect score in Rod Rush game 10 times',
+            checkProgress: () => App.getRecord('times_perfected_rodrush_minigame') >= 10,
+            advance: (amount) => App.addRecord('times_perfected_rodrush_minigame', amount),
+            getReward: () => {
+                App.pet.stats.gold += 500;
+                App.displayPopup(`You've received $500!`);
+            }
+        },
+        perfect_minigame_catch_win_x_gold: {
+            name: 'Money Catcher',
+            description: 'Win $125 in single game of Catch!',
+            required: 125,
+            checkProgress: () => App.getRecord('won_x_gold_in_catch_minigame') >= 1,
+            advance: () => App.addRecord('won_x_gold_in_catch_minigame', 1),
+            getReward: () => {
+                App.pet.stats.gold += 400;
+                App.displayPopup(`You've received $400!`);
+            }
+        },
+        perfect_minigame_mimic_win_x_times: {
+            name: 'Perfect Imitator',
+            description: 'Win with perfect score in Mimic game 10 times!',
+            checkProgress: () => App.getRecord('times_perfected_mimic_minigame') >= 10,
+            advance: (amount) => App.addRecord('times_perfected_mimic_minigame', amount),
+            getReward: () => {
+                App.pet.stats.gold += 500;
+                App.displayPopup(`You've received $500!`);
+            }
+        },
     }
 }

@@ -14,6 +14,7 @@ class Pet extends Object2d {
     animObjectsQueue = [];
     accessoryObjects = [];
     castShadow = true;
+    speedOverride = 0;
 
     constructor(petDefinition, additionalProps){
         const config = {
@@ -68,7 +69,8 @@ class Pet extends Object2d {
             img: 'resources/img/misc/shadow_01.png',
             width: this.petDefinition.spritesheet.cellSize, 
             height: this.petDefinition.spritesheet.cellSize,
-            z: (this.z - 0.1) || 4.9,
+            // z: (this.z - 0.1) || 4.9,
+            z: 4.89,
             hidden: !this.castShadow,
             onDraw: (overlay) => {
                 overlay.x = this.x;
@@ -104,22 +106,25 @@ class Pet extends Object2d {
             const accessory = App.definitions.accessories[accName];
             if(!accessory) return;
 
-            const accessoryObject = new Object2d({
-                parent: this,
-                img: accessory.image,
-                z: accessory.front ? (this.z + 0.1) || 5.1 : (this.z - 0.1) || 4.9,
-                spritesheet: {
-                    cellNumber: 1,
-                    cellSize: 64,
-                    rows: 4,
-                    columns: 4,
-                },
-                onDraw: (overlay) => {
-                    overlay.mimicParent();
-                    overlay.x -= 16;
-                    overlay.y -= 16;
-                }
-            })
+            const accessoryObject = 
+                accessory.createFn 
+                    ? accessory.createFn(this) 
+                    : new Object2d({
+                        parent: this,
+                        img: accessory.image,
+                        z: accessory.front ? (this.z + 0.1) || 5.1 : (this.z - 0.1) || 4.9,
+                        spritesheet: {
+                            cellNumber: 1,
+                            cellSize: 64,
+                            rows: 4,
+                            columns: 4,
+                        },
+                        onDraw: (overlay) => {
+                            overlay.mimicParent();
+                            overlay.x -= 16;
+                            overlay.y -= 16;
+                        }
+                    });
 
             this.accessoryObjects.push(accessoryObject);
         })
@@ -134,18 +139,32 @@ class Pet extends Object2d {
         if(this.stats.is_egg) return this.handleEgg();
 
         this.think();
-        this.moveToTarget(this.stats.speed);
+        this.moveToTarget(this.speedOverride || this.stats.speed);
         this.stateManager();
-        this.animationHandler();
+        this.handleAnimation();
 
         Object2d.animations.pixelBreath(this);
+    }
+    handleWants(){
+        if(!this.isMainPet || App.haveAnyDisplays()) return;
+
+        const {current_want} = this.stats;
+        if(current_want.pendingFulfilled){
+            this.showThought(App.constants.WANT_TYPES.fulfilled);
+            current_want.pendingFulfilled = null;
+        }
+
+        if(App.fullTime > current_want.next_refresh_ms || 0){
+            App.petDefinition.refreshWant()
+            App.pet.showCurrentWant()
+        }
     }
     handleDead(){
         this.x = -600;
 
         App.toggleGameplayControls(false, () => {
             // App.displayPopup('dead');
-            App.displayConfirm(`Do you want to recieve a new egg?`, [
+            App.displayConfirm(`Do you want to receive a new egg?`, [
                 {
                     name: 'yes',
                     onclick: () => {
@@ -261,7 +280,7 @@ class Pet extends Object2d {
         }
         this.stats.is_sleeping = true;
     }
-    feed(foodSpriteCellNumber, value, type){
+    feed(foodSpriteCellNumber, value, type, forced){
         const me = this;
 
         if(!type) type = 'food';
@@ -271,7 +290,7 @@ class Pet extends Object2d {
         });
         this.stopMove();
 
-        function refuse(){
+        const refuse = () => {
             me.playRefuseAnimation();
             App.setScene(App.scene.home);
             // App.foods.hidden = true;
@@ -280,10 +299,17 @@ class Pet extends Object2d {
             return false;
         }
 
-        switch(type){
-            case "food": 
-                if(this.hasMoodlet('full')) return refuse();
-                break;
+        const wantedFoodItem = App.definitions.food[this.stats.current_want.item];
+        if(App.petDefinition.checkWant(foodSpriteCellNumber == wantedFoodItem?.sprite, App.constants.WANT_TYPES.food)){
+            forced = true;
+        }
+
+        if(!forced){
+            switch(type){
+                case "food": 
+                    if(this.hasMoodlet('full')) return refuse();
+                    break;
+            }
         }
 
         /* App.foods.hidden = false; // remove this getting rid of ui food
@@ -363,6 +389,8 @@ class Pet extends Object2d {
         }
         App.toggleGameplayControls(false, (item.interruptable ? interruptFn : false))
 
+        App.petDefinition.checkWant(this.stats.current_want.item == item.name, App.constants.WANT_TYPES.item);
+
         this.stopMove();
         this.x = '30%';
         this.y = '63%';
@@ -430,8 +458,8 @@ class Pet extends Object2d {
 
         if(!this.isDuringScriptedState()){
             this.wander();
-
             this.handleRandomGestures();
+            this.handleWants();
         }
     }
     handleRandomGestures(){
@@ -482,21 +510,7 @@ class Pet extends Object2d {
         if(!hour) hour = App.hour;
 
         let stats = this.stats;
-        /*
-            Hunger: ${this.stats.current_hunger}
-            <br>
-            Sleep: ${this.stats.current_sleep}
-            <br>
-        */
-        // document.querySelector('#debug').innerHTML = `
-        // Hunger: ${this.stats.current_hunger}
-        // <br>
-        // Sleep: ${this.stats.current_sleep}
-        // <br>
-        //     State: ${this.state}
-        //     <br>
-        //     Mood: ${this.activeMoodlets.join(' - ') || "normal"}
-        // `;
+        const previousStats = Object.assign({}, this.stats);
 
         let depletion_mult = 1, offlineAndIsNight = false;
         if(isOfflineProgression){
@@ -571,7 +585,9 @@ class Pet extends Object2d {
         stats.current_sleep -= sleep_depletion_rate;
         if(stats.current_sleep <= 0){
             stats.current_sleep = 0;
-            this.stats.is_sleeping = true;
+            if(App.currentScene == App.scene.home){
+                this.stats.is_sleeping = true;
+            }
         }
         stats.current_fun -= fun_depletion_rate;
         if(stats.current_fun <= 0){
@@ -623,6 +639,34 @@ class Pet extends Object2d {
 
         if(stats.current_death_tick <= 0){
             App.pet.stats.is_dead = true;
+        }
+
+        // care rating check
+        const careAffectingStats = [
+            'current_health',
+            'current_fun',
+            'current_hunger',
+            'current_cleanliness',
+        ]
+        careAffectingStats.forEach(statName => {
+            // decreasing
+            if(
+                previousStats[statName] != 0
+                && this.stats[statName] == 0
+            ) {
+                this.petDefinition.adjustCare(false);
+            }
+        })
+        // increasing
+        const eligibleForCareIncrease = careAffectingStats.every(statName => this.stats[statName] > 90);
+        const shouldResetCareIncreaseFlag = careAffectingStats.some(statName => this.stats[statName] < 50);
+        if(eligibleForCareIncrease){
+            if(this.stats.should_care_increase){
+                this.stats.should_care_increase = false;
+                this.petDefinition.adjustCare(true);
+            }
+        } else if(shouldResetCareIncreaseFlag) {
+            this.stats.should_care_increase = true;
         }
 
         // moodlets
@@ -700,6 +744,7 @@ class Pet extends Object2d {
             this.scriptedEventTime = App.lastTime + length;
             this.scriptedEventOnEndFn = (...args) => {
                 if(typeof onEndFn === "function") onEndFn(...args);
+                onEndFn = null;
                 resolve();
             };
             this.scriptedEventDriverFn = driverFn;
@@ -779,7 +824,7 @@ class Pet extends Object2d {
             }
         }
     }
-    animationHandler(){
+    handleAnimation(){
         const me = this;
 
         if(!this.animation.set) return;
@@ -938,6 +983,118 @@ class Pet extends Object2d {
 
         console.log(`Time every stats hit ~0:`, report);
         App.petDefinition.maxStats();
+    }
+    showCurrentWant(){
+        if(this.stats.current_want.type){
+            this.showThought(this.stats.current_want.type, this.stats.current_want.item);
+        }    
+    }
+    showThought(type, item){
+        const bubble = new Object2d({
+            parent: this.pet,
+            img: 'resources/img/misc/thought_bubble_01.png',
+            x: -999, 
+            y: -999,
+            opacity: 0,
+            z: App.constants.ACTIVE_PET_Z + 0.1,
+            shouldFadeout: false,
+            onDraw: (me) => {
+                me.x = App.pet.x;
+                me.y = App.pet.y - (App.pet.spritesheet.cellSize * 1.5) - (App.pet.spritesheet.offsetY * 1.8 || 0);
+                const opacityTarget = me.shouldFadeout ? 0 : 1;
+                me.opacity = lerp(me.opacity, opacityTarget, App.deltaTime * 0.01);
+            }
+        })
+
+        switch(type){
+            case App.constants.WANT_TYPES.food:
+                const foodSpriteIndex = App.definitions.food[item]?.sprite;
+                if(!foodSpriteIndex) break;
+                new Object2d({
+                    parent: bubble,
+                    image: App.preloadedResources[App.constants.FOOD_SPRITESHEET],
+                    x: 10, y: 10, z: 10,
+                    scale: 0.62,
+                    spritesheet: {
+                        cellNumber: foodSpriteIndex,
+                        cellSize: 24,
+                        rows: 33,
+                        columns: 33,
+                    },
+                    onDraw: (me) => {
+                        me.opacity = bubble.opacity;
+                        me.x = bubble.x + 4;
+                        me.y = bubble.y + 1;
+                    }
+                })
+                break;
+            case App.constants.WANT_TYPES.playdate:
+                const friendDef = this.petDefinition.friends[item];
+                if(!friendDef) break;
+                new Object2d({
+                    parent: bubble,
+                    image: App.preloadedResources[friendDef.sprite],
+                    x: 10, y: 10, z: 10,
+                    scale: 0.62,
+                    spritesheet: friendDef.spritesheet,
+                    onDraw: (me) => {
+                        me.opacity = bubble.opacity;
+                        me.x = bubble.x;
+                        me.y = bubble.y - 4;
+                    }
+                })
+                break;
+            case App.constants.WANT_TYPES.item:
+                const itemSpriteIndex = App.definitions.item[item]?.sprite;
+                if(!itemSpriteIndex) break;
+                new Object2d({
+                    parent: bubble,
+                    image: App.preloadedResources["resources/img/item/items.png"],
+                    x: 10, y: 10, z: 10,
+                    scale: 0.7,
+                    spritesheet: {
+                        cellNumber: itemSpriteIndex,
+                        cellSize: 22,
+                        rows: 10,
+                        columns: 10
+                    },
+                    onDraw: (me) => {
+                        me.opacity = bubble.opacity;
+                        me.x = bubble.x + 5;
+                        me.y = bubble.y + 2;
+                    }
+                })
+                break;
+            case App.constants.WANT_TYPES.minigame:
+                new Object2d({
+                    parent: bubble,
+                    image: App.preloadedResources["resources/img/misc/minigames.png"],
+                    x: 10, y: 10, z: 10,
+                    onDraw: (me) => {
+                        me.opacity = bubble.opacity;
+                        me.x = bubble.x;
+                        me.y = bubble.y;
+                    }
+                })
+                break;
+            case App.constants.WANT_TYPES.fulfilled:
+                new Object2d({
+                    parent: bubble,
+                    image: App.preloadedResources["resources/img/misc/want_fulfilled.png"],
+                    x: 10, y: 10, z: 10,
+                    onDraw: (me) => {
+                        me.opacity = bubble.opacity;
+                        me.x = bubble.x;
+                        me.y = bubble.y;
+                    }
+                })
+                break;
+        }
+
+        setTimeout(() => {
+            bubble.shouldFadeout = true;
+            setTimeout(() => bubble.removeObject(), 1000);
+        }, 5000);
     }
     static scriptedEventDrivers = {
         playing: function(start){

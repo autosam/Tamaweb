@@ -1,4 +1,237 @@
 class Activities {
+    static onlineHubTransition(onEndFn){
+        App.pet.stopMove();
+        App.toggleGameplayControls(false);
+        App.pet.x = '50%';
+        setTimeout(() => App.playSound('resources/sounds/online_hub_transition_01.ogg', true));
+        const fadeOverlay = new Object2d({
+            img: 'resources/img/misc/cyberpunk_overlay_01.png',
+            x: 0, y: 0, z: 555, opacity: 0, direction: true,
+            onDraw: (me) => {
+                Object2d.animations.flip(me, 1000);
+                if(me.direction) me.opacity += 0.00025* App.deltaTime;
+                else me.opacity -= 0.001 * App.deltaTime;
+                me.opacity = clamp(me.opacity, 0, 2);
+                if(!me.direction && me.opacity == 0) me.removeObject();
+            }
+        })
+        const lightRays = new Object2d({
+            parent: fadeOverlay,
+            img: 'resources/img/misc/light_rays_02.png',
+            z: 556, opacity: 0, x: '50%', y: '50%', composite: 'overlay',
+            onDraw: (me) => {
+                me.opacity = fadeOverlay.opacity * 3;
+                me.rotation += 0.01 * App.deltaTime;
+                me.x = '50%'; me.y = '50%';
+            }
+        })
+
+        App.pet.triggerScriptedState('shocked', 4000, false, true, () => {
+            App.pet.targetY = undefined;
+            onEndFn(fadeOverlay);
+        });
+        App.pet.targetY = 50;
+    }
+    static async goToOnlineHub(){
+        const {hasUploadedPetDef, randomPetDefs} = App.temp.online;
+        
+        App.setScene(App.scene.online_hub);
+
+        App.pet.stopMove();
+        App.pet.x = '50%';
+
+        let npcY = 60;
+        const otherPlayersPets = randomPetDefs.slice(0, 7).map((def, i) => {
+            if(i && i % 2 == 0) npcY += 10;
+            const p = new Pet(def, {
+                x: `${random(0, 100)}%`,
+                y: `${npcY}%`,
+                z: 4 + (i * 0.15),
+                opacity: 1,
+            });
+            p.stats.wander_max = 3;
+            return p;
+        });
+
+        App.toggleGameplayControls(false, () => {
+            return App.displayList([
+                {
+                    _ignore: hasUploadedPetDef.status,
+                    type: 'text',
+                    name: `
+                        Upload your character to get access to hubchi!
+                    `,
+                },
+                {
+                    _ignore: !hasUploadedPetDef.status,
+                    type: 'text',
+                    solid: true,
+                    name: `
+                        <div style="
+                            display: flex;
+                            justify-content: space-between;
+                            flex-wrap: wrap;
+                            align-items: center;
+                            width: 100%;
+                        ">
+                            <div style="
+                                display: flex;
+                                align-items: center;                        
+                            ">
+                                ${App.petDefinition.getCSprite()} You
+                            </div>
+                            <div>
+                                <i class="icon fa-solid fa-thumbs-up"></i> ${hasUploadedPetDef.interactions ?? 0}
+                            </div>
+                        </div>
+                    `,
+                },
+                {
+                    _ignore: !hasUploadedPetDef.status,
+                    name: 'interact',
+                    onclick: () => {
+                        return App.displayList(otherPlayersPets.map(pet => {
+                            const def = pet.petDefinition;
+                            return {
+                                name: `${def.getCSprite()} ${def.name}`,
+                                onclick: () => {
+                                    return App.displayList([
+                                        {
+                                            name: `
+                                            <div style="
+                                                display: flex;
+                                                justify-content: space-between;
+                                                flex-wrap: wrap;   
+                                                align-items: center;                                     
+                                            ">
+                                                <div>
+                                                    <i class="fa-solid fa-user-circle"></i> ${def.owner}
+                                                </div>
+                                                <div>
+                                                    <i class="fa-solid fa-thumbs-up"></i> ${def.interactions}
+                                                </div>
+                                            </div>
+                                            `,
+                                            type: 'text',
+                                            solid: true,
+                                        },
+                                        {
+                                            name: 'hang out',
+                                            onclick: () => {
+                                                App.closeAllDisplays();
+                                                App.toggleGameplayControls(false);
+                                                otherPlayersPets.forEach(p => p?.removeObject?.());
+                                                App.apiService.addInteraction(def.ownerId);
+                                                Activities.invitePlaydate(def, App.scene.online_hub, () => {
+                                                    App.displayConfirm(`Do you want to add ${def.getCSprite()} ${def.name} to your friends list?`, [
+                                                        {
+                                                            name: 'yes',
+                                                            onclick: () => {
+                                                                App.closeAllDisplays();
+                                                                const addedFriend = App.petDefinition.addFriend(def, 1);
+                                                                if(addedFriend) {
+                                                                    App.displayPopup(`${def.getCSprite()} ${def.name} has been added to the friends list!`, 3000);
+                                                                    App.apiService.addInteraction(def.ownerId);
+                                                                } else {
+                                                                    App.displayPopup(`You are already friends with ${def.name}`, 3000);
+                                                                }
+                                                                return false;
+                                                            }
+                                                        },
+                                                        {
+                                                            name: 'no',
+                                                            class: 'back-btn',
+                                                            onclick: () => {}
+                                                        },
+                                                    ])
+                                                    setTimeout(() =>  Activities.goToOnlineHub());
+                                                })
+                                            }
+                                        },
+                                    ])
+                                }
+                            }
+                        }))
+                    }
+                },
+                {
+                    _ignore: hasUploadedPetDef.status,
+                    name: 'Upload character',
+                    onclick: () => {
+                        return App.displayConfirm(`Do you want to upload ${App.petDefinition.name} to HUBCHI so that other players can see and interact with them?`, [
+                            {
+                                name: 'yes',
+                                onclick: async () => {
+                                    const popup = App.displayPopup('Uploading...', App.INF);
+                                    const {status} = await App.apiService.addPetDef();
+                                    popup.close();
+                                    App.closeAllDisplays();
+                                    hasUploadedPetDef.status = status;
+                                    App.displayPopup('Success!');
+                                }
+                            },
+                            {
+                                name: 'no',
+                                class: 'back-btn',
+                                onclick: () => {}
+                            },
+                        ])
+                    }
+                },
+                {
+                    _ignore: !hasUploadedPetDef.status,
+                    name: 'Sync character',
+                    onclick: () => {
+                        const confirm = App.displayConfirm(`Do you want to update your HUBCHI persona to be in sync with ${App.petDefinition.name}'s latest appearance?`, [
+                            {
+                                name: 'yes',
+                                onclick: async () => {
+                                    confirm.close();
+                                    const popup = App.displayPopup('Syncing...', App.INF);
+                                    const {status} = await App.apiService.addPetDef();
+                                    popup.close();
+                                    App.displayPopup(status ? 'Success!' : 'Error!');
+                                    return false;
+                                }
+                            },
+                            {
+                                name: 'no',
+                                class: 'back-btn',
+                                onclick: () => {}
+                            },
+                        ])
+                        return true;
+                    }
+                },
+                {
+                    name: '<i class="icon fa-solid fa-home"></i> return home',
+                    onclick: () => {
+                        return App.displayConfirm(`Are you sure you want to return home?`, [
+                            {
+                                name: 'yes',
+                                onclick: async () => {
+                                    App.closeAllDisplays();
+                                    otherPlayersPets.forEach(p => p?.removeObject?.());
+                                    Activities.onlineHubTransition((fadeOverlay) => {
+                                        App.setScene(App.scene.home);
+                                        fadeOverlay.direction = false;
+                                        setTimeout(() => {
+                                            App.pet.playCheeringAnimation(() => App.toggleGameplayControls(true));
+                                        }, 500);
+                                    });
+                                }
+                            },
+                            {
+                                name: 'no',
+                                class: 'back-btn',
+                                onclick: () => {}
+                            },
+                        ])
+                    }
+                },
+            ])
+        })
+    }
     static encounter(){
         if(random(0, 256) != 1) return false;
         const def = new PetDefinition({
@@ -217,7 +450,7 @@ class Activities {
 
     }
     // activities
-    static async getDressed(middleFn, onEndFn){
+    static async getDressed(middleFn, onEndFn, cheer){
         App.closeAllDisplays();
         App.toggleGameplayControls(false);
         App.sendAnalytics('getting_dressed');
@@ -241,7 +474,7 @@ class Activities {
         curtainTargetElevation = -100;
         await App.pet.triggerScriptedState('idle', 2000, 0, true);
         curtainObject.removeObject();
-        App.pet.playCheeringAnimation(() => {
+        App.pet.playCheeringAnimationIfTrue(cheer, () => {
             App.toggleGameplayControls(true);
             onEndFn();
         });
@@ -788,6 +1021,8 @@ class Activities {
                         App.toggleGameplayControls(true);
                         App.pet.playCheeringAnimation();
                     });
+
+                    App.sendAnalytics('age_up', App.petDefinition.lifeStage);
                 });
             });
         });
@@ -858,6 +1093,9 @@ class Activities {
         App.toggleGameplayControls(false);
         let otherPet = new Pet(otherPetDef);
         App.definitions.achievements.give_gifts_x_times.advance();
+
+        const wantedFriendDef = App.petDefinition.friends[App.pet.stats.current_want.item];
+        App.petDefinition.checkWant(otherPetDef == wantedFriendDef, App.constants.WANT_TYPES.playdate)
 
         otherPet.stopMove();
         otherPet.x = '100%';
@@ -1036,7 +1274,9 @@ class Activities {
         // }, Pet.scriptedEventDrivers.movingOut.bind({pet: App.pet}));
     }
     static goToArcade(){
-        App.toggleGameplayControls(false);
+        App.toggleGameplayControls(false, () => {
+            App.pet.stopScriptedState();
+        });
         App.setScene(App.scene.arcade);
 
         let randomNpcs = new Array(2).fill(undefined).map((item, i) => {
@@ -1062,7 +1302,9 @@ class Activities {
         }, Pet.scriptedEventDrivers.movingIn.bind({pet: App.pet}));
     }
     static goToMarket(){
-        App.toggleGameplayControls(false);
+        App.toggleGameplayControls(false, () => {
+            App.pet.stopScriptedState();
+        });
         App.setScene(App.scene.market);
 
         let randomNpcs = new Array(2).fill(undefined).map((item, i) => {
@@ -1090,12 +1332,14 @@ class Activities {
             randomNpcs.forEach(npc => npc.removeObject());
         }, Pet.scriptedEventDrivers.movingIn.bind({pet: App.pet}));
     }
-    static inviteHousePlay(otherPetDef){
-        App.setScene(App.scene.home);
+    static invitePlaydate(otherPetDef, scene, onEndFn){
+        App.setScene(scene ?? App.scene.home);
         App.toggleGameplayControls(false);
-        let otherPet = new Pet(otherPetDef);
-        
         otherPetDef.increaseFriendship(8);
+        let otherPet = new Pet(otherPetDef);
+
+        const wantedFriendDef = App.petDefinition.friends[App.pet.stats.current_want.item];
+        App.petDefinition.checkWant(otherPetDef == wantedFriendDef, App.constants.WANT_TYPES.playdate)
 
         otherPet.stopMove();
         otherPet.x = '100%';
@@ -1132,11 +1376,14 @@ class Activities {
             App.pet.triggerScriptedState('idle_side_uncomfortable', 3000, null, true, () => {
                 otherPet.stopScriptedState();
                 App.pet.x = '50%';
-                App.pet.stats.current_fun += 55;
+                App.pet.stats.current_fun += 30;
                 App.pet.statsManager();
-                App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => App.setScene(App.scene.home));
                 App.drawer.removeObject(otherPet);
-                App.toggleGameplayControls(true);
+                App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => {
+                    if(onEndFn) return onEndFn();
+                    App.toggleGameplayControls(true);
+                    App.setScene(App.scene.home);
+                });
             });
         }
 
@@ -1147,6 +1394,9 @@ class Activities {
             if(random(1, 100) <= 60){
                 otherPetDef = App.getRandomPetDef(App.petDefinition.lifeStage);
             }
+        } else {
+            const wantedFriendDef = App.petDefinition.friends[App.pet.stats.current_want.item];
+            App.petDefinition.checkWant(otherPetDef == wantedFriendDef, App.constants.WANT_TYPES.playdate)
         }
         App.setScene(App.scene.park);
         App.toggleGameplayControls(false);
@@ -1174,6 +1424,7 @@ class Activities {
         App.closeAllDisplays();
         App.setScene(App.scene.park);
         App.toggleGameplayControls(false);
+        App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
 
         // const randomPetRef = App.getRandomPetDef();
         const randomPetRef = new PetDefinition({
@@ -1218,10 +1469,11 @@ class Activities {
     static barTimingGame(){
         App.closeAllDisplays();
         App.toggleGameplayControls(false);
+        App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
 
         let screen = App.displayEmpty();
         screen.innerHTML = `
-        <div class="flex-container flex-row-down height-100p" style="background: #e6d4ef">
+        <div class="flex-container flex-row-down height-100p" style="background: url(${App.scene.arcade_game01.image});background-size: contain;image-rendering: pixelated;">
             <div class="timing-bar-container">
                 <div class="timing-bar-rod"></div>
                 <div class="timing-bar-rod"></div>
@@ -1289,7 +1541,7 @@ class Activities {
                         App.setScene(App.scene.arcade);
                         App.pet.stopMove();
                         App.pet.x = '50%';
-                        let onEnd = () => {
+                        const onEnd = () => {
                             App.toggleGameplayControls(true);
                             App.handlers.open_game_list();
                             App.setScene(App.scene.home);
@@ -1314,27 +1566,299 @@ class Activities {
             }
         }
     }
-    static guessGame(){
+    static fallingStuffGame(){
         App.closeAllDisplays();
         App.setScene(App.scene.park);
         App.toggleGameplayControls(false);
+        App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.mouse.x = null;
         
+        App.pet.speedOverride = 0.07;
         App.pet.x = '50%';
         App.pet.stopMove();
         App.pet.triggerScriptedState('idle', 99999999, 0, true, null, (pet) => {
-            let center = App.mouse.x - pet.spritesheet.cellSize/2;
+            if(App.mouse.x === null) return;
+
+            const center = App.mouse.x - pet.spritesheet.cellSize/2;
 
             if(pet.x != center){
-                let diff = pet.x - center;
-                if(diff > 0) pet.inverted = true;
-                else pet.inverted = false;
-                pet.x = center;
-                if(Math.abs(diff) > 2) pet.setState('moving');
+                const diff = pet.x - center;
+                if(diff > 0) pet.inverted = false;
+                else pet.inverted = true;
+                pet.targetX = center;
+                if(Math.abs(diff) > 0.5) pet.setState('moving');
             } else {
-                pet.setState('idle');
+                pet.setState('idle_side');
+            }
+        });
+
+        let lives = 2, moneyWon = 0;
+        let nextSpawnMs = 0, projectileSpeed = 0.05, spawnDelay = 1250;
+        const petHeight = 80 - App.pet.spritesheet.cellSize/1.2;
+        const petWidth = 32/2;
+        const spawnerObject = new Object2d({
+            x: -999, y: -999,
+            onDraw: () => {
+                if(App.lastTime > nextSpawnMs){
+                    nextSpawnMs = App.lastTime + spawnDelay;
+
+                    projectileSpeed += 0.0018;
+                    if(projectileSpeed > 0.15) projectileSpeed = 0.15;
+                    spawnDelay -= 20;
+                    if(spawnDelay < 800) spawnDelay = 800;
+
+                    const xPercentage = randomFromArray(['10%', '37%', '63%', '90%']);
+                    const currentIsFaulty = random(0, 3) == 1;
+                    const projectileObject = new Object2d({
+                        parent: spawnerObject,
+                        img: currentIsFaulty ? 'resources/img/misc/falling_poop.png' : 'resources/img/misc/heart_particle_01.png',
+                        y: -20, x: xPercentage, rotation: random(0, 180), z: 6, width: 15, height: 13,
+                        speed: projectileSpeed,
+                        onDraw: (me) => {
+                            const xCenter = me.x - me.width/2;
+                            me.y += me.speed * App.deltaTime;
+
+                            me.rotation += me.speed * App.deltaTime;
+
+                            if(
+                                me.y > petHeight && me.y < 80 && 
+                                xCenter > App.pet.x - petWidth && xCenter < App.pet.x + petWidth
+                            ) {
+                                spawnSmoke(xCenter, me.y);
+                                me.removeObject();
+                                me.setImg('resources/img/misc/heart_particle_02.png')
+                                score(currentIsFaulty);
+                            }
+
+                            if(me.y > 90) me.removeObject();
+                        }
+                    })
+                }
+            }
+        })
+
+        const spawnSmoke = (x, y) => {
+            new Object2d({
+                img: 'resources/img/misc/foam_single.png',
+                x, y, z: 6, opacity: 1, scale: 1.2,
+                onDraw: (me) => {
+                    me.rotation += 0.1 * App.deltaTime;
+                    me.opacity -= 0.001 * App.deltaTime;
+                    me.scale -= 0.001 * App.deltaTime;
+                    me.y -= 0.01 * App.deltaTime;
+                    if(me.opacity <= 0.1 || me.scale <= 0.1) me.removeObject();
+                }
+            })
+        }
+
+        const screen = UI.empty();
+        document.querySelector('.screen-wrapper').appendChild(screen);
+        screen.innerHTML = `
+        <div class="width-full" style="position: absolute; bottom: 0; left: 0;">
+            <div class="flex-container" style="justify-content: space-between; padding: 4px">
+            <div class="flex-container" style="
+                background: #ff00c647;
+                padding: 0 4px;
+                border-radius: 6px;
+                color: #ffcaf4;
+            ">
+                $
+                <div id="moneyWon">${moneyWon}</div>
+            </div>
+            <div class="flex-container">
+                <div id="lives">${lives}</div>
+            </div>
+            </div>
+        </div>
+        `;
+
+        const uiMoneyWon = screen.querySelector('#moneyWon'),
+        uiLives = screen.querySelector('#lives');
+
+        const updateUI = () => {
+            uiMoneyWon.textContent = moneyWon;
+            uiLives.innerHTML = new Array(lives).fill('').map(() => {
+                return `<img src="resources/img/misc/heart_particle_01.png"></img>`
+            }).join(' ');
+        }
+
+        updateUI();
+
+        const finish = () => {
+            screen.remove();
+            spawnerObject.removeObject();
+            App.pet.stopScriptedState();
+            App.pet.x = '50%';
+
+            const end = () => {
+                App.setScene(App.scene.home);
+                App.handlers.open_game_list();
+                App.toggleGameplayControls(true);
+                App.pet.stats.gold += moneyWon;
+                App.pet.stats.current_fun += moneyWon / 6;
+                App.pet.speedOverride = 0;
+                if(moneyWon >= App.definitions.achievements.perfect_minigame_catch_win_x_gold.required){
+                    App.definitions.achievements.perfect_minigame_catch_win_x_gold.advance();
+                }
+                if(moneyWon)
+                    App.displayPopup(`${App.petDefinition.name} won $${moneyWon}`);
+                else 
+                    App.displayPopup(`${App.petDefinition.name} lost!`);
             }
 
+            if(moneyWon > 30){
+                App.pet.playCheeringAnimation(() => end());
+            } else {
+                App.pet.playUncomfortableAnimation(() => end());
+            }
+        }
+
+        const score = (faulty) => {
+            if(faulty){
+                App.playSound(`resources/sounds/sad.ogg`, true);
+                lives--;
+                if(lives == 0){
+                    lives = 0;
+                    finish();
+                }
+            } else {
+                App.playSound(`resources/sounds/cute.ogg`, true);
+                moneyWon += random(1, 2);
+            }
+
+            updateUI();
+        }
+    }
+    static opponentMimicGame(){
+        App.closeAllDisplays();
+        App.setScene(App.scene.arcade);
+        App.toggleGameplayControls(false);
+        App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+
+        const opponentPetDef = new PetDefinition({
+            name: 'park_game_npc',
+            sprite: 'resources/img/character/chara_175b.png',
         });
+
+        const opponentPet = new Pet(opponentPetDef, {x: '70%'});
+        
+        let totalRounds = 3, playedRounds = 0, roundsWon = 0;
+
+        const reset = () => {
+            if(playedRounds >= totalRounds){
+                App.pet.stopScriptedState();
+                opponentPet.removeObject();
+                App.pet.x = '50%';
+
+                const end = () => {
+                    App.setScene(App.scene.home);
+                    App.handlers.open_game_list();
+                    App.toggleGameplayControls(true);
+                    const moneyWon = roundsWon * random(20, 30);
+                    App.pet.stats.gold += moneyWon;
+                    App.pet.stats.current_fun += roundsWon * 15;
+                    if(moneyWon)
+                        App.displayPopup(`${App.petDefinition.name} won $${moneyWon}`);
+                    else 
+                        App.displayPopup(`${App.petDefinition.name} lost!`);
+                    if(roundsWon == totalRounds){
+                        App.definitions.achievements.perfect_minigame_mimic_win_x_times.advance();
+                    }
+                }
+
+                if(roundsWon >= 2){
+                    App.pet.playCheeringAnimation(() => end());
+                } else if(roundsWon == 0){
+                    App.pet.playUncomfortableAnimation(() => end());
+                } else {
+                    end();
+                }
+
+                return;
+            }
+
+            opponentPet.stopMove();
+            opponentPet.triggerScriptedState('idle', App.INF, null, true);
+            opponentPet.x = '70%';
+            opponentPet.inverted = true;
+
+            App.pet.x = '30%';
+            App.pet.inverted = false;
+            App.pet.stopMove();
+            App.pet.triggerScriptedState('idle', App.INF, null, true);
+
+            setTimeout(() => {
+                const screen = App.displayEmpty();
+                const imgPath = 'resources/img/ui/';
+                screen.innerHTML = `
+                <div class="flex-container flex-dir-col height-100p" style="background: var(--background-c)">
+                    <div class="solid-surface-stylized inner-padding b-radius-10 relative">
+                        <div class="surface-stylized" style="padding: 0px 10px;position: absolute;top: -20px;left: 0px;">
+                            ${playedRounds + 1}/${totalRounds}
+                        </div>
+                        Which direction will your opponent turn?
+                    </div>
+                    <div class="mimic-game__btn-container">
+                        <button id="left" class="generic-btn stylized"> <img src="${imgPath}facing_left.png"></img> </button>
+                        <button id="center" class="generic-btn stylized"> <img src="${imgPath}facing_center.png"></img> </button>
+                        <button id="right" class="generic-btn stylized"> <img src="${imgPath}facing_right.png"></img> </button>
+                    </div>
+                </div>
+                `;
+                ['left', 'center', 'right'].forEach((dir) => {
+                    const btn = screen.querySelector(`#${dir}`);
+                    btn.onclick = () => {
+                        setPredictedDirection(dir);
+                        screen.close();
+                    }
+                })
+            }, 800)
+        }
+
+        reset();
+
+        const deriveStateFromDirection = (dir) => {
+            switch(dir){
+                case 'center': return {state: 'idle', inverted: false};
+                case 'right': return {state: 'idle_side', inverted: true};
+                case 'left': return {state: 'idle_side', inverted: false};
+            }
+        }
+
+        const setPredictedDirection = (dir) => {
+            const randomDir = randomFromArray(['left', 'center', 'right']);
+            setTimeout(() => {
+                const opponentState = deriveStateFromDirection(randomDir);
+                opponentPet.setState(opponentState.state)
+                opponentPet.inverted = opponentState.inverted;
+
+                const playerState = deriveStateFromDirection(dir);
+                App.pet.setState(playerState.state)
+                App.pet.inverted = playerState.inverted;
+
+                // if(randomDir === dir){
+                //     App.playSound(`resources/sounds/task_complete_02.ogg`, true);
+                // } else {
+                //     App.playSound(`resources/sounds/task_fail_01.ogg`, true);
+                // }
+                App.playSound(`resources/sounds/task_complete.ogg`, true);
+
+                setTimeout(() => {
+                    playedRounds++;
+                    if(randomDir === dir){
+                        App.pet.setState('cheering');
+                        opponentPet.setState('angry');
+                        roundsWon++;
+                    } else {
+                        App.pet.setState('angry');
+                        opponentPet.setState('cheering');
+                    }
+                    setTimeout(reset, 1000);
+                }, 1500);
+            }, 1000);
+        }
+        
+        return false;  
     }
 
 

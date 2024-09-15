@@ -29,29 +29,43 @@
 </head>
 <body>
     <div class="background"></div>
+    <!-- main -->
     <div class="root">
+        <!-- canvas -->
         <canvas class="background-canvas" width="96" height="96"></canvas>
+        <!-- dom shell -->
         <div class="dom-shell" style="display: none;">
             <img class="logo" src="resources/img/ui/logo_trans_01.png"></img>
             <button class="shell-btn main" onclick="App.handlers.shell_button()" onmousedown="setTimeout(() => App.playSound('resources/sounds/shell_button_down.ogg', true))" onmouseup="setTimeout(() => App.playSound('resources/sounds/shell_button_up.ogg', true))"></button>
             <button class="shell-btn left" onclick="App.handlers.shell_button()" onmousedown="setTimeout(() => App.playSound('resources/sounds/shell_button_down.ogg', true))" onmouseup="setTimeout(() => App.playSound('resources/sounds/shell_button_up.ogg', true))"></button>
             <button class="shell-btn right" onclick="App.handlers.shell_button()" onmousedown="setTimeout(() => App.playSound('resources/sounds/shell_button_down.ogg', true))" onmouseup="setTimeout(() => App.playSound('resources/sounds/shell_button_up.ogg', true))"></button>
         </div>
+        <!-- graphics -->
         <div class="graphics-wrapper">
+            <!-- save indicator -->
             <div style="display: none;" class="save-indicator">
                 <i class="fa-solid fa-save fa-spin_"></i>
             </div>
+            <!-- screen wrapper -->
             <div class="screen-wrapper">
+                <!-- canvas -->
                 <canvas style="cursor: pointer;" onclick="App.handlers.open_main_menu()" class="graphics-canvas" width="96" height="96"></canvas>
+                
+                <!-- loading text -->
                 <div class="loading-text">
                     <i class="fa-solid fa-fan fa-spin"></i>
-                    <!-- <br> -->
                     <b style="font-size: small;">LOADING...</b>
+                </div>
+
+                <!-- tapping reminder -->
+                <div class="tap-reminder" style="display: none;">
+                    <img src="resources/img/ui/tap_01.png"></img>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- downloading -->
     <div style="display: none;" id="download-container" class="side-container">
         <div class="side-icon">
             <i class="fa-solid fa-arrow-down"></i>
@@ -59,6 +73,7 @@
         <span> Downloading update... </span>
     </div>
 
+    <!-- download complete -->
     <div style="display: none;" id="download-complete-container" class="side-container">
         <div class="side-icon">
             <i class="fa-solid fa-check"></i>
@@ -113,6 +128,7 @@
         </div>
     </div>
 
+    <!-- install prompt (unused) -->
     <div class="install-prompt" style="display: none;">
         <img class="app-icon" src="./android-icon-36x36.png"></img>
         <button id="install-pwa-app">Add to home screen</button>
@@ -124,6 +140,7 @@
     <script src="resources/data/GrowthChart.js"></script>
 
     <!-- libs -->
+    <script src="https://cdn.jsdelivr.net/npm/profanity-cleaner@latest"></script>
     <script src="src/libs/jquery-3.7.1.min.js"></script>
     <script src="src/libs/moment.js"></script>
     
