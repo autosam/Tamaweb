@@ -39,22 +39,8 @@ class Activities {
         App.pet.stopMove();
         App.pet.x = '50%';
 
-        const onlinePetDefs = randomPetDefs.data
-        .filter(petDef => petDef.owner != App.userName)
-        .slice(0, 7)
-        .map(petDef =>
-            new PetDefinition({
-                ...petDef,
-                name: profanityCleaner.clean(sanitize(petDef.name)),
-                owner: profanityCleaner.clean(sanitize(petDef.owner)),
-                sprite: sanitize(petDef.sprite),
-                ownerId: petDef.ownerId,
-                interactions: petDef.interactions,
-            })
-        );
-
         let npcY = 60;
-        const otherPlayersPets = onlinePetDefs.map((def, i) => {
+        const otherPlayersPets = randomPetDefs.slice(0, 7).map((def, i) => {
             if(i && i % 2 == 0) npcY += 10;
             const p = new Pet(def, {
                 x: `${random(0, 100)}%`,
@@ -213,14 +199,27 @@ class Activities {
                 {
                     name: '<i class="icon fa-solid fa-home"></i> return home',
                     onclick: () => {
-                        otherPlayersPets.forEach(p => p?.removeObject?.());
-                        Activities.onlineHubTransition((fadeOverlay) => {
-                            App.setScene(App.scene.home);
-                            fadeOverlay.direction = false;
-                            setTimeout(() => {
-                                App.pet.playCheeringAnimation(() => App.toggleGameplayControls(true));
-                            }, 500);
-                        });
+                        return App.displayConfirm(`Are you sure you want to return home?`, [
+                            {
+                                name: 'yes',
+                                onclick: async () => {
+                                    App.closeAllDisplays();
+                                    otherPlayersPets.forEach(p => p?.removeObject?.());
+                                    Activities.onlineHubTransition((fadeOverlay) => {
+                                        App.setScene(App.scene.home);
+                                        fadeOverlay.direction = false;
+                                        setTimeout(() => {
+                                            App.pet.playCheeringAnimation(() => App.toggleGameplayControls(true));
+                                        }, 500);
+                                    });
+                                }
+                            },
+                            {
+                                name: 'no',
+                                class: 'back-btn',
+                                onclick: () => {}
+                            },
+                        ])
                     }
                 },
             ])

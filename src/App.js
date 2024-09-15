@@ -579,7 +579,7 @@ let App = {
                                                 }
                                             },
                                             {
-                                                _ignore: json.user_id===App.userId,
+                                                _ignore: json.user_id === App.userId,
                                                 name: 'add friend',
                                                 onclick: () => {
                                                     App.petDefinition.friends.push(def);
@@ -1036,11 +1036,17 @@ let App = {
             ], App.pet.petDefinition.name || '');
         },
         show_set_username_dialog: function(){
+            const validate = (username) => {
+                if(!username) return false;
+                const regex = /^[a-zA-Z0-9]+$/;
+                return username.match(regex) !== null;
+            }
+
             App.displayPrompt(`Set your username`, [
                 {
                     name: 'set',
                     onclick: (username) => {
-                        if(!username) return true;
+                        if(!validate(username)) return App.displayPopup('Username is not valid. Please use uppercase and lowercase A-Z letters and numbers.');
                         App.userName = username;
                         App.save();
                         App.sendAnalytics('new_user', username);
@@ -2058,7 +2064,7 @@ let App = {
             content.style.height = '100%';
             content.innerHTML = `
                 <div class="user-id surface-stylized">
-                    uid:${App.userName + '-' + App.userId}
+                    uid:<span type="password">${App.userName + '-' + App.userId.slice(0, 5)}</span>
                 </div>
                 <div class="flex-center inner-padding surface-stylized height-auto">
                     ${App.petDefinition.getCSprite()}
@@ -2578,7 +2584,7 @@ let App = {
                             App.closeAllDisplays();
                             fadeOverlay.direction = false;
     
-                            if(!App.temp.online?.randomPetDefs?.status){
+                            if(!App.temp.online?.randomPetDefs){
                                 App.displayPopup('Error! Cannot connect.');
                                 App.setScene(App.scene.home);
                                 App.toggleGameplayControls(true);
@@ -3617,7 +3623,7 @@ let App = {
         records = records ? JSON.parse(records) : App.records;
 
         // user
-        let userId = window.localStorage.getItem('user_id') || Math.round(Math.random() * 9999999999);
+        let userId = window.localStorage.getItem('user_id') || random(100000000000, 999999999999);
         App.userId = userId;
         let userName = window.localStorage.getItem('user_name');
         App.userName = userName == 'null' ? null : userName;
@@ -3816,15 +3822,17 @@ let App = {
         _getUid: () => {
             return App.userName + '-' + App.userId;
         },
-        sendRequest: async (params) => {
+        sendRequest: async (params, handler) => {
             return new Promise((resolve, reject) => {
                 fetch(`${App.apiService.ENDPOINT}?${params.toString()}`)
                 .then(response => response.json())
                 .then(json => {
-                    resolve(json);
+                    const handledResult = handler?.(json, false)
+                    resolve(handledResult ?? json);
                 })
                 .catch(e => {
-                    resolve({error: e})
+                    const handledResult = handler?.(e, true)
+                    resolve(handledResult ?? {error: e})
                 })
             })
         },
@@ -3852,7 +3860,24 @@ let App = {
                 action: 'getRandomPetDefs',
                 amount: amount ?? 10,
             });
-            return App.apiService.sendRequest(params);
+            const handler = (json, error) => {
+                if(error) return false;
+                if(json){
+                    return json.data
+                    .filter(petDef => petDef.owner != App.userName)
+                    .map(petDef =>
+                        new PetDefinition({
+                            ...petDef,
+                            name: profanityCleaner.clean(sanitize(petDef.name)),
+                            owner: profanityCleaner.clean(sanitize(petDef.owner)),
+                            sprite: sanitize(petDef.sprite),
+                            ownerId: petDef.ownerId,
+                            interactions: petDef.interactions,
+                        })
+                    );
+                }
+            }
+            return App.apiService.sendRequest(params, handler);
         },
         addInteraction: (ownerId) => {
             const params = new URLSearchParams({
