@@ -649,7 +649,7 @@ let App = {
                     bold: true,
                 },
                 {
-                    name: 'Check out the new wants system, care rating points, mini games, companions and accessories, ui changes and much more!',
+                    name: 'Check out the new online hub, wants system, care rating points, mini games, companions and accessories, ui changes and much more!',
                     type: 'text',
                 },
                 {
