@@ -1,6 +1,6 @@
 let App = {
     PI2: Math.PI * 2, INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', userName: null, ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
-    gameEventsHistory: {}, deferredInstallPrompt: null, shellBackground: '', isOnItch: false, hour: 12,
+    gameEventsHistory: {}, deferredInstallPrompt: null, shellBackground: '', isOnItch: false, isOnElectronClient: false, hour: 12,
     misc: {}, mods: [], records: {}, temp: {},
     settings: {
         screenSize: 1,
@@ -53,8 +53,9 @@ let App = {
         this.drawer = new Drawer(document.querySelector('.graphics-canvas'));
         Object2d.setDrawer(App.drawer);
 
-        // check for itch
+        // check for platforms
         if(location.host.indexOf('itch') !== -1) App.isOnItch = true;
+        if(navigator?.userAgent == 'electron-client') App.isOnElectronClient = true;
 
         // load data
         let loadedData = this.load();
@@ -3686,6 +3687,7 @@ let App = {
         if(!type) type = 'default';
 
         if(App.isOnItch) type += '_itch';
+        else if(App.isOnElectronClient) type += '_electron';
 
         let user = (App.userName ? App.userName + '-' : '') + App.userId;
         let url = `https://docs.google.com/forms/d/e/1FAIpQLSfzl5hhhnV3IAdxuA90ieEaeBAhCY9Bh4s151huzTMeByMwiw/formResponse?usp=pp_url&entry.1384465975=${user}&entry.1653037117=${App.petDefinition?.name || ''}&entry.1322693089=${type}&entry.1403809294=${value || ''}`;
