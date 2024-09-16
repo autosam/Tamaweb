@@ -2083,7 +2083,7 @@ let App = {
             content.style.height = '100%';
             content.innerHTML = `
                 <div class="user-id surface-stylized">
-                    uid:<span>${App.userName + '-' + App.userId.slice(0, 5)}</span>
+                    uid:<span>${(App.userName ?? '') + '-' + App.userId?.toString().slice(0, 5)}</span>
                 </div>
                 <div class="flex-center inner-padding surface-stylized height-auto">
                     ${App.petDefinition.getCSprite()}
