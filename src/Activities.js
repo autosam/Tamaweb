@@ -457,7 +457,6 @@ class Activities {
     static async getDressed(middleFn, onEndFn, cheer){
         App.closeAllDisplays();
         App.toggleGameplayControls(false);
-        App.sendAnalytics('getting_dressed');
 
         let curtainTargetElevation = 16, step = 0;
         const curtainObject = new Object2d({
