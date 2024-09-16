@@ -356,7 +356,7 @@ class PetDefinition {
 
     getLifeStageLabel(){
         let age = 'baby';
-        switch(App.petDefinition.getLifeStage()){
+        switch(this.getLifeStage()){
             case 1: age = 'teen'; break;
             case 2: age = 'adult'; break;
         }
