@@ -239,15 +239,9 @@ let App = {
                 play_time_mins: (Math.round(App.playTime) / 1000 / 60).toFixed(2),
                 away: (App.awayTime || -1),
                 sprite: App.petDefinition.sprite,
-                hunger: Math.round(App.pet.stats.current_hunger),
-                fun: Math.round(App.pet.stats.current_fun),
-                health: Math.round(App.pet.stats.current_health),
-                sleep: Math.round(App.pet.stats.current_sleep),
-                bladder: Math.round(App.pet.stats.current_bladder),
                 is_egg: App.pet.stats.is_egg,
-                has_poop_out: App.pet.stats.has_poop_out,
-                is_sleeping: App.pet.stats.is_sleeping,
                 gold: App.pet.stats.gold,
+                ver: VERSION
             }
             App.sendAnalytics('login', JSON.stringify(analyticsData));
 
