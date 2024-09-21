@@ -186,7 +186,7 @@ class Pet extends Object2d {
                             }
                         ];
 
-                        App.pet = new Pet(App.petDefinition);
+                        App.pet = App.createActivePet(App.petDefinition);
                         setTimeout(() => {
                             Activities.playEggUfoAnimation(() => App.handlers.show_set_pet_name_dialog());
                         }, 100);
@@ -947,7 +947,7 @@ class Pet extends Object2d {
     ageUp(){
         this.petDefinition.ageUp()
         this.removeObject();
-        App.pet = new Pet(this.petDefinition);
+        App.pet = App.createActivePet(this.petDefinition);
         App.save();
     }
     serializeStats(){

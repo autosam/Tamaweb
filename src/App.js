@@ -346,6 +346,8 @@ let App = {
 
         // background
         document.body.style.backgroundColor = this.settings.backgroundColor;
+        const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        metaThemeColor?.setAttribute('content', this.settings.backgroundColor);
 
         // screen size
         graphicsWrapper.style.transform = `scale(${this.settings.screenSize})`;
@@ -1015,7 +1017,7 @@ let App = {
             accessories: petDef.accessories || []
         }
     },
-    createActivePet: function(petDef, props){
+    createActivePet: function(petDef, props = {}){
         return new Pet(petDef, {
             z: App.constants.ACTIVE_PET_Z, 
             scale: 1, 
