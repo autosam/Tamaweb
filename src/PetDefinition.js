@@ -464,8 +464,8 @@ class PetDefinition {
         return parents;
     }
 
-    refreshWant(currentTry = 1, existingCurrentCategory){
-        if(currentTry > 48) return;
+    refreshWant(currentTry = 1, existingCurrentCategory, forced){
+        if(currentTry > 48 && !forced) return;
 
         const {current_want} = this.stats;
 

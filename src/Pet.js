@@ -987,7 +987,7 @@ class Pet extends Object2d {
     showCurrentWant(){
         if(this.stats.current_want.type){
             this.showThought(this.stats.current_want.type, this.stats.current_want.item);
-        }    
+        }
     }
     showThought(type, item){
         const bubble = new Object2d({
@@ -998,13 +998,41 @@ class Pet extends Object2d {
             opacity: 0,
             z: App.constants.ACTIVE_PET_Z + 0.1,
             shouldFadeout: false,
+            float: 0,
             onDraw: (me) => {
                 me.x = App.pet.x;
-                me.y = App.pet.y - (App.pet.spritesheet.cellSize * 1.5) - (App.pet.spritesheet.offsetY * 1.8 || 0);
+                me.float += 0.004 * App.deltaTime;
+                if(me.float > App.PI2) me.float = 0;
+                me.y = App.pet.y - (App.pet.spritesheet.cellSize * 1.5) - (App.pet.spritesheet.offsetY * 1.8 || 0) + Math.sin(me.float); 
                 const opacityTarget = me.shouldFadeout ? 0 : 1;
                 me.opacity = lerp(me.opacity, opacityTarget, App.deltaTime * 0.01);
             }
         })
+
+        // shows type icon if exists
+        if([
+            App.constants.WANT_TYPES.food,
+            App.constants.WANT_TYPES.playdate,
+            App.constants.WANT_TYPES.item,
+        ].includes(type)) {
+            const typeIcon = new Object2d({
+                parent: bubble,
+                img: `resources/img/misc/thought_bubble_type_${type}.png`,
+                x: 0, 
+                y: 0,
+                opacity: 0,
+                z: 10.01,
+                shouldFadeout: false,
+                float: 0,
+                onDraw: (me) => {
+                    me.opacity = bubble.opacity;
+                    me.x = bubble.x;
+                    me.y = bubble.y;
+                }
+            })
+        }
+
+        const scale = 1 || 0.62;
 
         switch(type){
             case App.constants.WANT_TYPES.food:
@@ -1039,8 +1067,8 @@ class Pet extends Object2d {
                     spritesheet: friendDef.spritesheet,
                     onDraw: (me) => {
                         me.opacity = bubble.opacity;
-                        me.x = bubble.x;
-                        me.y = bubble.y - 4;
+                        me.x = bubble.x + (friendDef.spritesheet.offsetY ?? 0);
+                        me.y = bubble.y - 4 + (friendDef.spritesheet.offsetY ?? 0);
                     }
                 })
                 break;
