@@ -53,6 +53,10 @@ class Activities {
             return p;
         });
 
+        if(hasUploadedPetDef.status){
+            App.apiService.addPetDef();
+        }
+
         App.toggleGameplayControls(false, () => {
             return App.displayList([
                 {
