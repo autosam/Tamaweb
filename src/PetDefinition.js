@@ -276,7 +276,13 @@ class PetDefinition {
             }
             if(serializable === 'friends'){
                 s['friends'] = this.friends.map(friendDef => {
-                    return friendDef.serializeStats(true);
+                    return {
+                        ...App.minimalizePetDef(friendDef.serializeStats(true)), 
+                        stats: {
+                            player_friendship: friendDef.stats.player_friendship,
+                            is_player_family: friendDef.stats.is_player_family,
+                        }
+                    };
                 })
                 return;
             }

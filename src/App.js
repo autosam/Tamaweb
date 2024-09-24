@@ -537,7 +537,8 @@ let App = {
                 switch(commandType){
                     case 'save':
                         try {
-                            const b64 = atob(commandPayload);
+                            const b64 = atob(commandPayload.replace(':endsave', ''));
+                            console.log(b64)
                             let json = JSON.parse(b64);
                             if(!json.pet){
                                 throw 'error';
@@ -579,7 +580,7 @@ let App = {
                                                 _ignore: json.user_id === App.userId,
                                                 name: 'add friend',
                                                 onclick: () => {
-                                                    App.petDefinition.friends.push(def);
+                                                    App.petDefinition.addFriend(def);
                                                     App.closeAllDisplays();
                                                     return App.displayPopup(`${def.name} was added to the friends list!`, 3000);
                                                 }
@@ -598,6 +599,7 @@ let App = {
                                 },
                             ])
                         } catch(e) {    
+                            console.error(e);
                             return App.displayPopup('Character code is corrupted');
                         }
                         break;
@@ -994,7 +996,7 @@ let App = {
         ];
         newPetDefinition.family = [
             ...parentA.family,
-            [parentA, parentB].map(parent => App.convertPetDefToFamilyDef(parent))
+            [parentA, parentB].map(parent => App.minimalizePetDef(parent))
         ]
 
         newPetDefinition.inventory = parentA.inventory;
@@ -1003,12 +1005,13 @@ let App = {
 
         return newPetDefinition;
     },
-    convertPetDefToFamilyDef: function(petDef){
+    minimalizePetDef: function(petDef){
         return {
             sprite: petDef.sprite,
             name: petDef.name,
             birthday: petDef.birthday,
-            accessories: petDef.accessories || []
+            accessories: petDef.accessories || [],
+            lastBirthday: petDef.lastBirthday,
         }
     },
     createActivePet: function(petDef, props = {}){
@@ -1661,12 +1664,13 @@ let App = {
                 {
                     name: 'get save code',
                     onclick: () => {
-                        let charCode = 'save:' + btoa(JSON.stringify(window.localStorage));
+                        // let charCode = 'save:' + btoa(JSON.stringify(window.localStorage));
+                        let charCode = `save:${btoa(JSON.stringify(window.localStorage))}:endsave`;
                         App.displayConfirm(`Here you'll be able to copy your unique save code and continue your playthrough on another device`, [
                             {
                                 name: 'ok',
                                 onclick: () => {
-                                    App.displayConfirm(`After copying the code, open tamaweb on another device and paste the code in <b>settings > input code</b>`, [
+                                    App.displayConfirm(`After copying the code, open Tamaweb on another device and paste the code in <b>settings > input code</b>`, [
                                         {
                                             name: 'ok',
                                             onclick: () => {
@@ -1676,12 +1680,16 @@ let App = {
                                                     console.log('save code copied', charCode);
                                                     App.displayPopup('Save code copied!', 1000);
                                                 } catch(e) {
-                                                    App.displayPrompt('Copy your save code from the box below:', [
+                                                    const prompt = App.displayPrompt(`Copy your save code from the box below:<br><small><i class="fa-solid fa-info-circle"></i> starts with <b>save:</b> and ends with <b>:endsave</b></small>`, [
                                                         {
-                                                            name: 'Ok, I copied the code',
+                                                            name: 'Ok, I copied',
+                                                            class: 'back-btn',
                                                             onclick: () => {}
                                                         }
                                                     ], charCode);
+                                                    const input = prompt.querySelector('input');
+                                                    input.focus();
+                                                    input.select();
                                                 }
                                             }
                                         },
@@ -1807,7 +1815,7 @@ let App = {
             if(!petDefinition.family.length){
                 const parents = petDefinition.getParents();
                 if(parents?.length == 2){
-                    petDefinition.family = [parents.map(parent => App.convertPetDefToFamilyDef(parent))]
+                    petDefinition.family = [parents.map(parent => App.minimalizePetDef(parent))]
                 }
             }
 
@@ -2740,7 +2748,7 @@ let App = {
                                                         {
                                                             name: 'yes',
                                                             onclick: () => {
-                                                                App.petDefinition.friends.push(def);
+                                                                App.petDefinition.addFriend(def);
                                                                 App.closeAllDisplays();
                                                                 return App.displayPopup(`${def.name} was added to the friends list!`, 3000);
                                                             }
