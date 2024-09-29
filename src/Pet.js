@@ -2,6 +2,7 @@ class Pet extends Object2d {
     // basic init
     defaultElevation = -20;
     y = '100%';
+    z = App.constants.NPC_PET_Z;
     additionalY = this.defaultElevation;
     animation = {
         currentFrame: 0,

@@ -28,6 +28,7 @@ let App = {
         PARENT_DAYCARE_START: 8,
         PARENT_DAYCARE_END: 18,
         ACTIVE_PET_Z: 5,
+        NPC_PET_Z: 4.6,
         MAX_SHELL_SHAPES: 5,
         AFTERNOON_TIME: [12, 17],
         EVENING_TIME: [17, 20],
