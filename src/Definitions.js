@@ -578,6 +578,16 @@ App.definitions = {
             price: 350,
             isNew: false,
         },
+        "silky retreat": {
+            image: 'resources/img/background/house/ex_01.png',
+            price: 0,
+            isNew: true,
+        },
+        "silky (sky)": {
+            image: 'resources/img/background/house/ex_01_fs.png',
+            price: 0,
+            isNew: true,
+        },
     },
     shell_background: [
         {
@@ -882,6 +892,51 @@ App.definitions = {
             price: 200,
             isNew: true,
         },
+        'cloof': {
+            icon: 'resources/img/accessory/cloof_01.png',
+            image_sprite: 'resources/img/accessory/cloof_01.png',
+            front: false,
+            price: 500,
+            isNew: true,
+            createFn: function(parent){
+                const Z = parent.z - 0.1 || 4.9;
+                const spritesheet = {
+                    cellSize: 12,
+                    rows: 5,
+                    columns: 4,
+                }
+                const cloof = new Object2d({
+                    img: 'resources/img/accessory/cloof_01.png',
+                    parent: parent,
+                    x: 0, y: -999,
+                    animationFloatX: 0,
+                    animationFloatY: Math.PI,
+                    allowedRooms: [
+                        App.scene.home, 
+                        App.scene.bathroom, 
+                        App.scene.kitchen,
+                        App.scene.graveyard,
+                        App.scene.parentsHome,
+                    ],
+                    currentPosition: {
+                        x: 0, y: 0,
+                    },
+                    targetPosition: {
+                        x: 0, y: 0, nextChangeMs: 0,
+                    },
+                    onDraw: (me) => {
+                        me.animationFloatX = (me.animationFloatX + 0.0035 * App.deltaTime) % App.PI2;
+                        me.animationFloatY = (me.animationFloatY + 0.0025 * App.deltaTime) % App.PI2;
+                        const additionalMotionX = Math.sin(me.animationFloatX) * 2;
+                        const additionalMotionY = Math.sin(me.animationFloatY) * 3;
+                        me.x = parent.x + additionalMotionX;
+                        me.y = parent.y - 40 - (App.pet.spritesheet.offsetY ?? 0) + additionalMotionY;
+                    }
+                })
+
+                return cloof;
+            }
+        }
     },
     achievements: {
         pat_x_times: {

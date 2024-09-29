@@ -34,6 +34,15 @@ class Activities {
     }
     static async goToOnlineHub(){
         const {hasUploadedPetDef, randomPetDefs} = App.temp.online;
+        const INTERACTION_LIKES = {
+            outgoing: hasUploadedPetDef.interactionOutgoingLikes ?? 0,
+            receiving: hasUploadedPetDef.interactionReceivingLikes ?? 0,
+        }
+        const addInteraction = (def) => {
+            App.apiService.addInteraction(def.ownerId);
+            def.interactions = (def.interactions ?? 0) + INTERACTION_LIKES.outgoing;
+            hasUploadedPetDef.interactions = (hasUploadedPetDef.interactions ?? 0) + INTERACTION_LIKES.receiving;
+        }
         
         App.setScene(App.scene.online_hub);
 
@@ -94,7 +103,7 @@ class Activities {
                     _ignore: !hasUploadedPetDef.status,
                     name: 'interact',
                     onclick: () => {
-                        return App.displayList(otherPlayersPets.map(pet => {
+                        const petInteractions = otherPlayersPets.map(pet => {
                             const def = pet.petDefinition;
                             return {
                                 name: `${def.getCSprite()} ${def.name}`,
@@ -125,7 +134,7 @@ class Activities {
                                                 App.closeAllDisplays();
                                                 App.toggleGameplayControls(false);
                                                 otherPlayersPets.forEach(p => p?.removeObject?.());
-                                                App.apiService.addInteraction(def.ownerId);
+                                                addInteraction(def);
                                                 Activities.invitePlaydate(def, App.scene.online_hub, () => {
                                                     App.displayConfirm(`Do you want to add ${def.getCSprite()} ${def.name} to your friends list?`, [
                                                         {
@@ -135,7 +144,7 @@ class Activities {
                                                                 const addedFriend = App.petDefinition.addFriend(def, 1);
                                                                 if(addedFriend) {
                                                                     App.displayPopup(`${def.getCSprite()} ${def.name} has been added to the friends list!`, 3000);
-                                                                    App.apiService.addInteraction(def.ownerId);
+                                                                    addInteraction(def);
                                                                 } else {
                                                                     App.displayPopup(`You are already friends with ${def.name}`, 3000);
                                                                 }
@@ -155,7 +164,22 @@ class Activities {
                                     ])
                                 }
                             }
-                        }))
+                        })
+                        return App.displayList([
+                            ...petInteractions,
+                            {
+                                name: `
+                                <small>
+                                    <i class="fa-solid fa-info-circle" style="padding-right: 8px"></i>
+                                    Every time you interact with another pet you'll receive 
+                                    <i class="fa-solid fa-thumbs-up"></i> ${INTERACTION_LIKES.receiving} 
+                                    and they'll receive
+                                    <i class="fa-solid fa-thumbs-up"></i> ${INTERACTION_LIKES.outgoing} 
+                                </small>
+                                `,
+                                type: 'text',
+                            },
+                        ])
                     }
                 },
                 {

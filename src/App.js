@@ -2238,7 +2238,6 @@ let App = {
             let list = [];
             let sliderInstance;
             let salesDay = App.isSalesDay();
-            const buyMode = true;
             for(let room of Object.keys(App.definitions.room_background)){
                 let current = App.definitions.room_background[room];
 
@@ -3897,9 +3896,10 @@ let App = {
         addInteraction: (ownerId) => {
             const params = new URLSearchParams({
                 action: 'addUserInteraction',
-                ownerId 
+                ownerId,
+                interactingUserId: App.apiService._getUid(),
             });
-            return App.apiService.sendRequest(params);``
+            return App.apiService.sendRequest(params);
         }
     }
 }

@@ -1,5 +1,5 @@
 const SPRITES = [
-    // backgrounds
+    // room backgrounds
     "resources/img/background/house/01.jpg",
     "resources/img/background/house/02.png",
     "resources/img/background/house/03.png",
@@ -7,6 +7,10 @@ const SPRITES = [
     "resources/img/background/house/05.png",
     "resources/img/background/house/06.png",
     "resources/img/background/house/07.png",
+    // exclusive room backgrounds
+    "resources/img/background/house/ex_01.png",
+    "resources/img/background/house/ex_01_fs.png",
+    // other backgrounds
     "resources/img/background/house/office_01.png",
     "resources/img/background/house/kitchen_01.png",
     "resources/img/background/house/kitchen_02.png",
@@ -101,4 +105,5 @@ const SPRITES = [
     "resources/img/accessory/mini_band_01_icon.png",
     "resources/img/accessory/secretary_01.png",
     "resources/img/accessory/secretary_01_icon.png",
+    "resources/img/accessory/cloof_01.png",
 ]
