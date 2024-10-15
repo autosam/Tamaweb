@@ -5115,7 +5115,7 @@ const App = {
         open_battle_screen: function(){
             Battle.start();
         },
-        shell_button: function(){
+        shell_button: function(buttonNumber, justOpened){
             if(App.disableGameplayControls && App.gameplayControlsOverwrite){
                 if(!App.haveAnyDisplays()){
                     App.gameplayControlsOverwrite();
@@ -5123,6 +5123,7 @@ const App = {
                 }
                 return;
             }
+
 
             if(App.disableGameplayControls) return;
 
@@ -5137,9 +5138,61 @@ const App = {
 
             if(disallow) return;
 
-            App.setScene(App.scene.home);
-            if(App.haveAnyDisplays()) App.closeAllDisplays();
-            else App.handlers.open_main_menu();
+            if(!justOpened) justOpened = false;
+            if(!App.haveAnyDisplays()) {
+                App.handlers.open_main_menu();
+                justOpened = true;
+            }
+
+            const initCurrentDisplay = () => {
+                const currentDisplay = App.getCurrentDisplay();
+                if (currentDisplay) {
+                    let activeIndex = currentDisplay.dataset.activeItemIndex || -1;
+
+                    // const currentDisplayItems = [...currentDisplay.children];
+                    const currentDisplayItems = [...currentDisplay.querySelectorAll('button, a')];
+
+                    const focusOn = (index) => {
+                        currentDisplayItems.forEach(e => e.dataset.isActiveItem = false);
+                        if (!index) index = 0;
+                        const element = currentDisplayItems?.at(index);
+                        if ((element.nodeName !== 'BUTTON' && element.nodeName !== 'A') || element.disabled) return focusOn(++index);
+                        if (!element) {
+                            return focusOn(0);
+                        }
+                        element?.focus();
+                        element.dataset.isActiveItem = true;
+                        currentDisplay.dataset.activeItemIndex = index;
+                    }
+
+                    focusOn()
+
+                    if (!justOpened) {
+                        switch (buttonNumber) {
+                            case 0:
+                                focusOn(++activeIndex)
+                                break;
+                            case 1:
+                                currentDisplayItems?.at(activeIndex)?.click()
+                                if (App.getCurrentDisplay() !== currentDisplay) {
+                                    // App.handlers.shell_button(-1);
+                                    // initCurrentDisplay();
+                                    console.log(App.getCurrentDisplay(), currentDisplay)
+                                }
+                                break;
+                            case 2:
+                                currentDisplay.querySelector('.back-btn')?.click();
+                                break;
+                        }
+                    }
+                }
+            }
+
+            initCurrentDisplay()
+
+            // App.setScene(App.scene.home);
+            // if(App.haveAnyDisplays()) App.closeAllDisplays();
+            // else App.handlers.open_main_menu();
             App.vibrate();
         },
         sleep: function(){
@@ -5259,6 +5312,9 @@ const App = {
     },
     haveAnyDisplays: function(){
         return !![...document.querySelectorAll('.screen-wrapper .display')].length;
+    },
+    getCurrentDisplay: function(){
+        return [...document.querySelectorAll('.screen-wrapper .display')].at(-1);
     },
     displayList: function(listItems, backFn, backFnTitle){
         // if(backFn !== false)

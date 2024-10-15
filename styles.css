@@ -191,10 +191,18 @@ hr {
     outline-offset: 1px;
 }
 
+.list-item:active:after,
+.list-item:hover:after,
+.list-item:focus-within:after,
+.list-item[data-is-active-item="true"]:after,
 .grid-item:active:after,
 .grid-item:hover:after,
+.grid-item:focus-within:after,
+.grid-item[data-is-active-item="true"]:after,
 .generic-btn:active:after,
-.generic-btn:hover:after
+.generic-btn:hover:after,
+.generic-btn:focus-within:after,
+.generic-btn[data-is-active-item="true"]:after
 {
     width: 11px;
     height: 9px;
