@@ -1467,7 +1467,7 @@ let App = {
                     }
                 },
                 {
-                    name: `system settings ${App.getBadge()}`,
+                    name: `system settings`,
                     onclick: () => {
                         App.displayList([
                             {
@@ -1487,7 +1487,7 @@ let App = {
                                 }
                             },
                             {
-                                _mount: (e) => e.innerHTML = `classic menu: <i>${App.settings.classicMainMenuUI ? 'on' : 'off'}</i> ${App.getBadge()}`,
+                                _mount: (e) => e.innerHTML = `classic menu: <i>${App.settings.classicMainMenuUI ? 'on' : 'off'}</i>`,
                                 onclick: (item) => {
                                     App.settings.classicMainMenuUI = !App.settings.classicMainMenuUI;
                                     item._mount();
@@ -2399,7 +2399,7 @@ let App = {
                     }
                 },
                 {
-                    name: `game center ${App.getBadge()}`,
+                    name: `game center`,
                     onclick: () => {
                         // App.handlers.open_game_list();
                         Activities.goToArcade();
@@ -2586,7 +2586,7 @@ let App = {
         open_phone: function(){
             App.displayList([
                 {
-                    name: `<span style="color: #ff00c6"><i class="icon fa-solid fa-globe"></i> hubchi</span> ${App.getBadge()}`,
+                    name: `<span style="color: #ff00c6"><i class="icon fa-solid fa-globe"></i> hubchi</span>`,
                     onclick: () => {
                         if(!App.userName){
                             App.handlers.show_set_username_dialog();
@@ -3049,7 +3049,7 @@ let App = {
             const tutorialDisplayTime = 2000;
             App.displayList([
                 {
-                    name: `mimic ${App.getBadge()}`,
+                    name: `mimic`,
                     onclick: () => {
                         const imgPath = 'resources/img/ui/';
                         const images = `
@@ -3062,7 +3062,7 @@ let App = {
                     }
                 },
                 {
-                    name: `catch ${App.getBadge()}`,
+                    name: `catch`,
                     onclick: () => {
                         App.displayPopup(`Catch as much <img src="resources/img/misc/heart_particle_01.png"></img> while avoiding <img src="resources/img/misc/falling_poop.png"></img>`, tutorialDisplayTime, () => Activities.fallingStuffGame())
                         return false;
