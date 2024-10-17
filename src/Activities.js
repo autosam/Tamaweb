@@ -66,17 +66,192 @@ class Activities {
             App.apiService.addPetDef();
         }
 
-        App.toggleGameplayControls(false, () => {
+        // handlers
+        const handleInteract = () => {
+            const petInteractions = otherPlayersPets.map(pet => {
+                const def = pet.petDefinition;
+                return {
+                    name: `${def.getCSprite()} ${def.name}`,
+                    onclick: () => {
+                        return App.displayList([
+                            {
+                                name: `
+                                <div style="
+                                    display: flex;
+                                    justify-content: space-between;
+                                    flex-wrap: wrap;   
+                                    align-items: center;                                     
+                                ">
+                                    <div>
+                                        <i class="fa-solid fa-user-circle"></i> ${def.owner}
+                                    </div>
+                                    <div>
+                                        <i class="fa-solid fa-thumbs-up"></i> ${def.interactions}
+                                    </div>
+                                </div>
+                                `,
+                                type: 'text',
+                                solid: true,
+                            },
+                            {
+                                name: 'hang out',
+                                onclick: () => {
+                                    App.closeAllDisplays();
+                                    App.toggleGameplayControls(false);
+                                    otherPlayersPets.forEach(p => p?.removeObject?.());
+                                    addInteraction(def);
+                                    Activities.invitePlaydate(def, App.scene.online_hub, () => {
+                                        App.displayConfirm(`Do you want to add ${def.getCSprite()} ${def.name} to your friends list?`, [
+                                            {
+                                                name: 'yes',
+                                                onclick: () => {
+                                                    App.closeAllDisplays();
+                                                    const addedFriend = App.petDefinition.addFriend(def, 1);
+                                                    if (addedFriend) {
+                                                        App.displayPopup(`${def.getCSprite()} ${def.name} has been added to the friends list!`, 3000);
+                                                        addInteraction(def);
+                                                    } else {
+                                                        App.displayPopup(`You are already friends with ${def.name}`, 3000);
+                                                    }
+                                                    return false;
+                                                }
+                                            },
+                                            {
+                                                name: 'no',
+                                                class: 'back-btn',
+                                                onclick: () => { }
+                                            },
+                                        ])
+                                        setTimeout(() => Activities.goToOnlineHub());
+                                    })
+                                }
+                            },
+                        ])
+                    }
+                }
+            })
             return App.displayList([
+                ...petInteractions,
                 {
-                    _ignore: hasUploadedPetDef.status,
-                    type: 'text',
                     name: `
-                        Upload your character to get access to hubchi!
+                    <small>
+                        <i class="fa-solid fa-info-circle" style="padding-right: 8px"></i>
+                        Every time you interact with another pet you'll receive 
+                        <i class="fa-solid fa-thumbs-up"></i> ${INTERACTION_LIKES.receiving} 
+                        and they'll receive
+                        <i class="fa-solid fa-thumbs-up"></i> ${INTERACTION_LIKES.outgoing} 
+                    </small>
                     `,
+                    type: 'text',
+                },
+            ])
+        }
+        const handleUploadCharacter = () => {
+            return App.displayConfirm(`Do you want to upload ${App.petDefinition.name} to HUBCHI so that other players can see and interact with them?`, [
+                {
+                    name: 'yes',
+                    onclick: async () => {
+                        const popup = App.displayPopup('Uploading...', App.INF);
+                        const {status} = await App.apiService.addPetDef();
+                        popup.close();
+                        App.closeAllDisplays();
+                        hasUploadedPetDef.status = status;
+                        App.displayPopup('Success!');
+                    }
                 },
                 {
-                    _ignore: !hasUploadedPetDef.status,
+                    name: 'no',
+                    class: 'back-btn',
+                    onclick: () => {}
+                },
+            ])
+        }
+        const handleSyncCharacter = () => {
+            const confirm = App.displayConfirm(`Do you want to update your HUBCHI persona to be in sync with ${App.petDefinition.name}'s latest appearance?`, [
+                {
+                    name: 'yes',
+                    onclick: async () => {
+                        confirm.close();
+                        const popup = App.displayPopup('Syncing...', App.INF);
+                        const {status} = await App.apiService.addPetDef();
+                        popup.close();
+                        App.displayPopup(status ? 'Success!' : 'Error!');
+                        return false;
+                    }
+                },
+                {
+                    name: 'no',
+                    class: 'back-btn',
+                    onclick: () => {}
+                },
+            ])
+            return true;
+        }
+        const handleReturnHome = () => {
+            return App.displayConfirm(`Are you sure you want to return home?`, [
+                {
+                    name: 'yes',
+                    onclick: async () => {
+                        App.closeAllDisplays();
+                        otherPlayersPets.forEach(p => p?.removeObject?.());
+                        Activities.onlineHubTransition((fadeOverlay) => {
+                            App.setScene(App.scene.home);
+                            fadeOverlay.direction = false;
+                            setTimeout(() => {
+                                App.pet.playCheeringAnimation(() => App.toggleGameplayControls(true));
+                            }, 500);
+                        });
+                    }
+                },
+                {
+                    name: 'no',
+                    class: 'back-btn',
+                    onclick: () => {}
+                },
+            ])
+        }
+        const handleRewardStore = () => {
+            // const accessories = App.definitions.accessories.filter(e => e.onlineShopAccessible);
+            const accessories = Object.keys(App.definitions.accessories)
+                .filter(e =>
+                    App.definitions.accessories[e].onlineShopAccessible
+                )
+                .map(name => {
+                    const accessory = App.definitions.accessories[name];
+                    return {
+                        name,
+                        onclick: () => {
+                            console.log(accessory)
+                        }
+                    }
+                })
+
+            return App.displayList(
+                [
+                    ...accessories
+                ]
+            )
+        }
+
+        App.toggleGameplayControls(false, () => {
+            if(!hasUploadedPetDef.status){
+                return App.displayList([
+                    {
+                        type: 'text',
+                        name: `
+                            Upload your character to get access to hubchi!
+                        `,
+                    },
+                    {
+                        _ignore: hasUploadedPetDef.status,
+                        name: 'Upload character',
+                        onclick: handleUploadCharacter
+                    },
+                ])
+            }
+
+            return App.displayList([
+                {
                     type: 'text',
                     solid: true,
                     name: `
@@ -100,162 +275,20 @@ class Activities {
                     `,
                 },
                 {
-                    _ignore: !hasUploadedPetDef.status,
                     name: 'interact',
-                    onclick: () => {
-                        const petInteractions = otherPlayersPets.map(pet => {
-                            const def = pet.petDefinition;
-                            return {
-                                name: `${def.getCSprite()} ${def.name}`,
-                                onclick: () => {
-                                    return App.displayList([
-                                        {
-                                            name: `
-                                            <div style="
-                                                display: flex;
-                                                justify-content: space-between;
-                                                flex-wrap: wrap;   
-                                                align-items: center;                                     
-                                            ">
-                                                <div>
-                                                    <i class="fa-solid fa-user-circle"></i> ${def.owner}
-                                                </div>
-                                                <div>
-                                                    <i class="fa-solid fa-thumbs-up"></i> ${def.interactions}
-                                                </div>
-                                            </div>
-                                            `,
-                                            type: 'text',
-                                            solid: true,
-                                        },
-                                        {
-                                            name: 'hang out',
-                                            onclick: () => {
-                                                App.closeAllDisplays();
-                                                App.toggleGameplayControls(false);
-                                                otherPlayersPets.forEach(p => p?.removeObject?.());
-                                                addInteraction(def);
-                                                Activities.invitePlaydate(def, App.scene.online_hub, () => {
-                                                    App.displayConfirm(`Do you want to add ${def.getCSprite()} ${def.name} to your friends list?`, [
-                                                        {
-                                                            name: 'yes',
-                                                            onclick: () => {
-                                                                App.closeAllDisplays();
-                                                                const addedFriend = App.petDefinition.addFriend(def, 1);
-                                                                if(addedFriend) {
-                                                                    App.displayPopup(`${def.getCSprite()} ${def.name} has been added to the friends list!`, 3000);
-                                                                    addInteraction(def);
-                                                                } else {
-                                                                    App.displayPopup(`You are already friends with ${def.name}`, 3000);
-                                                                }
-                                                                return false;
-                                                            }
-                                                        },
-                                                        {
-                                                            name: 'no',
-                                                            class: 'back-btn',
-                                                            onclick: () => {}
-                                                        },
-                                                    ])
-                                                    setTimeout(() =>  Activities.goToOnlineHub());
-                                                })
-                                            }
-                                        },
-                                    ])
-                                }
-                            }
-                        })
-                        return App.displayList([
-                            ...petInteractions,
-                            {
-                                name: `
-                                <small>
-                                    <i class="fa-solid fa-info-circle" style="padding-right: 8px"></i>
-                                    Every time you interact with another pet you'll receive 
-                                    <i class="fa-solid fa-thumbs-up"></i> ${INTERACTION_LIKES.receiving} 
-                                    and they'll receive
-                                    <i class="fa-solid fa-thumbs-up"></i> ${INTERACTION_LIKES.outgoing} 
-                                </small>
-                                `,
-                                type: 'text',
-                            },
-                        ])
-                    }
+                    onclick: handleInteract
                 },
                 {
-                    _ignore: hasUploadedPetDef.status,
-                    name: 'Upload character',
-                    onclick: () => {
-                        return App.displayConfirm(`Do you want to upload ${App.petDefinition.name} to HUBCHI so that other players can see and interact with them?`, [
-                            {
-                                name: 'yes',
-                                onclick: async () => {
-                                    const popup = App.displayPopup('Uploading...', App.INF);
-                                    const {status} = await App.apiService.addPetDef();
-                                    popup.close();
-                                    App.closeAllDisplays();
-                                    hasUploadedPetDef.status = status;
-                                    App.displayPopup('Success!');
-                                }
-                            },
-                            {
-                                name: 'no',
-                                class: 'back-btn',
-                                onclick: () => {}
-                            },
-                        ])
-                    }
+                    name: 'sync character',
+                    onclick: handleSyncCharacter,
                 },
                 {
-                    _ignore: !hasUploadedPetDef.status,
-                    name: 'Sync character',
-                    onclick: () => {
-                        const confirm = App.displayConfirm(`Do you want to update your HUBCHI persona to be in sync with ${App.petDefinition.name}'s latest appearance?`, [
-                            {
-                                name: 'yes',
-                                onclick: async () => {
-                                    confirm.close();
-                                    const popup = App.displayPopup('Syncing...', App.INF);
-                                    const {status} = await App.apiService.addPetDef();
-                                    popup.close();
-                                    App.displayPopup(status ? 'Success!' : 'Error!');
-                                    return false;
-                                }
-                            },
-                            {
-                                name: 'no',
-                                class: 'back-btn',
-                                onclick: () => {}
-                            },
-                        ])
-                        return true;
-                    }
+                    name: `rewards store ${App.getBadge()}`,
+                    onclick: handleRewardStore,
                 },
                 {
                     name: '<i class="icon fa-solid fa-home"></i> return home',
-                    onclick: () => {
-                        return App.displayConfirm(`Are you sure you want to return home?`, [
-                            {
-                                name: 'yes',
-                                onclick: async () => {
-                                    App.closeAllDisplays();
-                                    otherPlayersPets.forEach(p => p?.removeObject?.());
-                                    Activities.onlineHubTransition((fadeOverlay) => {
-                                        App.setScene(App.scene.home);
-                                        fadeOverlay.direction = false;
-                                        setTimeout(() => {
-                                            App.pet.playCheeringAnimation(() => App.toggleGameplayControls(true));
-                                        }, 500);
-                                    });
-                                }
-                            },
-                            {
-                                name: 'no',
-                                class: 'back-btn',
-                                onclick: () => {}
-                            },
-                        ])
-                    }
+                    onclick: handleReturnHome
                 },
             ])
         })

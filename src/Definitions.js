@@ -582,11 +582,17 @@ App.definitions = {
             image: 'resources/img/background/house/ex_01.png',
             price: 0,
             isNew: true,
+            onlineShopAccessible: true,
+            unlockLikes: 80,
+            unlockKey: 'bg_silky_retreat',
         },
         "silky (sky)": {
             image: 'resources/img/background/house/ex_01_fs.png',
             price: 0,
             isNew: true,
+            onlineShopAccessible: true,
+            unlockLikes: 80,
+            unlockKey: 'bg_silky_retreat_sky',
         },
     },
     shell_background: [
@@ -655,7 +661,7 @@ App.definitions = {
             image_sprite: 'resources/img/accessory/secretary_01.png',
             front: false,
             price: 500,
-            isNew: true,
+            isNew: false,
             createFn: function(parent){
                 const Z = parent.z - 0.1 || 4.9;
                 const spritesheet = {
@@ -890,7 +896,7 @@ App.definitions = {
             image: 'resources/img/accessory/mini_band_01.png',
             front: true,
             price: 200,
-            isNew: true,
+            isNew: false,
         },
         'cloof': {
             icon: 'resources/img/accessory/cloof_01.png',
@@ -898,8 +904,10 @@ App.definitions = {
             front: false,
             price: 500,
             isNew: true,
+            onlineShopAccessible: true,
+            unlockLikes: 50,
             createFn: function(parent){
-                const Z = parent.z - 0.1 || 4.9;
+                const Z = parent.z - 0.01 || 4.9;
                 const spritesheet = {
                     cellSize: 12,
                     rows: 5,
@@ -1053,4 +1061,71 @@ App.definitions = {
             }
         },
     }
+}
+
+
+
+/* debug remove later */
+const handleRewardStore = () => {
+    const showItem = (image, name, description, unlockLikesReq, unlockAction, isUnlocked) => {
+        return App.displayConfirm(
+            `
+                <img src="${image}"></img>
+                <br>
+                <b>${name}</b>
+                <br>
+                <span>${description}</span>
+            `,
+            [
+                {
+                    _disabled: isUnlocked,
+                    name: !isUnlocked ? 'unlock' : 'reward collected',
+                    onclick: () => {}
+                },
+                {
+                    name: 'close',
+                    class: 'back-btn',
+                    onclick: () => {}
+                }
+            ]
+        )
+    }
+
+    // const accessories = App.definitions.accessories.filter(e => e.onlineShopAccessible);
+    const accessories = Object.keys(App.definitions.accessories)
+        .filter(e =>
+            App.definitions.accessories[e].onlineShopAccessible
+        )
+        .map(name => {
+            const item = App.definitions.accessories[name];
+            const icon = item.icon || item.image;
+            return {
+                name: `<img class="icon" src="${icon}"></img> ${name}`,
+                onclick: () => {
+                    return showItem(icon, name, 'accessory', false, false)
+                }
+            }
+        })
+
+    const backgrounds = Object.keys(App.definitions.room_background)
+        .filter(e =>
+            App.definitions.room_background[e].onlineShopAccessible
+        )
+        .map(name => {
+            const item = App.definitions.room_background[name];
+            const icon = item.image;
+            return {
+                name: `<img class="icon" src="${icon}"></img> ${name}`,
+                onclick: () => {
+                    console.log(item)
+                }
+            }
+        })
+
+    return App.displayList(
+        [
+            ...accessories,
+            ...backgrounds
+        ]
+    )
 }

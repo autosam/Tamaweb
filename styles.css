@@ -1316,6 +1316,11 @@ a.generic-btn:before {
     margin-right: 5px;
 }
 
+.generic-btn > img.icon {
+    width: 28px;
+    object-fit: none;
+}
+
 .generic-btn.no-anim {
     animation: unset !important;
 }
