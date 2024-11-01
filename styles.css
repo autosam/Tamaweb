@@ -647,6 +647,15 @@ button {
     justify-content: space-between;
 }
 
+.flex-between {
+    display: flex;
+    justify-content: space-between;
+}
+
+.overflow-hidden {
+    overflow: hidden;
+}
+
 .flex-1 {
     flex: 1
 }
@@ -1775,3 +1784,19 @@ hr {
     mix-blend-mode: soft-light;
     opacity: 0.6;
 }
+
+.marquee {
+    transform: translate3d(0, 0, 0);
+    animation: marqueeAnimation 5s linear infinite;
+}
+@keyframes marqueeAnimation {
+    0% {
+        transform: translateX(0);
+    }
+    30% {
+        transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-66.6666%);
+    }
+  }

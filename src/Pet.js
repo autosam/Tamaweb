@@ -18,8 +18,12 @@ class Pet extends Object2d {
     speedOverride = 0;
 
     constructor(petDefinition, additionalProps){
+        const image = petDefinition.spriteSkin 
+            ? App.preloadedResources[petDefinition.spriteSkin]
+            : App.preloadedResources[petDefinition.sprite];
+
         const config = {
-            image: App.preloadedResources[petDefinition.sprite],
+            image,
             spritesheet: petDefinition.spritesheet,
         };
         super(config);
@@ -313,6 +317,8 @@ class Pet extends Object2d {
             }
         }
 
+        Missions.done(Missions.TYPES.food);
+
         /* App.foods.hidden = false; // remove this getting rid of ui food
         App.foods.spritesheet.cellNumber = foodSpriteCellNumber; */
 
@@ -380,6 +386,8 @@ class Pet extends Object2d {
             },
             x: 20, y: 20
         });
+
+        Missions.done(Missions.TYPES.play_item);
 
         itemObject.x = '55%', itemObject.y = '47%';
 

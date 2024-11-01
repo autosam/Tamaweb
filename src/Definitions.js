@@ -597,6 +597,14 @@ App.definitions = {
     },
     shell_background: [
         {
+            image: 'resources/img/ui/shell_background_cloof_01.png',
+            name: 'cloofy',
+            isNew: true,
+            onlineShopAccessible: true,
+            unlockLikes: 30,
+            unlockKey: 'unlock_cloof_shell_bg',
+        },
+        {
             image: 'resources/img/ui/shell_background_07.png',
             isNew: false,
         },
@@ -906,6 +914,7 @@ App.definitions = {
             isNew: true,
             onlineShopAccessible: true,
             unlockLikes: 50,
+            unlockKey: 'unlock_cloof',
             createFn: function(parent){
                 const Z = parent.z - 0.01 || 4.9;
                 const spritesheet = {
@@ -1061,71 +1070,4 @@ App.definitions = {
             }
         },
     }
-}
-
-
-
-/* debug remove later */
-const handleRewardStore = () => {
-    const showItem = (image, name, description, unlockLikesReq, unlockAction, isUnlocked) => {
-        return App.displayConfirm(
-            `
-                <img src="${image}"></img>
-                <br>
-                <b>${name}</b>
-                <br>
-                <span>${description}</span>
-            `,
-            [
-                {
-                    _disabled: isUnlocked,
-                    name: !isUnlocked ? 'unlock' : 'reward collected',
-                    onclick: () => {}
-                },
-                {
-                    name: 'close',
-                    class: 'back-btn',
-                    onclick: () => {}
-                }
-            ]
-        )
-    }
-
-    // const accessories = App.definitions.accessories.filter(e => e.onlineShopAccessible);
-    const accessories = Object.keys(App.definitions.accessories)
-        .filter(e =>
-            App.definitions.accessories[e].onlineShopAccessible
-        )
-        .map(name => {
-            const item = App.definitions.accessories[name];
-            const icon = item.icon || item.image;
-            return {
-                name: `<img class="icon" src="${icon}"></img> ${name}`,
-                onclick: () => {
-                    return showItem(icon, name, 'accessory', false, false)
-                }
-            }
-        })
-
-    const backgrounds = Object.keys(App.definitions.room_background)
-        .filter(e =>
-            App.definitions.room_background[e].onlineShopAccessible
-        )
-        .map(name => {
-            const item = App.definitions.room_background[name];
-            const icon = item.image;
-            return {
-                name: `<img class="icon" src="${icon}"></img> ${name}`,
-                onclick: () => {
-                    console.log(item)
-                }
-            }
-        })
-
-    return App.displayList(
-        [
-            ...accessories,
-            ...backgrounds
-        ]
-    )
 }

@@ -303,6 +303,9 @@ let App = {
         // random encounters
         App.runRandomEncounters();
 
+        // missions
+        Missions.init();
+
         // saver
         setInterval(() => {
             App.save(true);
@@ -1106,6 +1109,13 @@ let App = {
                     }
                 },
                 {
+                    name: `missions ${App.getBadge()}`,
+                    onclick: () => {
+                        Missions.openMenu();
+                        return true;
+                    }
+                },
+                {
                     name: `pet`,
                     onclick: () => {
                         App.displayPopup(`Tap the screen to pet <b>${App.petDefinition.name}</b><br><br>Don't tap for a few seconds to stop petting`, 2800, () => {
@@ -1593,7 +1603,10 @@ let App = {
                             },
                             {
                                 _mount: (e) => {
-                                    const hasNew = App.definitions.shell_background.some((entry) => entry.isNew);
+                                    const hasNew = App.definitions.shell_background.some((entry) => {
+                                        const isUnlocked = entry.unlockKey && App.getRecord(entry.unlockKey);
+                                        return entry.isNew && isUnlocked;
+                                    });
                                     e.innerHTML = `change shell ${hasNew ? App.getBadge() : ''}`
                                 },
                                 onclick: () => {
@@ -1932,6 +1945,7 @@ let App = {
                             // console.log(list.scrollTop);
                             let nList = App.handlers.open_food_list(true, sliderInstance?.getCurrentIndex(), filterType);
                                 // nList.scrollTop = list.scrollTop;
+                            Missions.done(Missions.TYPES.buy_food);
                             return false;
                         }
 
@@ -2242,6 +2256,11 @@ let App = {
             for(let room of Object.keys(App.definitions.room_background)){
                 let current = App.definitions.room_background[room];
 
+                // check for unlockables
+                if(current.unlockKey && !App.getRecord(current.unlockKey)){
+                    continue;
+                }
+
                 // 50% off on sales day
                 let price = current.price;
                 if(salesDay) price = Math.round(price / 2);
@@ -2281,7 +2300,11 @@ let App = {
         },
         open_shell_background_list: function(){
             let sliderInstance;
-            const list = App.definitions.shell_background.map(current => {
+            const list = App.definitions.shell_background
+            .filter(current => !(current.unlockKey && !App.getRecord(current.unlockKey)))
+            .map(current => {
+                // check for unlockables
+
                 return {
                     name: `<img src="${current.image}"></img>${current.isNew ? App.getBadge() : ''}`,
                     onclick: (btn, list) => {
@@ -2304,6 +2327,10 @@ let App = {
                     continue;
                 }
                 let current = App.definitions.accessories[accessoryName];
+                // check for unlockables
+                if(current.unlockKey && !App.getRecord(current.unlockKey)){
+                    continue;
+                }
 
                 // 50% off on sales day
                 let price = current.price;
@@ -2586,7 +2613,7 @@ let App = {
         open_phone: function(){
             App.displayList([
                 {
-                    name: `<span style="color: #ff00c6"><i class="icon fa-solid fa-globe"></i> hubchi</span>`,
+                    name: `<span style="color: #ff00c6"><i class="icon fa-solid fa-globe"></i> hubchi</span> ${App.getBadge()}`,
                     onclick: () => {
                         if(!App.userName){
                             App.handlers.show_set_username_dialog();
@@ -2785,6 +2812,8 @@ let App = {
         },
         open_social_media: function(){
             function showPost(petDefinition, noMood){
+                Missions.done(Missions.TYPES.check_social_post);
+
                 let post = document.querySelector('.cloneables .post-container').cloneNode(true);
                 document.querySelector('.screen-wrapper').appendChild(post);
                 post.style.display = '';
@@ -2983,10 +3012,12 @@ let App = {
         },
         open_mall_activity_list: function(){
             const hasNewDecor = Object.keys(App.definitions.room_background).some(key => {
-                return App.definitions.room_background[key].isNew;
+                const isUnlocked = App.definitions.room_background[key].unlockKey && App.getRecord(App.definitions.room_background[key].unlockKey);
+                return App.definitions.room_background[key].isNew && isUnlocked;
             });
             const hasNewAccessory = Object.keys(App.definitions.accessories).some(key => {
-                return App.definitions.accessories[key].isNew;
+                const isUnlocked = App.definitions.accessories[key].unlockKey && App.getRecord(App.definitions.accessories[key].unlockKey);
+                return App.definitions.accessories[key].isNew && isUnlocked;
             });
 
             const backFn = () => { // unused
@@ -3123,6 +3154,7 @@ let App = {
             App.pet.x = 20;
             App.pet.y = App.scene.home.petY;
             App.toggleGameplayControls(false);
+            Missions.done(Missions.TYPES.clean_room);
             const mop = new Object2d({
                 image: App.preloadedResources["resources/img/misc/cleaner.png"],
                 x: 0,
@@ -3433,6 +3465,7 @@ let App = {
             }
             btn.innerHTML = def.name;
             btn.className = `generic-btn stylized ${def.class || ''}`;
+            btn.disabled = def._disable;
             if(def.name == 'back') btn.className += ' back-btn';
             btn.onclick = () => {
                 if(!def.onclick()) list.close();
@@ -3831,6 +3864,9 @@ let App = {
             App.checkPetStats()
         }, 10000)
     },
+    getIcon: function(iconName, noRightMargin){
+        return `<i class="fa-solid fa-${iconName}" style="${!noRightMargin ? 'margin-right:10px' : ''}"></i>`
+    },
     apiService: {
         ENDPOINT: 'https://script.google.com/macros/s/AKfycbxCa6Yo_VdK5t9T7ZCHabxT1EY-xACEC3VUDHgkkwGdduF2U5VMGlp0KXBu9CtE8cWv9Q/exec',
         ENDPOINT_TEST: 'https://script.google.com/macros/s/AKfycbzvoH9j7Ia0Zc_dCBXXYI6dB9UlUR_tGGr1J5Gsu2DG/dev',
@@ -3863,10 +3899,11 @@ let App = {
             });
             return App.apiService.sendRequest(params);
         },
-        getPetDef: () => {
+        getPetDef: (userId) => {
+            if(!userId) userId = App.apiService._getUid();
             const params = new URLSearchParams({
                 action: 'getPetDef',
-                userId: App.apiService._getUid(),
+                userId: userId,
             });
             return App.apiService.sendRequest(params);
         },
