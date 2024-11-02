@@ -1103,16 +1103,16 @@ let App = {
         open_care_menu: function(){
             App.displayList([
                 {
-                    name: `sleep ${App.isSleepHour() ? App.getBadge('<div style="margin-left: auto; padding: 2px"> <i class="fa-solid fa-moon"></i> <small>bedtime!</small> </div>', 'night') : ''}`,
-                    onclick: () => {
-                        App.handlers.sleep();
-                    }
-                },
-                {
-                    name: `missions ${App.getBadge()}`,
+                    name: `daily missions ${App.getBadge()}`,
                     onclick: () => {
                         Missions.openMenu();
                         return true;
+                    }
+                },
+                {
+                    name: `sleep ${App.isSleepHour() ? App.getBadge('<div style="margin-left: auto; padding: 2px"> <i class="fa-solid fa-moon"></i> <small>bedtime!</small> </div>', 'night') : ''}`,
+                    onclick: () => {
+                        App.handlers.sleep();
                     }
                 },
                 {

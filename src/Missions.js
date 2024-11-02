@@ -3,6 +3,7 @@ const Missions = {
     currentPts: 0,
     currentStep: 0,
     refreshTime: 0,
+    MAX_STEPS: 4,
     TYPES: {
         food: 'food',
         pat: 'pat',
@@ -21,6 +22,8 @@ const Missions = {
         fulfill_want: 'fulfill_want',
         play_item: 'play_item',
         visit_online_hub: 'visit_online_hub',
+        visit_mall: 'visit_mall',
+        visit_market: 'visit_market',
     },
     TYPE_DESCRIPTIONS: {
         food: 'Eat food',
@@ -40,6 +43,8 @@ const Missions = {
         fulfill_want: "Fulfill your pet's want",
         play_item: 'Play with an item',
         visit_online_hub: 'Visit Hubchi',
+        visit_mall: 'Visit the mall',
+        visit_market: 'Visit the market',
     },
     init: function(data){
         if(data?.current) this.current = data?.current;
@@ -89,6 +94,7 @@ const Missions = {
         console.log(this.current);
     },
     openRewardsMenu: function(){
+        App.sendAnalytics('opened_mission_rewards', Missions.currentPts);
         return App.displayList([
             {
                 name: `Ghostboy skin`,
@@ -97,7 +103,7 @@ const Missions = {
 
                 }
             }
-        ], null, 'Mission Rewards')
+        ], null, 'Rewards')
     },
     openMenu: function(){
         if(!this.current?.length) return;
@@ -106,7 +112,10 @@ const Missions = {
             {
                 name: `
                     <span>
-                        ${App.getIcon('coins')}${this.currentPts}
+                        ${App.getIcon('coins', true)}
+                        <span id="mission-pts">
+                            ${this.currentPts}
+                        </span>
                     </span>
                     <button onclick="Missions.openRewardsMenu()" class="generic-btn stylized">
                         ${App.getIcon('shopping-bag', true)}
@@ -127,7 +136,7 @@ const Missions = {
             //     type: 'separator'
             // },
             {
-                _mount: (me) => me.innerHTML = App.createStepper(4, Missions.currentStep).node.outerHTML,
+                _mount: (me) => me.innerHTML = App.createStepper(this.MAX_STEPS, Missions.currentStep).node.outerHTML,
                 name: '',
                 type: 'empty',
                 style: 'padding: 0 10px; margin: 5px 0 10px 0',
@@ -156,15 +165,17 @@ const Missions = {
                             ${m.counter}/${m.targetCount}
                         </span>
                         </div>
-
-                        ${App.getBadge(!m.isDone ? `${m.counter}/${m.targetCount}` : 'done!', m.isDone ? 'red' : 'neutral')}
                     `,
                     onclick: (btn) => {
                         btn?.remove();
                         m.isClaimed = true;
-                        Missions.currentPts += m.pts;
-                        Missions.currentStep ++;
-                        list.querySelector('#missions-stepper')?._mount?.();
+                        App.sendAnalytics('mission_done', m.type);
+                        if(Missions.currentStep < Missions.MAX_STEPS){
+                            Missions.currentPts += m.pts;
+                            Missions.currentStep ++;
+                            list.querySelector('#mission-pts').textContent = Missions.currentPts;
+                            list.querySelector('#missions-stepper')?._mount?.();
+                        }
                         return true;
                     }
                 }

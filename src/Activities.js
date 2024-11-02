@@ -1451,6 +1451,7 @@ class Activities {
             App.pet.stopScriptedState();
         });
         App.setScene(App.scene.walkway);
+        Missions.done(Missions.TYPES.visit_mall);
 
         App.pet.x = '100%';
         App.pet.y = '74%';
@@ -1502,6 +1503,7 @@ class Activities {
             App.pet.stopScriptedState();
         });
         App.setScene(App.scene.market);
+        Missions.done(Missions.TYPES.visit_market);
 
         let randomNpcs = new Array(2).fill(undefined).map((item, i) => {
 
