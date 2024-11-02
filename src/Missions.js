@@ -97,16 +97,24 @@ const Missions = {
 
                 }
             }
-        ])
+        ], null, 'Mission Rewards')
     },
     openMenu: function(){
         if(!this.current?.length) return;
 
         const list = App.displayList([
             {
-                name: `${App.getIcon('coins')}${this.currentPts}`,
+                name: `
+                    <span>
+                        ${App.getIcon('coins')}${this.currentPts}
+                    </span>
+                    <button onclick="Missions.openRewardsMenu()" class="generic-btn stylized">
+                        ${App.getIcon('shopping-bag', true)}
+                    </button>
+                `,
                 type: 'text',
                 solid: true,
+                class: 'flex-between align-center'
             },
             // {
             //     name: `${App.getIcon('shopping-bag')}claim rewards`,

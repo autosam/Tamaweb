@@ -652,6 +652,10 @@ button {
     justify-content: space-between;
 }
 
+.align-center {
+    align-items: center;
+}
+
 .overflow-hidden {
     overflow: hidden;
 }
