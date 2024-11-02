@@ -1356,6 +1356,16 @@ a.generic-btn:before {
     text-shadow: 1px 1px 0px #ffcf9d;
 }
 
+.generic-btn:has(> .corner-icon){
+    border-top-left-radius: 0;
+}
+.generic-btn > .corner-icon {
+    font-size: x-small;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+
 .generic-btn.stylized:hover {
     /* padding-left: 14px; */
 }

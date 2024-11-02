@@ -1104,6 +1104,7 @@ let App = {
             App.displayList([
                 {
                     name: `daily missions ${App.getBadge()}`,
+                    icon: 'list',
                     onclick: () => {
                         Missions.openMenu();
                         return true;
@@ -3299,6 +3300,9 @@ let App = {
                     if(item.link){
                         element.href = item.link;
                         element.target = '_blank';
+                    }
+                    if(item.icon){
+                        item.name = `<i class="fa-solid fa-${item.icon} corner-icon"></i> ${item.name}`
                     }
                     if(i == listItems.length - 2) element.className += ' last-btn';
                     // '⤳ ' + 
