@@ -1800,3 +1800,29 @@ hr {
       transform: translateX(-66.6666%);
     }
   }
+
+
+  .stepper {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+}
+.stepper:before {
+    width: 99%;
+    height: 2px;
+    background: rgb(255, 128, 0);
+    content: "";
+    position: absolute;
+    top: calc(50% - 1.5px);
+}
+.stepper__step {
+    z-index: 2;
+    width: 8px;
+    height: 8px;
+    border-radius: 100%;
+    border: 2px solid rgb(255, 128, 0);
+    background: white;
+}
+.stepper__step.active {
+    background: rgb(255, 128, 0);
+}

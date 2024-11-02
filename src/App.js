@@ -304,7 +304,7 @@ let App = {
         App.runRandomEncounters();
 
         // missions
-        Missions.init();
+        Missions.init(loadedData.missions);
 
         // saver
         setInterval(() => {
@@ -3229,6 +3229,23 @@ let App = {
             setPercent
         }
     },
+    createStepper: function(maxSteps, currentStep){
+        const element = document.createElement('div');
+        element.className = 'stepper';
+        element.innerHTML = `
+            ${
+            new Array(maxSteps)
+            .fill(undefined)
+            .map((_, i) => `
+                <div 
+                    class="stepper__step ${i+1 <= currentStep ? "active" : ""}"
+                ></div>
+            `).join('\n')
+            }
+        `
+
+        return {node: element}
+    },
     closeAllDisplays: function(){
         [...document.querySelectorAll('.display')].forEach(display => {
             if(!display.closest('.cloneables')){
@@ -3263,6 +3280,11 @@ let App = {
             let defaultClassName;
 
             switch(item.type){
+                case "empty":
+                    element = document.createElement('p');
+                    element.innerHTML = item.name;
+                    defaultClassName = ``;
+                    break;
                 case "text":
                     element = document.createElement('p');
                     element.innerHTML = item.name;
@@ -3295,6 +3317,9 @@ let App = {
             }
 
             element.className = defaultClassName + (item.class ? ' ' + item.class : '');
+
+            if(item.style) element.style = item.style;
+            if(item.id) element.id = item.id;
 
             item._mount?.(element);
             element._mount = () => item._mount?.(element);
@@ -3641,6 +3666,12 @@ let App = {
                 image: App.scene.home.image,
             }
         }))
+        window.localStorage.setItem('missions', JSON.stringify({
+            current: Missions.current,
+            currentStep: Missions.currentStep,
+            currentPts: Missions.currentPts,
+            refreshTime: Missions.refreshTime
+        }))
         // -3600000
         if(!noIndicator){
             const saveIcon = document.querySelector('.save-indicator');
@@ -3674,10 +3705,13 @@ let App = {
         App.userId = userId;
         let userName = window.localStorage.getItem('user_name');
         App.userName = userName == 'null' ? null : userName;
-
+        
         App.playTime = parseInt(window.localStorage.getItem('play_time') || 0);
 
         let shellBackground = window.localStorage.getItem('shell_background_v2.1') || App.definitions.shell_background[0].image;
+
+        let missions = window.localStorage.getItem('missions');
+        missions = missions ? JSON.parse(missions) : {};
 
         App.loadedData = {
             pet, 
@@ -3689,6 +3723,7 @@ let App = {
             playTime: App.playTime, 
             mods,
             records,
+            missions,
         };
 
         return App.loadedData;

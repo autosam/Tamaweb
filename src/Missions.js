@@ -1,6 +1,8 @@
 const Missions = {
     current: [],
     currentPts: 0,
+    currentStep: 0,
+    refreshTime: 0,
     TYPES: {
         food: 'food',
         pat: 'pat',
@@ -39,8 +41,15 @@ const Missions = {
         play_item: 'Play with an item',
         visit_online_hub: 'Visit Hubchi',
     },
-    init: function(){
-        this.refresh();
+    init: function(data){
+        if(data?.current) this.current = data?.current;
+        if(data?.currentPts) this.currentPts = data?.currentPts;
+        if(data?.currentStep) this.currentStep = data?.currentStep;
+        if(data?.refreshTime) this.refreshTime = data?.refreshTime;
+
+        if(this.refreshTime < Date.now()){
+            this.refresh();
+        }
         this.openMenu();
     },
     done: function(type, attribute0) {
@@ -58,6 +67,8 @@ const Missions = {
     },
     refresh: function(){
         this.current = [];
+        this.currentStep = 0;
+        this.refreshTime = Date.now() + (1000 * 60 * 60 * 24); // resets in 24hrs
         for(let i = 0; i < 8; i++){
             let type;
             while(!type || this.current.find(m => m.type === type)){
@@ -68,7 +79,7 @@ const Missions = {
                 type,
                 counter: 0,
                 targetCount: random(1, 3),
-                pts: 12.5,
+                pts: 25,
             }
 
             mission.description = `${Missions.TYPE_DESCRIPTIONS[mission.type]} ${mission.targetCount} ${mission.targetCount === 1 ? 'time' : 'times'}.`
@@ -91,25 +102,32 @@ const Missions = {
     openMenu: function(){
         if(!this.current?.length) return;
 
-        App.displayList([
+        const list = App.displayList([
             {
                 name: `${App.getIcon('coins')}${this.currentPts}`,
                 type: 'text',
                 solid: true,
             },
+            // {
+            //     name: `${App.getIcon('shopping-bag')}claim rewards`,
+            //     onclick: () => {
+            //         Missions.openRewardsMenu();
+            //         return true;
+            //     }
+            // },
+            // {
+            //     type: 'separator'
+            // },
             {
-                name: `${App.getIcon('shopping-bag')}claim rewards`,
-                onclick: () => {
-                    Missions.openRewardsMenu();
-                    return true;
-                }
-            },
-            {
-                type: 'separator'
+                _mount: (me) => me.innerHTML = App.createStepper(4, Missions.currentStep).node.outerHTML,
+                name: '',
+                type: 'empty',
+                style: 'padding: 0 10px; margin: 5px 0 10px 0',
+                id: 'missions-stepper',
             },
             ...this.current
             .filter(m => !m.isClaimed)
-            .sort((a, b) => b.isDone - a.isDone)
+            .sort((a, b) => !!b.isDone - !!a.isDone)
             .map(m => {
                 const title = Missions.TYPE_DESCRIPTIONS[m.type];
                 return {
@@ -137,10 +155,14 @@ const Missions = {
                         btn?.remove();
                         m.isClaimed = true;
                         Missions.currentPts += m.pts;
+                        Missions.currentStep ++;
+                        list.querySelector('#missions-stepper')?._mount?.();
                         return true;
                     }
                 }
             })
         ], null, 'Missions')
+
+        return list;
     }
 }
