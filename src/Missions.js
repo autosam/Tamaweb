@@ -94,16 +94,146 @@ const Missions = {
         console.log(this.current);
     },
     openRewardsMenu: function(){
+        const defs = App.definitions;
         App.sendAnalytics('opened_mission_rewards', Missions.currentPts);
-        return App.displayList([
-            {
-                name: `Ghostboy skin`,
-                price: '200',
-                onclick: () => {
-
+        // random(3, 50) * 5
+        const foodPool = Object.keys(defs.food).filter(key => defs.food[key].price).map(key => { 
+            return {
+                name: key,
+                icon: App.getFoodCSprite(defs.food[key].sprite),
+                count: [1, 3],
+                type: 'consumable',
+                onClaim: (amt) => {
+                    App.addNumToObject(App.pet.inventory.food, key, amt || 1);
                 }
+            } 
+        });
+        const itemsPool = Object.keys(defs.item).map(key => { 
+            return {
+                name: key,
+                icon: App.getItemCSprite(defs.item[key].sprite),
+                count: [1, 1],
+                type: 'item',
+                onClaim: () => {
+                    App.addNumToObject(App.pet.inventory.item, key, 1);
+                }
+            } 
+        });
+        const accessoriesPool = Object.keys(defs.accessories).map(key => { 
+            return {
+                name: key,
+                icon: App.getAccessoryCSprite(key),
+                count: [1, 1],
+                type: 'accessory',
+                onClaim: () => {
+                    App.pet.inventory.accessory[key] = true;
+                }
+            } 
+        });
+        const goldPullDef = {
+            name: 'gold',
+            icon: '<div class="gold-circle">$</div>',
+            count: [3, 50],
+            type: '',
+            onClaim: (amt) => {
+                App.pet.stats.gold += amt || 50;
             }
-        ], null, 'Rewards')
+        }
+        const pullFromPool = (pool, isGoldPull) => {
+            const randomPull = isGoldPull ? goldPullDef : randomFromArray(pool);
+            const [min, max] = randomPull.count;
+            const count = random(min, max) * (isGoldPull ? 5 : 1);
+            randomPull.onClaim?.(count);
+            App.displayPopup(`
+                <div class="pulse">
+                    ${randomPull.icon}
+                </div>
+                <b>${randomPull.name}</b>
+                <br>
+                <span>x${count}</span>
+                <br>
+                <span>${randomPull.type}</span>
+            `, 5000, null, true);
+        }
+
+        const chests = [
+            {
+                name: 'Standard Chest',
+                price: 50,
+                info: `
+                    <div>
+                        <div> gold++++ </div>
+                        <div> food+++ </div>
+                        <div> items+ </div>
+                        <div> accessories+ </div>
+                    </div>
+                `,
+                onClaim: () => {
+                    const pool = [
+                        ...foodPool,
+                        ...foodPool,
+                        ...foodPool,
+                        ...foodPool,
+                        ...itemsPool,
+                        ...accessoriesPool,
+                    ]
+                    pullFromPool(pool, random(0, 1));
+                }
+            },
+            {
+                name: 'Uncommon Chest',
+                price: 100,
+                info: `
+                    <div>
+                        <div> food+ </div>
+                        <div> items+ </div>
+                        <div> accessories+ </div>
+                    </div>
+                `,
+                onClaim: () => {
+                    const pool = [
+                        ...foodPool,
+                        ...itemsPool,
+                        ...accessoriesPool,
+                    ]
+                    pullFromPool(pool, false);
+                }
+            },
+        ]
+        const list = App.displayList([
+            ...chests
+            .map(chest => {
+                return {
+                    name: 
+                        chest.name 
+                        + `<br><small class="inline-list">${chest.info }<small>`
+                        + App.getBadge(`${App.getIcon('coins', true)} <span style="margin-left: 3px">${chest.price}</span>`),
+                    _disable: chest.price > Missions.currentPts,
+                    class: 'large',
+                    onclick: () => {
+                        App.displayConfirm(`Open the <br> <b>${chest.name}</b> <br> for <br> ${App.getIcon('coins') + chest.price}?`, [
+                            {
+                                name: `yes`,
+                                onclick: () => {
+                                    chest.onClaim();
+                                    Missions.currentPts -= chest.price;
+                                    document.querySelector('#mission-pts').textContent = Missions.currentPts;
+                                    list.close();
+                                    Missions.openRewardsMenu();
+                                }
+                            },
+                            {
+                                name: 'no',
+                                class: 'back-btn',
+                                onclick: () => {}
+                            }
+                        ])
+                        return true;
+                    }
+                }
+            })
+        ], null, 'Rewards');
+        return list;
     },
     openMenu: function(){
         if(!this.current?.length) return;

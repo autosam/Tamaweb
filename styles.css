@@ -478,6 +478,18 @@ input:focus {
     }
 }
 
+@keyframes pulse-anim {
+    from {
+        scale: 0.85
+    }
+    to {
+        scale: 1
+    }
+}
+.pulse {
+    animation: pulse-anim 0.25s infinite alternate;
+}
+
 .generic-slider-container .additional-text {
     position: absolute;
     top: 5px;
@@ -1294,6 +1306,7 @@ body {
 
 .generic-btn {
     height: 28px;
+    min-height: 28px;
     background: white;
     padding: 2px 12px;
     border-radius: 2px;
@@ -1354,6 +1367,18 @@ a.generic-btn:before {
     color: #ff8300;
     transition: all 0.07s;
     text-shadow: 1px 1px 0px #ffcf9d;
+}
+
+.generic-btn.large {
+    flex-wrap: wrap;
+    height: auto;
+    display: block;
+}
+
+.generic-btn.large .inline-list {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
 .generic-btn:has(> .corner-icon){
@@ -1861,4 +1886,47 @@ hr {
 }
 .collection__char.locked > c-sprite {
     filter: grayscale(1) contrast(0.01);
+}
+
+/* gold circle */
+.gold-circle {
+    background: #ffdfa4;
+    width: 40px;
+    height: 40px;
+    border: orange 4px solid;
+    border-radius: 100px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    color: #6d4600;
+    font-size: x-large;
+    font-weight: bold;
+    padding-left: 3px;
+    box-sizing: border-box;
+}
+
+.display.revealing {
+    animation: revealing-anim 1s;
+}
+.display.revealing > * > * {
+    animation: revealing-anim-inner 2s;
+}
+@keyframes revealing-anim {
+    from {
+        transform: scale(3) rotateZ(45deg);
+    }
+    to {
+       
+    }
+}
+@keyframes revealing-anim-inner {
+    0% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
 }

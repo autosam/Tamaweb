@@ -1960,12 +1960,7 @@ let App = {
                 if(salesDay) price = Math.round(price / 2);
 
                 list.push({
-                    name: `<c-sprite 
-                        naturalWidth="${App.constants.FOOD_SPRITESHEET_DIMENSIONS.rows * App.constants.FOOD_SPRITESHEET_DIMENSIONS.cellSize}" 
-                        naturalHeight="${App.constants.FOOD_SPRITESHEET_DIMENSIONS.rows * App.constants.FOOD_SPRITESHEET_DIMENSIONS.cellSize}" 
-                        width="${App.constants.FOOD_SPRITESHEET_DIMENSIONS.cellSize}" height="${App.constants.FOOD_SPRITESHEET_DIMENSIONS.cellSize}" 
-                        index="${(current.sprite - 1)}"
-                        src="${App.constants.FOOD_SPRITESHEET}"></c-sprite> ${food.toUpperCase()} (x${App.pet.inventory.food[food] > 0 ? App.pet.inventory.food[food] : (!current.price ? '∞' : 0)}) <b>${buyMode ? `$${price}` : ''}</b>`,
+                    name: `${App.getFoodCSprite(current.sprite)} ${food.toUpperCase()} (x${App.pet.inventory.food[food] > 0 ? App.pet.inventory.food[food] : (!current.price ? '∞' : 0)}) <b>${buyMode ? `$${price}` : ''}</b>`,
                     onclick: (btn, list) => {
                         if(buyMode){
                             if(App.pet.stats.gold < price){
@@ -2243,7 +2238,7 @@ let App = {
                 let price = current.price;
                 if(salesDay) price = Math.round(price / 2);
 
-                const iconElement = `<c-sprite width="22" height="22" index="${(current.sprite - 1)}" src="resources/img/item/items.png"></c-sprite>`;
+                const iconElement = App.getItemCSprite(current.sprite);
 
                 list.push({
                     name: `${iconElement} ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>${buyMode ? `$${price}` : ''}</b>`,
@@ -2378,22 +2373,16 @@ let App = {
                 const equipped = App.petDefinition.accessories.includes(accessoryName);
                 const owned = App.pet.inventory.accessory[accessoryName];
 
-                const image = App.checkResourceOverride(current.icon || current.image);
-
                 const reopen = (buyMode) => {
                     if(!buyMode) App.handlers.open_stuff_menu();
                     App.handlers.open_accessory_list(buyMode, sliderInstance?.getCurrentIndex());
                     return false;
                 }
 
-                const iconElement = current.icon
-                    ? `<div style="width: 1"><img style="width: 36px; outline: none" src="${image}"></img></div>`
-                    : `<c-sprite width="64" height="36" index="0" src="${image}"></c-sprite>`;
-
                 list.push({
                     isNew: !!current.isNew,
                     name: `
-                        ${iconElement}
+                        ${App.getAccessoryCSprite(accessoryName)}
                         ${accessoryName.toUpperCase()} 
                         <b>
                         ${
@@ -3479,9 +3468,10 @@ let App = {
 
         return list;
     },
-    displayPopup: function(content, ms, onEndFn){
+    displayPopup: function(content, ms, onEndFn, isReveal){
         let popup = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
             popup.classList.add('popup');
+            if(isReveal) popup.classList.add('revealing');
             popup.innerHTML = `
                 <div class="uppercase flex-center">
                     <div class="inner-padding b-radius-10 surface-stylized">
@@ -3679,6 +3669,28 @@ let App = {
         if(hour >= 24) return hour - 24;
         else if(hour < 0) return hour + 24;
         return hour;
+    },
+    getFoodCSprite: function(index){
+        const {FOOD_SPRITESHEET_DIMENSIONS, FOOD_SPRITESHEET} = App.constants;
+        const size = 
+            FOOD_SPRITESHEET_DIMENSIONS.rows 
+                * FOOD_SPRITESHEET_DIMENSIONS.cellSize;
+        return `<c-sprite 
+            naturalWidth="${size}" 
+            naturalHeight="${size}" 
+            width="${FOOD_SPRITESHEET_DIMENSIONS.cellSize}" height="${FOOD_SPRITESHEET_DIMENSIONS.cellSize}" 
+            index="${(index - 1)}"
+            src="${FOOD_SPRITESHEET}"></c-sprite>`;
+    },
+    getItemCSprite: function(index){
+        return `<c-sprite width="22" height="22" index="${(index - 1)}" src="resources/img/item/items.png"></c-sprite>`
+    },
+    getAccessoryCSprite: function(name){
+        const current = App.definitions.accessories[name];
+        const image = App.checkResourceOverride(current.icon || current.image);
+        return current.icon
+            ? `<div style="width: 1"><img style="width: 36px; outline: none" src="${image}"></img></div>`
+            : `<c-sprite width="64" height="36" index="0" src="${image}"></c-sprite>`;
     },
     playSound: function(path, force){
         if(!App.settings.playSound) return;
