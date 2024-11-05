@@ -607,4 +607,8 @@ class PetDefinition {
         else if(PET_TEEN_CHARACTERS.some(char => char === sprite)) return 1;
         return 2;
     }
+
+    static getCharCode(sprite){
+        return sprite.replace(/\D+/g, '');
+    }
 }

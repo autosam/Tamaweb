@@ -43,7 +43,8 @@ let App = {
             item: 'item',
             minigame: 'minigame',
             fulfilled: 'fulfilled',
-        }
+        },
+        CHAR_UNLOCK_PREFIX: 'ch_unl',
     },
     routes: {
         BLOG: 'https://tamawebgame.github.io/blog/',
@@ -1019,6 +1020,9 @@ let App = {
         }
     },
     createActivePet: function(petDef, props = {}){
+        if(petDef.sprite){
+            App.addEvent(`${App.constants.CHAR_UNLOCK_PREFIX}_${PetDefinition.getCharCode(petDef.sprite)}`)
+        }
         return new Pet(petDef, {
             z: App.constants.ACTIVE_PET_Z, 
             scale: 1, 
@@ -1104,7 +1108,6 @@ let App = {
             App.displayList([
                 {
                     name: `daily missions ${App.getBadge()}`,
-                    icon: 'list',
                     onclick: () => {
                         Missions.openMenu();
                         return true;
@@ -1822,6 +1825,34 @@ let App = {
             `;
             list.appendChild(content);
         },
+        open_character_collection: function(){
+            
+            App.addEvent(`${App.constants.CHAR_UNLOCK_PREFIX}_${PetDefinition.getCharCode(App.petDefinition.sprite)}`)
+
+            const list = UI.genericListContainer(null, 'Characters');
+            const content = UI.empty();
+            content.classList.add('collection__container');
+            list.appendChild(content)
+
+            const allCharacters = [
+                ...PET_BABY_CHARACTERS,
+                ...PET_TEEN_CHARACTERS,
+                ...PET_ADULT_CHARACTERS,
+            ];
+
+            allCharacters.forEach(char => {
+                const charCode = PetDefinition.getCharCode(char);
+                const isUnlocked = App.getEvent(`${App.constants.CHAR_UNLOCK_PREFIX}_${charCode}`)
+                UI.create({
+                    parent: content,
+                    componentType: 'div',
+                    className: `collection__char ${!isUnlocked ? 'locked' : ''}`,
+                    innerHTML: PetDefinition.generateFullCSprite(char),
+                })
+            })
+
+            App.sendAnalytics('opened_character_collection');
+        },
         open_family_tree: function(petDefinition, usePastTense){
             if(!petDefinition) petDefinition = App.petDefinition;
 
@@ -2040,6 +2071,13 @@ let App = {
                     name: `family tree`,
                     onclick: () => {
                         App.handlers.open_family_tree();
+                        return true;
+                    }
+                },
+                {
+                    name: `characters ${App.getBadge()}`,
+                    onclick: () => {
+                        App.handlers.open_character_collection();
                         return true;
                     }
                 },

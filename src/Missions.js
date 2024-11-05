@@ -73,7 +73,7 @@ const Missions = {
     refresh: function(){
         this.current = [];
         this.currentStep = 0;
-        this.refreshTime = Date.now() + (1000 * 60 * 60 * 24); // resets in 24hrs
+        this.refreshTime = (this.refreshTime || Date.now()) + (1000 * 60 * 60 * 24); // resets in 24hrs
         for(let i = 0; i < 8; i++){
             let type;
             while(!type || this.current.find(m => m.type === type)){
@@ -125,16 +125,6 @@ const Missions = {
                 solid: true,
                 class: 'flex-between align-center'
             },
-            // {
-            //     name: `${App.getIcon('shopping-bag')}claim rewards`,
-            //     onclick: () => {
-            //         Missions.openRewardsMenu();
-            //         return true;
-            //     }
-            // },
-            // {
-            //     type: 'separator'
-            // },
             {
                 _mount: (me) => me.innerHTML = App.createStepper(this.MAX_STEPS, Missions.currentStep).node.outerHTML,
                 name: '',
@@ -179,7 +169,14 @@ const Missions = {
                         return true;
                     }
                 }
-            })
+            }),
+            {
+                name: `<small>
+                    <i class="fa-solid fa-info-circle"></i>
+                    refreshes ${moment(Missions.refreshTime).fromNow()}
+                </small>`,
+                type: 'text'
+            },
         ], null, 'Missions')
 
         return list;
