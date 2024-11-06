@@ -55,7 +55,6 @@ const Missions = {
         if(this.refreshTime < Date.now()){
             this.refresh();
         }
-        this.openMenu();
     },
     done: function(type, attribute0) {
         if(!this.current?.length) return;
@@ -96,12 +95,11 @@ const Missions = {
     openRewardsMenu: function(){
         const defs = App.definitions;
         App.sendAnalytics('opened_mission_rewards', Missions.currentPts);
-        // random(3, 50) * 5
         const foodPool = Object.keys(defs.food).filter(key => defs.food[key].price).map(key => { 
             return {
                 name: key,
                 icon: App.getFoodCSprite(defs.food[key].sprite),
-                count: [1, 3],
+                count: [1, 4],
                 type: 'consumable',
                 onClaim: (amt) => {
                     App.addNumToObject(App.pet.inventory.food, key, amt || 1);
@@ -133,7 +131,7 @@ const Missions = {
         const goldPullDef = {
             name: 'gold',
             icon: '<div class="gold-circle">$</div>',
-            count: [3, 50],
+            count: [6, 35],
             type: '',
             onClaim: (amt) => {
                 App.pet.stats.gold += amt || 50;
@@ -159,7 +157,7 @@ const Missions = {
         const chests = [
             {
                 name: 'Standard Chest',
-                price: 50,
+                price: 75,
                 info: `
                     <div>
                         <div> gold++++ </div>
@@ -182,7 +180,7 @@ const Missions = {
             },
             {
                 name: 'Uncommon Chest',
-                price: 100,
+                price: 125,
                 info: `
                     <div>
                         <div> food+ </div>
@@ -231,7 +229,14 @@ const Missions = {
                         return true;
                     }
                 }
-            })
+            }),
+            {
+                name: `<small>
+                    <i class="fa-solid fa-info-circle"></i>
+                    The + symbol represents the drop chance for each entry. The more + symbols, the higher the chance of that item dropping.
+                </small>`,
+                type: 'text'
+            },
         ], null, 'Rewards');
         return list;
     },

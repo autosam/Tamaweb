@@ -910,13 +910,13 @@ App.definitions = {
             icon: 'resources/img/accessory/cloof_01.png',
             image_sprite: 'resources/img/accessory/cloof_01.png',
             front: false,
-            price: 500,
+            price: 0,
             isNew: true,
             onlineShopAccessible: true,
             unlockLikes: 50,
             unlockKey: 'unlock_cloof',
             createFn: function(parent){
-                const Z = parent.z - 0.01 || 4.9;
+                const Z = parent.z - 0.0001 || 4.9;
                 const spritesheet = {
                     cellSize: 12,
                     rows: 5,

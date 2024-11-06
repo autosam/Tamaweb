@@ -1826,30 +1826,30 @@ let App = {
             list.appendChild(content);
         },
         open_character_collection: function(){
-            
             App.addEvent(`${App.constants.CHAR_UNLOCK_PREFIX}_${PetDefinition.getCharCode(App.petDefinition.sprite)}`)
 
-            const list = UI.genericListContainer(null, 'Characters');
-            const content = UI.empty();
-            content.classList.add('collection__container');
-            list.appendChild(content)
-
+            let unlockedCount = 0;
             const allCharacters = [
                 ...PET_BABY_CHARACTERS,
                 ...PET_TEEN_CHARACTERS,
                 ...PET_ADULT_CHARACTERS,
             ];
-
-            allCharacters.forEach(char => {
+            const charactersDef = allCharacters.map(char => {
                 const charCode = PetDefinition.getCharCode(char);
                 const isUnlocked = App.getEvent(`${App.constants.CHAR_UNLOCK_PREFIX}_${charCode}`)
-                UI.create({
-                    parent: content,
+                if(isUnlocked) unlockedCount++;
+                return {
                     componentType: 'div',
                     className: `collection__char ${!isUnlocked ? 'locked' : ''}`,
                     innerHTML: PetDefinition.generateFullCSprite(char),
-                })
+                }
             })
+
+            const list = UI.genericListContainer(null, `(${unlockedCount}/${allCharacters.length})`);
+            const content = UI.empty();
+            content.classList.add('collection__container');
+            list.appendChild(content)
+            charactersDef.forEach(def => UI.create({...def, parent: content}))
 
             App.sendAnalytics('opened_character_collection');
         },
