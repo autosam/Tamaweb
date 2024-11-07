@@ -218,6 +218,7 @@ const Missions = {
                                     document.querySelector('#mission-pts').textContent = Missions.currentPts;
                                     list.close();
                                     Missions.openRewardsMenu();
+                                    App.sendAnalytics('opened_mission_chest', chest.name);
                                 }
                             },
                             {

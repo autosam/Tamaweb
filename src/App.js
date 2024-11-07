@@ -644,7 +644,7 @@ let App = {
             return;
         }
 
-        if(addEvent(`update_09_notice`, () => {
+        if(addEvent(`update_10_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
@@ -653,7 +653,7 @@ let App = {
                     bold: true,
                 },
                 {
-                    name: 'Check out the new online hub, wants system, care rating points, mini games, companions and accessories, ui changes and much more!',
+                    name: `Grab exclusive rewards from the limited-time Hubchi event, Open chests by doing the new Daily missions, and try to grow your collection from the stats menu!`,
                     type: 'text',
                 },
                 {
@@ -2070,7 +2070,7 @@ let App = {
                     }
                 },
                 {
-                    name: `characters ${App.getBadge()}`,
+                    name: `collection ${App.getBadge()}`,
                     onclick: () => {
                         App.handlers.open_character_collection();
                         return true;

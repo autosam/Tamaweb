@@ -294,6 +294,7 @@ class Activities {
                                 }
                                 App.addRecord(unlockKey, 1, true);
                                 App.displayPopup(`<b>${name}</b> unlocked!`)
+                                App.sendAnalytics('unlocked_hubchi_reward_item', name);
                             } : undefined
                         },
                         {
