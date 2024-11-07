@@ -246,6 +246,7 @@ class PetDefinition {
         'lastBirthday', 
         'accessories',
         'deceasedPredecessors',
+        'spriteSkin',
     ];
     serializeStats(noStringify){
         let s = {};
@@ -546,6 +547,7 @@ class PetDefinition {
         if(fulfilled){
             this.stats.current_fun += random(30, 50);
             if(random(0, 1)) this.adjustCare(true);
+            Missions.done(Missions.TYPES.fulfill_want);
         } else {
             if(random(0, 1)) this.adjustCare(false);
         }
@@ -604,5 +606,9 @@ class PetDefinition {
         if(PET_BABY_CHARACTERS.some(char => char === sprite)) return 0;
         else if(PET_TEEN_CHARACTERS.some(char => char === sprite)) return 1;
         return 2;
+    }
+
+    static getCharCode(sprite){
+        return sprite.replace(/\D+/g, '');
     }
 }

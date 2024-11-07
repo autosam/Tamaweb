@@ -33,7 +33,17 @@ class Activities {
         App.pet.targetY = 50;
     }
     static async goToOnlineHub(){
+        Missions.done(Missions.TYPES.visit_online_hub);
         const {hasUploadedPetDef, randomPetDefs} = App.temp.online;
+        const INTERACTION_LIKES = {
+            outgoing: hasUploadedPetDef.interactionOutgoingLikes ?? 0,
+            receiving: hasUploadedPetDef.interactionReceivingLikes ?? 0,
+        }
+        const addInteraction = (def) => {
+            App.apiService.addInteraction(def.ownerId);
+            def.interactions = (def.interactions ?? 0) + INTERACTION_LIKES.outgoing;
+            hasUploadedPetDef.interactions = (hasUploadedPetDef.interactions ?? 0) + INTERACTION_LIKES.receiving;
+        }
         
         App.setScene(App.scene.online_hub);
 
@@ -57,17 +67,318 @@ class Activities {
             App.apiService.addPetDef();
         }
 
-        App.toggleGameplayControls(false, () => {
+        // handlers
+        const handleInteract = () => {
+            const petInteractions = otherPlayersPets.map(pet => {
+                const def = pet.petDefinition;
+                return {
+                    name: `${def.getCSprite()} ${def.name}`,
+                    onclick: () => {
+                        return App.displayList([
+                            {
+                                name: `
+                                <div style="
+                                    display: flex;
+                                    justify-content: space-between;
+                                    flex-wrap: wrap;   
+                                    align-items: center;                                     
+                                ">
+                                    <div>
+                                        <i class="fa-solid fa-user-circle"></i> ${def.owner}
+                                    </div>
+                                    <div>
+                                        <i class="fa-solid fa-thumbs-up"></i> ${def.interactions}
+                                    </div>
+                                </div>
+                                `,
+                                type: 'text',
+                                solid: true,
+                            },
+                            {
+                                name: 'hang out',
+                                onclick: () => {
+                                    App.closeAllDisplays();
+                                    App.toggleGameplayControls(false);
+                                    otherPlayersPets.forEach(p => p?.removeObject?.());
+                                    addInteraction(def);
+                                    Missions.done(Missions.TYPES.online_interact);
+                                    Activities.invitePlaydate(def, App.scene.online_hub, () => {
+                                        App.displayConfirm(`Do you want to add ${def.getCSprite()} ${def.name} to your friends list?`, [
+                                            {
+                                                name: 'yes',
+                                                onclick: () => {
+                                                    App.closeAllDisplays();
+                                                    const addedFriend = App.petDefinition.addFriend(def, 1);
+                                                    if (addedFriend) {
+                                                        App.displayPopup(`${def.getCSprite()} ${def.name} has been added to the friends list!`, 3000);
+                                                        addInteraction(def);
+                                                    } else {
+                                                        App.displayPopup(`You are already friends with ${def.name}`, 3000);
+                                                    }
+                                                    return false;
+                                                }
+                                            },
+                                            {
+                                                name: 'no',
+                                                class: 'back-btn',
+                                                onclick: () => { }
+                                            },
+                                        ])
+                                        setTimeout(() => Activities.goToOnlineHub());
+                                    })
+                                }
+                            },
+                        ])
+                    }
+                }
+            })
             return App.displayList([
+                ...petInteractions,
                 {
-                    _ignore: hasUploadedPetDef.status,
-                    type: 'text',
                     name: `
-                        Upload your character to get access to hubchi!
+                    <small>
+                        <i class="fa-solid fa-info-circle" style="padding-right: 8px"></i>
+                        Every time you interact with another pet you'll receive 
+                        <i class="fa-solid fa-thumbs-up"></i> ${INTERACTION_LIKES.receiving} 
+                        and they'll receive
+                        <i class="fa-solid fa-thumbs-up"></i> ${INTERACTION_LIKES.outgoing} 
+                    </small>
                     `,
+                    type: 'text',
+                },
+            ])
+        }
+        const handleUploadCharacter = () => {
+            return App.displayConfirm(`Do you want to upload ${App.petDefinition.name} to HUBCHI so that other players can see and interact with them?`, [
+                {
+                    name: 'yes',
+                    onclick: async () => {
+                        const popup = App.displayPopup('Uploading...', App.INF);
+                        const {status} = await App.apiService.addPetDef();
+                        popup.close();
+                        App.closeAllDisplays();
+                        hasUploadedPetDef.status = status;
+                        App.displayPopup('Success!');
+                    }
                 },
                 {
-                    _ignore: !hasUploadedPetDef.status,
+                    name: 'no',
+                    class: 'back-btn',
+                    onclick: () => {}
+                },
+            ])
+        }
+        const handleSyncCharacter = () => {
+            const confirm = App.displayConfirm(`Do you want to update your HUBCHI persona to be in sync with ${App.petDefinition.name}'s latest appearance?`, [
+                {
+                    name: 'yes',
+                    onclick: async () => {
+                        confirm.close();
+                        const popup = App.displayPopup('Syncing...', App.INF);
+                        const {status} = await App.apiService.addPetDef();
+                        popup.close();
+                        App.displayPopup(status ? 'Success!' : 'Error!');
+                        return false;
+                    }
+                },
+                {
+                    name: 'no',
+                    class: 'back-btn',
+                    onclick: () => {}
+                },
+            ])
+            return true;
+        }
+        const handleReturnHome = () => {
+            return App.displayConfirm(`Are you sure you want to return home?`, [
+                {
+                    name: 'yes',
+                    onclick: async () => {
+                        App.closeAllDisplays();
+                        otherPlayersPets.forEach(p => p?.removeObject?.());
+                        Activities.onlineHubTransition((fadeOverlay) => {
+                            App.setScene(App.scene.home);
+                            fadeOverlay.direction = false;
+                            setTimeout(() => {
+                                App.pet.playCheeringAnimation(() => App.toggleGameplayControls(true));
+                            }, 500);
+                        });
+                    }
+                },
+                {
+                    name: 'no',
+                    class: 'back-btn',
+                    onclick: () => {}
+                },
+            ])
+        }
+        const handleFriendSearch = () => {
+            const prompt = App.displayPrompt(`Enter your friend's username (or UID): <small>(Case sensitive)</small>`, [
+                {
+                    name: '<i class="fa-solid fa-search icon"></i> search',
+                    onclick: (query) => {
+                        const searchingPopup = App.displayPopup(`Searching for "${query}"...`, App.INF);
+                        App.apiService.getPetDef(query)
+                            .then(data => {
+                                App.sendAnalytics('username_search', JSON.stringify({
+                                    status: data.status,
+                                    username: query
+                                }));
+                                
+                                if(!data.status) return App.displayPopup(`Username not found.`);
+
+                                if(data.data === hasUploadedPetDef.data) {
+                                    return App.displayPopup(`Something went wrong!`);
+                                }
+                                
+                                prompt.close();
+                                try {
+                                    const def = new PetDefinition(JSON.parse(data.data));
+                                    App.displayConfirm(`Do you want to add ${def.getCSprite()} ${def.name} to your friends list?`, [
+                                        {
+                                            name: 'yes',
+                                            onclick: () => {
+                                                App.closeAllDisplays();
+                                                const addedFriend = App.petDefinition.addFriend(def, 1);
+                                                if (addedFriend) {
+                                                    App.displayPopup(`${def.getCSprite()} ${def.name} has been added to the friends list!`, 3000);
+                                                    addInteraction(def);
+                                                } else {
+                                                    App.displayPopup(`You are already friends with ${def.name}`, 3000);
+                                                }
+                                                return false;
+                                            }
+                                        },
+                                        {
+                                            name: 'no',
+                                            class: 'back-btn',
+                                            onclick: () => { }
+                                        },
+                                    ])  
+                                } catch(e) {
+                                    App.displayPopup('Something went wrong!');
+                                }
+                            })
+                            .finally(() => searchingPopup.close())
+                        return true;
+                    }
+                },
+                {
+                    name: 'cancel',
+                    class: 'back-btn',
+                    onclick: () => {}
+                }
+            ])
+            return prompt;
+        }
+        const handleRewardStore = () => {
+            const showItem = (image, name, description, unlockLikesReq, unlockKey) => {
+                const isUnlocked = App.getRecord(unlockKey);
+                const confirm = App.displayConfirm(
+                    `
+                        <img style="max-width: 128px" src="${image}"></img>
+                        <br>
+                        <b>${name}</b>
+                        <br>
+                        <span>${description}</span>
+                    `,
+                    [
+                        {
+                            _disable: isUnlocked,
+                            // name: !isUnlocked ? 'unlock' : 'reward collected',
+                            name: !isUnlocked ? `unlock <div style="margin-left: auto"><i class="fa-solid fa-thumbs-up"></i> ${unlockLikesReq} </div>` : 'reward collected',
+                            onclick: unlockKey 
+                            ? () => {
+                                if(App.temp.online?.hasUploadedPetDef?.interactions < unlockLikesReq){
+                                    return App.displayPopup(`You don't have enough interactions to unlock ${name}.`)
+                                }
+                                App.addRecord(unlockKey, 1, true);
+                                App.displayPopup(`<b>${name}</b> unlocked!`)
+                                App.sendAnalytics('unlocked_hubchi_reward_item', name);
+                            } : undefined
+                        },
+                        {
+                            name: 'close',
+                            class: 'back-btn',
+                            onclick: () => {}
+                        }
+                    ]
+                )
+                return confirm;
+            }
+        
+            const createEntryButton = (icon, name, item, onClick) => {
+                /* let badge = ''
+                if(!App.getRecord(item.unlockKey)){
+                    if(App.temp.online?.hasUploadedPetDef?.interactions >= item.unlockLikes){
+                        badge = App.getBadge('★');
+                    }
+                } else badge = App.getBadge('<i class="fa-solid fa-check"></i>', 'gray'); */
+                return {
+                    name: `<img class="icon" src="${icon}"></img> ${name}`,
+                    onclick: onClick
+                }
+            }
+        
+            // const accessories = App.definitions.accessories.filter(e => e.onlineShopAccessible);
+            const accessories = Object.keys(App.definitions.accessories)
+                .filter(e =>
+                    App.definitions.accessories[e].onlineShopAccessible
+                )
+                .map(name => {
+                    const item = App.definitions.accessories[name];
+                    const icon = item.icon || item.image;
+                    return createEntryButton(icon, name, item, () => showItem(icon, name, 'accessory', item.unlockLikes, item.unlockKey))
+                })
+        
+            const backgrounds = Object.keys(App.definitions.room_background)
+                .filter(e =>
+                    App.definitions.room_background[e].onlineShopAccessible
+                )
+                .map(name => {
+                    const item = App.definitions.room_background[name];
+                    const icon = item.image;
+                    return createEntryButton(icon, name, item, () => showItem(icon, name, 'background', item.unlockLikes, item.unlockKey))
+                })
+        
+            const shells = Object.keys(App.definitions.shell_background)
+                .filter(e =>
+                    App.definitions.shell_background[e].onlineShopAccessible
+                )
+                .map(key => {
+                    const item = App.definitions.shell_background[key];
+                    const icon = item.image;
+                    return createEntryButton(icon, item.name, item, () => showItem(icon, item.name, 'shell design', item.unlockLikes, item.unlockKey))
+                })
+        
+            return App.displayList(
+                [
+                    ...accessories,
+                    ...backgrounds,
+                    ...shells,
+                ]
+            )
+        }
+
+        App.toggleGameplayControls(false, () => {
+            if(!hasUploadedPetDef.status){
+                return App.displayList([
+                    {
+                        type: 'text',
+                        name: `
+                            Upload your character to get access to hubchi!
+                        `,
+                    },
+                    {
+                        _ignore: hasUploadedPetDef.status,
+                        name: 'Upload character',
+                        onclick: handleUploadCharacter
+                    },
+                ])
+            }
+
+            return App.displayList([
+                {
                     type: 'text',
                     solid: true,
                     name: `
@@ -91,147 +402,24 @@ class Activities {
                     `,
                 },
                 {
-                    _ignore: !hasUploadedPetDef.status,
                     name: 'interact',
-                    onclick: () => {
-                        return App.displayList(otherPlayersPets.map(pet => {
-                            const def = pet.petDefinition;
-                            return {
-                                name: `${def.getCSprite()} ${def.name}`,
-                                onclick: () => {
-                                    return App.displayList([
-                                        {
-                                            name: `
-                                            <div style="
-                                                display: flex;
-                                                justify-content: space-between;
-                                                flex-wrap: wrap;   
-                                                align-items: center;                                     
-                                            ">
-                                                <div>
-                                                    <i class="fa-solid fa-user-circle"></i> ${def.owner}
-                                                </div>
-                                                <div>
-                                                    <i class="fa-solid fa-thumbs-up"></i> ${def.interactions}
-                                                </div>
-                                            </div>
-                                            `,
-                                            type: 'text',
-                                            solid: true,
-                                        },
-                                        {
-                                            name: 'hang out',
-                                            onclick: () => {
-                                                App.closeAllDisplays();
-                                                App.toggleGameplayControls(false);
-                                                otherPlayersPets.forEach(p => p?.removeObject?.());
-                                                App.apiService.addInteraction(def.ownerId);
-                                                Activities.invitePlaydate(def, App.scene.online_hub, () => {
-                                                    App.displayConfirm(`Do you want to add ${def.getCSprite()} ${def.name} to your friends list?`, [
-                                                        {
-                                                            name: 'yes',
-                                                            onclick: () => {
-                                                                App.closeAllDisplays();
-                                                                const addedFriend = App.petDefinition.addFriend(def, 1);
-                                                                if(addedFriend) {
-                                                                    App.displayPopup(`${def.getCSprite()} ${def.name} has been added to the friends list!`, 3000);
-                                                                    App.apiService.addInteraction(def.ownerId);
-                                                                } else {
-                                                                    App.displayPopup(`You are already friends with ${def.name}`, 3000);
-                                                                }
-                                                                return false;
-                                                            }
-                                                        },
-                                                        {
-                                                            name: 'no',
-                                                            class: 'back-btn',
-                                                            onclick: () => {}
-                                                        },
-                                                    ])
-                                                    setTimeout(() =>  Activities.goToOnlineHub());
-                                                })
-                                            }
-                                        },
-                                    ])
-                                }
-                            }
-                        }))
-                    }
+                    onclick: handleInteract
                 },
                 {
-                    _ignore: hasUploadedPetDef.status,
-                    name: 'Upload character',
-                    onclick: () => {
-                        return App.displayConfirm(`Do you want to upload ${App.petDefinition.name} to HUBCHI so that other players can see and interact with them?`, [
-                            {
-                                name: 'yes',
-                                onclick: async () => {
-                                    const popup = App.displayPopup('Uploading...', App.INF);
-                                    const {status} = await App.apiService.addPetDef();
-                                    popup.close();
-                                    App.closeAllDisplays();
-                                    hasUploadedPetDef.status = status;
-                                    App.displayPopup('Success!');
-                                }
-                            },
-                            {
-                                name: 'no',
-                                class: 'back-btn',
-                                onclick: () => {}
-                            },
-                        ])
-                    }
+                    name: 'sync character',
+                    onclick: handleSyncCharacter,
                 },
                 {
-                    _ignore: !hasUploadedPetDef.status,
-                    name: 'Sync character',
-                    onclick: () => {
-                        const confirm = App.displayConfirm(`Do you want to update your HUBCHI persona to be in sync with ${App.petDefinition.name}'s latest appearance?`, [
-                            {
-                                name: 'yes',
-                                onclick: async () => {
-                                    confirm.close();
-                                    const popup = App.displayPopup('Syncing...', App.INF);
-                                    const {status} = await App.apiService.addPetDef();
-                                    popup.close();
-                                    App.displayPopup(status ? 'Success!' : 'Error!');
-                                    return false;
-                                }
-                            },
-                            {
-                                name: 'no',
-                                class: 'back-btn',
-                                onclick: () => {}
-                            },
-                        ])
-                        return true;
-                    }
+                    name: `rewards store ${App.getBadge()}`,
+                    onclick: handleRewardStore,
+                },
+                {
+                    name: `add friend ${App.getBadge()}`,
+                    onclick: handleFriendSearch,
                 },
                 {
                     name: '<i class="icon fa-solid fa-home"></i> return home',
-                    onclick: () => {
-                        return App.displayConfirm(`Are you sure you want to return home?`, [
-                            {
-                                name: 'yes',
-                                onclick: async () => {
-                                    App.closeAllDisplays();
-                                    otherPlayersPets.forEach(p => p?.removeObject?.());
-                                    Activities.onlineHubTransition((fadeOverlay) => {
-                                        App.setScene(App.scene.home);
-                                        fadeOverlay.direction = false;
-                                        setTimeout(() => {
-                                            App.pet.playCheeringAnimation(() => App.toggleGameplayControls(true));
-                                        }, 500);
-                                    });
-                                }
-                            },
-                            {
-                                name: 'no',
-                                class: 'back-btn',
-                                onclick: () => {}
-                            },
-                        ])
-                    }
+                    onclick: handleReturnHome
                 },
             ])
         })
@@ -321,6 +509,7 @@ class Activities {
         App.closeAllDisplays();
         App.pet.triggerScriptedState('idle', App.INF, 0, false);
         App.sendAnalytics('cooking_game');
+        Missions.done(Missions.TYPES.cook);
         // App.setScene(App.scene.kitchen);
 
         const potObject = new Object2d({
@@ -457,7 +646,6 @@ class Activities {
     static async getDressed(middleFn, onEndFn, cheer){
         App.closeAllDisplays();
         App.toggleGameplayControls(false);
-        App.sendAnalytics('getting_dressed');
 
         let curtainTargetElevation = 16, step = 0;
         const curtainObject = new Object2d({
@@ -499,6 +687,7 @@ class Activities {
         App.pet.targetY = 60;
         App.toggleGameplayControls(false, () => {
             App.definitions.achievements.pat_x_times.advance();
+            Missions.done(Missions.TYPES.pat);
             App.pet.setState('blush');
             App.pet.stats.current_fun += random(1, 4) * 0.1;
             if(idleTimer) clearTimeout(idleTimer);
@@ -714,6 +903,7 @@ class Activities {
     }
     static goToClinic(){
         App.toggleGameplayControls(false);
+        Missions.done(Missions.TYPES.visit_doctor);
 
         function task_visit_doctor(){
             App.setScene(App.scene.hospitalInterior);
@@ -768,6 +958,7 @@ class Activities {
     static bathe(){
         App.closeAllDisplays();
         App.setScene(App.scene.bathroom);
+        Missions.done(Missions.TYPES.use_bath);
         let foams = [];
         App.toggleGameplayControls(false, () => {
             App.pet.inverted = !App.pet.inverted;
@@ -821,6 +1012,7 @@ class Activities {
         App.closeAllDisplays();
         App.setScene(App.scene.bathroom);
         App.toggleGameplayControls(false);
+        Missions.done(Missions.TYPES.use_toilet);
 
         if(App.pet.stats.current_bladder > App.pet.stats.max_bladder / 2){ // more than half
             App.pet.playRefuseAnimation(() => {
@@ -1097,6 +1289,7 @@ class Activities {
         App.toggleGameplayControls(false);
         let otherPet = new Pet(otherPetDef);
         App.definitions.achievements.give_gifts_x_times.advance();
+        Missions.done(Missions.TYPES.gift);
 
         const wantedFriendDef = App.petDefinition.friends[App.pet.stats.current_want.item];
         App.petDefinition.checkWant(otherPetDef == wantedFriendDef, App.constants.WANT_TYPES.playdate)
@@ -1259,6 +1452,7 @@ class Activities {
             App.pet.stopScriptedState();
         });
         App.setScene(App.scene.walkway);
+        Missions.done(Missions.TYPES.visit_mall);
 
         App.pet.x = '100%';
         App.pet.y = '74%';
@@ -1310,6 +1504,7 @@ class Activities {
             App.pet.stopScriptedState();
         });
         App.setScene(App.scene.market);
+        Missions.done(Missions.TYPES.visit_market);
 
         let randomNpcs = new Array(2).fill(undefined).map((item, i) => {
 
@@ -1341,6 +1536,7 @@ class Activities {
         App.toggleGameplayControls(false);
         otherPetDef.increaseFriendship(8);
         let otherPet = new Pet(otherPetDef);
+        Missions.done(Missions.TYPES.playdate);
 
         const wantedFriendDef = App.petDefinition.friends[App.pet.stats.current_want.item];
         App.petDefinition.checkWant(otherPetDef == wantedFriendDef, App.constants.WANT_TYPES.playdate)
@@ -1397,6 +1593,7 @@ class Activities {
         if(!otherPetDef){
             if(random(1, 100) <= 60){
                 otherPetDef = App.getRandomPetDef(App.petDefinition.lifeStage);
+                Missions.done(Missions.TYPES.find_park_friend);
             }
         } else {
             const wantedFriendDef = App.petDefinition.friends[App.pet.stats.current_want.item];
@@ -1558,6 +1755,7 @@ class Activities {
                                 App.definitions.achievements.perfect_minigame_rodrush_win_x_times.advance();
                             }
                             App.pet.playCheeringAnimationIfTrue(roundsWin == 3, onEnd);
+                            Missions.done(Missions.TYPES.win_game);
                         }
                     });
                 }, 500);
@@ -1712,6 +1910,7 @@ class Activities {
 
             if(moneyWon > 30){
                 App.pet.playCheeringAnimation(() => end());
+                Missions.done(Missions.TYPES.win_game);
             } else {
                 App.pet.playUncomfortableAnimation(() => end());
             }
@@ -1772,10 +1971,12 @@ class Activities {
 
                 if(roundsWon >= 2){
                     App.pet.playCheeringAnimation(() => end());
+                    Missions.done(Missions.TYPES.win_game);
                 } else if(roundsWon == 0){
                     App.pet.playUncomfortableAnimation(() => end());
                 } else {
                     end();
+                    Missions.done(Missions.TYPES.win_game);
                 }
 
                 return;
