@@ -213,7 +213,7 @@ class Activities {
             ])
         }
         const handleFriendSearch = () => {
-            const prompt = App.displayPrompt(`Enter your friend's username:`, [
+            const prompt = App.displayPrompt(`Enter your friend's username (or UID): <small>(Case sensitive)</small>`, [
                 {
                     name: '<i class="fa-solid fa-search icon"></i> search',
                     onclick: (query) => {

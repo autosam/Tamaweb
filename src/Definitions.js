@@ -686,13 +686,6 @@ App.definitions = {
                     targetMovementMult: 1,
                     movementMultDirection: 1,
                     lastScene: App.currentScene,
-                    allowedRooms: [
-                        App.scene.home, 
-                        App.scene.bathroom, 
-                        App.scene.kitchen,
-                        App.scene.graveyard,
-                        App.scene.parentsHome,
-                    ],
                     currentPosition: {
                         x: 0, y: 0,
                     },
@@ -721,8 +714,7 @@ App.definitions = {
                             me.lastScene = App.currentScene;
                             me.currentPosition.y = -40;
                         }
-
-                        if(!me.allowedRooms.includes(App.currentScene)){
+                        if(!App.isCompanionAllowed()){
                             me.x = -100;
                             me.y = -100;
                             return;
@@ -928,13 +920,6 @@ App.definitions = {
                     x: 0, y: -999,
                     animationFloatX: 0,
                     animationFloatY: Math.PI,
-                    allowedRooms: [
-                        App.scene.home, 
-                        App.scene.bathroom, 
-                        App.scene.kitchen,
-                        App.scene.graveyard,
-                        App.scene.parentsHome,
-                    ],
                     currentPosition: {
                         x: 0, y: 0,
                     },
@@ -948,6 +933,12 @@ App.definitions = {
                         const additionalMotionY = Math.sin(me.animationFloatY) * 3;
                         me.x = parent.x + additionalMotionX;
                         me.y = parent.y - 40 - (App.pet.spritesheet.offsetY ?? 0) + additionalMotionY;
+
+                        if(!App.isCompanionAllowed()){
+                            me.x = -100;
+                            me.y = -100;
+                            return;
+                        }
                     }
                 })
 

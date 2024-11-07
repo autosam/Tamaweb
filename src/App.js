@@ -2136,7 +2136,7 @@ let App = {
             const content = UI.empty();
             content.style.height = '100%';
             content.innerHTML = `
-                <div class="user-id surface-stylized">
+                <div class="user-id surface-stylized text-transform-none">
                     uid:<span>${(App.userName ?? '') + '-' + App.userId?.toString().slice(0, 5)}</span>
                 </div>
                 <div class="flex-center inner-padding surface-stylized height-auto">
@@ -3691,6 +3691,19 @@ let App = {
         return current.icon
             ? `<div style="width: 1"><img style="width: 36px; outline: none" src="${image}"></img></div>`
             : `<c-sprite width="64" height="36" index="0" src="${image}"></c-sprite>`;
+    },
+    isCompanionAllowed: function(room){
+        if(!room) room = App.currentScene;
+
+        const allowedScenes = [
+            App.scene.home, 
+            App.scene.bathroom, 
+            App.scene.kitchen,
+            App.scene.graveyard,
+            App.scene.parentsHome,
+        ];
+
+        return allowedScenes.includes(room);
     },
     playSound: function(path, force){
         if(!App.settings.playSound) return;
