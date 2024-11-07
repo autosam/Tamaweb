@@ -1073,7 +1073,10 @@ let App = {
                 {
                     name: 'set',
                     onclick: (username) => {
-                        if(!validate(username)) return App.displayPopup('Username is not valid. Please use uppercase and lowercase A-Z letters and numbers.');
+                        username = (username || '').toString().toLowerCase();
+                        if(!validate(username)) return App.displayPopup('Username is not valid. Please use A-Z letters and numbers.');
+                        if(username.length < 5) return App.displayPopup('Your username cannot have less than 5 characters.');
+                        if(username.length > 18) return App.displayPopup('Your username cannot have more than 18 characters.');
                         App.userName = username;
                         App.save();
                         App.sendAnalytics('new_user', username);
