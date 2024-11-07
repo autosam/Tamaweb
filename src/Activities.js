@@ -217,6 +217,7 @@ class Activities {
                 {
                     name: '<i class="fa-solid fa-search icon"></i> search',
                     onclick: (query) => {
+                        if(!query.trim()) return App.displayPopup('Please enter a valid username.');
                         const searchingPopup = App.displayPopup(`Searching for "${query}"...`, App.INF);
                         App.apiService.getPetDef(query)
                             .then(data => {
@@ -225,7 +226,7 @@ class Activities {
                                     username: query
                                 }));
                                 
-                                if(!data.status) return App.displayPopup(`Username not found.`);
+                                if(!data.status) return App.displayPopup(`Username not found <br> <small>(Make sure you are searching for user id not pet name)</small>`);
 
                                 if(data.data === hasUploadedPetDef.data) {
                                     return App.displayPopup(`Something went wrong!`);
