@@ -594,8 +594,14 @@ App.definitions = {
             unlockLikes: 80,
             unlockKey: 'bg_silky_retreat_sky',
         },
+        /* "star room": {
+            image: 'resources/img/background/house/cc_01.png',
+            price: 0,
+            isNew: true,
+        }, */
     },
     shell_background: [
+        // default shell bg will be the first one here
         {
             image: 'resources/img/ui/shell_background_cloof_01.png',
             name: 'cloofy',
