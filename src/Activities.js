@@ -290,7 +290,7 @@ class Activities {
                             name: !isUnlocked ? `unlock <div style="margin-left: auto"><i class="fa-solid fa-thumbs-up"></i> ${unlockLikesReq} </div>` : 'reward collected',
                             onclick: unlockKey 
                             ? () => {
-                                if(App.temp.online?.hasUploadedPetDef?.interactions < unlockLikesReq){
+                                if((App.temp.online?.hasUploadedPetDef?.interactions || 0) < unlockLikesReq){
                                     return App.displayPopup(`You don't have enough interactions to unlock ${name}.`)
                                 }
                                 App.addRecord(unlockKey, 1, true);
