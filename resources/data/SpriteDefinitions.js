@@ -10,6 +10,9 @@ const SPRITES = [
     // exclusive room backgrounds
     "resources/img/background/house/ex_01.png",
     "resources/img/background/house/ex_01_fs.png",
+    // community room backgrounds
+    "resources/img/background/house/cc_01.png",
+    "resources/img/background/house/cc_02.png",
     // other backgrounds
     "resources/img/background/house/office_01.png",
     "resources/img/background/house/kitchen_01.png",
