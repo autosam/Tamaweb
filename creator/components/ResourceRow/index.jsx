@@ -1,18 +1,26 @@
 import { DeleteRounded } from "@mui/icons-material";
-import { Box, Button, TextField, Autocomplete, Stack, Divider, IconButton } from "@mui/material";
+import { Box, Button, TextField, Autocomplete, Stack, Divider, IconButton, Typography } from "@mui/material";
 import { useRef, useState, useEffect } from "react";
 import Image from "../Image";
+import { getImageDataSize } from "../../utils";
+import { filesize } from "filesize";
 
 export function ResourceRow({ onDelete, index, rowData }) {
     const [targetImageData, setTargetImageData] = useState(rowData.target);
+    const [targetImageSize, setTargetImageSize] = useState(0);
     const [sourceImage, setSourceImage] = useState(rowData.source);
+    const [imageMismatch, setImageMismatch] = useState(false);
 
     useEffect(() => {
         rowData.source = sourceImage;
         rowData.target = targetImageData;
+        setTargetImageSize(getImageDataSize(targetImageData, true))
+
+        console.log({target: targetImageRef.current, source: sourceImageRef.current});
     }, [sourceImage, targetImageData]);
 
     const hiddenFilePicker = useRef(null);
+    const targetImageRef = useRef(null), sourceImageRef = useRef(null);
 
     const uploadImageClick = (me) => {
         hiddenFilePicker.current.click();
@@ -33,6 +41,9 @@ export function ResourceRow({ onDelete, index, rowData }) {
     const onSourceChange = (event, value) => {
         setSourceImage(value);
     };
+
+    const fileSize = filesize(targetImageSize);
+    const isMB = fileSize.includes('MB');
 
     return (
         // <Paper elevation={3}>
@@ -67,8 +78,12 @@ export function ResourceRow({ onDelete, index, rowData }) {
             </Stack>
             <Divider orientation="vertical" flexItem/>
             <Stack>
-                <img style={{ width: "200px", height: "200px", imageRendering: "pixelated" }} src={targetImageData || "static/images/default.jpg"}></img>
+                <img ref={targetImageRef} style={{ width: "200px", height: "200px", imageRendering: "pixelated" }} src={targetImageData || "static/images/default.jpg"}></img>
                 <Button size="large" variant="text" onClick={uploadImageClick}>Upload Target Image</Button>
+                <Typography fontSize={10} px={1} bgcolor={isMB ? "darkred" : "white"} position={"absolute"}>
+                    {fileSize}
+                    {Boolean(targetImageRef.current) && ` (${targetImageRef.current?.naturalWidth}x${targetImageRef.current?.naturalHeight})`}
+                </Typography>
             </Stack>
 
             <input ref={hiddenFilePicker} onChange={onImageChange} hidden type="file" />
