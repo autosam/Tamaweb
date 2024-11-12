@@ -1085,6 +1085,26 @@ let App = {
                 }
             ])
         },
+        show_newspaper: function(headline, text){
+            if(!headline && !text){
+                [headline, text] = randomFromArray(App.definitions.mail.news);
+            }
+
+            const container = App.displayEmpty('bg-white flex flex-dir-col');
+            container.innerHTML = `
+            <img class="width-full" src="resources/img/misc/newspaper_header_01.png"></img>
+            <div style="text-align: left;" class="inner-padding">
+                <b>${headline}</b>
+                <hr style="background: #0000003d">
+                <span>${text}</span>
+                <br>
+                </div>
+            <button style="margin: 10px; margin-top: 10px; flex: 1" class="generic-btn stylized back-btn news-close">Ok</button>
+            <i style="position: absolute;top: 0;right: 0;padding: 10px;border-radius: 100%;width: 10px;height: 10px;display: inline-flex;align-items: center;justify-content: center;color: #000000;cursor: pointer;" class="fa-solid fa-times news-close"></i>
+            `;
+
+            [...container.querySelectorAll('.news-close')].forEach(btn => btn.onclick = container.close);
+        },
         open_main_menu: function(){
             const runControlOverwrite = () => {
                 if(!App.gameplayControlsOverwrite) return;
@@ -2843,7 +2863,7 @@ let App = {
             ])
         },
         open_social_media: function(){
-            function showPost(petDefinition, noMood){
+            function showPost(petDefinition, noMood, noNextBtn){
                 Missions.done(Missions.TYPES.check_social_post);
 
                 let post = document.querySelector('.cloneables .post-container').cloneNode(true);
@@ -2866,6 +2886,13 @@ let App = {
                 }
                 App.toggleGameplayControls(false, close);
                 post.querySelector('.post-close').onclick = close;
+                post.querySelector('.post-next').onclick = () => {
+                    close();
+                    showRandomPost();
+                };
+                if(noNextBtn){
+                    post.querySelector('.post-next').remove();
+                }
 
                 let homeBackground = App.scene.home.image;
                 if(petDefinition !== App.petDefinition)
@@ -2892,7 +2919,7 @@ let App = {
                     // image: App.pet.image.cloneNode(),
                     // img: petDefinition.sprite,
                     image: App.preloadedResources[petDefinition.sprite],
-                    x: randomFromArray(characterPositions), y: 55,
+                    x: randomFromArray(characterPositions), y: 55 + (petDefinition.spritesheet.offsetY * 2 || 0),
                 })
 
                 post.querySelector('.post-header').innerHTML = petDefinition.name;
@@ -2956,26 +2983,30 @@ let App = {
                 }
             }
 
+            const showRandomPost = () => {
+                App.petDefinition.stats.current_fun += random(0, 5);
+                let otherPetDef;
+                if(App.petDefinition.friends && App.petDefinition.friends.length){
+                    otherPetDef = randomFromArray(App.petDefinition.friends);
+                } else {
+                    otherPetDef = App.getRandomPetDef();
+                }
+                showPost(otherPetDef, true);
+            }
+
             App.displayList([
                 {
                     name: 'make post',
                     onclick: () => {
                         App.petDefinition.stats.current_fun += random(1, 5);
-                        showPost(App.petDefinition);
+                        showPost(App.petDefinition, null, true);
                         return true;
                     }
                 },
                 {
                     name: 'explore posts',
                     onclick: () => {
-                        App.petDefinition.stats.current_fun += random(0, 5);
-                        let otherPetDef;
-                        if(App.petDefinition.friends && App.petDefinition.friends.length){
-                            otherPetDef = randomFromArray(App.petDefinition.friends);
-                        } else {
-                            otherPetDef = App.getRandomPetDef();
-                        }
-                        showPost(otherPetDef, true);
+                        showRandomPost();
                         return true;
                     }
                 },
