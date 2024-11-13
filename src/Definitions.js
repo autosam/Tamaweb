@@ -560,7 +560,7 @@ App.definitions = {
         },
         "princess": {
             image: 'resources/img/background/house/04.png',
-            price: 350,
+            price: 300,
             isNew: false,
         },
         "futura": {
@@ -575,7 +575,7 @@ App.definitions = {
         },
         "wooden": {
             image: 'resources/img/background/house/07.png',
-            price: 350,
+            price: 300,
             isNew: false,
         },
         "silky retreat": {
@@ -594,11 +594,16 @@ App.definitions = {
             unlockLikes: 80,
             unlockKey: 'bg_silky_retreat_sky',
         },
-        /* "star room": {
+        "astra": {
             image: 'resources/img/background/house/cc_01.png',
-            price: 0,
+            price: 250,
             isNew: true,
-        }, */
+        },
+        "seafloor": {
+            image: 'resources/img/background/house/cc_02.png',
+            price: 300,
+            isNew: true,
+        },
     },
     shell_background: [
         // default shell bg will be the first one here
