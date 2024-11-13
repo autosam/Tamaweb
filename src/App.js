@@ -1087,7 +1087,7 @@ let App = {
         },
         show_newspaper: function(headline, text){
             if(!headline && !text){
-                [headline, text] = randomFromArray(App.definitions.mail.news);
+                [headline, text] = randomFromArray(App.definitions.mail.affirmations);
             }
 
             const container = App.displayEmpty('bg-white flex flex-dir-col');
@@ -1743,19 +1743,56 @@ let App = {
                     }
                 },
                 {
-                    name: 'reset save data',
+                    name: 'reset pet data',
                     onclick: () => {
-                        App.displayConfirm('Are you sure you want to delete your save game?', [
+                        App.displayConfirm('Are you sure you want to delete your saved pet?', [
                             {
-                                name: 'yes',
+                                name: 'yes (delete)',
                                 onclick: () => {
                                     App.save();
                                     App.save = () => {};
                                     // window.localStorage.clear();
                                     window.localStorage.removeItem('last_time');
                                     window.localStorage.removeItem('pet');
+                                    App.displayPopup('resetting...', App.INF);
                                     location.reload();
                                     return false;
+                                }
+                            },
+                            {
+                                name: 'no',
+                                class: 'back-btn',
+                                onclick: () => { }
+                            }
+                        ])
+                        return true;
+                    }
+                },
+                {
+                    name: 'factory reset',
+                    onclick: () => {
+                        App.displayConfirm('Are you sure you want to completely delete your data? this will reset your pets, achievements, online id and everything else!', [
+                            {
+                                name: 'yes',
+                                onclick: () => {
+                                    App.displayConfirm('Are you sure? There is no way to revert this.', [
+                                        {
+                                            name: 'yes (delete)',
+                                            onclick: () => {
+                                                App.save = () => {};
+                                                window.localStorage.clear();
+                                                App.displayPopup('resetting...', App.INF);
+                                                location.reload();
+                                                return false;
+                                            }
+                                        },
+                                        {
+                                            name: 'no',
+                                            class: 'back-btn',
+                                            onclick: () => { }
+                                        }
+                                    ])
+
                                 }
                             },
                             {
