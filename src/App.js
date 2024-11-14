@@ -1032,6 +1032,25 @@ let App = {
         });
     },
     runRandomEncounters: function(){
+        // newspaper delivery
+        const newspaperDeliveryMs = App.getRecord('newspaper_delivery_ms') || 0;
+        const shouldDeliver = moment().startOf('day').diff(moment(newspaperDeliveryMs), 'days') > 0;
+        if(shouldDeliver){
+            setTimeout(() => {
+                const checkForDecentDeliveryTime = () => {
+                    if(App.pet.isDuringScriptedState() || App.haveAnyDisplays()) 
+                        return;
+
+                    App.unregisterOnDrawEvent(checkForDecentDeliveryTime);
+                    Activities.getMail();
+                    const nextMs = Date.now();
+                    App.addRecord('newspaper_delivery_ms', nextMs, true);
+                }
+                App.registerOnDrawEvent(checkForDecentDeliveryTime);
+            }, random(1000, 2000))
+        }
+
+        // entity encounter
         if(Activities.encounter()) return;
     },
     handlers: {
@@ -1091,11 +1110,13 @@ let App = {
             }
 
             const container = App.displayEmpty('bg-white flex flex-dir-col');
+                container.style = `background: repeating-linear-gradient(0deg, white 0px, white 11px, rgb(201, 201, 201) 10px, white 12px) local; backdrop-filter: blur(100px)`
             container.innerHTML = `
             <img class="width-full" src="resources/img/misc/newspaper_header_01.png"></img>
             <div style="text-align: left;" class="inner-padding">
                 <b>${headline}</b>
-                <hr style="background: #0000003d">
+                <hr style="background: #0000003d; display: none">
+                <br><br>
                 <span>${text}</span>
                 <br>
                 </div>

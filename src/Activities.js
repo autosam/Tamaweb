@@ -1,4 +1,28 @@
 class Activities {
+    static getMail(){
+        App.pet.stopMove();
+        App.toggleGameplayControls(false);
+        App.pet.x = '50%';
+        const mailManDef = new PetDefinition({
+            sprite: NPC_CHARACTERS[1],
+            name: 'Nazotchi'
+        });
+        const mailMan = new Pet(mailManDef, {
+            x: '100%',
+        });
+        App.pet.inverted = true;
+        App.pet.triggerScriptedState('idle_side', App.INF, false, true);
+        const payload = () => {
+            App.handlers.show_newspaper();
+            mailMan.removeObject();
+            App.pet.stopScriptedState();
+            App.toggleGameplayControls(true);
+        }
+        mailMan.triggerScriptedState('moving', 2500, null, true, () => {
+            mailMan.playCheeringAnimation(payload, true);
+            App.pet.playCheeringAnimation();
+        }, Pet.scriptedEventDrivers.movingIn.bind({pet: mailMan}));
+    }
     static onlineHubTransition(onEndFn){
         App.pet.stopMove();
         App.toggleGameplayControls(false);
