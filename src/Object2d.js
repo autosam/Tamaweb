@@ -167,8 +167,8 @@ class Object2d {
         return xDistance + yDistance;
     }
     moveTo(normalizedX, normalizedY, force){
-        this.x += normalizedX * force * App.deltaTime;
-        this.y += normalizedY * force * App.deltaTime;
+        this.x += (normalizedX * force * App.deltaTime);
+        this.y += (normalizedY * force * App.deltaTime);
     }
     static setDrawer(drawer) {
         Object2d.defaultDrawer = drawer;

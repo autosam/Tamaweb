@@ -545,6 +545,7 @@ App.definitions = {
                     // Compute the direction vector (normalized)
                     const dirX = Math.cos(radians);
                     const dirY = Math.sin(radians);
+                    return {x: Math.random() - 0.5, y: Math.random() - 0.5};
                     return { x: dirX, y: dirY };
                 }
 
@@ -565,22 +566,22 @@ App.definitions = {
                     ({x: me.currentDirection.x, y: me.currentDirection.y} = normalizeVector(me.currentDirection.x, me.currentDirection.y));
                     // me.currentDirection.x = normalizedX;
                     // me.currentDirection.y = normalizedY;
-                    console.log(me.currentDirection.x, me.currentDirection.y)
-                    me.currentForce = 0.3;
+                    console.log('dir', me.currentDirection.x, me.currentDirection.y)
+                    me.currentForce = random(1, 4) * 0.1;
                 }
 
                 // me.lerpToTarget(0.01);
-                me.currentForce -= 0.0001 * App.deltaTime;
+                me.currentForce -= 0.00025 * App.deltaTime;
                 me.currentForce = clamp(me.currentForce, 0, 10);
 
-                if(me.x + me.spritesheet.cellSize > App.drawer.bounds.width || me.x < 0){
+                if(me.x + me.spritesheet.cellSize > App.drawer.bounds.width || me.x <= 0){
                     me.currentDirection.x *= -1;
                 }
-                if(me.y + me.spritesheet.cellSize > App.drawer.bounds.height || me.x < 0){
+                if(me.y + me.spritesheet.cellSize > App.drawer.bounds.height || me.y <= 0){
                     me.currentDirection.y *= -1;
                 }
 
-                me.moveTo(me.currentDirection.x, me.currentDirection.x, me.currentForce)
+                me.moveTo(me.currentDirection.x, me.currentDirection.y, me.currentForce)
             }
         },
         "smartphone": {
