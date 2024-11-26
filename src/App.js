@@ -891,7 +891,11 @@ let App = {
                 this.platform.removeObject();
                 this.lightRays.removeObject();
             }
-        })
+        }),
+        garden: new Scene({
+            image: 'resources/img/background/outside/garden_01.png',
+            petY: '95%',
+        }),
     },
     setScene(scene){
         if(App.currentScene && App.currentScene.onUnload){
@@ -1152,7 +1156,7 @@ let App = {
         open_care_menu: function(){
             App.displayList([
                 {
-                    name: `daily missions ${App.getBadge()}`,
+                    name: `daily missions`,
                     onclick: () => {
                         Missions.openMenu();
                         return true;
@@ -2189,7 +2193,7 @@ let App = {
                     }
                 },
                 {
-                    name: `collection ${App.getBadge()}`,
+                    name: `collection`,
                     onclick: () => {
                         App.handlers.open_character_collection();
                         return true;
@@ -2561,6 +2565,12 @@ let App = {
         open_activity_list: function(){
             return App.displayList([
                 {
+                    name: `backyard ${App.getBadge()}`,
+                    onclick: () => {
+                        Activities.goToGarden();
+                    }
+                },
+                {
                     name: `mall`,
                     onclick: () => {
                         Activities.goToMall();
@@ -2760,7 +2770,7 @@ let App = {
         open_phone: function(){
             App.displayList([
                 {
-                    name: `<span style="color: #ff00c6"><i class="icon fa-solid fa-globe"></i> hubchi</span> ${App.getBadge()}`,
+                    name: `<span style="color: #ff00c6"><i class="icon fa-solid fa-globe"></i> hubchi</span>`,
                     onclick: () => {
                         if(!App.userName){
                             App.handlers.show_set_username_dialog();

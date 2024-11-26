@@ -27,7 +27,7 @@ const SPRITES = [
     "resources/img/background/house/parents_house_01.png",
     "resources/img/background/house/arcade_02.png",
     "resources/img/background/house/online_hub_01.png",
-    
+    // outside
     "resources/img/background/outside/park_02.png",
     "resources/img/background/outside/mall_walkway.png",
     "resources/img/background/outside/market_01.png",
@@ -38,6 +38,7 @@ const SPRITES = [
     "resources/img/background/outside/vacation_sea_l_01.png",
     "resources/img/background/outside/vacation_sea_l_02.png",
     "resources/img/background/outside/vacation_sea_l_03.png",
+    "resources/img/background/outside/garden_01.png",
 
     // sky and weather
     "resources/img/background/sky/morning.png",
@@ -98,6 +99,7 @@ const SPRITES = [
     "resources/img/misc/want_fulfilled.png",
     "resources/img/misc/cyberpunk_overlay_01.png",
     "resources/img/misc/online_hub_01_front.png",
+    "resources/img/misc/pot_01.png",
 
     // accessories
     "resources/img/accessory/crown_01.png",

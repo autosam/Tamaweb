@@ -1,4 +1,21 @@
 class Activities {
+    static goToGarden(){
+        App.pet.stopScriptedState();
+        App.setScene(App.scene.garden);
+        App.pet.x = '100%';
+        App.pet.targetX = 50;
+        App.toggleGameplayControls(false, () => {
+            return App.displayList([
+                {
+                    name: '<i class="icon fa-solid fa-home"></i> go inside',
+                    onclick: () => {
+                        App.setScene(App.scene.home);
+                        App.toggleGameplayControls(true);
+                    }
+                }
+            ])
+        })
+    }
     static getMail(){
         App.pet.stopMove();
         App.toggleGameplayControls(false);
@@ -435,11 +452,11 @@ class Activities {
                     onclick: handleSyncCharacter,
                 },
                 {
-                    name: `rewards store ${App.getBadge()}`,
+                    name: `rewards store`,
                     onclick: handleRewardStore,
                 },
                 {
-                    name: `add friend ${App.getBadge()}`,
+                    name: `add friend`,
                     onclick: handleFriendSearch,
                 },
                 {
