@@ -75,7 +75,7 @@ class Pet extends Object2d {
             width: this.petDefinition.spritesheet.cellSize, 
             height: this.petDefinition.spritesheet.cellSize,
             // z: (this.z - 0.1) || 4.9,
-            z: 4.89,
+            z: App.constants.PET_SHADOW_Z,
             hidden: !this.castShadow,
             onDraw: (overlay) => {
                 overlay.x = this.x;
@@ -1182,6 +1182,74 @@ class Pet extends Object2d {
                         // }
                     }
             }
+        },
+        directFourDirectionalControl: function(){
+            const speed = 0.03, cameraMovementOffset = -50, movingLerpTime = 0.0025, recoveryLerpTime = 0.005;
+            const movementVector = {x: 0, y: 0}
+            if(App.key['w']){
+                movementVector.y -= speed * App.deltaTime;
+            }
+            if(App.key['s']){
+                movementVector.y += speed * App.deltaTime;
+            }
+            if(App.key['d']){
+                movementVector.x += speed * App.deltaTime;
+                this.pet.inverted = true;
+            }
+            if(App.key['a']){
+                movementVector.x -= speed * App.deltaTime;
+                this.pet.inverted = false;
+            }
+            const normalizedMovementVector = normalizeVector(movementVector.x, movementVector.y);
+
+
+            const newPositionX = {
+                x: this.pet.x + normalizedMovementVector.x,
+                y: this.pet.y
+            };
+
+            const collisionX = App.drawer.isCollidingWithAny(newPositionX.x, newPositionX.y, this.pet.width, this.pet.height, this.pet);
+
+            if (!collisionX) {
+                this.pet.x += normalizedMovementVector.x;
+            }
+
+            const newPositionY = {
+                x: this.pet.x,
+                y: this.pet.y + normalizedMovementVector.y
+            };
+
+            const collisionY = App.drawer.isCollidingWithAny(newPositionY.x, newPositionY.y, this.pet.width, this.pet.height, this.pet);
+
+            if (!collisionY) {
+                this.pet.y += normalizedMovementVector.y;
+            }
+
+
+            this.pet.z = App.pet.y;
+
+            let lerpTime = recoveryLerpTime;
+            if(movementVector.x || movementVector.y){
+                this.pet.setState('moving');
+                lerpTime = movingLerpTime;
+            } else this.pet.setState('idle_side');
+
+            const relative = {
+                x: App.drawer.getRelativePositionX(50),
+                y: App.drawer.getRelativePositionY(50)
+            }
+            
+            const targetCameraPosition = {
+                x: -this.pet.x + relative.x - (this.pet.petDefinition.spritesheet.cellSize/2),
+                y: -this.pet.y + relative.y
+            }
+            
+            lerpTime = 0
+            App.drawer.setCameraPosition(
+                -this.pet.x + relative.x - (this.pet.petDefinition.spritesheet.cellSize/2) + (normalizedMovementVector.x * (0 && cameraMovementOffset)),
+                -this.pet.y + relative.y + (normalizedMovementVector.y * (0 && cameraMovementOffset)),
+                lerpTime * (App.nDeltaTime || 0),
+            )
         }
     }
 }

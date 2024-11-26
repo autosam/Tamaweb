@@ -109,4 +109,7 @@ const SPRITES = [
     "resources/img/accessory/secretary_01.png",
     "resources/img/accessory/secretary_01_icon.png",
     "resources/img/accessory/cloof_01.png",
+
+    // map
+    "resources/img/map/map_01.png",
 ]

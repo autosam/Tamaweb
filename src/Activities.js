@@ -1,4 +1,51 @@
 class Activities {
+    static goToTown(){
+        App.setScene(App.scene.town);
+        App.pet.x = '50%';
+        App.pet.y = '50%';
+        App.pet.height = App.petDefinition.spritesheet.cellSize;
+        App.pet.width = App.petDefinition.spritesheet.cellSize;
+        App.pet.triggerScriptedState('idle', App.INF, null, true, null, Pet.scriptedEventDrivers.directFourDirectionalControl.bind({pet: App.pet}));
+        const map = new Object2d({
+            img: 'resources/img/map/map_01.png',
+            width: 384,
+            height: 384,
+            z: -9999,
+        })
+        
+        // for(let i = 0; i < 20; i++){
+        //     const x = random(-192, 192);
+        //     const y = random(-192, 192);
+        //     const collisionNode = new Pet(App.getRandomPetDef(), {
+        //         collision: true,
+        //         x: x,
+        //         y: y,
+        //         z: y
+        //     });
+        // }
+
+        const def = App.getRandomPetDef();
+        const collisionNode = new Pet(def, {
+            collision: true,
+            x: 0,
+            y: 50,
+            z: 50,
+            width: def.spritesheet.cellSize,
+            height: def.spritesheet.cellSize,
+        });
+
+        for(let i = 0; i < 20; i++){
+            const x = random(-192, 192);
+            const y = random(-192, 192);
+            const table = new Object2d({
+                img: 'resources/img/misc/table_01.png',
+                x, y,
+                width: 30, height: 30,
+                collision: true,
+            })
+        }
+
+    }
     static getMail(){
         App.pet.stopMove();
         App.toggleGameplayControls(false);

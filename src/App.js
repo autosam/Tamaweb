@@ -1,5 +1,5 @@
 let App = {
-    PI2: Math.PI * 2, INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', userName: null, ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
+    PI2: Math.PI * 2, INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, key: {}, userId: '_', userName: null, ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
     gameEventsHistory: {}, deferredInstallPrompt: null, shellBackground: '', isOnItch: false, isOnElectronClient: false, hour: 12,
     misc: {}, mods: [], records: {}, temp: {},
     settings: {
@@ -29,6 +29,7 @@ let App = {
         PARENT_DAYCARE_END: 18,
         ACTIVE_PET_Z: 5,
         NPC_PET_Z: 4.6,
+        PET_SHADOW_Z: 4.59, // last: 4.89
         MAX_SHELL_SHAPES: 5,
         AFTERNOON_TIME: [12, 17],
         EVENING_TIME: [17, 20],
@@ -338,7 +339,13 @@ let App = {
             if(y < 0) y = 0;
             if(y > rect.height) y = rect.height;
     
-            App.mouse = { x: x / 2, y: y / 2 };
+            App.mouse = { x: x / 2, y: y / 2, isTouch: true };
+        })
+        document.addEventListener('keydown', ({key}) => {
+            App.key[key] = true;
+        })
+        document.addEventListener('keyup', ({key}) => {
+            App.key[key] = false;
         })
     },
     applySettings: function(){
@@ -891,6 +898,9 @@ let App = {
                 this.platform.removeObject();
                 this.lightRays.removeObject();
             }
+        }),
+        town: new Scene({
+            image: 'resources/img/map/map_01.png',
         })
     },
     setScene(scene){

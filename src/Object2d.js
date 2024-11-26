@@ -81,9 +81,7 @@ class Object2d {
     mimicParent(ignoreList = []){
         if(!this.parent) return;
 
-        function should(val){
-            return !ignoreList.includes(val);
-        }
+        const should = value => !ignoreList.includes(value);
         
         if(should('x')) this.x = this.parent.x;
         if(should('y')) this.y = this.parent.y + this.parent.additionalY;
@@ -134,6 +132,12 @@ class Object2d {
     moveDown(maxY, speed) {
         const velocity = this.y + speed * 2 * App.deltaTime;
         this.y = velocity > maxY ? maxY : velocity;
+    }
+    collide(other) { // @param other - Object2d {x, y, width, height} // needs fixing
+        return this.x < other.x + other.width &&
+        this.x + this.width > other.x &&
+        this.y < other.y + other.height &&
+        this.y + this.height > other.y
     }
     static setDrawer(drawer) {
         Object2d.defaultDrawer = drawer;

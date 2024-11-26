@@ -20,6 +20,10 @@ class Drawer {
             height: optHeight || this.canvas.height
         }
         this.objects = [];
+        this.cameraPosition = {
+            x: 0,
+            y: 0
+        };
     }
     draw(objects, skipClear) {
         if(!skipClear) this.clear();
@@ -43,8 +47,8 @@ class Drawer {
                 object.y = this.getRelativePositionY(Number(object.y.slice(0, object.y.length - 1))) - height / 2;
             }
 
-            let x = object.x,
-                y = object.y;
+            let x = object.x + this.cameraPosition.x,
+                y = object.y + this.cameraPosition.y;
 
             if (object.additionalX) x += object.additionalX;
             if (object.additionalY) y += object.additionalY;
@@ -243,4 +247,25 @@ class Drawer {
             }
         })
     }
+    setCameraPosition(x, y, lerpSpeed){
+        if(lerpSpeed){
+            this.setCameraPosition(
+                lerp(this.cameraPosition.x, x, lerpSpeed),
+                lerp(this.cameraPosition.y, y, lerpSpeed),
+            )
+            return;
+        }
+        this.cameraPosition.x = x;
+        this.cameraPosition.y = y;
+    }
+    isCollidingWithAny(object){
+        const collisionObjects = this.objects.filter(o => o?.collision && o !== object);
+        return collisionObjects.find(o => object.collide(o));
+    }
+    isCollidingWithAny(x, y, width, height, object){
+        const collisionObjects = this.objects.filter(o => o?.collision && o !== object);
+        return collisionObjects.find(o => o.collide({
+            x, y, width, height
+        }));
+    }   
 }

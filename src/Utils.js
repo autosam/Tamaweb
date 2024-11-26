@@ -69,6 +69,16 @@ const move = function(s, e, amount){
     else s = e;
     return s;
 }
+const normalizeVector = function(x, y){
+    const mag = Math.sqrt(x * x + y * y);
+    if(mag > 0){
+        return {
+            x: x / mag,
+            y: y / mag
+        }
+    }
+    return {x, y}
+}
 const randomFromArray = function(arr){
     return arr[random(0, arr.length - 1)];
 }
