@@ -1948,3 +1948,12 @@ hr {
         opacity: 1;
     }
 }
+
+a {
+    color: #3d00ff;
+}
+
+.credit-author {
+    margin: 5px -10px;
+    padding: 5px 10px;
+}

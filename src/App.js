@@ -1251,6 +1251,43 @@ let App = {
                 }
             ])
         },
+        open_credits: function(){
+            return App.displayList([
+                {
+                    type: 'text',
+                    name: `<small>developed by</small>
+                    <br>
+                    SamanDev
+                    <small>
+                        <a href="https://discord.gg/FdwmmWRaTd" target="_blank">discord</a>
+                        <a href="https://samandev.itch.io" target="_blank">itch</a>
+                    </small>
+                    `
+                },
+                {
+                    type: 'text',
+                    name: `<small>art by</small>
+                        <br>
+                        <div class="credit-author surface-stylized">
+                            <a href="https://samandev.itch.io" target="_blank">
+                                SamanDev
+                            </a>
+                        </div>
+                        <div class="credit-author surface-stylized">
+                            <a href="https://sa311.tumblr.com/post/163140958242/about-me" target="_blank">
+                                Curlour
+                            </a>
+                            <small>(eternitchi)</small>
+                        </div>
+                        <div class="credit-author surface-stylized">
+                            <a href="https://vairasmythe.carrd.co/" target="_blank">
+                                Vaira Smythe
+                            </a>
+                        </div>
+                    `
+                },
+            ])
+        },
         open_settings: function(){
             const settings = App.displayList([
                 {
@@ -1827,6 +1864,10 @@ let App = {
                 },
                 { type: 'separator' },
                 {
+                    name: 'credits',
+                    onclick: () => App.handlers.open_credits(),
+                },
+                {
                     name: `send feedback`,
                     onclick: () => {
                         return App.displayPrompt(`what would you like to to be added in the next update?`, [
@@ -1851,7 +1892,6 @@ let App = {
                     link: App.routes.BLOG,
                     name: `<b>see changelog</b> ${App.getBadge(null, 'neutral')}`,
                     onclick: () => {
-                        // App.pet.stats.gold += 250;
                         App.sendAnalytics('go_to_blog');
                         return true;
                     },
@@ -1860,10 +1900,7 @@ let App = {
                     // _ignore: true,
                     link: 'https://discord.gg/FdwmmWRaTd',
                     name: '<b>join discord</b>',
-                    onclick: () => {
-                        // App.pet.stats.gold += 250;
-                        return true;
-                    },
+                    onclick: () => true,
                 },
                 { type: 'separator' },
                 {
