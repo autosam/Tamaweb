@@ -542,6 +542,10 @@ class Activities {
                         name: 'Upload character',
                         onclick: handleUploadCharacter
                     },
+                    {
+                        name: '<i class="icon fa-solid fa-home"></i> return home',
+                        onclick: handleReturnHome
+                    },
                 ])
             }
 
