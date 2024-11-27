@@ -11,6 +11,9 @@ class Activities {
                     onclick: () => {
                         App.setScene(App.scene.home);
                         App.toggleGameplayControls(true);
+                        App.pet.stopScriptedState();
+                        App.pet.x = '0%';
+                        App.pet.targetX = 50;
                     }
                 }
             ])
