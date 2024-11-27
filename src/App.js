@@ -380,6 +380,24 @@ let App = {
                     }
                 })
             })
+
+            if(!App.temp.defaultHomeSceneConfig){
+                App.temp.defaultHomeSceneConfig = {
+                    petY: App.scene.home.petY,
+                    shadowOffset: App.scene.home.shadowOffset
+                }
+            }
+
+            App.scene.home.petY = '90%';
+            App.scene.home.shadowOffset = -10;
+        } else {
+            if(App.temp.defaultHomeSceneConfig){
+                App.scene.home.petY = App.temp.defaultHomeSceneConfig.petY;
+                App.scene.home.shadowOffset = App.temp.defaultHomeSceneConfig.shadowOffset;
+            }
+        }
+        if(App.currentScene){
+            App.setScene(App.currentScene);
         }
     },
     loadMods: function(mods){
@@ -905,9 +923,7 @@ let App = {
         }),
     },
     setScene(scene){
-        if(App.currentScene && App.currentScene.onUnload){
-            App.currentScene.onUnload(scene);
-        }
+        App.currentScene?.onUnload?.(scene);
 
         App.currentScene = scene;
         App.pet.x = scene.petX || '50%';
