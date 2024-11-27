@@ -109,6 +109,40 @@ class Activities {
         }
 
         // handlers
+        const handleHangout = (def) => {
+            App.closeAllDisplays();
+            App.toggleGameplayControls(false);
+            otherPlayersPets.forEach(p => p?.removeObject?.());
+            addInteraction(def);
+            Missions.done(Missions.TYPES.online_interact);
+            Activities.invitePlaydate(def, App.scene.online_hub, () => {
+                App.displayConfirm(`Do you want to add ${def.getCSprite()} ${def.name} to your friends list?`, [
+                    {
+                        name: 'yes',
+                        onclick: () => {
+                            App.closeAllDisplays();
+                            const addedFriend = App.petDefinition.addFriend(def, 1);
+                            if (addedFriend) {
+                                App.displayPopup(`${def.getCSprite()} ${def.name} has been added to the friends list!`, 3000);
+                                addInteraction(def);
+                            } else {
+                                App.displayPopup(`You are already friends with ${def.name}`, 3000);
+                            }
+                            return false;
+                        }
+                    },
+                    {
+                        name: 'no',
+                        class: 'back-btn',
+                        onclick: () => { }
+                    },
+                ])
+                setTimeout(() => Activities.goToOnlineHub());
+            })
+        }
+        const handleDate = (def) => {
+
+        }
         const handleInteract = () => {
             const petInteractions = otherPlayersPets.map(pet => {
                 const def = pet.petDefinition;
@@ -137,37 +171,12 @@ class Activities {
                             },
                             {
                                 name: 'hang out',
-                                onclick: () => {
-                                    App.closeAllDisplays();
-                                    App.toggleGameplayControls(false);
-                                    otherPlayersPets.forEach(p => p?.removeObject?.());
-                                    addInteraction(def);
-                                    Missions.done(Missions.TYPES.online_interact);
-                                    Activities.invitePlaydate(def, App.scene.online_hub, () => {
-                                        App.displayConfirm(`Do you want to add ${def.getCSprite()} ${def.name} to your friends list?`, [
-                                            {
-                                                name: 'yes',
-                                                onclick: () => {
-                                                    App.closeAllDisplays();
-                                                    const addedFriend = App.petDefinition.addFriend(def, 1);
-                                                    if (addedFriend) {
-                                                        App.displayPopup(`${def.getCSprite()} ${def.name} has been added to the friends list!`, 3000);
-                                                        addInteraction(def);
-                                                    } else {
-                                                        App.displayPopup(`You are already friends with ${def.name}`, 3000);
-                                                    }
-                                                    return false;
-                                                }
-                                            },
-                                            {
-                                                name: 'no',
-                                                class: 'back-btn',
-                                                onclick: () => { }
-                                            },
-                                        ])
-                                        setTimeout(() => Activities.goToOnlineHub());
-                                    })
-                                }
+                                onclick: () => handleHangout(def)
+                            },
+                            {
+                                _disable: App.petDefinition.lifeStage !== 2 || def.lifeStage !== 2,
+                                name: 'go on date',
+                                onclick: () => handleDate(def)
                             },
                         ])
                     }
