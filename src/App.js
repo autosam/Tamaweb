@@ -3028,7 +3028,14 @@ let App = {
             ])
         },
         open_social_media: function(){
+            if(!App.temp.seenSocialMediaPosts){
+                App.temp.seenSocialMediaPosts = 0;
+            }
             function showPost(petDefinition, noMood, noNextBtn){
+                if(++App.temp.seenSocialMediaPosts >= 12){
+                    return App.displayPopup('There are no more social media posts, comeback later!');
+                }
+
                 Missions.done(Missions.TYPES.check_social_post);
 
                 let post = document.querySelector('.cloneables .post-container').cloneNode(true);

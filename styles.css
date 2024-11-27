@@ -872,7 +872,7 @@ c-sprite {
     border-top: 5px solid #3d00ff;
     color: #12004e;
     /* background: #f4f0ff; */
-    background: repeating-linear-gradient(-45deg, #e7e0ff 0 10px, #f9f7ff 10px 20px);
+    background: repeating-linear-gradient(-45deg, #e7e0ff 0 10px, #ded2ff 10px 20px);
     /* background-size: 35px; */
 }
 .post-header {
