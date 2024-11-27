@@ -19,26 +19,32 @@ class Activities {
     static getMail(){
         App.pet.stopMove();
         App.toggleGameplayControls(false);
-        App.pet.x = '50%';
+        App.setScene(App.scene.garden);
+        App.pet.x = '78%';
+        App.pet.inverted = false;
+        App.pet.triggerScriptedState('idle_side', App.INF, false, true);
         const mailManDef = new PetDefinition({
             sprite: NPC_CHARACTERS[1],
             name: 'Nazotchi'
         });
         const mailMan = new Pet(mailManDef, {
-            x: '100%',
+            x: '0%',
+            y: App.scene.garden.petY,
+            targetX: 50,
         });
-        App.pet.inverted = true;
-        App.pet.triggerScriptedState('idle_side', App.INF, false, true);
         const payload = () => {
-            App.handlers.show_newspaper();
             mailMan.removeObject();
+            App.handlers.show_newspaper();
             App.pet.stopScriptedState();
             App.toggleGameplayControls(true);
+            App.setScene(App.scene.home);
+            App.pet.x = '50%';
         }
         mailMan.triggerScriptedState('moving', 2500, null, true, () => {
+            mailMan.stopMove();
             mailMan.playCheeringAnimation(payload, true);
             App.pet.playCheeringAnimation();
-        }, Pet.scriptedEventDrivers.movingIn.bind({pet: mailMan}));
+        });
     }
     static onlineHubTransition(onEndFn){
         App.pet.stopMove();

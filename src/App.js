@@ -895,6 +895,13 @@ let App = {
         garden: new Scene({
             image: 'resources/img/background/outside/garden_01.png',
             petY: '95%',
+            shadowOffset: -5,
+            onLoad: () => {
+                App.pet.staticShadow = false;
+            },
+            onUnload: () => {
+                App.pet.staticShadow = true;
+            }
         }),
     },
     setScene(scene){
