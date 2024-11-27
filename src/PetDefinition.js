@@ -546,10 +546,10 @@ class PetDefinition {
 
         if(fulfilled){
             this.stats.current_fun += random(30, 50);
-            if(random(0, 1)) this.adjustCare(true);
+            this.adjustCare(true);
             Missions.done(Missions.TYPES.fulfill_want);
         } else {
-            if(random(0, 1)) this.adjustCare(false);
+            if(!random(0, 4)) this.adjustCare(false);
         }
     }
     checkWant(condition, type){

@@ -669,7 +669,7 @@ class Pet extends Object2d {
         })
         // increasing
         const eligibleForCareIncrease = careAffectingStats.every(statName => this.stats[statName] > 90);
-        const shouldResetCareIncreaseFlag = careAffectingStats.some(statName => this.stats[statName] < 50);
+        const shouldResetCareIncreaseFlag = careAffectingStats.some(statName => this.stats[statName] < 70);
         if(eligibleForCareIncrease){
             if(this.stats.should_care_increase){
                 this.stats.should_care_increase = false;
