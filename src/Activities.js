@@ -254,6 +254,7 @@ class Activities {
                     name: 'yes',
                     onclick: () => {
                         despawnAllPets();
+                        addInteraction(def);
                         Activities.goOnDate(def, Activities.goToOnlineHub);
                     }
                 },
