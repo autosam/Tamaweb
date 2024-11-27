@@ -829,6 +829,7 @@ c-sprite.ui-food {
 }
 c-sprite {
     display: inline-flex;
+    justify-content: center;
 }
 
 .user-id {
