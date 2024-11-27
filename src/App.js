@@ -1036,10 +1036,17 @@ let App = {
         });
     },
     runRandomEncounters: function(){
+        if(
+            App.pet.stats.is_egg ||
+            App.pet.stats.is_at_parents ||
+            App.pet.stats.is_at_vacation ||
+            App.pet.stats.is_dead
+        ) return;
+
         // newspaper delivery
         const newspaperDeliveryMs = App.getRecord('newspaper_delivery_ms') || 0;
         const shouldDeliver = moment().startOf('day').diff(moment(newspaperDeliveryMs), 'days') > 0;
-        if(shouldDeliver){
+        if(shouldDeliver && !App.pet.stats.is_sleeping){
             setTimeout(() => {
                 const checkForDecentDeliveryTime = () => {
                     if(App.pet.isDuringScriptedState() || App.haveAnyDisplays()) 
