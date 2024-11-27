@@ -744,7 +744,7 @@ let App = {
             ]);
         })) return; */
 
-        if(App.isSalesDay()){
+        /* if(App.isSalesDay()){
             if(addEvent(`sales_day_${dayId}_notice`, () => {
                 App.displayConfirm(`<b>discount day!</b><br>Shops are selling their products at a discounted rate! Check them out and pile up on them!`, [
                     {
@@ -754,7 +754,7 @@ let App = {
                     }
                 ]);
             })) return;
-        }
+        } */
     },
     scene: {
         home: new Scene({
@@ -1143,11 +1143,21 @@ let App = {
                 [headline, text] = randomFromArray(App.definitions.mail.affirmations);
             }
 
+            const salesDaySection = !App.isSalesDay() ? '' : `
+                <div>
+                    <b style="color: orangered;">Discount Day!</b>
+                    <br>
+                    Local shops are slashing prices for today only. Don't miss out on huge savings! Check them out and save big!
+                    <br><br><br>
+                </div>
+            `;
+
             const container = App.displayEmpty('bg-white flex flex-dir-col');
                 container.style = `background: repeating-linear-gradient(0deg, white 0px, white 11px, rgb(201, 201, 201) 10px, white 12px) local; backdrop-filter: blur(100px)`
             container.innerHTML = `
             <img class="width-full" src="resources/img/misc/newspaper_header_01.png"></img>
             <div style="text-align: left;" class="inner-padding">
+                ${salesDaySection}
                 <b>${headline}</b>
                 <hr style="background: #0000003d; display: none">
                 <br><br>
