@@ -1194,9 +1194,17 @@ let App = {
             ])
         },
         open_care_menu: function(){
+            const getUnclaimedRewardsBadge = () => {
+                return Missions.hasUnclaimedRewards() 
+                    ? App.getBadge('!')
+                    : '';
+            }
             App.displayList([
                 {
-                    name: `daily missions`,
+                    _mount: (me) => {
+                        me.innerHTML = `Missions ${getUnclaimedRewardsBadge()}`
+                    },
+                    name: '',
                     onclick: () => {
                         Missions.openMenu();
                         return true;
@@ -1243,6 +1251,7 @@ let App = {
                     }
                 },
                 {
+                    _ignore: true,
                     name: `backyard ${App.getBadge()}`,
                     onclick: () => {
                         Activities.goToGarden();
@@ -3811,7 +3820,10 @@ let App = {
             // menu animation
             if(e.target.classList.contains('back-btn') || e.target.parentElement?.classList.contains('back-btn')){
                 const previousListItem = [...document.querySelectorAll('.screen-wrapper .generic-list-container')].at(-1);
-                if(previousListItem && previousListItem.transitionAnim) previousListItem.transitionAnim();
+                if(previousListItem){
+                    previousListItem.transitionAnim?.();
+                    [...previousListItem.children].forEach(child => child?._mount?.(child));
+                }
                 UI.lastClickedButton = null;
             }
         })

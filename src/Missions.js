@@ -241,6 +241,9 @@ const Missions = {
         ], null, 'Rewards');
         return list;
     },
+    hasUnclaimedRewards: function(){
+        return this.current.filter(m => m.isDone && !m.isClaimed).length;
+    },
     openMenu: function(){
         if(!this.current?.length) return;
 
