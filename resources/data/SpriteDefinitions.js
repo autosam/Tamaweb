@@ -27,6 +27,7 @@ const SPRITES = [
     "resources/img/background/house/parents_house_01.png",
     "resources/img/background/house/arcade_02.png",
     "resources/img/background/house/online_hub_01.png",
+    "resources/img/background/house/beach_01.png", // considered inside to not have day/night affect it
     // outside
     "resources/img/background/outside/park_02.png",
     "resources/img/background/outside/mall_walkway.png",
@@ -97,6 +98,8 @@ const SPRITES = [
     "resources/img/misc/thought_bubble_type_item.png",
     "resources/img/misc/minigames.png",
     "resources/img/misc/want_fulfilled.png",
+    "resources/img/misc/thought_heart.png",
+    "resources/img/misc/thought_heart_broken.png",
     "resources/img/misc/cyberpunk_overlay_01.png",
     "resources/img/misc/online_hub_01_front.png",
     "resources/img/misc/pot_01.png",

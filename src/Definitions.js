@@ -1051,6 +1051,16 @@ App.definitions = {
                 App.displayPopup(`You've received $150!`);
             }  
         },
+        not_propose_on_date_x_times: {
+            name: 'Heartbreaker',
+            description: `Go on successful dates but don't propose!`,
+            checkProgress: () => App.getRecord('times_not_proposed') >= 10,
+            advance: (amount) => App.addRecord('times_not_proposed', amount),
+            getReward: () => {
+                App.pet.stats.gold += 300;
+                App.displayPopup(`You've received $300!`);
+            }
+        },
 
         // minigames
         perfect_minigame_rodrush_win_x_times: {

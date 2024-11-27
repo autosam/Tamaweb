@@ -1,4 +1,96 @@
 class Activities {
+    static async goOnDate(otherPetDef = App.getRandomPetDef(), onFailEnd){
+        App.closeAllDisplays();
+        App.toggleGameplayControls(false);
+        App.setScene(App.scene.beach);
+        const otherPet = new Pet(otherPetDef);
+
+        // moving in
+        otherPet.x = '70%';
+        otherPet.targetX = 0;
+        otherPet.triggerScriptedState('moving', 2000, false, true);
+        App.pet.x = '100%';
+        App.pet.targetX = 50;
+        await App.pet.triggerScriptedState('moving', 2000, false, true);
+
+        // date
+        App.pet.x = '70%';
+        otherPet.x = '30%';
+        otherPet.inverted = true;
+        otherPet.triggerScriptedState('eating', 8000, false, true);
+        await App.pet.triggerScriptedState('eating', 8000, false, true);
+        
+        // conclusion
+        const end = () => {
+            App.pet.stopScriptedState();
+            otherPet.removeObject();
+            App.setScene(App.scene.home);
+            App.toggleGameplayControls(true);
+        }
+        const determineBehavior = (pet, enjoyment) => {
+            if(enjoyment){
+                pet.showThought('thought_heart')
+                pet.triggerScriptedState('blush', App.INF, false, true);
+            } else {
+                pet.showThought('thought_heart_broken')
+                pet.triggerScriptedState('idle_side_uncomfortable', App.INF, false, true);
+                pet.inverted = !pet.inverted;
+            }
+        }
+        const petOverall = (App.pet.stats.current_fun + App.pet.stats.current_cleanliness + App.pet.stats.current_health + random(0, 100)) / 4;
+        const otherEnjoyment = random(30, 85) <= petOverall;
+        const petEnjoyment = otherEnjoyment ? !!random(0, 6) : random(0, 1); // just to make it more common for both parties to not like each other
+        determineBehavior(App.pet, petEnjoyment);
+        determineBehavior(otherPet, otherEnjoyment);
+        
+        setTimeout(() => {
+            if(!petEnjoyment || !otherEnjoyment){
+                let text = '';
+                if (!otherEnjoyment && !petEnjoyment) {
+                    text = `Oh no! ${App.petDefinition.name} and ${otherPetDef.name} didn't really hit it off!`;
+                } else if (!otherEnjoyment && petEnjoyment) {
+                    text = `${otherPetDef.name} didn't quite connect with ${App.petDefinition.name}!`;
+                } else {
+                    text = `${App.petDefinition.name} didn't quite connect with ${otherPetDef.name}!`;
+                }
+                return App.displayPopup(text, 5000, () => {
+                    end();
+                    onFailEnd?.();
+                    App.pet.playUncomfortableAnimation();
+                });
+            }
+
+            App.displayConfirm(`${App.petDefinition.name} and ${otherPetDef.name} had a wonderful time together! <br><br> Do you want to propose to ${otherPetDef.name}?`, [
+                {
+                    name: 'propose',
+                    onclick: () => {
+                        App.displayConfirm(`${App.petDefinition.name} and <div>${otherPetDef.getCSprite()} ${otherPetDef.name}</div> will get married and you'll receive their egg, are you sure?`, [
+                            {
+                                name: 'yes',
+                                onclick: () => {
+                                    end();
+                                    Activities.wedding(otherPetDef);
+                                }
+                            },
+                            {
+                                name: 'cancel',
+                                class: 'back-btn',
+                                onclick: () => {
+                                    App.definitions.achievements.not_propose_on_date_x_times.advance();
+                                    end();
+                                },
+                            }
+                        ])
+                    },
+                },
+                {
+                    name: 'cancel',
+                    class: 'back-btn',
+                    onclick: end
+                }
+            ])
+        }, 3000);
+    }
     static goToGarden(){
         App.pet.stopScriptedState();
         App.setScene(App.scene.garden);
@@ -50,6 +142,7 @@ class Activities {
         });
     }
     static onlineHubTransition(onEndFn){
+        Missions.done(Missions.TYPES.visit_online_hub);
         App.pet.stopMove();
         App.toggleGameplayControls(false);
         App.pet.x = '50%';
@@ -83,7 +176,6 @@ class Activities {
         App.pet.targetY = 50;
     }
     static async goToOnlineHub(){
-        Missions.done(Missions.TYPES.visit_online_hub);
         const {hasUploadedPetDef, randomPetDefs} = App.temp.online;
         const INTERACTION_LIKES = {
             outgoing: hasUploadedPetDef.interactionOutgoingLikes ?? 0,
@@ -118,10 +210,13 @@ class Activities {
         }
 
         // handlers
+        const despawnAllPets = () => {
+            otherPlayersPets.forEach(p => p?.removeObject?.());
+        }
         const handleHangout = (def) => {
             App.closeAllDisplays();
             App.toggleGameplayControls(false);
-            otherPlayersPets.forEach(p => p?.removeObject?.());
+            despawnAllPets();
             addInteraction(def);
             Missions.done(Missions.TYPES.online_interact);
             Activities.invitePlaydate(def, App.scene.online_hub, () => {
@@ -150,7 +245,20 @@ class Activities {
             })
         }
         const handleDate = (def) => {
-
+            return App.displayConfirm(`Do you want to go on a date with <div>${def.getCSprite()} ${def.name}</div>?`, [
+                {
+                    name: 'yes',
+                    onclick: () => {
+                        despawnAllPets();
+                        Activities.goOnDate(def, Activities.goToOnlineHub);
+                    }
+                },
+                {
+                    name: 'cancel',
+                    class: 'back-btn',
+                    onclick: () => {}
+                }
+            ])
         }
         const handleInteract = () => {
             const petInteractions = otherPlayersPets.map(pet => {
@@ -184,7 +292,7 @@ class Activities {
                             },
                             {
                                 _disable: App.petDefinition.lifeStage !== 2 || def.lifeStage !== 2,
-                                name: 'go on date',
+                                name: `go on date ${App.getBadge()}`,
                                 onclick: () => handleDate(def)
                             },
                         ])
@@ -512,7 +620,6 @@ class Activities {
         return true;
     }
     static goToVacation(vacationFn){
-        App.definitions.achievements.go_to_vacation_x_times.advance();
         App.closeAllDisplays();
         App.toggleGameplayControls(false);
         App.pet.stopMove();

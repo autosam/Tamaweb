@@ -921,6 +921,9 @@ let App = {
                 App.pet.staticShadow = true;
             }
         }),
+        beach: new Scene({
+            image: 'resources/img/background/house/beach_01.png',
+        }),
     },
     setScene(scene){
         App.currentScene?.onUnload?.(scene);
@@ -2705,29 +2708,17 @@ let App = {
                             },
                             {
                                 _ignore: App.petDefinition.lifeStage < 2 || friendDef.lifeStage < 2 || friendDef.stats.is_player_family,
-                                name: 'marry',
+                                name: `go on date ${App.getBadge()}`,
                                 onclick: () => {
-                                    if(friendDef.getFriendship() < 70){
-                                        return App.displayPopup(`${App.petDefinition.name}'s friendship with ${friendDef.name} is too low <br><br> they don't want to marry each other`, 5000);
+                                    if(friendDef.getFriendship() < 60){
+                                        return App.displayPopup(`${App.petDefinition.name}'s friendship with ${friendDef.name} is too low <br><br> they don't want to go on a date.`, 5000);
                                     }
 
-                                    App.displayConfirm(`${App.petDefinition.name} and <div>${icon} ${friendDef.name}</div> will get married and you'll recieve their egg`, [
+                                    App.displayConfirm(`Do you want to go on a date with <div>${icon} ${friendDef.name}</div>?`, [
                                         {
-                                            name: 'ok',
+                                            name: 'yes',
                                             onclick: () => {
-                                                App.displayConfirm(`Are you sure?`, [
-                                                    {
-                                                        name: 'yes',
-                                                        onclick: () => {
-                                                            Activities.wedding(friendDef);
-                                                        }
-                                                    },
-                                                    {
-                                                        name: 'no',
-                                                        class: 'back-btn',
-                                                        onclick: () => {}
-                                                    },
-                                                ]);
+                                                Activities.goOnDate(friendDef);
                                             }
                                         },
                                         {
@@ -2810,7 +2801,7 @@ let App = {
         open_phone: function(){
             App.displayList([
                 {
-                    name: `<span style="color: #ff00c6"><i class="icon fa-solid fa-globe"></i> hubchi</span>`,
+                    name: `<span style="color: #ff00c6"><i class="icon fa-solid fa-globe"></i> hubchi</span> ${App.getBadge('date!')}`,
                     onclick: () => {
                         if(App.petDefinition.lifeStage <= 0){
                             return App.displayPopup(`${App.petDefinition.name} is not old enough to go to hubchi!`);
@@ -2913,6 +2904,7 @@ let App = {
                                     App.pet.stats.gold -= price;
                                     goToVacation(Activities.seaVacation)
                                     App.sendAnalytics('go_on_vacation');
+                                    App.definitions.achievements.go_to_vacation_x_times.advance();
                                 }
                             },
                             {

@@ -1011,10 +1011,10 @@ class Pet extends Object2d {
             shouldFadeout: false,
             float: 0,
             onDraw: (me) => {
-                me.x = App.pet.x;
+                me.x = this.x;
                 me.float += 0.004 * App.deltaTime;
                 if(me.float > App.PI2) me.float = 0;
-                me.y = App.pet.y - (App.pet.spritesheet.cellSize * 1.5) - (App.pet.spritesheet.offsetY * 1.8 || 0) + Math.sin(me.float); 
+                me.y = this.y - (this.spritesheet.cellSize * 1.5) - (this.spritesheet.offsetY * 1.8 || 0) + Math.sin(me.float); 
                 const opacityTarget = me.shouldFadeout ? 0 : 1;
                 me.opacity = lerp(me.opacity, opacityTarget, App.deltaTime * 0.01);
             }
@@ -1128,6 +1128,17 @@ class Pet extends Object2d {
                     }
                 })
                 break;
+            default:
+                new Object2d({
+                    parent: bubble,
+                    image: App.preloadedResources[`resources/img/misc/${type}.png`],
+                    x: 10, y: 10, z: 10,
+                    onDraw: (me) => {
+                        me.opacity = bubble.opacity;
+                        me.x = bubble.x;
+                        me.y = bubble.y;
+                    }
+                })
         }
 
         setTimeout(() => {
