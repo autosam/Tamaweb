@@ -655,9 +655,6 @@ let App = {
 
         const addEvent = App.addEvent;
 
-        const date = new Date();
-        const dayId = date.getFullYear() + '_' + date.getMonth() + '_' + date.getDate();
-
         if(!App.userName){
             App.handlers.show_set_username_dialog();
             return;
@@ -1243,6 +1240,12 @@ let App = {
                         ])
                         
                         return true;
+                    }
+                },
+                {
+                    name: `backyard ${App.getBadge()}`,
+                    onclick: () => {
+                        Activities.goToGarden();
                     }
                 },
                 {
@@ -2103,7 +2106,9 @@ let App = {
         open_food_list: function(buyMode, activeIndex, filterType){
             let list = [];
             let sliderInstance;
-            let salesDay = App.isSalesDay();
+            const salesDay = App.isSalesDay();
+            const dayId = App.getDayId(true);
+            let index = -1;
             for(let food of Object.keys(App.definitions.food)){
                 let current = App.definitions.food[food];
 
@@ -2121,6 +2126,11 @@ let App = {
                     continue;
                 }
 
+                // some entries become randomly unavailable to buy for the day
+                if(++index && buyMode && !random(0, 1, dayId + (index * 256))){
+                    continue;
+                }
+
                 // 50% off on sales day
                 let price = current.price;
                 if(salesDay) price = Math.round(price / 2);
@@ -2128,6 +2138,7 @@ let App = {
                 list.push({
                     name: `${App.getFoodCSprite(current.sprite)} ${food.toUpperCase()} (x${App.pet.inventory.food[food] > 0 ? App.pet.inventory.food[food] : (!current.price ? '∞' : 0)}) <b>${buyMode ? `$${price}` : ''}</b>`,
                     onclick: (btn, list) => {
+                        // buy mode
                         if(buyMode){
                             if(App.pet.stats.gold < price){
                                 App.displayPopup(`Don't have enough gold!`);
@@ -2142,8 +2153,16 @@ let App = {
                             return false;
                         }
 
+                        // eat mode
+                        const reopenFn = (noLongerHungry) => {
+                            if(noLongerHungry && current.type == 'food') return;
+
+                            App.handlers.open_feeding_menu();
+                            App.handlers.open_food_list(false, sliderInstance?.getCurrentIndex(), current.type);
+                        }
+
                         App.closeAllDisplays();
-                        let ateFood = App.pet.feed(current.sprite, current.hunger_replenish, current.type);
+                        let ateFood = App.pet.feed(current.sprite, current.hunger_replenish, current.type, null, reopenFn);
                         if(ateFood) {
                             if(App.pet.inventory.food[food] > 0)
                                 App.pet.inventory.food[food] -= 1;
@@ -2164,9 +2183,10 @@ let App = {
                 return;
             }
 
+            if(buyMode) list.push(list.shift());
+
             sliderInstance = App.displaySlider(list, activeIndex, {accept: buyMode ? 'Purchase' : 'Eat'}, buyMode ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}` : null);
             return sliderInstance;
-            return App.displayList(list);
         },
         open_feeding_menu: function(){
             App.displayList([
@@ -2607,12 +2627,6 @@ let App = {
         },
         open_activity_list: function(){
             return App.displayList([
-                {
-                    name: `backyard ${App.getBadge()}`,
-                    onclick: () => {
-                        Activities.goToGarden();
-                    }
-                },
                 {
                     name: `mall`,
                     onclick: () => {
@@ -3128,13 +3142,10 @@ let App = {
                 {
                     name: 'find friends',
                     onclick: () => {
-                        const date = new Date();
-                        const dayId = date.getFullYear() + date.getMonth() + date.getDate();
-
-                        let seed = App.userId + dayId;
-
-                        let potentialFriends = new Array(8).fill(undefined).map((spot, i) => App.getRandomPetDef(App.petDefinition.lifeStage, seed + (i * 128)));
-
+                        const seed = App.getDayId(true);
+                        let potentialFriends = new Array(8)
+                            .fill(undefined)
+                            .map((spot, i) => App.getRandomPetDef(App.petDefinition.lifeStage, seed + (i * 128)));
                         App.displayGrid([...potentialFriends.map(otherPetDef => {
                             return {
                                 name: `${otherPetDef.getFullCSprite()}`,
@@ -3190,11 +3201,17 @@ let App = {
         },
         open_mall_activity_list: function(){
             const hasNewDecor = Object.keys(App.definitions.room_background).some(key => {
-                const isUnlocked = App.definitions.room_background[key].unlockKey && App.getRecord(App.definitions.room_background[key].unlockKey);
+                const isUnlocked = 
+                    App.definitions.room_background[key].unlockKey ? 
+                    App.getRecord(App.definitions.room_background[key].unlockKey) : 
+                    true;
                 return App.definitions.room_background[key].isNew && isUnlocked;
             });
             const hasNewAccessory = Object.keys(App.definitions.accessories).some(key => {
-                const isUnlocked = App.definitions.accessories[key].unlockKey && App.getRecord(App.definitions.accessories[key].unlockKey);
+                const isUnlocked = 
+                    App.definitions.accessories[key].unlockKey ? 
+                    App.getRecord(App.definitions.accessories[key].unlockKey) : 
+                    true;
                 return App.definitions.accessories[key].isNew && isUnlocked;
             });
 
@@ -3251,6 +3268,15 @@ let App = {
                         App.handlers.open_food_list(true, null, "med");
                         return true;
                     }
+                },
+                {
+                    name: `
+                    <small>
+                        <i class="fa-solid fa-info-circle" style="padding-right: 8px"></i>
+                        Shop stock changes daily, so check back often for new food and snacks!
+                    </small>
+                    `,
+                    type: 'text',
                 },
             ])
         },
@@ -3551,7 +3577,7 @@ let App = {
         }
 
         let maxIndex = listItems.length,
-            currentIndex = activeIndex || 0,
+            currentIndex = Math.min(activeIndex, listItems.length - 1) || 0,
             contentElement = list.querySelector('.content'),
             acceptBtn = list.querySelector('#accept-btn'),
             cancelBtn = list.querySelector('#cancel-btn');
@@ -3792,6 +3818,16 @@ let App = {
     },
     formatTo12Hours: function(hour){
         return hour > 12 ? hour - 12 + 'pm' : hour + 'am';
+    },
+    getDayId: function(forCurrentUser){
+        if(forCurrentUser){
+            return +(
+                App.getDayId() + (App.userId || 1234)
+            ).slice(0, 16);
+        }
+
+        const date = new Date();
+        return +`${date.getFullYear()}${date.getMonth()}${date.getDate() + 2}`;
     },
     isSalesDay: function(){
         let day = new Date().getDate();

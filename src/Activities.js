@@ -99,6 +99,10 @@ class Activities {
         App.toggleGameplayControls(false, () => {
             return App.displayList([
                 {
+                    name: '<small> coming soon... </small>',
+                    type: 'text',
+                },
+                {
                     name: '<i class="icon fa-solid fa-home"></i> go inside',
                     onclick: () => {
                         App.setScene(App.scene.home);

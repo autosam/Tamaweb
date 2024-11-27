@@ -285,7 +285,7 @@ class Pet extends Object2d {
         }
         this.stats.is_sleeping = true;
     }
-    feed(foodSpriteCellNumber, value, type, forced){
+    feed(foodSpriteCellNumber, value, type, forced, onEndFn){
         const me = this;
 
         if(!type) type = 'food';
@@ -347,10 +347,11 @@ class Pet extends Object2d {
                         App.closeAllDisplays();
                         App.toggleGameplayControls(true);
                         App.setScene(App.scene.home);
-                        if(!noLongerHungry){
-                            App.handlers.open_feeding_menu();
-                            App.handlers.open_food_list(null, null, type);
-                        }
+                        // if(!noLongerHungry){
+                        //     App.handlers.open_feeding_menu();
+                        //     App.handlers.open_food_list(null, null, type);
+                        // }
+                        onEndFn?.(noLongerHungry);
                     }
                     if(this.hasMoodlet('full')){
                         App.toggleGameplayControls(false);
@@ -1002,7 +1003,7 @@ class Pet extends Object2d {
     }
     showThought(type, item){
         const bubble = new Object2d({
-            parent: this.pet,
+            parent: this,
             img: 'resources/img/misc/thought_bubble_01.png',
             x: -999, 
             y: -999,

@@ -500,7 +500,7 @@ App.definitions = {
             price: 120,
             type: 'med',
             age: [0, 1, 2],
-            isNew: true,
+            isNew: false,
         },
     },
 
@@ -588,7 +588,7 @@ App.definitions = {
         "silky retreat": {
             image: 'resources/img/background/house/ex_01.png',
             price: 0,
-            isNew: true,
+            isNew: false,
             onlineShopAccessible: true,
             unlockLikes: 80,
             unlockKey: 'bg_silky_retreat',
@@ -596,7 +596,7 @@ App.definitions = {
         "silky (sky)": {
             image: 'resources/img/background/house/ex_01_fs.png',
             price: 0,
-            isNew: true,
+            isNew: false,
             onlineShopAccessible: true,
             unlockLikes: 80,
             unlockKey: 'bg_silky_retreat_sky',
@@ -619,7 +619,7 @@ App.definitions = {
         {
             image: 'resources/img/ui/shell_background_cloof_01.png',
             name: 'cloofy',
-            isNew: true,
+            isNew: false,
             onlineShopAccessible: true,
             unlockLikes: 30,
             unlockKey: 'unlock_cloof_shell_bg',
@@ -925,7 +925,7 @@ App.definitions = {
             image_sprite: 'resources/img/accessory/cloof_01.png',
             front: false,
             price: 0,
-            isNew: true,
+            isNew: false,
             onlineShopAccessible: true,
             unlockLikes: 50,
             unlockKey: 'unlock_cloof',
