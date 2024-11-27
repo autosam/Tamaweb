@@ -527,7 +527,6 @@ class Activities {
         App.pet.stats.is_at_vacation = true;
         App.save();
         App.setScene(App.scene.seaVacation);
-        App.sendAnalytics('at_vacation');
 
         const end = () => {
             App.toggleGameplayControls(false);

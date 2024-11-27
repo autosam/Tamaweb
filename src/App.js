@@ -2912,6 +2912,7 @@ let App = {
                                     }
                                     App.pet.stats.gold -= price;
                                     goToVacation(Activities.seaVacation)
+                                    App.sendAnalytics('go_on_vacation');
                                 }
                             },
                             {
@@ -3045,24 +3046,24 @@ let App = {
 
                 let homeBackground = App.scene.home.image;
                 if(petDefinition !== App.petDefinition)
-                    homeBackground = randomFromArray([
-                        "resources/img/background/house/01.jpg",
-                        "resources/img/background/house/02.png",
-                        "resources/img/background/house/03.png",
-                        "resources/img/background/house/04.png",
-                    ])
+                    homeBackground = randomFromArray(
+                        Object.keys(App.definitions.room_background)
+                        .map(roomName => 
+                            App.definitions.room_background[roomName].image
+                        )
+                    )
                 
-                let background = new Object2d({
+                const background = new Object2d({
                     drawer: postDrawer,
                     img: homeBackground,
                     x: 0, y: 0, width: 96, height: 96,
                 });
 
 
-                let characterPositions = ['50%', '20%', '80%'],
+                const characterPositions = ['50%', '20%', '80%'],
                     characterSpritePoses = [1, 11, 14, 8, 2, 12];
 
-                let character = new Object2d({
+                const character = new Object2d({
                     drawer: postDrawer,
                     spritesheet: {...petDefinition.spritesheet, cellNumber: randomFromArray(characterSpritePoses)},
                     // image: App.pet.image.cloneNode(),
@@ -3075,34 +3076,7 @@ let App = {
 
                 switch(App.pet.state){
                     default:
-                        let generalTweets = [
-                            [`Found a crumb today, it's like a feast! #TinyTreats`, 1, "resources/img/background/house/kitchen_02.png"],
-                            ['#vibing_around', 1, null],
-                            ['#sunny_day', 1, "resources/img/background/outside/park_02.png"],
-                            ['Riding on a leaf down the stream. Best. Day. Ever. #LeafBoat', 2, null],
-                            ['Naptime in a matchbox bed. Cozy as can be! #SmallDreams', 16, "resources/img/background/house/dark_overlay.png"],
-                            ['Danced in a raindrop, got soaked! #RaindropDance', 8, "resources/img/background/house/dark_overlay.png"],
-                            ['Whispered my wish to a dandelion. Hope it comes true! #DandelionWishes', 10, null],
-                            ['Tried to lift a pebble, felt like a superhero! #TinyStrength', 1, "resources/img/background/outside/park_02.png"],
-                            [`Stargazing tonight, every star is a giant wish waiting to happen! #StarrySky`, 1, "resources/img/background/outside/park_02.png"],
-                            [`A butterfly landed on me, I'm a landing pad! #ButterflyFriends`, 2, "resources/img/background/outside/park_02.png"],
-                            [`A dewdrop became my crystal ball. I see big adventures ahead! #DewdropVisions`, 7, null],
-                            [`Got lost in a garden maze of grass. Blades like skyscrapers! #GrasslandAdventures`, 1, "resources/img/background/outside/park_02.png"],
-                            [`Shared a berry with an ant. It's all about sharing, no matter your size! #BerryFeast`, 8, "resources/img/background/outside/park_02.png"],
-                            [`Found a feather and flew for a moment. #FeatherFlight`, 8, null],
-                            [`Played hide and seek. Best hider ever! #TinyGames`, 2, null],
-                            [`A leaf fell on me. Guess I'm a tree now!`, 8, "resources/img/background/outside/park_02.png"],
-                            [`#onthatgrind`, 14, "resources/img/background/house/office_01.png"],
-                            [`checking out the market #shopping`, 10, "resources/img/background/outside/market_01.png"],
-                            [`the prices are so high! #whatisthis`, 7, "resources/img/background/outside/market_01.png"],
-                            [`looking for a cute #headband!`, 8, "resources/img/background/outside/market_01.png"],
-                            [`lost again! don't wanna play anymore! #hategaming`, 6, "resources/img/background/house/arcade_01.png"],
-                            [`I'm just better! #gaming`, 2, "resources/img/background/house/arcade_01.png"],
-                            [`Won again! #ilovegaming`, 2, "resources/img/background/house/arcade_01.png"],
-                        ];
-
-                        let tweet = randomFromArray(generalTweets);
-
+                        const tweet = randomFromArray(App.definitions.tweets.generic);
                         postText.innerHTML = tweet[0]; // text
                         if(tweet[1]) character.spritesheet.cellNumber = tweet[1]; // pose
                         if(tweet[2]) background.setImg(tweet[2]); // background

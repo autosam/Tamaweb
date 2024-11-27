@@ -1,4 +1,5 @@
 App.definitions = {
+    /* MAIN MENU */
     main_menu: [
         {
             name: '<i class="fa-solid fa-line-chart"></i>',
@@ -51,6 +52,8 @@ App.definitions = {
             }
         },
     ],
+
+    /* FOOD AND SNACKS */
     food: {
         // foods
         "bread": {
@@ -500,6 +503,8 @@ App.definitions = {
             isNew: true,
         },
     },
+
+    /* ITEMS */
     item: {
         "foxy": {
             sprite: 1,
@@ -547,6 +552,8 @@ App.definitions = {
             interruptable: true,
         },
     },
+
+    /* ROOM BACKGROUNDS */
     room_background: {
         "blue": {
             image: 'resources/img/background/house/02.png',
@@ -605,6 +612,8 @@ App.definitions = {
             isNew: true,
         },
     },
+
+    /* SHELL BACKGROUNDS */
     shell_background: [
         // default shell bg will be the first one here
         {
@@ -654,6 +663,8 @@ App.definitions = {
             image: 'resources/img/ui/shell_background_06.png',
         },
     ],
+
+    /* ACCESSORIES */
     accessories: {
         "crown": {
             image: 'resources/img/accessory/crown_01.png',
@@ -957,6 +968,8 @@ App.definitions = {
             }
         }
     },
+
+    /* ACHIEVEMENTS */
     achievements: {
         pat_x_times: {
             name: 'Pat! Pat! Pat!',
@@ -1072,6 +1085,8 @@ App.definitions = {
             }
         },
     },
+
+    /* MAIL */
     mail: {
         affirmations: [
             [
@@ -1269,5 +1284,45 @@ App.definitions = {
                 "Skywatchers are in for a treat as dozens of shooting stars light up the skies. Make your wishes ready!",
             ],
         ]        
+    },
+
+    /* TWEETS */
+    tweets: {
+        generic: [
+            ['Found a crumb, feels like a feast! #TinyTreats', 1, "resources/img/background/house/kitchen_02.png"],
+            ['#vibing', 1, null],
+            ['#sunny', 1, "resources/img/background/outside/garden_01.png"],
+            ['Leaf boat ride! Best day ever. #LeafBoat', 2, null],
+            ['Nap in a matchbox bed. So cozy! #SmallDreams', 16, "resources/img/background/house/dark_overlay.png"],
+            ['Danced in a raindrop, got soaked! #RaindropDance', 8, "resources/img/background/house/dark_overlay.png"],
+            ['Whispered a wish to a dandelion. #Wishes', 10, null],
+            ['Tried lifting a pebble, felt strong! #TinyStrength', 1, "resources/img/background/outside/park_02.png"],
+            ['Stargazing tonight. Wishes everywhere! #StarrySky', 1, "resources/img/background/outside/park_02.png"],
+            ['A butterfly landed on me! #ButterflyFriends', 2, "resources/img/background/outside/garden_01.png"],
+            ['Dewdrop crystal ball. Big adventures ahead! #DewdropVisions', 7, null],
+            ['Lost in a grass maze. Tall blades everywhere! #GrassAdventures', 1, "resources/img/background/outside/garden_01.png"],
+            ['Shared a berry with an ant. #BerryFeast', 8, "resources/img/background/outside/garden_01.png"],
+            ['Found a feather, flew for a sec. #FeatherFlight', 8, null],
+            ['Played hide and seek. Best hider! #TinyGames', 2, null],
+            ['Leaf fell on me. Guess I’m a tree now! #TreeLife', 8, "resources/img/background/outside/park_02.png"],
+            ['#onthatgrind', 14, "resources/img/background/house/office_01.png"],
+            ['Market day! #shopping', 10, "resources/img/background/outside/market_01.png"],
+            ['Prices too high! #whatisthis', 7, "resources/img/background/outside/market_01.png"],
+            ['Looking for a cute #headband!', 8, "resources/img/background/outside/market_01.png"],
+            ['Lost again! Done with gaming. #hategaming', 6, "resources/img/background/house/arcade_01.png"],
+            ['I’m just better! #gaming', 2, "resources/img/background/house/arcade_01.png"],
+            ['Won again! #ilovegaming', 2, "resources/img/background/house/arcade_01.png"],
+            ['Chasing rainbows today! #ColorChase', 1, "resources/img/background/outside/garden_01.png"],
+            ['Found a ladybug! So lucky. #LuckyDay', 2, null],
+            ['Tiny picnic in the grass. Life is good! #TinyPicnic', 8, "resources/img/background/outside/park_02.png"],
+            ['Jumping puddles! Let’s get wet. #PuddleJump', 10, null],
+            ['The sky’s full of clouds. So dreamy. #CloudyDay', 1, null],
+            ['Met a squirrel today. Best friends now! #SquirrelSquad', 7, "resources/img/background/outside/park_02.png"],
+            ['Mini swing ride. Tiny thrills! #TinySwing', 2, "resources/img/background/outside/garden_01.png"],
+            ['Caught a snowflake on my tongue! #WinterJoy', 8, null],
+            ['I’m a leaf warrior! #LeafBattle', 1, "resources/img/background/outside/park_02.png"],
+            ['Discovered a secret path in the woods. #MysteryTrail', 6, null],
+            ['Feeling like a cloud. Soft and fluffy. #CloudVibes', 8, "resources/img/background/outside/garden_01.png"]
+        ]
     }
 }

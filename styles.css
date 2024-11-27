@@ -830,6 +830,7 @@ c-sprite.ui-food {
 c-sprite {
     display: inline-flex;
     justify-content: center;
+    align-items: center;
 }
 
 .user-id {
@@ -841,6 +842,10 @@ c-sprite {
     text-shadow: none !important;
 }
 
+/* post */
+:root {
+    --post-striped: repeating-linear-gradient(-45deg, #ded4ff 0 10px, #bca8ff 10px 20px);
+}
 .post-container {
     position: absolute;
     left: 0px;
@@ -850,7 +855,6 @@ c-sprite {
     z-index: 3;
     text-transform: uppercase;
 }
-
 .post-canvas {
     image-rendering: pixelated;
     width: 100%;
@@ -858,7 +862,6 @@ c-sprite {
     margin-top: -70px;
     background-color: #3d00ff;
 }
-
 .post-text {
     position: absolute;
     top: calc(100% - 85px);
@@ -866,12 +869,12 @@ c-sprite {
     height: 100%;
     padding: 5px 10px;
     background: #ffffff;
-    border-top: 4px solid #3d00ff;
+    border-top: 5px solid #3d00ff;
     color: #12004e;
-    background: #f4f0ff;
-    background-size: 35px;
+    /* background: #f4f0ff; */
+    background: repeating-linear-gradient(-45deg, #e7e0ff 0 10px, #f9f7ff 10px 20px);
+    /* background-size: 35px; */
 }
-
 .post-header {
     position: absolute;
     top: 0px;
@@ -885,7 +888,16 @@ c-sprite {
     font-weight: bold;
     color: white;
 }
-
+.post-header:after {
+    width: 100%;
+    height: 5px;
+    background: var(--post-striped);
+    top: 30px;
+    left: 0;
+    position: absolute;
+    content: "";
+    z-index: 0;
+}
 .post-close {
     position: absolute;
     right: 2.6px;
@@ -899,7 +911,6 @@ c-sprite {
     top: 2.5px;
     border-radius: 100px;
 }
-
 .post-next {
     position: absolute;
     right: 2.6px;
@@ -913,22 +924,20 @@ c-sprite {
     top: 50%;
     border-radius: 100px;
 }
-
 .post-profile-icon {
     position: absolute;
     top: 10px;
     left: 12px;
     scale: 1.6;
-    background: #4800ff;
+    background: var(--post-striped);
     display: flex;
     width: 22px;
     height: 22px;
     justify-content: center;
     border-radius: 100%;
     overflow: hidden;
-    outline: white 1px solid;
+    outline: #3d00ff 2px solid;
 }
-
 .post-profile-icon>c-sprite {
     margin-right: 0px !important;
 }
