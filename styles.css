@@ -827,6 +827,9 @@ c-sprite.ui-food {
     transform: scale(1.2);
     pointer-events: none;
 }
+c-sprite {
+    display: inline-flex;
+}
 
 .user-id {
     position: absolute;

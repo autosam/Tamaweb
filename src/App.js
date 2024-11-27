@@ -2772,6 +2772,10 @@ let App = {
                 {
                     name: `<span style="color: #ff00c6"><i class="icon fa-solid fa-globe"></i> hubchi</span>`,
                     onclick: () => {
+                        if(App.petDefinition.lifeStage <= 0){
+                            return App.displayPopup(`${App.petDefinition.name} is not old enough to go to hubchi!`);
+                        }
+
                         if(!App.userName){
                             App.handlers.show_set_username_dialog();
                             return true;
