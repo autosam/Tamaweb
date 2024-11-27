@@ -533,8 +533,8 @@ class Pet extends Object2d {
         }
 
         switch(this.petDefinition.lifeStage){
-            case 0: depletion_mult *= 1.65;
-            case 1: depletion_mult *= 1.3;
+            case 0: depletion_mult *= 1.65; break;
+            case 1: depletion_mult *= 1.3; break;
         }
 
         if(this.stats.is_at_parents){
@@ -668,8 +668,9 @@ class Pet extends Object2d {
             }
         })
         // increasing
-        const eligibleForCareIncrease = careAffectingStats.every(statName => this.stats[statName] > 90);
-        const shouldResetCareIncreaseFlag = careAffectingStats.some(statName => this.stats[statName] < 70);
+        const careIncreaseThreshold = this.stats.hunger_satisfaction || 85; // this value is based on lowest satisfaction stat
+        const eligibleForCareIncrease = careAffectingStats.every(statName => this.stats[statName] > careIncreaseThreshold);
+        const shouldResetCareIncreaseFlag = careAffectingStats.some(statName => this.stats[statName] < 65);
         if(eligibleForCareIncrease){
             if(this.stats.should_care_increase){
                 this.stats.should_care_increase = false;

@@ -141,7 +141,7 @@ class PetDefinition {
         speed: 0.01,
         // hunger
         max_hunger: 100,
-        hunger_satisfaction: 80, // note: when reaching this they won't want anymore food
+        hunger_satisfaction: 85, // note: when reaching this they won't want anymore food
         hunger_min_desire: 40, // note: when below this number they desire it
         hunger_depletion_rate: 0.0145,
         activity_hunger_depletion: 0.5,
