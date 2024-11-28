@@ -380,6 +380,24 @@ let App = {
                     }
                 })
             })
+
+            if(!App.temp.defaultHomeSceneConfig){
+                App.temp.defaultHomeSceneConfig = {
+                    petY: App.scene.home.petY,
+                    shadowOffset: App.scene.home.shadowOffset
+                }
+            }
+
+            App.scene.home.petY = '90%';
+            App.scene.home.shadowOffset = -10;
+        } else {
+            if(App.temp.defaultHomeSceneConfig){
+                App.scene.home.petY = App.temp.defaultHomeSceneConfig.petY;
+                App.scene.home.shadowOffset = App.temp.defaultHomeSceneConfig.shadowOffset;
+            }
+        }
+        if(App.currentScene){
+            App.setScene(App.currentScene);
         }
     },
     loadMods: function(mods){
@@ -637,9 +655,6 @@ let App = {
 
         const addEvent = App.addEvent;
 
-        const date = new Date();
-        const dayId = date.getFullYear() + '_' + date.getMonth() + '_' + date.getDate();
-
         if(!App.userName){
             App.handlers.show_set_username_dialog();
             return;
@@ -726,7 +741,7 @@ let App = {
             ]);
         })) return; */
 
-        if(App.isSalesDay()){
+        /* if(App.isSalesDay()){
             if(addEvent(`sales_day_${dayId}_notice`, () => {
                 App.displayConfirm(`<b>discount day!</b><br>Shops are selling their products at a discounted rate! Check them out and pile up on them!`, [
                     {
@@ -736,7 +751,7 @@ let App = {
                     }
                 ]);
             })) return;
-        }
+        } */
     },
     scene: {
         home: new Scene({
@@ -891,12 +906,24 @@ let App = {
                 this.platform.removeObject();
                 this.lightRays.removeObject();
             }
-        })
+        }),
+        garden: new Scene({
+            image: 'resources/img/background/outside/garden_01.png',
+            petY: '95%',
+            shadowOffset: -5,
+            onLoad: () => {
+                App.pet.staticShadow = false;
+            },
+            onUnload: () => {
+                App.pet.staticShadow = true;
+            }
+        }),
+        beach: new Scene({
+            image: 'resources/img/background/house/beach_01.png',
+        }),
     },
     setScene(scene){
-        if(App.currentScene && App.currentScene.onUnload){
-            App.currentScene.onUnload(scene);
-        }
+        App.currentScene?.onUnload?.(scene);
 
         App.currentScene = scene;
         App.pet.x = scene.petX || '50%';
@@ -1032,6 +1059,32 @@ let App = {
         });
     },
     runRandomEncounters: function(){
+        if(
+            App.pet.stats.is_egg ||
+            App.pet.stats.is_at_parents ||
+            App.pet.stats.is_at_vacation ||
+            App.pet.stats.is_dead
+        ) return;
+
+        // newspaper delivery
+        const newspaperDeliveryMs = App.getRecord('newspaper_delivery_ms') || 0;
+        const shouldDeliver = moment().startOf('day').diff(moment(newspaperDeliveryMs), 'days') > 0;
+        if(shouldDeliver && !App.pet.stats.is_sleeping){
+            setTimeout(() => {
+                const checkForDecentDeliveryTime = () => {
+                    if(App.pet.isDuringScriptedState() || App.haveAnyDisplays()) 
+                        return;
+
+                    App.unregisterOnDrawEvent(checkForDecentDeliveryTime);
+                    Activities.getMail();
+                    const nextMs = Date.now();
+                    App.addRecord('newspaper_delivery_ms', nextMs, true);
+                }
+                App.registerOnDrawEvent(checkForDecentDeliveryTime);
+            }, random(1000, 2000))
+        }
+
+        // entity encounter
         if(Activities.encounter()) return;
     },
     handlers: {
@@ -1085,6 +1138,38 @@ let App = {
                 }
             ])
         },
+        show_newspaper: function(headline, text){
+            if(!headline && !text){
+                [headline, text] = randomFromArray(App.definitions.mail.affirmations);
+            }
+
+            const salesDaySection = !App.isSalesDay() ? '' : `
+                <div>
+                    <b style="color: orangered;">Discount Day!</b>
+                    <br>
+                    Local shops are slashing prices for today only. Don't miss out on huge savings! Check them out and save big!
+                    <br><br><br>
+                </div>
+            `;
+
+            const container = App.displayEmpty('bg-white flex flex-dir-col');
+                container.style = `background: repeating-linear-gradient(0deg, white 0px, white 11px, rgb(201, 201, 201) 10px, white 12px) local; backdrop-filter: blur(100px)`
+            container.innerHTML = `
+            <img class="width-full" src="resources/img/misc/newspaper_header_01.png"></img>
+            <div style="text-align: left;" class="inner-padding">
+                ${salesDaySection}
+                <b>${headline}</b>
+                <hr style="background: #0000003d; display: none">
+                <br><br>
+                <span>${text}</span>
+                <br>
+                </div>
+            <button style="margin: 10px; margin-top: 10px; flex: 1" class="generic-btn stylized back-btn news-close">Ok</button>
+            <i style="position: absolute;top: 0;right: 0;padding: 10px;border-radius: 100%;width: 10px;height: 10px;display: inline-flex;align-items: center;justify-content: center;color: #000000;cursor: pointer;" class="fa-solid fa-times news-close"></i>
+            `;
+
+            [...container.querySelectorAll('.news-close')].forEach(btn => btn.onclick = container.close);
+        },
         open_main_menu: function(){
             const runControlOverwrite = () => {
                 if(!App.gameplayControlsOverwrite) return;
@@ -1109,9 +1194,17 @@ let App = {
             ])
         },
         open_care_menu: function(){
+            const getUnclaimedRewardsBadge = () => {
+                return Missions.hasUnclaimedRewards() 
+                    ? App.getBadge('!')
+                    : '';
+            }
             App.displayList([
                 {
-                    name: `daily missions ${App.getBadge()}`,
+                    _mount: (me) => {
+                        me.innerHTML = `Missions ${getUnclaimedRewardsBadge()}`
+                    },
+                    name: '',
                     onclick: () => {
                         Missions.openMenu();
                         return true;
@@ -1155,6 +1248,13 @@ let App = {
                         ])
                         
                         return true;
+                    }
+                },
+                {
+                    _ignore: true,
+                    name: `backyard ${App.getBadge()}`,
+                    onclick: () => {
+                        Activities.goToGarden();
                     }
                 },
                 {
@@ -1208,6 +1308,43 @@ let App = {
                         App.handlers.clean();
                     }
                 }
+            ])
+        },
+        open_credits: function(){
+            return App.displayList([
+                {
+                    type: 'text',
+                    name: `<small>developed by</small>
+                    <br>
+                    SamanDev
+                    <small>
+                        <a href="https://discord.gg/FdwmmWRaTd" target="_blank">discord</a>
+                        <a href="https://samandev.itch.io" target="_blank">itch</a>
+                    </small>
+                    `
+                },
+                {
+                    type: 'text',
+                    name: `<small>art by</small>
+                        <br>
+                        <div class="credit-author surface-stylized">
+                            <a href="https://samandev.itch.io" target="_blank">
+                                SamanDev
+                            </a>
+                        </div>
+                        <div class="credit-author surface-stylized">
+                            <a href="https://sa311.tumblr.com/post/163140958242/about-me" target="_blank">
+                                Curlour
+                            </a>
+                            <small>(eternitchi)</small>
+                        </div>
+                        <div class="credit-author surface-stylized">
+                            <a href="https://vairasmythe.carrd.co/" target="_blank">
+                                Vaira Smythe
+                            </a>
+                        </div>
+                    `
+                },
             ])
         },
         open_settings: function(){
@@ -1723,17 +1860,18 @@ let App = {
                     }
                 },
                 {
-                    name: 'reset save data',
+                    name: 'reset pet data',
                     onclick: () => {
-                        App.displayConfirm('Are you sure you want to delete your save game?', [
+                        App.displayConfirm('Are you sure you want to delete your saved pet?', [
                             {
-                                name: 'yes',
+                                name: 'yes (delete)',
                                 onclick: () => {
                                     App.save();
                                     App.save = () => {};
                                     // window.localStorage.clear();
                                     window.localStorage.removeItem('last_time');
                                     window.localStorage.removeItem('pet');
+                                    App.displayPopup('resetting...', App.INF);
                                     location.reload();
                                     return false;
                                 }
@@ -1747,7 +1885,47 @@ let App = {
                         return true;
                     }
                 },
+                {
+                    name: 'factory reset',
+                    onclick: () => {
+                        App.displayConfirm('Are you sure you want to completely delete your data? this will reset your pets, achievements, online id and everything else!', [
+                            {
+                                name: 'yes',
+                                onclick: () => {
+                                    App.displayConfirm('Are you sure? There is no way to revert this.', [
+                                        {
+                                            name: 'yes (delete)',
+                                            onclick: () => {
+                                                App.save = () => {};
+                                                window.localStorage.clear();
+                                                App.displayPopup('resetting...', App.INF);
+                                                location.reload();
+                                                return false;
+                                            }
+                                        },
+                                        {
+                                            name: 'no',
+                                            class: 'back-btn',
+                                            onclick: () => { }
+                                        }
+                                    ])
+
+                                }
+                            },
+                            {
+                                name: 'no',
+                                class: 'back-btn',
+                                onclick: () => { }
+                            }
+                        ])
+                        return true;
+                    }
+                },
                 { type: 'separator' },
+                {
+                    name: 'credits',
+                    onclick: () => App.handlers.open_credits(),
+                },
                 {
                     name: `send feedback`,
                     onclick: () => {
@@ -1773,7 +1951,6 @@ let App = {
                     link: App.routes.BLOG,
                     name: `<b>see changelog</b> ${App.getBadge(null, 'neutral')}`,
                     onclick: () => {
-                        // App.pet.stats.gold += 250;
                         App.sendAnalytics('go_to_blog');
                         return true;
                     },
@@ -1782,10 +1959,7 @@ let App = {
                     // _ignore: true,
                     link: 'https://discord.gg/FdwmmWRaTd',
                     name: '<b>join discord</b>',
-                    onclick: () => {
-                        // App.pet.stats.gold += 250;
-                        return true;
-                    },
+                    onclick: () => true,
                 },
                 { type: 'separator' },
                 {
@@ -1941,7 +2115,9 @@ let App = {
         open_food_list: function(buyMode, activeIndex, filterType){
             let list = [];
             let sliderInstance;
-            let salesDay = App.isSalesDay();
+            const salesDay = App.isSalesDay();
+            const dayId = App.getDayId(true);
+            let index = -1;
             for(let food of Object.keys(App.definitions.food)){
                 let current = App.definitions.food[food];
 
@@ -1959,6 +2135,11 @@ let App = {
                     continue;
                 }
 
+                // some entries become randomly unavailable to buy for the day
+                if(++index && buyMode && !random(0, 1, dayId + (index * 256))){
+                    continue;
+                }
+
                 // 50% off on sales day
                 let price = current.price;
                 if(salesDay) price = Math.round(price / 2);
@@ -1966,6 +2147,7 @@ let App = {
                 list.push({
                     name: `${App.getFoodCSprite(current.sprite)} ${food.toUpperCase()} (x${App.pet.inventory.food[food] > 0 ? App.pet.inventory.food[food] : (!current.price ? '∞' : 0)}) <b>${buyMode ? `$${price}` : ''}</b>`,
                     onclick: (btn, list) => {
+                        // buy mode
                         if(buyMode){
                             if(App.pet.stats.gold < price){
                                 App.displayPopup(`Don't have enough gold!`);
@@ -1980,8 +2162,16 @@ let App = {
                             return false;
                         }
 
+                        // eat mode
+                        const reopenFn = (noLongerHungry) => {
+                            if(noLongerHungry && current.type == 'food') return;
+
+                            App.handlers.open_feeding_menu();
+                            App.handlers.open_food_list(false, sliderInstance?.getCurrentIndex(), current.type);
+                        }
+
                         App.closeAllDisplays();
-                        let ateFood = App.pet.feed(current.sprite, current.hunger_replenish, current.type);
+                        let ateFood = App.pet.feed(current.sprite, current.hunger_replenish, current.type, null, reopenFn);
                         if(ateFood) {
                             if(App.pet.inventory.food[food] > 0)
                                 App.pet.inventory.food[food] -= 1;
@@ -2002,9 +2192,10 @@ let App = {
                 return;
             }
 
+            if(buyMode) list.push(list.shift());
+
             sliderInstance = App.displaySlider(list, activeIndex, {accept: buyMode ? 'Purchase' : 'Eat'}, buyMode ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}` : null);
             return sliderInstance;
-            return App.displayList(list);
         },
         open_feeding_menu: function(){
             App.displayList([
@@ -2074,7 +2265,7 @@ let App = {
                     }
                 },
                 {
-                    name: `collection ${App.getBadge()}`,
+                    name: `collection`,
                     onclick: () => {
                         App.handlers.open_character_collection();
                         return true;
@@ -2540,29 +2731,17 @@ let App = {
                             },
                             {
                                 _ignore: App.petDefinition.lifeStage < 2 || friendDef.lifeStage < 2 || friendDef.stats.is_player_family,
-                                name: 'marry',
+                                name: `go on date ${App.getBadge()}`,
                                 onclick: () => {
-                                    if(friendDef.getFriendship() < 70){
-                                        return App.displayPopup(`${App.petDefinition.name}'s friendship with ${friendDef.name} is too low <br><br> they don't want to marry each other`, 5000);
+                                    if(friendDef.getFriendship() < 60){
+                                        return App.displayPopup(`${App.petDefinition.name}'s friendship with ${friendDef.name} is too low <br><br> they don't want to go on a date.`, 5000);
                                     }
 
-                                    App.displayConfirm(`${App.petDefinition.name} and <div>${icon} ${friendDef.name}</div> will get married and you'll recieve their egg`, [
+                                    App.displayConfirm(`Do you want to go on a date with <div>${icon} ${friendDef.name}</div>?`, [
                                         {
-                                            name: 'ok',
+                                            name: 'yes',
                                             onclick: () => {
-                                                App.displayConfirm(`Are you sure?`, [
-                                                    {
-                                                        name: 'yes',
-                                                        onclick: () => {
-                                                            Activities.wedding(friendDef);
-                                                        }
-                                                    },
-                                                    {
-                                                        name: 'no',
-                                                        class: 'back-btn',
-                                                        onclick: () => {}
-                                                    },
-                                                ]);
+                                                Activities.goOnDate(friendDef);
                                             }
                                         },
                                         {
@@ -2645,8 +2824,12 @@ let App = {
         open_phone: function(){
             App.displayList([
                 {
-                    name: `<span style="color: #ff00c6"><i class="icon fa-solid fa-globe"></i> hubchi</span> ${App.getBadge()}`,
+                    name: `<span style="color: #ff00c6"><i class="icon fa-solid fa-globe"></i> hubchi</span> ${App.getBadge('date!')}`,
                     onclick: () => {
+                        if(App.petDefinition.lifeStage <= 0){
+                            return App.displayPopup(`${App.petDefinition.name} is not old enough to go to hubchi!`);
+                        }
+
                         if(!App.userName){
                             App.handlers.show_set_username_dialog();
                             return true;
@@ -2656,29 +2839,42 @@ let App = {
                             return App.displayPopup(`${App.petDefinition.name} is too sleepy to go to HUBCHI!`);
                         }
 
-                        Activities.onlineHubTransition(async (fadeOverlay) => {
-                            setTimeout(() => App.playSound('resources/sounds/task_complete.ogg', true));
-                            const popup = App.displayPopup('Connecting...', App.INF);
-                            App.temp.online = {};
-                            App.temp.online.hasUploadedPetDef = await App.apiService.getPetDef();
-                            App.temp.online.randomPetDefs = await App.apiService.getRandomPetDefs(7);
-                            // App.temp.online = JSON.parse('{"hasUploadedPetDef":{"status":true,"data":"{\\"name\\":\\"Missiechu\\",\\"sprite\\":\\"resources/img/character/chara_248b.png\\",\\"accessories\\":[\\"mini band\\",\\"secretary\\"]}"},"randomPetDefs":{"status":true,"data":[{"name":"farah3","sprite":"resources/img/character/chara_51b.png","accessories":[],"owner":"test3","ownerId":"test3-1234","interactions":0},{"name":"sep2","sprite":"resources/img/character/chara_50b.png","accessories":[],"owner":"test2","ownerId":"test2-1234","interactions":2},{"name":"qoli4","sprite":"resources/img/character/chara_210b.png","accessories":["witch hat"],"owner":"test4","ownerId":"test4-1234","interactions":0},{"name":"<saman1>","sprite":"resources/img/character/chara_28b.png","accessories":[],"owner":"test","ownerId":"test-1234","interactions":0},{"name":"Missiechu","sprite":"resources/img/character/chara_248b.png","accessories":["mini band","secretary"],"owner":"samandev","ownerId":"samandev-3430186","interactions":3}]}}');
-                            popup.close();
-                            App.closeAllDisplays();
-                            fadeOverlay.direction = false;
-    
-                            if(!App.temp.online?.randomPetDefs){
-                                App.displayPopup('Error! Cannot connect.');
-                                App.setScene(App.scene.home);
-                                App.toggleGameplayControls(true);
-                                return false;
-                            }
-                            
-                            setTimeout(() => App.playSound('resources/sounds/task_complete_02.ogg', true));
-                            Activities.goToOnlineHub();
-                        })
-
-                        App.sendAnalytics('go_to_online_hub');
+                        return App.displayConfirm(`Enter Hubchi?`, [
+                            {
+                                name: 'yes',
+                                onclick: async () => {
+                                    App.closeAllDisplays();
+                                    Activities.onlineHubTransition(async (fadeOverlay) => {
+                                        setTimeout(() => App.playSound('resources/sounds/task_complete.ogg', true));
+                                        const popup = App.displayPopup('Connecting...', App.INF);
+                                        App.temp.online = {};
+                                        App.temp.online.hasUploadedPetDef = await App.apiService.getPetDef();
+                                        App.temp.online.randomPetDefs = await App.apiService.getRandomPetDefs(7);
+                                        // App.temp.online = JSON.parse('{"hasUploadedPetDef":{"status":true,"data":"{\\"name\\":\\"Missiechu\\",\\"sprite\\":\\"resources/img/character/chara_248b.png\\",\\"accessories\\":[\\"mini band\\",\\"secretary\\"]}"},"randomPetDefs":{"status":true,"data":[{"name":"farah3","sprite":"resources/img/character/chara_51b.png","accessories":[],"owner":"test3","ownerId":"test3-1234","interactions":0},{"name":"sep2","sprite":"resources/img/character/chara_50b.png","accessories":[],"owner":"test2","ownerId":"test2-1234","interactions":2},{"name":"qoli4","sprite":"resources/img/character/chara_210b.png","accessories":["witch hat"],"owner":"test4","ownerId":"test4-1234","interactions":0},{"name":"<saman1>","sprite":"resources/img/character/chara_28b.png","accessories":[],"owner":"test","ownerId":"test-1234","interactions":0},{"name":"Missiechu","sprite":"resources/img/character/chara_248b.png","accessories":["mini band","secretary"],"owner":"samandev","ownerId":"samandev-3430186","interactions":3}]}}');
+                                        popup.close();
+                                        App.closeAllDisplays();
+                                        fadeOverlay.direction = false;
+                
+                                        if(!App.temp.online?.randomPetDefs){
+                                            App.displayPopup('Error! Cannot connect.');
+                                            App.setScene(App.scene.home);
+                                            App.toggleGameplayControls(true);
+                                            return false;
+                                        }
+                                        
+                                        setTimeout(() => App.playSound('resources/sounds/task_complete_02.ogg', true));
+                                        Activities.goToOnlineHub();
+                                    })
+            
+                                    App.sendAnalytics('go_to_online_hub');
+                                }
+                            },
+                            {
+                                name: 'no',
+                                class: 'back-btn',
+                                onclick: () => {}
+                            },
+                        ])
                     }
                 },
                 {
@@ -2743,6 +2939,8 @@ let App = {
                                     }
                                     App.pet.stats.gold -= price;
                                     goToVacation(Activities.seaVacation)
+                                    App.sendAnalytics('go_on_vacation');
+                                    App.definitions.achievements.go_to_vacation_x_times.advance();
                                 }
                             },
                             {
@@ -2843,7 +3041,14 @@ let App = {
             ])
         },
         open_social_media: function(){
-            function showPost(petDefinition, noMood){
+            if(!App.temp.seenSocialMediaPosts){
+                App.temp.seenSocialMediaPosts = 0;
+            }
+            function showPost(petDefinition, noMood, noNextBtn){
+                if(++App.temp.seenSocialMediaPosts >= 12){
+                    return App.displayPopup('There are no more social media posts, comeback later!');
+                }
+
                 Missions.done(Missions.TYPES.check_social_post);
 
                 let post = document.querySelector('.cloneables .post-container').cloneNode(true);
@@ -2866,67 +3071,47 @@ let App = {
                 }
                 App.toggleGameplayControls(false, close);
                 post.querySelector('.post-close').onclick = close;
+                post.querySelector('.post-next').onclick = () => {
+                    close();
+                    showRandomPost();
+                };
+                if(noNextBtn){
+                    post.querySelector('.post-next').remove();
+                }
 
                 let homeBackground = App.scene.home.image;
                 if(petDefinition !== App.petDefinition)
-                    homeBackground = randomFromArray([
-                        "resources/img/background/house/01.jpg",
-                        "resources/img/background/house/02.png",
-                        "resources/img/background/house/03.png",
-                        "resources/img/background/house/04.png",
-                    ])
+                    homeBackground = randomFromArray(
+                        Object.keys(App.definitions.room_background)
+                        .map(roomName => 
+                            App.definitions.room_background[roomName].image
+                        )
+                    )
                 
-                let background = new Object2d({
+                const background = new Object2d({
                     drawer: postDrawer,
                     img: homeBackground,
                     x: 0, y: 0, width: 96, height: 96,
                 });
 
 
-                let characterPositions = ['50%', '20%', '80%'],
+                const characterPositions = ['50%', '20%', '80%'],
                     characterSpritePoses = [1, 11, 14, 8, 2, 12];
 
-                let character = new Object2d({
+                const character = new Object2d({
                     drawer: postDrawer,
                     spritesheet: {...petDefinition.spritesheet, cellNumber: randomFromArray(characterSpritePoses)},
                     // image: App.pet.image.cloneNode(),
                     // img: petDefinition.sprite,
                     image: App.preloadedResources[petDefinition.sprite],
-                    x: randomFromArray(characterPositions), y: 55,
+                    x: randomFromArray(characterPositions), y: 55 + (petDefinition.spritesheet.offsetY * 2 || 0),
                 })
 
                 post.querySelector('.post-header').innerHTML = petDefinition.name;
 
                 switch(App.pet.state){
                     default:
-                        let generalTweets = [
-                            [`Found a crumb today, it's like a feast! #TinyTreats`, 1, "resources/img/background/house/kitchen_02.png"],
-                            ['#vibing_around', 1, null],
-                            ['#sunny_day', 1, "resources/img/background/outside/park_02.png"],
-                            ['Riding on a leaf down the stream. Best. Day. Ever. #LeafBoat', 2, null],
-                            ['Naptime in a matchbox bed. Cozy as can be! #SmallDreams', 16, "resources/img/background/house/dark_overlay.png"],
-                            ['Danced in a raindrop, got soaked! #RaindropDance', 8, "resources/img/background/house/dark_overlay.png"],
-                            ['Whispered my wish to a dandelion. Hope it comes true! #DandelionWishes', 10, null],
-                            ['Tried to lift a pebble, felt like a superhero! #TinyStrength', 1, "resources/img/background/outside/park_02.png"],
-                            [`Stargazing tonight, every star is a giant wish waiting to happen! #StarrySky`, 1, "resources/img/background/outside/park_02.png"],
-                            [`A butterfly landed on me, I'm a landing pad! #ButterflyFriends`, 2, "resources/img/background/outside/park_02.png"],
-                            [`A dewdrop became my crystal ball. I see big adventures ahead! #DewdropVisions`, 7, null],
-                            [`Got lost in a garden maze of grass. Blades like skyscrapers! #GrasslandAdventures`, 1, "resources/img/background/outside/park_02.png"],
-                            [`Shared a berry with an ant. It's all about sharing, no matter your size! #BerryFeast`, 8, "resources/img/background/outside/park_02.png"],
-                            [`Found a feather and flew for a moment. #FeatherFlight`, 8, null],
-                            [`Played hide and seek. Best hider ever! #TinyGames`, 2, null],
-                            [`A leaf fell on me. Guess I'm a tree now!`, 8, "resources/img/background/outside/park_02.png"],
-                            [`#onthatgrind`, 14, "resources/img/background/house/office_01.png"],
-                            [`checking out the market #shopping`, 10, "resources/img/background/outside/market_01.png"],
-                            [`the prices are so high! #whatisthis`, 7, "resources/img/background/outside/market_01.png"],
-                            [`looking for a cute #headband!`, 8, "resources/img/background/outside/market_01.png"],
-                            [`lost again! don't wanna play anymore! #hategaming`, 6, "resources/img/background/house/arcade_01.png"],
-                            [`I'm just better! #gaming`, 2, "resources/img/background/house/arcade_01.png"],
-                            [`Won again! #ilovegaming`, 2, "resources/img/background/house/arcade_01.png"],
-                        ];
-
-                        let tweet = randomFromArray(generalTweets);
-
+                        const tweet = randomFromArray(App.definitions.tweets.generic);
                         postText.innerHTML = tweet[0]; // text
                         if(tweet[1]) character.spritesheet.cellNumber = tweet[1]; // pose
                         if(tweet[2]) background.setImg(tweet[2]); // background
@@ -2956,39 +3141,40 @@ let App = {
                 }
             }
 
+            const showRandomPost = () => {
+                App.petDefinition.stats.current_fun += random(0, 5);
+                let otherPetDef;
+                if(App.petDefinition.friends && App.petDefinition.friends.length){
+                    otherPetDef = randomFromArray(App.petDefinition.friends);
+                } else {
+                    otherPetDef = App.getRandomPetDef();
+                }
+                showPost(otherPetDef, true);
+            }
+
             App.displayList([
                 {
                     name: 'make post',
                     onclick: () => {
                         App.petDefinition.stats.current_fun += random(1, 5);
-                        showPost(App.petDefinition);
+                        showPost(App.petDefinition, null, true);
                         return true;
                     }
                 },
                 {
                     name: 'explore posts',
                     onclick: () => {
-                        App.petDefinition.stats.current_fun += random(0, 5);
-                        let otherPetDef;
-                        if(App.petDefinition.friends && App.petDefinition.friends.length){
-                            otherPetDef = randomFromArray(App.petDefinition.friends);
-                        } else {
-                            otherPetDef = App.getRandomPetDef();
-                        }
-                        showPost(otherPetDef, true);
+                        showRandomPost();
                         return true;
                     }
                 },
                 {
                     name: 'find friends',
                     onclick: () => {
-                        const date = new Date();
-                        const dayId = date.getFullYear() + date.getMonth() + date.getDate();
-
-                        let seed = App.userId + dayId;
-
-                        let potentialFriends = new Array(8).fill(undefined).map((spot, i) => App.getRandomPetDef(App.petDefinition.lifeStage, seed + (i * 128)));
-
+                        const seed = App.getDayId(true);
+                        let potentialFriends = new Array(8)
+                            .fill(undefined)
+                            .map((spot, i) => App.getRandomPetDef(App.petDefinition.lifeStage, seed + (i * 128)));
                         App.displayGrid([...potentialFriends.map(otherPetDef => {
                             return {
                                 name: `${otherPetDef.getFullCSprite()}`,
@@ -3044,11 +3230,17 @@ let App = {
         },
         open_mall_activity_list: function(){
             const hasNewDecor = Object.keys(App.definitions.room_background).some(key => {
-                const isUnlocked = App.definitions.room_background[key].unlockKey && App.getRecord(App.definitions.room_background[key].unlockKey);
+                const isUnlocked = 
+                    App.definitions.room_background[key].unlockKey ? 
+                    App.getRecord(App.definitions.room_background[key].unlockKey) : 
+                    true;
                 return App.definitions.room_background[key].isNew && isUnlocked;
             });
             const hasNewAccessory = Object.keys(App.definitions.accessories).some(key => {
-                const isUnlocked = App.definitions.accessories[key].unlockKey && App.getRecord(App.definitions.accessories[key].unlockKey);
+                const isUnlocked = 
+                    App.definitions.accessories[key].unlockKey ? 
+                    App.getRecord(App.definitions.accessories[key].unlockKey) : 
+                    true;
                 return App.definitions.accessories[key].isNew && isUnlocked;
             });
 
@@ -3105,6 +3297,15 @@ let App = {
                         App.handlers.open_food_list(true, null, "med");
                         return true;
                     }
+                },
+                {
+                    name: `
+                    <small>
+                        <i class="fa-solid fa-info-circle"></i>
+                        Shop stock changes daily, so check back often for new food and snacks!
+                    </small>
+                    `,
+                    type: 'text',
                 },
             ])
         },
@@ -3405,7 +3606,7 @@ let App = {
         }
 
         let maxIndex = listItems.length,
-            currentIndex = activeIndex || 0,
+            currentIndex = Math.min(activeIndex, listItems.length - 1) || 0,
             contentElement = list.querySelector('.content'),
             acceptBtn = list.querySelector('#accept-btn'),
             cancelBtn = list.querySelector('#cancel-btn');
@@ -3639,13 +3840,26 @@ let App = {
             // menu animation
             if(e.target.classList.contains('back-btn') || e.target.parentElement?.classList.contains('back-btn')){
                 const previousListItem = [...document.querySelectorAll('.screen-wrapper .generic-list-container')].at(-1);
-                if(previousListItem && previousListItem.transitionAnim) previousListItem.transitionAnim();
+                if(previousListItem){
+                    previousListItem.transitionAnim?.();
+                    [...previousListItem.children].forEach(child => child?._mount?.(child));
+                }
                 UI.lastClickedButton = null;
             }
         })
     },
     formatTo12Hours: function(hour){
         return hour > 12 ? hour - 12 + 'pm' : hour + 'am';
+    },
+    getDayId: function(forCurrentUser){
+        if(forCurrentUser){
+            return +(
+                App.getDayId() + (App.userId || 1234)
+            ).slice(0, 16);
+        }
+
+        const date = new Date();
+        return +`${date.getFullYear()}${date.getMonth()}${date.getDate() + 2}`;
     },
     isSalesDay: function(){
         let day = new Date().getDate();

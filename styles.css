@@ -827,6 +827,11 @@ c-sprite.ui-food {
     transform: scale(1.2);
     pointer-events: none;
 }
+c-sprite {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+}
 
 .user-id {
     position: absolute;
@@ -837,6 +842,10 @@ c-sprite.ui-food {
     text-shadow: none !important;
 }
 
+/* post */
+:root {
+    --post-striped: repeating-linear-gradient(-45deg, #ded4ff 0 10px, #bca8ff 10px 20px);
+}
 .post-container {
     position: absolute;
     left: 0px;
@@ -846,15 +855,13 @@ c-sprite.ui-food {
     z-index: 3;
     text-transform: uppercase;
 }
-
 .post-canvas {
     image-rendering: pixelated;
     width: 100%;
     height: 100%;
     margin-top: -70px;
-    background-color: white;
+    background-color: #3d00ff;
 }
-
 .post-text {
     position: absolute;
     top: calc(100% - 85px);
@@ -862,16 +869,16 @@ c-sprite.ui-food {
     height: 100%;
     padding: 5px 10px;
     background: #ffffff;
-    border-top: 4px solid #6022ff;
-    color: #272727;
-    background: repeating-linear-gradient(90deg, #ebe4ff 20%, white 80%);
-    background-size: 35px;
+    border-top: 5px solid #3d00ff;
+    color: #12004e;
+    /* background: #f4f0ff; */
+    background: repeating-linear-gradient(-45deg, #e7e0ff 0 10px, #ded2ff 10px 20px);
+    /* background-size: 35px; */
 }
-
 .post-header {
     position: absolute;
     top: 0px;
-    background: linear-gradient(45deg, #6022ff 50%, #b294ff);
+    background: #3d00ff;
     width: 100%;
     height: 30px;
     line-height: 33px;
@@ -881,7 +888,16 @@ c-sprite.ui-food {
     font-weight: bold;
     color: white;
 }
-
+.post-header:after {
+    width: 100%;
+    height: 5px;
+    background: var(--post-striped);
+    top: 30px;
+    left: 0;
+    position: absolute;
+    content: "";
+    z-index: 0;
+}
 .post-close {
     position: absolute;
     right: 2.6px;
@@ -895,22 +911,33 @@ c-sprite.ui-food {
     top: 2.5px;
     border-radius: 100px;
 }
-
+.post-next {
+    position: absolute;
+    right: 2.6px;
+    height: 25px;
+    width: 25px;
+    background: #3d00ff;
+    color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 50%;
+    border-radius: 100px;
+}
 .post-profile-icon {
     position: absolute;
     top: 10px;
     left: 12px;
     scale: 1.6;
-    background: #4800ff;
+    background: var(--post-striped);
     display: flex;
     width: 22px;
     height: 22px;
     justify-content: center;
     border-radius: 100%;
     overflow: hidden;
-    outline: white 1px solid;
+    outline: #3d00ff 2px solid;
 }
-
 .post-profile-icon>c-sprite {
     margin-right: 0px !important;
 }
@@ -1078,6 +1105,10 @@ input#background-color-picker {
 
 .flex-dir-row {
     flex-direction: row;
+}
+
+.flex {
+    display: flex;
 }
 
 .height-auto {
@@ -1929,4 +1960,13 @@ hr {
     100% {
         opacity: 1;
     }
+}
+
+a {
+    color: #3d00ff;
+}
+
+.credit-author {
+    margin: 5px -10px;
+    padding: 5px 10px;
 }

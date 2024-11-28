@@ -1,5 +1,156 @@
 class Activities {
+    static async goOnDate(otherPetDef = App.getRandomPetDef(), onFailEnd){
+        App.closeAllDisplays();
+        App.toggleGameplayControls(false);
+        App.setScene(App.scene.beach);
+        const otherPet = new Pet(otherPetDef);
+
+        // moving in
+        otherPet.x = '70%';
+        otherPet.targetX = 0;
+        otherPet.triggerScriptedState('moving', 2000, false, true);
+        App.pet.x = '100%';
+        App.pet.targetX = 50;
+        await App.pet.triggerScriptedState('moving', 2000, false, true);
+
+        // date
+        App.pet.x = '70%';
+        otherPet.x = '30%';
+        otherPet.inverted = true;
+        otherPet.triggerScriptedState('eating', 8000, false, true);
+        await App.pet.triggerScriptedState('eating', 8000, false, true);
+        
+        // conclusion
+        const end = () => {
+            App.pet.stopScriptedState();
+            otherPet.removeObject();
+            App.setScene(App.scene.home);
+            App.toggleGameplayControls(true);
+        }
+        const determineBehavior = (pet, enjoyment) => {
+            if(enjoyment){
+                pet.showThought('thought_heart')
+                pet.triggerScriptedState('blush', App.INF, false, true);
+                App.playSound('resources/sounds/task_complete_02.ogg', true)
+            } else {
+                pet.showThought('thought_heart_broken')
+                pet.triggerScriptedState('idle_side_uncomfortable', App.INF, false, true);
+                pet.inverted = !pet.inverted;
+                setTimeout(() => App.playSound('resources/sounds/task_fail_01.ogg', true))
+            }
+        }
+        const petOverall = (App.pet.stats.current_fun + App.pet.stats.current_cleanliness + App.pet.stats.current_health + random(0, 100)) / 4;
+        const otherEnjoyment = random(30, 85) <= petOverall;
+        const petEnjoyment = otherEnjoyment ? !!random(0, 6) : random(0, 1); // just to make it more common for both parties to not like each other
+        determineBehavior(App.pet, petEnjoyment);
+        determineBehavior(otherPet, otherEnjoyment);
+        
+        setTimeout(() => {
+            if(!petEnjoyment || !otherEnjoyment){
+                let text = '';
+                if (!otherEnjoyment && !petEnjoyment) {
+                    text = `Oh no! ${App.petDefinition.name} and ${otherPetDef.name} didn't really hit it off!`;
+                } else if (!otherEnjoyment && petEnjoyment) {
+                    text = `${otherPetDef.name} didn't quite connect with ${App.petDefinition.name}!`;
+                } else {
+                    text = `${App.petDefinition.name} didn't quite connect with ${otherPetDef.name}!`;
+                }
+                return App.displayPopup(text, 5000, () => {
+                    end();
+                    onFailEnd?.();
+                    App.pet.stats.current_fun -= 35;
+                    App.pet.playUncomfortableAnimation();
+                });
+            }
+
+            App.pet.stats.current_fun += 40;
+            App.displayConfirm(`${App.petDefinition.name} and ${otherPetDef.name} had a wonderful time together! <br><br> Do you want to propose to ${otherPetDef.name}?`, [
+                {
+                    name: 'propose',
+                    onclick: () => {
+                        App.displayConfirm(`${App.petDefinition.name} and <div>${otherPetDef.getCSprite()} ${otherPetDef.name}</div> will get married and you'll receive their egg, are you sure?`, [
+                            {
+                                name: 'yes',
+                                onclick: () => {
+                                    end();
+                                    Activities.wedding(otherPetDef);
+                                }
+                            },
+                            {
+                                name: 'cancel',
+                                class: 'back-btn',
+                                onclick: () => {
+                                    App.definitions.achievements.not_propose_on_date_x_times.advance();
+                                    end();
+                                },
+                            }
+                        ])
+                    },
+                },
+                {
+                    name: 'cancel',
+                    class: 'back-btn',
+                    onclick: end
+                }
+            ])
+        }, 3000);
+    }
+    static goToGarden(){
+        App.pet.stopScriptedState();
+        App.setScene(App.scene.garden);
+        App.pet.x = '100%';
+        App.pet.targetX = 50;
+        App.toggleGameplayControls(false, () => {
+            return App.displayList([
+                {
+                    name: '<small> coming soon... </small>',
+                    type: 'text',
+                },
+                {
+                    name: '<i class="icon fa-solid fa-home"></i> go inside',
+                    onclick: () => {
+                        App.setScene(App.scene.home);
+                        App.toggleGameplayControls(true);
+                        App.pet.stopScriptedState();
+                        App.pet.x = '0%';
+                        App.pet.targetX = 50;
+                    }
+                }
+            ])
+        })
+    }
+    static getMail(){
+        App.pet.stopMove();
+        App.toggleGameplayControls(false);
+        App.setScene(App.scene.garden);
+        App.pet.x = '78%';
+        App.pet.inverted = false;
+        App.pet.triggerScriptedState('idle_side', App.INF, false, true);
+        const mailManDef = new PetDefinition({
+            sprite: NPC_CHARACTERS[1],
+            name: 'Nazotchi'
+        });
+        const mailMan = new Pet(mailManDef, {
+            x: '0%',
+            y: App.scene.garden.petY,
+            targetX: 50,
+        });
+        const payload = () => {
+            mailMan.removeObject();
+            App.handlers.show_newspaper();
+            App.pet.stopScriptedState();
+            App.toggleGameplayControls(true);
+            App.setScene(App.scene.home);
+            App.pet.x = '50%';
+        }
+        mailMan.triggerScriptedState('moving', 2500, null, true, () => {
+            mailMan.stopMove();
+            mailMan.playCheeringAnimation(payload, true);
+            App.pet.playCheeringAnimation();
+        });
+    }
     static onlineHubTransition(onEndFn){
+        Missions.done(Missions.TYPES.visit_online_hub);
         App.pet.stopMove();
         App.toggleGameplayControls(false);
         App.pet.x = '50%';
@@ -33,7 +184,6 @@ class Activities {
         App.pet.targetY = 50;
     }
     static async goToOnlineHub(){
-        Missions.done(Missions.TYPES.visit_online_hub);
         const {hasUploadedPetDef, randomPetDefs} = App.temp.online;
         const INTERACTION_LIKES = {
             outgoing: hasUploadedPetDef.interactionOutgoingLikes ?? 0,
@@ -68,6 +218,57 @@ class Activities {
         }
 
         // handlers
+        const despawnAllPets = () => {
+            otherPlayersPets.forEach(p => p?.removeObject?.());
+        }
+        const handleHangout = (def) => {
+            App.closeAllDisplays();
+            App.toggleGameplayControls(false);
+            despawnAllPets();
+            addInteraction(def);
+            Missions.done(Missions.TYPES.online_interact);
+            Activities.invitePlaydate(def, App.scene.online_hub, () => {
+                App.displayConfirm(`Do you want to add ${def.getCSprite()} ${def.name} to your friends list?`, [
+                    {
+                        name: 'yes',
+                        onclick: () => {
+                            App.closeAllDisplays();
+                            const addedFriend = App.petDefinition.addFriend(def, 1);
+                            if (addedFriend) {
+                                App.displayPopup(`${def.getCSprite()} ${def.name} has been added to the friends list!`, 3000);
+                                addInteraction(def);
+                            } else {
+                                App.displayPopup(`You are already friends with ${def.name}`, 3000);
+                            }
+                            return false;
+                        }
+                    },
+                    {
+                        name: 'no',
+                        class: 'back-btn',
+                        onclick: () => { }
+                    },
+                ])
+                setTimeout(() => Activities.goToOnlineHub());
+            })
+        }
+        const handleDate = (def) => {
+            return App.displayConfirm(`Do you want to go on a date with <div>${def.getCSprite()} ${def.name}</div>?`, [
+                {
+                    name: 'yes',
+                    onclick: () => {
+                        despawnAllPets();
+                        addInteraction(def);
+                        Activities.goOnDate(def, Activities.goToOnlineHub);
+                    }
+                },
+                {
+                    name: 'cancel',
+                    class: 'back-btn',
+                    onclick: () => {}
+                }
+            ])
+        }
         const handleInteract = () => {
             const petInteractions = otherPlayersPets.map(pet => {
                 const def = pet.petDefinition;
@@ -96,37 +297,12 @@ class Activities {
                             },
                             {
                                 name: 'hang out',
-                                onclick: () => {
-                                    App.closeAllDisplays();
-                                    App.toggleGameplayControls(false);
-                                    otherPlayersPets.forEach(p => p?.removeObject?.());
-                                    addInteraction(def);
-                                    Missions.done(Missions.TYPES.online_interact);
-                                    Activities.invitePlaydate(def, App.scene.online_hub, () => {
-                                        App.displayConfirm(`Do you want to add ${def.getCSprite()} ${def.name} to your friends list?`, [
-                                            {
-                                                name: 'yes',
-                                                onclick: () => {
-                                                    App.closeAllDisplays();
-                                                    const addedFriend = App.petDefinition.addFriend(def, 1);
-                                                    if (addedFriend) {
-                                                        App.displayPopup(`${def.getCSprite()} ${def.name} has been added to the friends list!`, 3000);
-                                                        addInteraction(def);
-                                                    } else {
-                                                        App.displayPopup(`You are already friends with ${def.name}`, 3000);
-                                                    }
-                                                    return false;
-                                                }
-                                            },
-                                            {
-                                                name: 'no',
-                                                class: 'back-btn',
-                                                onclick: () => { }
-                                            },
-                                        ])
-                                        setTimeout(() => Activities.goToOnlineHub());
-                                    })
-                                }
+                                onclick: () => handleHangout(def)
+                            },
+                            {
+                                _disable: App.petDefinition.lifeStage !== 2 || def.lifeStage !== 2,
+                                name: `go on date ${App.getBadge()}`,
+                                onclick: () => handleDate(def)
                             },
                         ])
                     }
@@ -137,7 +313,7 @@ class Activities {
                 {
                     name: `
                     <small>
-                        <i class="fa-solid fa-info-circle" style="padding-right: 8px"></i>
+                        <i class="fa-solid fa-info-circle"></i>
                         Every time you interact with another pet you'll receive 
                         <i class="fa-solid fa-thumbs-up"></i> ${INTERACTION_LIKES.receiving} 
                         and they'll receive
@@ -169,15 +345,17 @@ class Activities {
             ])
         }
         const handleSyncCharacter = () => {
+            return App.displayPopup('Syncing is now done automatically when entering Hubchi, this option will be removed later.', 4000);
+
             const confirm = App.displayConfirm(`Do you want to update your HUBCHI persona to be in sync with ${App.petDefinition.name}'s latest appearance?`, [
                 {
                     name: 'yes',
                     onclick: async () => {
-                        confirm.close();
-                        const popup = App.displayPopup('Syncing...', App.INF);
-                        const {status} = await App.apiService.addPetDef();
-                        popup.close();
-                        App.displayPopup(status ? 'Success!' : 'Error!');
+                        // confirm.close();
+                        // const popup = App.displayPopup('Syncing...', App.INF);
+                        // const {status} = await App.apiService.addPetDef();
+                        // popup.close();
+                        // App.displayPopup(status ? 'Success!' : 'Error!');
                         return false;
                     }
                 },
@@ -375,6 +553,10 @@ class Activities {
                         name: 'Upload character',
                         onclick: handleUploadCharacter
                     },
+                    {
+                        name: '<i class="icon fa-solid fa-home"></i> return home',
+                        onclick: handleReturnHome
+                    },
                 ])
             }
 
@@ -411,11 +593,11 @@ class Activities {
                     onclick: handleSyncCharacter,
                 },
                 {
-                    name: `rewards store ${App.getBadge()}`,
+                    name: `rewards store`,
                     onclick: handleRewardStore,
                 },
                 {
-                    name: `add friend ${App.getBadge()}`,
+                    name: `add friend`,
                     onclick: handleFriendSearch,
                 },
                 {
@@ -453,7 +635,6 @@ class Activities {
         return true;
     }
     static goToVacation(vacationFn){
-        App.definitions.achievements.go_to_vacation_x_times.advance();
         App.closeAllDisplays();
         App.toggleGameplayControls(false);
         App.pet.stopMove();
@@ -468,7 +649,6 @@ class Activities {
         App.pet.stats.is_at_vacation = true;
         App.save();
         App.setScene(App.scene.seaVacation);
-        App.sendAnalytics('at_vacation');
 
         const end = () => {
             App.toggleGameplayControls(false);

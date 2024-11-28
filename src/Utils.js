@@ -1,8 +1,8 @@
-let pRandom = {
+const pRandom = {
     a: 1664525,
     c: 1013904223,
     m: Math.pow(2, 32),
-    seed: Math.round(Math.random() * Number.MAX_SAFE_INTEGER),
+    seed: Math.round(Math.random() * (Math.pow(2, 32) - 1)),
     getInt: function(){
         this.seed = (this.a * this.seed + this.c) % this.m;
         return this.seed;
@@ -32,7 +32,7 @@ let pRandom = {
     	this.seed = this._seed;
     },
     randomSeed: function(){
-        this.seed = Math.round(Math.random() * Number.MAX_SAFE_INTEGER);
+        this.seed = Math.round(Math.random() * (Math.pow(2, 32) - 1))
     }
 };
 

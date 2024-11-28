@@ -285,7 +285,7 @@ class Pet extends Object2d {
         }
         this.stats.is_sleeping = true;
     }
-    feed(foodSpriteCellNumber, value, type, forced){
+    feed(foodSpriteCellNumber, value, type, forced, onEndFn){
         const me = this;
 
         if(!type) type = 'food';
@@ -347,10 +347,11 @@ class Pet extends Object2d {
                         App.closeAllDisplays();
                         App.toggleGameplayControls(true);
                         App.setScene(App.scene.home);
-                        if(!noLongerHungry){
-                            App.handlers.open_feeding_menu();
-                            App.handlers.open_food_list(null, null, type);
-                        }
+                        // if(!noLongerHungry){
+                        //     App.handlers.open_feeding_menu();
+                        //     App.handlers.open_food_list(null, null, type);
+                        // }
+                        onEndFn?.(noLongerHungry);
                     }
                     if(this.hasMoodlet('full')){
                         App.toggleGameplayControls(false);
@@ -424,10 +425,11 @@ class Pet extends Object2d {
         else
             if(onEndFn) onEndFn();
     }
-    playCheeringAnimation(onEndFn){
+    playCheeringAnimation(onEndFn, noSoundAndIcon){
         this.stopMove();
-        setTimeout(() => this.playSound('resources/sounds/cheer_success.ogg', true));
-        this.triggerScriptedState('cheering_with_icon', 2000, null, true, () => {
+        if(!noSoundAndIcon) setTimeout(() => this.playSound('resources/sounds/cheer_success.ogg', true));
+        const stateName = !noSoundAndIcon ? 'cheering_with_icon' : 'cheering';
+        this.triggerScriptedState(stateName, 2000, null, true, () => {
             if(onEndFn) onEndFn();
         });
     }
@@ -532,8 +534,8 @@ class Pet extends Object2d {
         }
 
         switch(this.petDefinition.lifeStage){
-            case 0: depletion_mult *= 1.65;
-            case 1: depletion_mult *= 1.3;
+            case 0: depletion_mult *= 1.65; break;
+            case 1: depletion_mult *= 1.3; break;
         }
 
         if(this.stats.is_at_parents){
@@ -667,8 +669,9 @@ class Pet extends Object2d {
             }
         })
         // increasing
-        const eligibleForCareIncrease = careAffectingStats.every(statName => this.stats[statName] > 90);
-        const shouldResetCareIncreaseFlag = careAffectingStats.some(statName => this.stats[statName] < 50);
+        const careIncreaseThreshold = this.stats.hunger_satisfaction || 85; // this value is based on lowest satisfaction stat
+        const eligibleForCareIncrease = careAffectingStats.every(statName => this.stats[statName] > careIncreaseThreshold);
+        const shouldResetCareIncreaseFlag = careAffectingStats.some(statName => this.stats[statName] < 65);
         if(eligibleForCareIncrease){
             if(this.stats.should_care_increase){
                 this.stats.should_care_increase = false;
@@ -1000,7 +1003,7 @@ class Pet extends Object2d {
     }
     showThought(type, item){
         const bubble = new Object2d({
-            parent: this.pet,
+            parent: this,
             img: 'resources/img/misc/thought_bubble_01.png',
             x: -999, 
             y: -999,
@@ -1009,10 +1012,10 @@ class Pet extends Object2d {
             shouldFadeout: false,
             float: 0,
             onDraw: (me) => {
-                me.x = App.pet.x;
+                me.x = this.x;
                 me.float += 0.004 * App.deltaTime;
                 if(me.float > App.PI2) me.float = 0;
-                me.y = App.pet.y - (App.pet.spritesheet.cellSize * 1.5) - (App.pet.spritesheet.offsetY * 1.8 || 0) + Math.sin(me.float); 
+                me.y = this.y - (this.spritesheet.cellSize * 1.5) - (this.spritesheet.offsetY * 1.8 || 0) + Math.sin(me.float); 
                 const opacityTarget = me.shouldFadeout ? 0 : 1;
                 me.opacity = lerp(me.opacity, opacityTarget, App.deltaTime * 0.01);
             }
@@ -1126,6 +1129,17 @@ class Pet extends Object2d {
                     }
                 })
                 break;
+            default:
+                new Object2d({
+                    parent: bubble,
+                    image: App.preloadedResources[`resources/img/misc/${type}.png`],
+                    x: 10, y: 10, z: 10,
+                    onDraw: (me) => {
+                        me.opacity = bubble.opacity;
+                        me.x = bubble.x;
+                        me.y = bubble.y;
+                    }
+                })
         }
 
         setTimeout(() => {

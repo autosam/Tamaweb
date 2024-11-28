@@ -10,6 +10,9 @@ const SPRITES = [
     // exclusive room backgrounds
     "resources/img/background/house/ex_01.png",
     "resources/img/background/house/ex_01_fs.png",
+    // community room backgrounds
+    "resources/img/background/house/cc_01.png",
+    "resources/img/background/house/cc_02.png",
     // other backgrounds
     "resources/img/background/house/office_01.png",
     "resources/img/background/house/kitchen_01.png",
@@ -24,7 +27,8 @@ const SPRITES = [
     "resources/img/background/house/parents_house_01.png",
     "resources/img/background/house/arcade_02.png",
     "resources/img/background/house/online_hub_01.png",
-    
+    "resources/img/background/house/beach_01.png", // considered inside to not have day/night affect it
+    // outside
     "resources/img/background/outside/park_02.png",
     "resources/img/background/outside/mall_walkway.png",
     "resources/img/background/outside/market_01.png",
@@ -35,6 +39,7 @@ const SPRITES = [
     "resources/img/background/outside/vacation_sea_l_01.png",
     "resources/img/background/outside/vacation_sea_l_02.png",
     "resources/img/background/outside/vacation_sea_l_03.png",
+    "resources/img/background/outside/garden_01.png",
 
     // sky and weather
     "resources/img/background/sky/morning.png",
@@ -93,8 +98,11 @@ const SPRITES = [
     "resources/img/misc/thought_bubble_type_item.png",
     "resources/img/misc/minigames.png",
     "resources/img/misc/want_fulfilled.png",
+    "resources/img/misc/thought_heart.png",
+    "resources/img/misc/thought_heart_broken.png",
     "resources/img/misc/cyberpunk_overlay_01.png",
     "resources/img/misc/online_hub_01_front.png",
+    "resources/img/misc/pot_01.png",
 
     // accessories
     "resources/img/accessory/crown_01.png",
