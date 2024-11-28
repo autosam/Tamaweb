@@ -309,7 +309,7 @@ class Activities {
                 {
                     name: `
                     <small>
-                        <i class="fa-solid fa-info-circle" style="padding-right: 8px"></i>
+                        <i class="fa-solid fa-info-circle"></i>
                         Every time you interact with another pet you'll receive 
                         <i class="fa-solid fa-thumbs-up"></i> ${INTERACTION_LIKES.receiving} 
                         and they'll receive
@@ -341,15 +341,17 @@ class Activities {
             ])
         }
         const handleSyncCharacter = () => {
+            return App.displayPopup('Syncing is now done automatically when entering Hubchi, this option will be removed later.', 4000);
+
             const confirm = App.displayConfirm(`Do you want to update your HUBCHI persona to be in sync with ${App.petDefinition.name}'s latest appearance?`, [
                 {
                     name: 'yes',
                     onclick: async () => {
-                        confirm.close();
-                        const popup = App.displayPopup('Syncing...', App.INF);
-                        const {status} = await App.apiService.addPetDef();
-                        popup.close();
-                        App.displayPopup(status ? 'Success!' : 'Error!');
+                        // confirm.close();
+                        // const popup = App.displayPopup('Syncing...', App.INF);
+                        // const {status} = await App.apiService.addPetDef();
+                        // popup.close();
+                        // App.displayPopup(status ? 'Success!' : 'Error!');
                         return false;
                     }
                 },

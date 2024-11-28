@@ -2839,29 +2839,42 @@ let App = {
                             return App.displayPopup(`${App.petDefinition.name} is too sleepy to go to HUBCHI!`);
                         }
 
-                        Activities.onlineHubTransition(async (fadeOverlay) => {
-                            setTimeout(() => App.playSound('resources/sounds/task_complete.ogg', true));
-                            const popup = App.displayPopup('Connecting...', App.INF);
-                            App.temp.online = {};
-                            App.temp.online.hasUploadedPetDef = await App.apiService.getPetDef();
-                            App.temp.online.randomPetDefs = await App.apiService.getRandomPetDefs(7);
-                            // App.temp.online = JSON.parse('{"hasUploadedPetDef":{"status":true,"data":"{\\"name\\":\\"Missiechu\\",\\"sprite\\":\\"resources/img/character/chara_248b.png\\",\\"accessories\\":[\\"mini band\\",\\"secretary\\"]}"},"randomPetDefs":{"status":true,"data":[{"name":"farah3","sprite":"resources/img/character/chara_51b.png","accessories":[],"owner":"test3","ownerId":"test3-1234","interactions":0},{"name":"sep2","sprite":"resources/img/character/chara_50b.png","accessories":[],"owner":"test2","ownerId":"test2-1234","interactions":2},{"name":"qoli4","sprite":"resources/img/character/chara_210b.png","accessories":["witch hat"],"owner":"test4","ownerId":"test4-1234","interactions":0},{"name":"<saman1>","sprite":"resources/img/character/chara_28b.png","accessories":[],"owner":"test","ownerId":"test-1234","interactions":0},{"name":"Missiechu","sprite":"resources/img/character/chara_248b.png","accessories":["mini band","secretary"],"owner":"samandev","ownerId":"samandev-3430186","interactions":3}]}}');
-                            popup.close();
-                            App.closeAllDisplays();
-                            fadeOverlay.direction = false;
-    
-                            if(!App.temp.online?.randomPetDefs){
-                                App.displayPopup('Error! Cannot connect.');
-                                App.setScene(App.scene.home);
-                                App.toggleGameplayControls(true);
-                                return false;
-                            }
-                            
-                            setTimeout(() => App.playSound('resources/sounds/task_complete_02.ogg', true));
-                            Activities.goToOnlineHub();
-                        })
-
-                        App.sendAnalytics('go_to_online_hub');
+                        return App.displayConfirm(`Enter Hubchi?`, [
+                            {
+                                name: 'yes',
+                                onclick: async () => {
+                                    App.closeAllDisplays();
+                                    Activities.onlineHubTransition(async (fadeOverlay) => {
+                                        setTimeout(() => App.playSound('resources/sounds/task_complete.ogg', true));
+                                        const popup = App.displayPopup('Connecting...', App.INF);
+                                        App.temp.online = {};
+                                        App.temp.online.hasUploadedPetDef = await App.apiService.getPetDef();
+                                        App.temp.online.randomPetDefs = await App.apiService.getRandomPetDefs(7);
+                                        // App.temp.online = JSON.parse('{"hasUploadedPetDef":{"status":true,"data":"{\\"name\\":\\"Missiechu\\",\\"sprite\\":\\"resources/img/character/chara_248b.png\\",\\"accessories\\":[\\"mini band\\",\\"secretary\\"]}"},"randomPetDefs":{"status":true,"data":[{"name":"farah3","sprite":"resources/img/character/chara_51b.png","accessories":[],"owner":"test3","ownerId":"test3-1234","interactions":0},{"name":"sep2","sprite":"resources/img/character/chara_50b.png","accessories":[],"owner":"test2","ownerId":"test2-1234","interactions":2},{"name":"qoli4","sprite":"resources/img/character/chara_210b.png","accessories":["witch hat"],"owner":"test4","ownerId":"test4-1234","interactions":0},{"name":"<saman1>","sprite":"resources/img/character/chara_28b.png","accessories":[],"owner":"test","ownerId":"test-1234","interactions":0},{"name":"Missiechu","sprite":"resources/img/character/chara_248b.png","accessories":["mini band","secretary"],"owner":"samandev","ownerId":"samandev-3430186","interactions":3}]}}');
+                                        popup.close();
+                                        App.closeAllDisplays();
+                                        fadeOverlay.direction = false;
+                
+                                        if(!App.temp.online?.randomPetDefs){
+                                            App.displayPopup('Error! Cannot connect.');
+                                            App.setScene(App.scene.home);
+                                            App.toggleGameplayControls(true);
+                                            return false;
+                                        }
+                                        
+                                        setTimeout(() => App.playSound('resources/sounds/task_complete_02.ogg', true));
+                                        Activities.goToOnlineHub();
+                                    })
+            
+                                    App.sendAnalytics('go_to_online_hub');
+                                }
+                            },
+                            {
+                                name: 'no',
+                                class: 'back-btn',
+                                onclick: () => {}
+                            },
+                        ])
                     }
                 },
                 {
@@ -3288,7 +3301,7 @@ let App = {
                 {
                     name: `
                     <small>
-                        <i class="fa-solid fa-info-circle" style="padding-right: 8px"></i>
+                        <i class="fa-solid fa-info-circle"></i>
                         Shop stock changes daily, so check back often for new food and snacks!
                     </small>
                     `,
