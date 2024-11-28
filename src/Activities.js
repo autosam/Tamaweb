@@ -31,10 +31,12 @@ class Activities {
             if(enjoyment){
                 pet.showThought('thought_heart')
                 pet.triggerScriptedState('blush', App.INF, false, true);
+                App.playSound('resources/sounds/task_complete_02.ogg', true)
             } else {
                 pet.showThought('thought_heart_broken')
                 pet.triggerScriptedState('idle_side_uncomfortable', App.INF, false, true);
                 pet.inverted = !pet.inverted;
+                setTimeout(() => App.playSound('resources/sounds/task_fail_01.ogg', true))
             }
         }
         const petOverall = (App.pet.stats.current_fun + App.pet.stats.current_cleanliness + App.pet.stats.current_health + random(0, 100)) / 4;
@@ -56,10 +58,12 @@ class Activities {
                 return App.displayPopup(text, 5000, () => {
                     end();
                     onFailEnd?.();
+                    App.pet.stats.current_fun -= 35;
                     App.pet.playUncomfortableAnimation();
                 });
             }
 
+            App.pet.stats.current_fun += 40;
             App.displayConfirm(`${App.petDefinition.name} and ${otherPetDef.name} had a wonderful time together! <br><br> Do you want to propose to ${otherPetDef.name}?`, [
                 {
                     name: 'propose',
