@@ -660,7 +660,7 @@ let App = {
             return;
         }
 
-        if(addEvent(`update_10_notice`, () => {
+        if(addEvent(`update_11_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
@@ -669,7 +669,7 @@ let App = {
                     bold: true,
                 },
                 {
-                    name: `Grab exclusive rewards from the limited-time Hubchi event, Open chests by doing the new Daily missions, and try to grow your collection from the stats menu!`,
+                    name: `Check out the new offline/online dating feature, mail deliveries, new backgrounds, tons of rebalancing and bugfixes and much more!`,
                     type: 'text',
                 },
                 {
