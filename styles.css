@@ -1107,6 +1107,10 @@ input#background-color-picker {
     flex-direction: row;
 }
 
+.flex-gap-1 {
+    gap: 8px;
+}
+
 .flex {
     display: flex;
 }

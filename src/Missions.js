@@ -140,7 +140,8 @@ const Missions = {
         const pullFromPool = (pool, isGoldPull) => {
             const randomPull = isGoldPull ? goldPullDef : randomFromArray(pool);
             const [min, max] = randomPull.count;
-            const count = random(min, max) * (isGoldPull ? 5 : 1);
+            let count = random(min, max) * (isGoldPull ? 5 : 1);
+            if(App.isDuringChristmas()) count *= 2;
             randomPull.onClaim?.(count);
             App.displayPopup(`
                 <div class="pulse">
@@ -151,6 +152,10 @@ const Missions = {
                 <span>x${count}</span>
                 <br>
                 <span>${randomPull.type}</span>
+                ${
+                    App.isDuringChristmas() ?
+                    App.getBadge('doubled!') : ''
+                }
             `, 5000, null, true);
         }
 
@@ -199,6 +204,15 @@ const Missions = {
             },
         ]
         const list = App.displayList([
+            {
+                _ignore: !App.isDuringChristmas(),
+                name: `<small class="flex flex-gap-1 flex-dir-row align-center">
+                    <img src="resources/img/misc/xmas_tree_01.png"></img>
+                    Double rewards during the xmas event!
+                    ${App.getBadge('active!', 'neutral')}
+                </small>`,
+                type: 'text'
+            },
             ...chests
             .map(chest => {
                 return {

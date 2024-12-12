@@ -27,12 +27,15 @@ let App = {
         SLEEP_END: 8,
         PARENT_DAYCARE_START: 8,
         PARENT_DAYCARE_END: 18,
-        ACTIVE_PET_Z: 5,
-        NPC_PET_Z: 4.6,
         MAX_SHELL_SHAPES: 5,
         AFTERNOON_TIME: [12, 17],
         EVENING_TIME: [17, 20],
         NIGHT_TIME: [20, 6],
+        CHRISTMAS_TIME: {
+            start: '12-12',
+            end: '12-31',
+            absDay: '12-25',
+        },
         MANUAL_AGE_HOURS_BABY: 6,
         MANUAL_AGE_HOURS_TEEN: 12,
         AUTO_AGE_HOURS_BABY: 24,
@@ -46,6 +49,11 @@ let App = {
         },
         CHAR_UNLOCK_PREFIX: 'ch_unl',
         ITCH_REVIEW_URL: 'https://samandev.itch.io/tamaweb/rate?source=game',
+        // z-index
+        ACTIVE_PET_Z: 5,
+        NPC_PET_Z: 4.6,
+        POOP_Z: 4.59,
+        CHRISTMAS_TREE_Z: 4.58,
     },
     routes: {
         BLOG: 'https://tamawebgame.github.io/blog/',
@@ -137,7 +145,7 @@ let App = {
         })
         App.poop = new Object2d({
             image: App.preloadedResources["resources/img/misc/poop.png"],
-            x: '80%', y: '80%',
+            x: '80%', y: '80%', z: App.constants.POOP_Z,
             hidden: true,
             onDraw: (me) => {
                 Object2d.animations.flip(me, 300);
@@ -764,10 +772,18 @@ let App = {
                 if(random(0, 10) == 0){
                     App.pet.showCurrentWant();
                 }
+
+                if(App.isDuringChristmas()){
+                    this.christmasTree = new Object2d({
+                        img: 'resources/img/misc/xmas_tree_01.png',
+                        x: 60, y: 12, z: App.constants.CHRISTMAS_TREE_Z,
+                    });
+                }
             },
             onUnload: () => {
                 App.poop.absHidden = true;
                 App.pet.staticShadow = true;
+                this.christmasTree?.removeObject();
             }
         }),
         kitchen: new Scene({
@@ -3864,6 +3880,17 @@ let App = {
     isSalesDay: function(){
         let day = new Date().getDate();
         return [7, 12, 18, 20, 25, 29, 30].includes(day);
+    },
+    isDuringChristmas: function(){
+        return moment().isBetween(
+            moment(App.constants.CHRISTMAS_TIME.start, 'MM-DD'),
+            moment(App.constants.CHRISTMAS_TIME.end, 'MM-DD'),
+            null, '[]');
+    },
+    isChristmasDay: function(){
+        return moment().isSame(
+            moment(App.constants.CHRISTMAS_TIME.absDay, 'MM-DD'), 
+            'day');
     },
     isSleepHour: function(){
         const hour = new Date().getHours();

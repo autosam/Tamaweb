@@ -103,6 +103,7 @@ const SPRITES = [
     "resources/img/misc/cyberpunk_overlay_01.png",
     "resources/img/misc/online_hub_01_front.png",
     "resources/img/misc/pot_01.png",
+    "resources/img/misc/xmas_tree_01.png",
 
     // accessories
     "resources/img/accessory/crown_01.png",
