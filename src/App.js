@@ -356,6 +356,7 @@ let App = {
         document.body.style.backgroundColor = this.settings.backgroundColor;
         const metaThemeColor = document.querySelector('meta[name="theme-color"]');
         metaThemeColor?.setAttribute('content', this.settings.backgroundColor);
+        document.querySelector('.loading-text').style.background = this.settings.backgroundColor;
 
         // screen size
         graphicsWrapper.style.transform = `scale(${this.settings.screenSize})`;

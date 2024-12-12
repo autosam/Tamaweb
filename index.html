@@ -45,6 +45,14 @@
         <!-- bg overlay -->
         <!-- <div class="background-pattern"></div> -->
         <!-- dom shell -->
+
+        <!-- loading text -->
+        <div class="loading-text">
+            <!-- <b style="font-size: small;">LOADING...</b> -->
+            <img class="loading-logo blink" src="resources/img/ui/logo_trans_01.png"></img>
+            <i class="fa-solid fa-spinner fa-spin loading-spinner"></i>
+        </div>
+
         <div class="dom-shell" style="display: none;">
             <img class="logo" src="resources/img/ui/logo_trans_01.png"></img>
             <button class="shell-btn main" onclick="App.handlers.shell_button()" onmousedown="setTimeout(() => App.playSound('resources/sounds/shell_button_down.ogg', true))" onmouseup="setTimeout(() => App.playSound('resources/sounds/shell_button_up.ogg', true))"></button>
@@ -61,12 +69,6 @@
             <div class="screen-wrapper">
                 <!-- canvas -->
                 <canvas style="cursor: pointer;" onclick="App.handlers.open_main_menu()" class="graphics-canvas" width="96" height="96"></canvas>
-                
-                <!-- loading text -->
-                <div class="loading-text">
-                    <i class="fa-solid fa-fan fa-spin"></i>
-                    <b style="font-size: small;">LOADING...</b>
-                </div>
 
                 <!-- tapping reminder -->
                 <div class="tap-reminder" style="display: none;">
