@@ -32,7 +32,7 @@ let App = {
         EVENING_TIME: [17, 20],
         NIGHT_TIME: [20, 6],
         CHRISTMAS_TIME: {
-            start: '12-12',
+            start: '12-14',
             end: '12-31',
             absDay: '12-25',
         },
