@@ -301,7 +301,7 @@ class Activities {
                             },
                             {
                                 _disable: App.petDefinition.lifeStage !== 2 || def.lifeStage !== 2,
-                                name: `go on date ${App.getBadge()}`,
+                                name: `go on date`,
                                 onclick: () => handleDate(def)
                             },
                         ])

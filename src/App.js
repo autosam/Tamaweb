@@ -2731,7 +2731,7 @@ let App = {
                             },
                             {
                                 _ignore: App.petDefinition.lifeStage < 2 || friendDef.lifeStage < 2 || friendDef.stats.is_player_family,
-                                name: `go on date ${App.getBadge()}`,
+                                name: `go on date`,
                                 onclick: () => {
                                     if(friendDef.getFriendship() < 60){
                                         return App.displayPopup(`${App.petDefinition.name}'s friendship with ${friendDef.name} is too low <br><br> they don't want to go on a date.`, 5000);
@@ -2824,7 +2824,7 @@ let App = {
         open_phone: function(){
             App.displayList([
                 {
-                    name: `<span style="color: #ff00c6"><i class="icon fa-solid fa-globe"></i> hubchi</span> ${App.getBadge('date!')}`,
+                    name: `<span style="color: #ff00c6"><i class="icon fa-solid fa-globe"></i> hubchi</span>`,
                     onclick: () => {
                         if(App.petDefinition.lifeStage <= 0){
                             return App.displayPopup(`${App.petDefinition.name} is not old enough to go to hubchi!`);
