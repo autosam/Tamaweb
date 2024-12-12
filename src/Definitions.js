@@ -604,12 +604,12 @@ App.definitions = {
         "astra": {
             image: 'resources/img/background/house/cc_01.png',
             price: 250,
-            isNew: true,
+            isNew: false,
         },
         "seafloor": {
             image: 'resources/img/background/house/cc_02.png',
             price: 300,
-            isNew: true,
+            isNew: false,
         },
     },
 
