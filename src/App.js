@@ -964,12 +964,16 @@ let App = {
         const { AFTERNOON_TIME, EVENING_TIME, NIGHT_TIME } = App.constants;
         const date = new Date();
         const h = new Date().getHours();
+        // const h = 20;
 
         const isOutside = App.background.imageSrc?.indexOf('outside/') != -1;
 
         // weather
         App.skyWeather.z = isOutside ? 999.1 : -998;
-        const weatherEffectChance = random(3, 10, date.getDate())
+        let weatherEffectChance = random(3, 10, date.getDate())
+        // if(App.isDuringChristmas()) weatherEffectChance += 500;
+        // if(App.isChristmasDay()) weatherEffectChance += 100;
+        // App.setWeather('snow');
         const seed = h + date.getDate() + App.userId;
         pRandom.save();
         pRandom.seed = seed;
@@ -986,6 +990,18 @@ let App = {
         App.skyOverlay.setImage(App.preloadedResources[`resources/img/background/sky/${sky}_overlay.png`]);
         setTimeout(() => App.skyOverlay.hidden = !isOutside)
         if(sky == 'afternoon' || sky == 'morning') App.skyOverlay.hidden = true;
+    },
+    setWeather(type){
+        switch(type){
+            case 'rain':
+                App.skyWeather.image = App.preloadedResources["resources/img/background/sky/rain_01.png"];
+                App.skyWeather.composite = "xor";
+                break;
+            case 'snow':
+                App.skyWeather.image = App.preloadedResources["resources/img/background/sky/snow_01.png"];
+                App.skyWeather.composite = "normal";
+                break;
+        }
     },
     applyRoomCustomizations(data){
         if(!data) return;
