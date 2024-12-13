@@ -985,7 +985,7 @@ let App = {
         if(h >= AFTERNOON_TIME[0] && h < AFTERNOON_TIME[1] && App.skyWeather.hidden) sky = 'afternoon';
         else if(h >= EVENING_TIME[0] && h < EVENING_TIME[1]) sky = 'evening';
         else if(h >= NIGHT_TIME[0] || h < NIGHT_TIME[1]) sky = 'night';
-        else sky = 'morning'
+        else sky = 'morning';
         App.sky.setImage(App.preloadedResources[`resources/img/background/sky/${sky}.png`]);
         App.skyOverlay.setImage(App.preloadedResources[`resources/img/background/sky/${sky}_overlay.png`]);
         setTimeout(() => App.skyOverlay.hidden = !isOutside)
