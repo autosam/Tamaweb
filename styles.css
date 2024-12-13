@@ -59,6 +59,19 @@ body {
     /* box-shadow: inset 10px -12px 25px 8px rgba(0, 0, 0, 0.25); */
     flex-direction: column;
 }
+.loading-text {
+    background: rgb(0, 0, 0);
+}
+.loading-logo {
+    width: 65%;
+    max-width: 248px;
+}
+.loading-spinner {
+    position: fixed;
+    bottom: 25%;
+    color: white;
+    text-shadow: 0 0 2px black;
+}
 
 .graphics-wrapper {
     width: 100%;
@@ -1107,6 +1120,10 @@ input#background-color-picker {
     flex-direction: row;
 }
 
+.flex-gap-1 {
+    gap: 8px;
+}
+
 .flex {
     display: flex;
 }
@@ -1644,6 +1661,23 @@ hr {
         -1px 1px 0px #ff00c6,
         1px -1px 0px #ff00c6,
         -1px -1px 0px #ff00c6;
+}
+.blink {
+    animation: blink-anim 1s linear infinite;
+}
+@keyframes blink-anim {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 0.4;
+    }
+    95% {
+        opacity: 0.8;
+    }
 }
 
 /* shell shapes */

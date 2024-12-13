@@ -52,6 +52,7 @@ const SPRITES = [
     "resources/img/background/sky/night_overlay.png",
 
     "resources/img/background/sky/rain_01.png",
+    "resources/img/background/sky/snow_01.png",
 
     // items
     "resources/img/item/foods.png",
@@ -103,6 +104,7 @@ const SPRITES = [
     "resources/img/misc/cyberpunk_overlay_01.png",
     "resources/img/misc/online_hub_01_front.png",
     "resources/img/misc/pot_01.png",
+    "resources/img/misc/xmas_tree_01.png",
 
     // accessories
     "resources/img/accessory/crown_01.png",

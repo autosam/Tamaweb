@@ -27,12 +27,15 @@ let App = {
         SLEEP_END: 8,
         PARENT_DAYCARE_START: 8,
         PARENT_DAYCARE_END: 18,
-        ACTIVE_PET_Z: 5,
-        NPC_PET_Z: 4.6,
         MAX_SHELL_SHAPES: 5,
         AFTERNOON_TIME: [12, 17],
         EVENING_TIME: [17, 20],
         NIGHT_TIME: [20, 6],
+        CHRISTMAS_TIME: {
+            start: '12-14',
+            end: '12-31',
+            absDay: '12-25',
+        },
         MANUAL_AGE_HOURS_BABY: 6,
         MANUAL_AGE_HOURS_TEEN: 12,
         AUTO_AGE_HOURS_BABY: 24,
@@ -45,10 +48,15 @@ let App = {
             fulfilled: 'fulfilled',
         },
         CHAR_UNLOCK_PREFIX: 'ch_unl',
-        ITCH_REVIEW_URL: 'https://samandev.itch.io/tamaweb/rate?source=game',
+        // z-index
+        ACTIVE_PET_Z: 5,
+        NPC_PET_Z: 4.6,
+        POOP_Z: 4.59,
+        CHRISTMAS_TREE_Z: 4.58,
     },
     routes: {
         BLOG: 'https://tamawebgame.github.io/blog/',
+        ITCH_REVIEW: 'https://samandev.itch.io/tamaweb/rate?source=game',
     },
     async init () {
         // init
@@ -137,7 +145,7 @@ let App = {
         })
         App.poop = new Object2d({
             image: App.preloadedResources["resources/img/misc/poop.png"],
-            x: '80%', y: '80%',
+            x: '80%', y: '80%', z: App.constants.POOP_Z,
             hidden: true,
             onDraw: (me) => {
                 Object2d.animations.flip(me, 300);
@@ -348,6 +356,7 @@ let App = {
         document.body.style.backgroundColor = this.settings.backgroundColor;
         const metaThemeColor = document.querySelector('meta[name="theme-color"]');
         metaThemeColor?.setAttribute('content', this.settings.backgroundColor);
+        document.querySelector('.loading-text').style.background = this.settings.backgroundColor;
 
         // screen size
         graphicsWrapper.style.transform = `scale(${this.settings.screenSize})`;
@@ -683,6 +692,11 @@ let App = {
             ])
         })) return;
 
+        if(addEvent('itch_rating_dialog', () => {
+            App.handlers.show_rating_dialog();
+            App.sendAnalytics('rating_auto_shown');
+        })) return;
+
         // if(addEvent(`smallchange_01_notice`, () => {
         //     App.displayConfirm('The <b>Stay with parents</b> option is now moved to the <i class="fa-solid fa-house-chimney-user"></i> care menu', [
         //         {
@@ -764,10 +778,18 @@ let App = {
                 if(random(0, 10) == 0){
                     App.pet.showCurrentWant();
                 }
+
+                if(App.isDuringChristmas()){
+                    this.christmasTree = new Object2d({
+                        img: 'resources/img/misc/xmas_tree_01.png',
+                        x: 60, y: 12, z: App.constants.CHRISTMAS_TREE_Z,
+                    });
+                }
             },
             onUnload: () => {
                 App.poop.absHidden = true;
                 App.pet.staticShadow = true;
+                this.christmasTree?.removeObject();
             }
         }),
         kitchen: new Scene({
@@ -942,12 +964,16 @@ let App = {
         const { AFTERNOON_TIME, EVENING_TIME, NIGHT_TIME } = App.constants;
         const date = new Date();
         const h = new Date().getHours();
+        // const h = 20;
 
         const isOutside = App.background.imageSrc?.indexOf('outside/') != -1;
 
         // weather
         App.skyWeather.z = isOutside ? 999.1 : -998;
-        const weatherEffectChance = random(3, 10, date.getDate())
+        let weatherEffectChance = random(3, 10, date.getDate())
+        // if(App.isDuringChristmas()) weatherEffectChance += 500;
+        // if(App.isChristmasDay()) weatherEffectChance += 100;
+        // App.setWeather('snow');
         const seed = h + date.getDate() + App.userId;
         pRandom.save();
         pRandom.seed = seed;
@@ -959,11 +985,23 @@ let App = {
         if(h >= AFTERNOON_TIME[0] && h < AFTERNOON_TIME[1] && App.skyWeather.hidden) sky = 'afternoon';
         else if(h >= EVENING_TIME[0] && h < EVENING_TIME[1]) sky = 'evening';
         else if(h >= NIGHT_TIME[0] || h < NIGHT_TIME[1]) sky = 'night';
-        else sky = 'morning'
+        else sky = 'morning';
         App.sky.setImage(App.preloadedResources[`resources/img/background/sky/${sky}.png`]);
         App.skyOverlay.setImage(App.preloadedResources[`resources/img/background/sky/${sky}_overlay.png`]);
         setTimeout(() => App.skyOverlay.hidden = !isOutside)
         if(sky == 'afternoon' || sky == 'morning') App.skyOverlay.hidden = true;
+    },
+    setWeather(type){
+        switch(type){
+            case 'rain':
+                App.skyWeather.image = App.preloadedResources["resources/img/background/sky/rain_01.png"];
+                App.skyWeather.composite = "xor";
+                break;
+            case 'snow':
+                App.skyWeather.image = App.preloadedResources["resources/img/background/sky/snow_01.png"];
+                App.skyWeather.composite = "normal";
+                break;
+        }
     },
     applyRoomCustomizations(data){
         if(!data) return;
@@ -1088,6 +1126,26 @@ let App = {
         if(Activities.encounter()) return;
     },
     handlers: {
+        show_rating_dialog: function(){
+            return App.displayConfirm(`If you're enjoying the game, please consider <b>rating it</b> on Itch. Your feedback makes a huge difference and helps us a lot!`,
+                [
+                    {
+                        link: App.routes.ITCH_REVIEW,
+                        name: `rate!`,
+                        onclick: () => {
+                            App.sendAnalytics('rate_accept');
+                        }
+                    },
+                    {
+                        name: `cancel`,
+                        class: 'back-btn',
+                        onclick: () => {
+                            App.sendAnalytics('rate_decline');
+                        }
+                    }
+                ]
+            )
+        },
         show_onboarding: function(){
             const screenWrapper = document.querySelector('.screen-wrapper');
             const interval = setInterval(() => {
@@ -1152,11 +1210,25 @@ let App = {
                 </div>
             `;
 
+            const christmasSection = !App.isDuringChristmas() ? '' : `
+                <div>
+                    <b style="color: darkgreen;">Happy Xmas!</b>
+                    <br>
+                    DayMail sends you warm holiday wishes and a joyous New Year!
+                    <br><br>
+                    <small>
+                        During xmas, you'll receive 2x rewards from opening mission chests, so don't forget to check them out!
+                    </small>
+                    <br><br><br>
+                </div>
+            `;
+
             const container = App.displayEmpty('bg-white flex flex-dir-col');
                 container.style = `background: repeating-linear-gradient(0deg, white 0px, white 11px, rgb(201, 201, 201) 10px, white 12px) local; backdrop-filter: blur(100px)`
             container.innerHTML = `
             <img class="width-full" src="resources/img/misc/newspaper_header_01.png"></img>
             <div style="text-align: left;" class="inner-padding">
+                ${christmasSection}
                 ${salesDaySection}
                 <b>${headline}</b>
                 <hr style="background: #0000003d; display: none">
@@ -1947,9 +2019,13 @@ let App = {
                     }
                 },
                 {
+                    name: `<b>rate us!</b> ${App.getBadge()}`,
+                    onclick: () => App.handlers.show_rating_dialog()
+                },
+                {
                     // _ignore: true,
                     link: App.routes.BLOG,
-                    name: `<b>see changelog</b> ${App.getBadge(null, 'neutral')}`,
+                    name: `<b>see changelog</b>`,
                     onclick: () => {
                         App.sendAnalytics('go_to_blog');
                         return true;
@@ -2731,7 +2807,7 @@ let App = {
                             },
                             {
                                 _ignore: App.petDefinition.lifeStage < 2 || friendDef.lifeStage < 2 || friendDef.stats.is_player_family,
-                                name: `go on date ${App.getBadge()}`,
+                                name: `go on date`,
                                 onclick: () => {
                                     if(friendDef.getFriendship() < 60){
                                         return App.displayPopup(`${App.petDefinition.name}'s friendship with ${friendDef.name} is too low <br><br> they don't want to go on a date.`, 5000);
@@ -2824,7 +2900,7 @@ let App = {
         open_phone: function(){
             App.displayList([
                 {
-                    name: `<span style="color: #ff00c6"><i class="icon fa-solid fa-globe"></i> hubchi</span> ${App.getBadge('date!')}`,
+                    name: `<span style="color: #ff00c6"><i class="icon fa-solid fa-globe"></i> hubchi</span>`,
                     onclick: () => {
                         if(App.petDefinition.lifeStage <= 0){
                             return App.displayPopup(`${App.petDefinition.name} is not old enough to go to hubchi!`);
@@ -3864,6 +3940,17 @@ let App = {
     isSalesDay: function(){
         let day = new Date().getDate();
         return [7, 12, 18, 20, 25, 29, 30].includes(day);
+    },
+    isDuringChristmas: function(){
+        return moment().isBetween(
+            moment(App.constants.CHRISTMAS_TIME.start, 'MM-DD'),
+            moment(App.constants.CHRISTMAS_TIME.end, 'MM-DD'),
+            null, '[]');
+    },
+    isChristmasDay: function(){
+        return moment().isSame(
+            moment(App.constants.CHRISTMAS_TIME.absDay, 'MM-DD'), 
+            'day');
     },
     isSleepHour: function(){
         const hour = new Date().getHours();
