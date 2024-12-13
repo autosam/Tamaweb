@@ -32,7 +32,7 @@ let App = {
         EVENING_TIME: [17, 20],
         NIGHT_TIME: [20, 6],
         CHRISTMAS_TIME: {
-            start: '12-14',
+            start: '12-13',
             end: '12-31',
             absDay: '12-25',
         },
@@ -48,7 +48,6 @@ let App = {
             fulfilled: 'fulfilled',
         },
         CHAR_UNLOCK_PREFIX: 'ch_unl',
-        ITCH_REVIEW_URL: 'https://samandev.itch.io/tamaweb/rate?source=game',
         // z-index
         ACTIVE_PET_Z: 5,
         NPC_PET_Z: 4.6,
@@ -57,6 +56,7 @@ let App = {
     },
     routes: {
         BLOG: 'https://tamawebgame.github.io/blog/',
+        ITCH_REVIEW: 'https://samandev.itch.io/tamaweb/rate?source=game',
     },
     async init () {
         // init
@@ -692,6 +692,11 @@ let App = {
             ])
         })) return;
 
+        if(addEvent('itch_rating_dialog', () => {
+            App.handlers.show_rating_dialog();
+            App.sendAnalytics('rating_auto_shown');
+        })) return;
+
         // if(addEvent(`smallchange_01_notice`, () => {
         //     App.displayConfirm('The <b>Stay with parents</b> option is now moved to the <i class="fa-solid fa-house-chimney-user"></i> care menu', [
         //         {
@@ -1105,6 +1110,26 @@ let App = {
         if(Activities.encounter()) return;
     },
     handlers: {
+        show_rating_dialog: function(){
+            return App.displayConfirm(`If you're enjoying the game, please consider <b>rating it</b> on Itch. Your feedback makes a huge difference and helps us a lot!`,
+                [
+                    {
+                        link: App.routes.ITCH_REVIEW,
+                        name: `rate!`,
+                        onclick: () => {
+                            App.sendAnalytics('rate_accept');
+                        }
+                    },
+                    {
+                        name: `cancel`,
+                        class: 'back-btn',
+                        onclick: () => {
+                            App.sendAnalytics('rate_decline');
+                        }
+                    }
+                ]
+            )
+        },
         show_onboarding: function(){
             const screenWrapper = document.querySelector('.screen-wrapper');
             const interval = setInterval(() => {
@@ -1169,11 +1194,25 @@ let App = {
                 </div>
             `;
 
+            const christmasSection = !App.isDuringChristmas() ? '' : `
+                <div>
+                    <b style="color: darkgreen;">Happy Xmas!</b>
+                    <br>
+                    DayMail sends you warm holiday wishes and a joyous New Year!
+                    <br><br>
+                    <small>
+                        During xmas, you'll receive 2x rewards from opening mission chests, so don't forget to check them out!
+                    </small>
+                    <br><br><br>
+                </div>
+            `;
+
             const container = App.displayEmpty('bg-white flex flex-dir-col');
                 container.style = `background: repeating-linear-gradient(0deg, white 0px, white 11px, rgb(201, 201, 201) 10px, white 12px) local; backdrop-filter: blur(100px)`
             container.innerHTML = `
             <img class="width-full" src="resources/img/misc/newspaper_header_01.png"></img>
             <div style="text-align: left;" class="inner-padding">
+                ${christmasSection}
                 ${salesDaySection}
                 <b>${headline}</b>
                 <hr style="background: #0000003d; display: none">
@@ -1964,9 +2003,13 @@ let App = {
                     }
                 },
                 {
+                    name: `<b>rate us!</b> ${App.getBadge()}`,
+                    onclick: () => App.handlers.show_rating_dialog()
+                },
+                {
                     // _ignore: true,
                     link: App.routes.BLOG,
-                    name: `<b>see changelog</b> ${App.getBadge(null, 'neutral')}`,
+                    name: `<b>see changelog</b>`,
                     onclick: () => {
                         App.sendAnalytics('go_to_blog');
                         return true;
