@@ -2196,6 +2196,7 @@ let App = {
             let index = -1;
             for(let food of Object.keys(App.definitions.food)){
                 let current = App.definitions.food[food];
+                const currentType = current.type || 'food';
 
                 // lifestage check
                 if(!current.age.includes(App.petDefinition.lifeStage)) continue;
@@ -2204,7 +2205,7 @@ let App = {
                 if(buyMode && current.price == 0) continue;
 
                 // filter check
-                if(filterType && (current.type || 'food') != filterType) continue;
+                if(filterType && currentType != filterType) continue;
 
                 // check if current pet has this food on its inventory
                 if(current.price && !App.pet.inventory.food[food] && !buyMode){
@@ -2240,14 +2241,15 @@ let App = {
 
                         // eat mode
                         const reopenFn = (noLongerHungry) => {
-                            if(noLongerHungry && current.type == 'food') return;
+                            if(noLongerHungry && currentType == 'food') return;
 
+                            console.log(sliderInstance?.getCurrentIndex(), currentType)
                             App.handlers.open_feeding_menu();
-                            App.handlers.open_food_list(false, sliderInstance?.getCurrentIndex(), current.type);
+                            App.handlers.open_food_list(false, sliderInstance?.getCurrentIndex(), currentType);
                         }
 
                         App.closeAllDisplays();
-                        let ateFood = App.pet.feed(current.sprite, current.hunger_replenish, current.type, null, reopenFn);
+                        let ateFood = App.pet.feed(current.sprite, current.hunger_replenish, currentType, null, reopenFn);
                         if(ateFood) {
                             if(App.pet.inventory.food[food] > 0)
                                 App.pet.inventory.food[food] -= 1;
