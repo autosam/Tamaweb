@@ -2033,7 +2033,7 @@ const App = {
                 ...renderingMainMenu,
                 {
                     name: '<i class="fa-solid fa-arrow-left back-sound"></i>',
-                    class: 'back-sound',
+                    class: 'back-sound back-btn',
                     onclick: () => { }
                 }
             ])
@@ -5144,56 +5144,56 @@ const App = {
                 justOpened = true;
             }
 
-            const initCurrentDisplay = () => {
-                const currentDisplay = App.getCurrentDisplay();
-                if (currentDisplay) {
-                    let activeIndex = currentDisplay.dataset.activeItemIndex || -1;
-
-                    // const currentDisplayItems = [...currentDisplay.children];
-                    const currentDisplayItems = [...currentDisplay.querySelectorAll('button, a')];
-
-                    const focusOn = (index) => {
-                        currentDisplayItems.forEach(e => e.dataset.isActiveItem = false);
-                        if (!index) index = 0;
-                        const element = currentDisplayItems?.at(index);
-                        if ((element.nodeName !== 'BUTTON' && element.nodeName !== 'A') || element.disabled) return focusOn(++index);
-                        if (!element) {
-                            return focusOn(0);
-                        }
-                        element?.focus();
-                        element.dataset.isActiveItem = true;
-                        currentDisplay.dataset.activeItemIndex = index;
-                    }
-
-                    focusOn()
-
-                    if (!justOpened) {
-                        switch (buttonNumber) {
-                            case 0:
-                                focusOn(++activeIndex)
-                                break;
-                            case 1:
-                                currentDisplayItems?.at(activeIndex)?.click()
-                                if (App.getCurrentDisplay() !== currentDisplay) {
-                                    // App.handlers.shell_button(-1);
-                                    // initCurrentDisplay();
-                                    console.log(App.getCurrentDisplay(), currentDisplay)
-                                }
-                                break;
-                            case 2:
-                                currentDisplay.querySelector('.back-btn')?.click();
-                                break;
-                        }
-                    }
-                }
-            }
-
-            initCurrentDisplay()
+            App.handlers.initShellButtonDisplay(null, justOpened, buttonNumber);
 
             // App.setScene(App.scene.home);
             // if(App.haveAnyDisplays()) App.closeAllDisplays();
             // else App.handlers.open_main_menu();
             App.vibrate();
+        },
+        initShellButtonDisplay: function(currentDisplay, justOpened, buttonNumber){
+            if(!currentDisplay) currentDisplay = App.getCurrentDisplay();
+            if (currentDisplay) {
+                let activeIndex = currentDisplay.dataset.activeItemIndex || -1;
+
+                const currentDisplayItems = [...currentDisplay.querySelectorAll('button, a')];
+
+                const focusOn = (index) => {
+                    currentDisplayItems.forEach(e => e.dataset.isActiveItem = false);
+                    if (!index) index = 0;
+                    const element = currentDisplayItems?.at(index);
+                    if ((element.nodeName !== 'BUTTON' && element.nodeName !== 'A') || element.disabled) return focusOn(++index);
+                    if (!element) {
+                        return focusOn(0);
+                    }
+                    element?.focus();
+                    element.dataset.isActiveItem = true;
+                    currentDisplay.dataset.activeItemIndex = index;
+                }
+
+                focusOn()
+
+                if (!justOpened) {
+                    UI.shellButtonNavigation = true;
+                    switch (buttonNumber) {
+                        case 0:
+                            focusOn(++activeIndex)
+                            break;
+                        case 1:
+                            currentDisplayItems?.at(activeIndex)?.click()
+                            if (App.getCurrentDisplay() !== currentDisplay) {
+                                // App.handlers.shell_button(-1);
+                                App.handlers.initShellButtonDisplay(App.getCurrentDisplay(), true);
+                                focusOn(0)
+                                console.log(App.getCurrentDisplay(), currentDisplay)
+                            }
+                            break;
+                        case 2:
+                            currentDisplay.querySelector('.back-btn')?.click();
+                            break;
+                    }
+                }
+            }
         },
         sleep: function(){
             App.pet.sleep();
