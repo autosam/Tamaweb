@@ -27,7 +27,7 @@ let App = {
         SLEEP_END: 8,
         PARENT_DAYCARE_START: 8,
         PARENT_DAYCARE_END: 18,
-        MAX_SHELL_SHAPES: 5,
+        MAX_SHELL_SHAPES: 6,
         AFTERNOON_TIME: [12, 17],
         EVENING_TIME: [17, 20],
         NIGHT_TIME: [20, 6],

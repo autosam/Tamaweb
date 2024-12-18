@@ -1681,6 +1681,9 @@ hr {
 }
 
 /* shell shapes */
+.shell-shape-1 {
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+}
 .shell-shape-2 {
     border-radius: 30%;
 }
@@ -1692,6 +1695,9 @@ hr {
 }
 .shell-shape-5 {
     border-radius: 17% 7% 17% 7%;
+}
+.shell-shape-6 {
+    border-radius: 200%;
 }
 
 /* scrollbar */
