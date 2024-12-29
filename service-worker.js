@@ -14,6 +14,8 @@ const ASSETS = [
     'index.html',
     'styles.css',
     // scripts
+    'src/Version.js',
+    'src/UiHelper.js',
     'src/Main.js',
     'src/Activities.js',
     'src/App.js',
@@ -24,10 +26,14 @@ const ASSETS = [
     'src/Scene.js',
     'src/Definitions.js',
     'src/Utils.js',
-    'src/Version.js',
+    'src/Missions.js',
     // libs
     'src/libs/jquery-3.7.1.min.js',
     'src/libs/moment.js',
+    // cdn
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css',
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css',
+    'https://cdn.jsdelivr.net/npm/profanity-cleaner@latest',
     // sounds
     'resources/sounds/angry.ogg',
     'resources/sounds/birthday_song_01.ogg',
@@ -96,12 +102,13 @@ self.addEventListener('activate', event => {
     event.waitUntil(
         (async () => {
             const keys = await caches.keys();
-            return keys.map(async (cache) => {
+            const deletePromises = keys.map(async (cache) => {
                 if (cache !== CACHE_NAME) {
                     console.log('Service Worker: Removing old cache: ' + cache);
-                    return await caches.delete(cache);
+                    return caches.delete(cache);
                 }
             })
+            await Promise.all(deletePromises);
         })()
     )
 })
