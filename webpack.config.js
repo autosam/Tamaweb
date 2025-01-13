@@ -9,4 +9,16 @@ module.exports = {
     // libraryTarget: 'window', // Attach to the global window object
   },
   mode: 'development', // Change to 'production' for production builds
+  module: {
+    rules: [
+      {
+        test: /\.js$/, // Target JavaScript files
+        exclude: /src\/libs/, // Exclude everything in the src/libs directory
+        use: {
+          loader: 'babel-loader', // Example loader (e.g., for transpiling JS)
+        },
+      },
+      // Add other loaders here if needed
+    ],
+  },
 };
