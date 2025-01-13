@@ -1,4 +1,12 @@
-class Pet extends Object2d {
+import { Activities } from "./Activities/Activities";
+import { App } from "./App";
+import { Definitions } from "./Definitions";
+import { Missions } from "./Missions";
+import { Object2d } from "./Object2d";
+import { PetDefinition } from "./PetDefinition";
+import { getRandomName, randomFromArray, random, clamp, lerp } from "./Utils";
+
+export class Pet extends Object2d {
     // basic init
     defaultElevation = -20;
     y = '100%';
@@ -108,7 +116,7 @@ class Pet extends Object2d {
 
         if(!this.petDefinition.accessories) return;
         this.petDefinition.accessories.forEach((accName) => {
-            const accessory = App.definitions.accessories[accName];
+            const accessory = Definitions.accessories[accName];
             if(!accessory) return;
 
             const accessoryObject = 
@@ -304,7 +312,7 @@ class Pet extends Object2d {
             return false;
         }
 
-        const wantedFoodItem = App.definitions.food[this.stats.current_want.item];
+        const wantedFoodItem = Definitions.food[this.stats.current_want.item];
         if(App.petDefinition.checkWant(foodSpriteCellNumber == wantedFoodItem?.sprite, App.constants.WANT_TYPES.food)){
             forced = true;
         }
@@ -1048,7 +1056,7 @@ class Pet extends Object2d {
 
         switch(type){
             case App.constants.WANT_TYPES.food:
-                const foodSpriteIndex = App.definitions.food[item]?.sprite;
+                const foodSpriteIndex = Definitions.food[item]?.sprite;
                 if(!foodSpriteIndex) break;
                 new Object2d({
                     parent: bubble,
@@ -1085,7 +1093,7 @@ class Pet extends Object2d {
                 })
                 break;
             case App.constants.WANT_TYPES.item:
-                const itemSpriteIndex = App.definitions.item[item]?.sprite;
+                const itemSpriteIndex = Definitions.item[item]?.sprite;
                 if(!itemSpriteIndex) break;
                 new Object2d({
                     parent: bubble,

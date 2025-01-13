@@ -1,4 +1,4 @@
-App.definitions = {
+export const Definitions = {
     /* MAIN MENU */
     main_menu: [
         {

@@ -1,4 +1,6 @@
-class Drawer {
+import { pRandom } from "./Utils";
+
+export class Drawer {
     constructor(canvas, optWidth, optHeight) {
         if(!canvas) {
             canvas = document.createElement('canvas');

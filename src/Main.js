@@ -1,4 +1,4 @@
-class SpriteElement extends HTMLElement {
+export class SpriteElement extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
@@ -36,7 +36,7 @@ class SpriteElement extends HTMLElement {
 
 customElements.define("c-sprite", SpriteElement);
 
-function handleServiceWorker(){
+export function handleServiceWorker(){
     if(!navigator?.serviceWorker || App.isOnItch) return;
     
     let shownControllerChangeModal = false;

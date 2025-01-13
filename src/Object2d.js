@@ -1,4 +1,6 @@
-class Object2d {
+import { App } from "./App";
+
+export class Object2d {
     constructor(config) {
         // parent drawer
         if (!config.drawer) {

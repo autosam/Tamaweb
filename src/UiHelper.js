@@ -1,4 +1,6 @@
-const UI = {
+import { ellipsis } from "./Utils";
+
+export const UI = {
     specialProps: [
         'componentType',
         'parent',

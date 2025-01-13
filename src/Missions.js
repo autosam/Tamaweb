@@ -1,4 +1,9 @@
-const Missions = {
+import { App } from "./App";
+import { Definitions } from "./Definitions";
+import moment from "./libs/moment";
+import { random, randomFromArray } from "./Utils";
+
+export const Missions = {
     current: [],
     currentPts: 0,
     currentStep: 0,
@@ -93,7 +98,7 @@ const Missions = {
         console.log(this.current);
     },
     openRewardsMenu: function(){
-        const defs = App.definitions;
+        const defs = Definitions;
         App.sendAnalytics('opened_mission_rewards', Missions.currentPts);
         const foodPool = Object.keys(defs.food).filter(key => defs.food[key].price).map(key => { 
             return {

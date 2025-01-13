@@ -1,4 +1,18 @@
-let App = {
+import { Activities } from "./Activities/Activities";
+import { Definitions } from "./Definitions";
+import { Drawer } from "./Drawer";
+import moment from "./libs/moment";
+import { Missions } from "./Missions";
+import { Object2d } from "./Object2d";
+import { Pet } from "./Pet";
+import { PetDefinition } from "./PetDefinition";
+import { Scene } from "./Scene";
+import { UI } from "./UiHelper";
+import { getRandomName, randomFromArray, clamp, random, pRandomFromArray, ellipsis, sanitize, pRandom } from "./Utils";
+import { VERSION } from "./Version";
+
+
+export const App = {
     PI2: Math.PI * 2, INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', userName: null, ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
     gameEventsHistory: {}, deferredInstallPrompt: null, shellBackground: '', isOnItch: false, isOnElectronClient: false, hour: 12,
     misc: {}, mods: [], records: {}, temp: {},
@@ -381,7 +395,7 @@ let App = {
                 className: 'classic-main-menu__container',
                 parent: graphicsWrapper,
                 parentInsertBefore: true,
-                children: App.definitions.main_menu.map(def => {
+                children: Definitions.main_menu.map(def => {
                     return {
                         className: 'classic-main-menu__item click-sound',
                         innerHTML: def.name,
@@ -545,7 +559,7 @@ let App = {
                     App.displayPopup(`Success!`, 5000, () => {
                         App.closeAllDisplays();
                         Activities.redecorRoom();
-                        App.scene.home.image = App.definitions.room_background.princess.image;
+                        App.scene.home.image = Definitions.room_background.princess.image;
                     });
                 })) return showAlreadyUsed();
                 break;
@@ -771,7 +785,7 @@ let App = {
         home: new Scene({
             image: 'resources/img/background/house/02.png',
             petX: '50%', petY: '100%',
-            onLoad: () => {
+            onLoad: function() {
                 App.poop.absHidden = false;
                 App.pet.staticShadow = false;
 
@@ -786,7 +800,7 @@ let App = {
                     });
                 }
             },
-            onUnload: () => {
+            onUnload: function() {
                 App.poop.absHidden = true;
                 App.pet.staticShadow = true;
                 this.christmasTree?.removeObject();
@@ -1198,7 +1212,7 @@ let App = {
         },
         show_newspaper: function(headline, text){
             if(!headline && !text){
-                [headline, text] = randomFromArray(App.definitions.mail.affirmations);
+                [headline, text] = randomFromArray(Definitions.mail.affirmations);
             }
 
             const salesDaySection = !App.isSalesDay() ? '' : `
@@ -1257,7 +1271,7 @@ let App = {
             App.playSound(`resources/sounds/ui_click_01.ogg`, true);
             App.vibrate();
             App.displayGrid([
-                ...App.definitions.main_menu,
+                ...Definitions.main_menu,
                 {
                     name: '<i class="fa-solid fa-arrow-left back-sound"></i>',
                     class: 'back-sound',
@@ -1820,7 +1834,7 @@ let App = {
                             },
                             {
                                 _mount: (e) => {
-                                    const hasNew = App.definitions.shell_background.some((entry) => {
+                                    const hasNew = Definitions.shell_background.some((entry) => {
                                         const isUnlocked = entry.unlockKey && App.getRecord(entry.unlockKey);
                                         return entry.isNew && isUnlocked;
                                     });
@@ -2194,8 +2208,8 @@ let App = {
             const salesDay = App.isSalesDay();
             const dayId = App.getDayId(true);
             let index = -1;
-            for(let food of Object.keys(App.definitions.food)){
-                let current = App.definitions.food[food];
+            for(let food of Object.keys(Definitions.food)){
+                let current = Definitions.food[food];
 
                 // lifestage check
                 if(!current.age.includes(App.petDefinition.lifeStage)) continue;
@@ -2474,9 +2488,9 @@ let App = {
             }
 
             const list = 
-                Object.keys(App.definitions.achievements)
+                Object.keys(Definitions.achievements)
                 .map(id => {
-                    const { name, description, checkProgress, getReward } = App.definitions.achievements[id];
+                    const { name, description, checkProgress, getReward } = Definitions.achievements[id];
                     return configureAchievement(
                         id,
                         name,
@@ -2498,12 +2512,12 @@ let App = {
             let list = [];
             let sliderInstance;
             let salesDay = App.isSalesDay();
-            for(let item of Object.keys(App.definitions.item)){
+            for(let item of Object.keys(Definitions.item)){
                 // check if current pet has this item on its inventory
                 if(!App.pet.inventory.item[item] && !buyMode){
                     continue;
                 }
-                let current = App.definitions.item[item];
+                let current = Definitions.item[item];
 
                 // 50% off on sales day
                 let price = current.price;
@@ -2552,14 +2566,13 @@ let App = {
 
             sliderInstance = App.displaySlider(list, activeIndex, {accept: buyMode ? 'Purchase' : 'Use'}, buyMode ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}` : null);
             return sliderInstance;
-            return App.displayList(list);
         },
         open_room_background_list: function(){
             let list = [];
             let sliderInstance;
             let salesDay = App.isSalesDay();
-            for(let room of Object.keys(App.definitions.room_background)){
-                let current = App.definitions.room_background[room];
+            for(let room of Object.keys(Definitions.room_background)){
+                let current = Definitions.room_background[room];
 
                 // check for unlockables
                 if(current.unlockKey && !App.getRecord(current.unlockKey)){
@@ -2605,7 +2618,7 @@ let App = {
         },
         open_shell_background_list: function(){
             let sliderInstance;
-            const list = App.definitions.shell_background
+            const list = Definitions.shell_background
             .filter(current => !(current.unlockKey && !App.getRecord(current.unlockKey)))
             .map(current => {
                 // check for unlockables
@@ -2626,12 +2639,12 @@ let App = {
             let list = [];
             let sliderInstance;
             let salesDay = App.isSalesDay();
-            for(let accessoryName of Object.keys(App.definitions.accessories)){
+            for(let accessoryName of Object.keys(Definitions.accessories)){
                 // check if current pet has this item on its inventory
                 if(!App.pet.inventory.accessory[accessoryName] && !buyMode){
                     continue;
                 }
-                let current = App.definitions.accessories[accessoryName];
+                let current = Definitions.accessories[accessoryName];
                 // check for unlockables
                 if(current.unlockKey && !App.getRecord(current.unlockKey)){
                     continue;
@@ -3016,7 +3029,7 @@ let App = {
                                     App.pet.stats.gold -= price;
                                     goToVacation(Activities.seaVacation)
                                     App.sendAnalytics('go_on_vacation');
-                                    App.definitions.achievements.go_to_vacation_x_times.advance();
+                                    Definitions.achievements.go_to_vacation_x_times.advance();
                                 }
                             },
                             {
@@ -3158,9 +3171,9 @@ let App = {
                 let homeBackground = App.scene.home.image;
                 if(petDefinition !== App.petDefinition)
                     homeBackground = randomFromArray(
-                        Object.keys(App.definitions.room_background)
+                        Object.keys(Definitions.room_background)
                         .map(roomName => 
-                            App.definitions.room_background[roomName].image
+                            Definitions.room_background[roomName].image
                         )
                     )
                 
@@ -3187,7 +3200,7 @@ let App = {
 
                 switch(App.pet.state){
                     default:
-                        const tweet = randomFromArray(App.definitions.tweets.generic);
+                        const tweet = randomFromArray(Definitions.tweets.generic);
                         postText.innerHTML = tweet[0]; // text
                         if(tweet[1]) character.spritesheet.cellNumber = tweet[1]; // pose
                         if(tweet[2]) background.setImg(tweet[2]); // background
@@ -3305,19 +3318,19 @@ let App = {
             ])
         },
         open_mall_activity_list: function(){
-            const hasNewDecor = Object.keys(App.definitions.room_background).some(key => {
+            const hasNewDecor = Object.keys(Definitions.room_background).some(key => {
                 const isUnlocked = 
-                    App.definitions.room_background[key].unlockKey ? 
-                    App.getRecord(App.definitions.room_background[key].unlockKey) : 
+                    Definitions.room_background[key].unlockKey ? 
+                    App.getRecord(Definitions.room_background[key].unlockKey) : 
                     true;
-                return App.definitions.room_background[key].isNew && isUnlocked;
+                return Definitions.room_background[key].isNew && isUnlocked;
             });
-            const hasNewAccessory = Object.keys(App.definitions.accessories).some(key => {
+            const hasNewAccessory = Object.keys(Definitions.accessories).some(key => {
                 const isUnlocked = 
-                    App.definitions.accessories[key].unlockKey ? 
-                    App.getRecord(App.definitions.accessories[key].unlockKey) : 
+                    Definitions.accessories[key].unlockKey ? 
+                    App.getRecord(Definitions.accessories[key].unlockKey) : 
                     true;
-                return App.definitions.accessories[key].isNew && isUnlocked;
+                return Definitions.accessories[key].isNew && isUnlocked;
             });
 
             const backFn = () => { // unused
@@ -3700,7 +3713,7 @@ let App = {
             list.close();
         }
 
-        changeIndex = diff => {
+        const changeIndex = diff => {
             if(!diff) diff = 0;
             currentIndex += diff;
             if(currentIndex >= maxIndex) currentIndex = 0;
@@ -3991,7 +4004,7 @@ let App = {
         return `<c-sprite width="22" height="22" index="${(index - 1)}" src="resources/img/item/items.png"></c-sprite>`
     },
     getAccessoryCSprite: function(name){
-        const current = App.definitions.accessories[name];
+        const current = Definitions.accessories[name];
         const image = App.checkResourceOverride(current.icon || current.image);
         return current.icon
             ? `<div style="width: 1"><img style="width: 36px; outline: none" src="${image}"></img></div>`
@@ -4080,7 +4093,7 @@ let App = {
         
         App.playTime = parseInt(window.localStorage.getItem('play_time') || 0);
 
-        let shellBackground = window.localStorage.getItem('shell_background_v2.1') || App.definitions.shell_background[1].image;
+        let shellBackground = window.localStorage.getItem('shell_background_v2.1') || Definitions.shell_background[1].image;
 
         let missions = window.localStorage.getItem('missions');
         missions = missions ? JSON.parse(missions) : {};
@@ -4348,28 +4361,3 @@ let App = {
         }
     }
 }
-
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    App.deferredInstallPrompt = e;
-
-    if(App.awayTime !== -1){
-        App.addEvent(`pwa_install_notice_01`, () => {
-            App.displayConfirm(`Do you want to install <b>Tamaweb</b> as an app?`, [
-                {
-                    name: 'install',
-                    onclick: () => {
-                        App.installAsPWA();
-                    }
-                },
-                {
-                    name: 'cancel',
-                    class: 'back-btn',
-                    onclick: () => {
-                        App.displayPopup(`You can install the game as an app anytime from the <b>settings</b>`)
-                    }
-                },
-            ])
-        })
-    }
-});

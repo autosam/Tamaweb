@@ -1,4 +1,10 @@
-class PetDefinition {
+import { App } from "./App";
+import { Definitions } from "./Definitions";
+import moment from "./libs/moment";
+import { Missions } from "./Missions";
+import { random, clamp, randomFromArray } from "./Utils";
+
+export class PetDefinition {
     // sprite data
     spritesheet = {
         cellNumber: 0,
@@ -181,7 +187,7 @@ class PetDefinition {
         wander_max: 8,
 
         // current
-        current_hunger: 40 || 80,
+        current_hunger: 40,
         current_sleep: 70,
         current_fun: 10,
         current_bladder: 10,
@@ -499,19 +505,19 @@ class PetDefinition {
 
         switch(currentCategory){
             case "food": // item is food name
-                const wantedFood = randomFromArray(Object.keys(App.definitions.food));
+                const wantedFood = randomFromArray(Object.keys(Definitions.food));
                 if(
-                    !App.definitions.food[wantedFood].age.includes(this.lifeStage) 
-                    || ['med', 'treat'].includes(App.definitions.food[wantedFood].type)
+                    !Definitions.food[wantedFood].age.includes(this.lifeStage) 
+                    || ['med', 'treat'].includes(Definitions.food[wantedFood].type)
                 ) return this.refreshWant(++currentTry, currentCategory);
                 current_want.type = App.constants.WANT_TYPES.food;
                 current_want.item = wantedFood;
                 break;
             case "snack": // item is food name
-                const wantedSnack = randomFromArray(Object.keys(App.definitions.food));
+                const wantedSnack = randomFromArray(Object.keys(Definitions.food));
                 if(
-                    !App.definitions.food[wantedSnack].age.includes(this.lifeStage) 
-                    || !['treat'].includes(App.definitions.food[wantedSnack].type)
+                    !Definitions.food[wantedSnack].age.includes(this.lifeStage) 
+                    || !['treat'].includes(Definitions.food[wantedSnack].type)
                 ) return this.refreshWant(++currentTry, currentCategory);
                 current_want.type = App.constants.WANT_TYPES.food;
                 current_want.item = wantedSnack;
@@ -523,7 +529,7 @@ class PetDefinition {
                 current_want.item = wantedFriendIndex;
                 break;
             case "item": // item is item name
-                const wantedItem = randomFromArray(Object.keys(App.definitions.item));
+                const wantedItem = randomFromArray(Object.keys(Definitions.item));
                 current_want.type = App.constants.WANT_TYPES.item;
                 current_want.item = wantedItem;
                 break;
