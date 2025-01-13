@@ -1,15 +1,7 @@
 import { UI } from "./UiHelper";
-// import * as Utils from './Utils.js'
-// import { Drawer } from "./Drawer.js";
-// import { Object2d } from "./Object2d.js";
-// import { Scene } from "./Scene.js";
-// import { Activities } from "./Activities";
-// import { PetDefinition } from "./PetDefinition.js";
-// import { Pet } from "./Pet.js";
 import { App } from "./App";
 import { Missions } from "./Missions";
-import { Activities } from "./Activities/Activities";
-// import { Missions } from "./Missions.js";
+import * as Activities from "./Activities";
 
 export class SpriteElement extends HTMLElement {
   constructor() {
@@ -102,7 +94,7 @@ function handleServiceWorker() {
             class: "back-btn",
             onclick: () => {
               App.displayPopup(
-                `You can install the game as an app anytime from the <b>settings</b>`
+                `You can install the game as an app anytime from the <b>settings</b>`,
               );
             },
           },

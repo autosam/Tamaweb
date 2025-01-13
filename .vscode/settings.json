@@ -1,5 +1,7 @@
 {
-    "cSpell.words": [
-        "minigame"
-    ]
+  "cSpell.words": ["minigame"],
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.addMissingImports.ts": "always"
+  }
 }

@@ -1,5 +1,5 @@
 export class Scene {
-    constructor(data){
-        Object.assign(this, data);
-    }
+  constructor(data) {
+    Object.assign(this, data);
+  }
 }

@@ -10,6 +10,9 @@
     "@babel/core": "^7.26.0",
     "@babel/preset-env": "^7.26.0",
     "babel-loader": "^9.2.1",
+    "eslint": "^9.18.0",
+    "eslint-import-resolver-alias": "^1.1.2",
+    "eslint-plugin-import": "^2.31.0",
     "prettier": "^3.4.2",
     "webpack": "^5.97.1",
     "webpack-cli": "^6.0.1"

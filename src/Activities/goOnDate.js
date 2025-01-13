@@ -2,7 +2,6 @@ import { App } from "../App";
 import { Definitions } from "../Definitions";
 import { Pet } from "../Pet";
 import { random } from "../Utils";
-import { Activities } from "./Activities";
 
 export async function goOnDate(otherPetDef = App.getRandomPetDef(), onFailEnd) {
   App.closeAllDisplays();
@@ -89,7 +88,7 @@ export async function goOnDate(otherPetDef = App.getRandomPetDef(), onFailEnd) {
                   name: "yes",
                   onclick: () => {
                     end();
-                    Activities.wedding(otherPetDef);
+                    wedding(otherPetDef);
                   },
                 },
                 {
