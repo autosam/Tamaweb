@@ -8,16 +8,21 @@
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
+    "@babel/plugin-proposal-optional-chaining": "^7.21.0",
     "@babel/preset-env": "^7.26.0",
+    "babel-cli": "^6.26.0",
     "babel-loader": "^9.2.1",
+    "babel-plugin-module-resolver": "^5.0.2",
     "eslint": "^9.18.0",
     "eslint-import-resolver-alias": "^1.1.2",
+    "eslint-import-resolver-webpack": "^0.13.10",
     "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-module-resolver": "^1.5.0",
     "eslint-plugin-no-relative-import-paths": "^1.6.1",
     "eslint-plugin-path": "^1.4.0-beta.0",
     "prettier": "^3.4.2",
     "webpack": "^5.97.1",
     "webpack-cli": "^6.0.1"
   },
-  "type": "module"
+  "type": "commonjs"
 }

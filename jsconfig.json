@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "checkJs": true,
-    // "baseUrl": "./src"
     "paths": {
       "@tamaweb/*": ["./src/*"]
     }

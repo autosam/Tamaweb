@@ -1,33 +1,27 @@
-import path from "path";
-import eslintPluginImport from "eslint-plugin-import";
-import noRelativeImportPaths from "eslint-plugin-no-relative-import-paths";
+const path = require("path");
 
-export default [
+module.exports = [
   {
-    ignores: ["node_modules/**"],
-  },
-  {
-    languageOptions: {
-      ecmaVersion: "latest",
-      sourceType: "module",
-    },
+    files: ["src/*.js"],
     plugins: {
-      import: eslintPluginImport,
-      "no-relative-import-paths": noRelativeImportPaths,
+      import: require("eslint-plugin-import"),
+      "module-resolver": require("eslint-plugin-module-resolver"),
     },
     rules: {
-      "import/no-unresolved": "error",
-      "import/order": ["warn", { groups: ["builtin", "external", "internal"] }],
-      "no-relative-import-paths/no-relative-import-paths": [
-        "warn",
-        { allowSameFolder: false, rootDir: "./src" },
-      ],
+      // Enforce the alias usage
+      "module-resolver/use-alias": "error",
     },
     settings: {
       "import/resolver": {
         alias: {
-          map: [["@tamaweb/*", "./src/*"]],
-          extensions: [".js"],
+          map: [
+            // Map all files and subfolders under ./src/ to @tamaweb/*
+            ["src/(.*)$", "@tamaweb/\\1"], // Updated regex
+          ],
+          extensions: [".js", ".jsx", ".ts", ".tsx"], // File extensions to resolve
+        },
+        node: {
+          extensions: [".js", ".jsx", ".ts", ".tsx"],
         },
       },
     },

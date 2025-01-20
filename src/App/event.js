@@ -9,6 +9,6 @@ export function addEvent(name, payload, force) {
   return false;
 }
 
-export function getEvent (name) {
+export function getEvent(name) {
   return App.gameEventsHistory[name];
-},
+}

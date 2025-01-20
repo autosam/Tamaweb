@@ -7,18 +7,8 @@ module.exports = {
     path: path.resolve(__dirname, "dist"),
   },
   mode: "development",
-  module: {
-    rules: [
-      {
-        test: /\.js$/,
-        exclude: [path.resolve(__dirname, "./modules")],
-      },
-    ],
-  },
   resolve: {
-    alias: {
-      "@Activities": path.resolve(__dirname, "src/Activities"),
-    },
+    alias: { "@tamaweb": path.resolve(__dirname, "./src") },
     extensions: [".js"],
   },
 };
