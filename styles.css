@@ -99,22 +99,6 @@ body {
     justify-content: center;
 }
 
-.gameplay-main-buttons {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    height: auto;
-}
-
-.gameplay-main-buttons>button {
-    flex-grow: 1;
-}
-
-.gameplay-main-buttons>button.disabled {
-    filter: grayscale();
-    pointer-events: none;
-}
-
 .generic-empty-container {
     position: absolute;
     height: 100%;
@@ -195,55 +179,7 @@ body {
     animation-delay: 0.225s !important;
 }
 
-.list-item {
-    all: unset;
-    height: 40px;
-    color: black;
-    font-family: sans-serif;
-    padding: 10px 20px;
-    border-bottom: 1px solid gray;
-    font-family: 'Pixel';
-    cursor: pointer;
-    flex-shrink: 0;
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-}
 
-.list-item:last-of-type {
-    border-bottom: none;
-}
-
-.list-item {
-    border: 0;
-    position: relative;
-    height: 22px;
-    text-wrap: nowrap;
-    overflow: hidden;
-}
-
-.list-item:before {
-    width: 8px;
-    height: calc(80% - 2px);
-    background: white;
-    content: "";
-    position: absolute;
-    left: 5px;
-    width: calc(100% - 10px);
-    z-index: -1;
-    border-radius: 20px;
-
-    box-shadow: inset 0px -4px 0px 2px #0000001a;
-
-    outline: 2px solid white;
-}
-
-/* .list-item:active,
-.list-item:hover {
-    padding-left: 30px;
-} */
-.list-item:active:before,
-.list-item:hover:before,
 .w-btn:hover,
 .w-btn:active,
 .slide-btn:hover::before,
@@ -252,8 +188,6 @@ body {
     outline-offset: 1px;
 }
 
-.list-item:active:after,
-.list-item:hover:after,
 .grid-item:active:after,
 .grid-item:hover:after,
 .generic-btn:active:after,
@@ -275,15 +209,6 @@ body {
     from {
         left: -5px;
     }
-}
-
-.list-item:disabled {
-    pointer-events: none;
-    color: gray;
-}
-
-.list-item:disabled::before {
-    opacity: 0.6;
 }
 
 .list-title {
@@ -629,19 +554,6 @@ button {
     all: unset;
     font-family: 'Pixel';
     cursor: pointer;
-}
-
-.list-item.back-btn {
-    color: #222285;
-    font-weight: bold;
-}
-
-.list-item.back-btn::before {
-    background-color: #DBDBF4;
-    /* outline: none; */
-    outline-color: #DBDBF4;
-    /* outline-offset: -1px;
-    outline-width: 3px; */
 }
 
 .back-btn {
@@ -1401,8 +1313,21 @@ a.generic-btn:before {
 
 .generic-btn:disabled, .generic-btn.disabled {
     pointer-events: none;
+    /* filter: saturate(0) contrast(0.8); */
     /* opacity: 0.8; */
-    filter: saturate(0.0) contrast(0.8);
+    /* opacity: 0.5; */
+    /* text-decoration: line-through; */
+
+    /* box-shadow: unset !important;
+    background-color: #ffedda !important;
+    color: #967c61 !important;
+    border-color: #ffd6a9 !important; */
+
+    box-shadow: unset !important;
+    background-color: #fff4e8 !important;
+    color: #ffc280 !important;
+    border-color: #ffd2a1 !important;
+    text-shadow: none !important;
 }
 
 .generic-btn.stylized {

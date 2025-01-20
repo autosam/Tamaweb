@@ -2300,6 +2300,7 @@ let App = {
                 },
                 {
                     // _ignore: !App.isTester(),
+                    _disable: App.petDefinition.lifeStage < 1,
                     name: `cook`,
                     onclick: () => {
                         return App.displayConfirm(`You take 3 pictures to use as ingredients for your soup! after that, tap to stir until it's mixed!`, [
@@ -2735,6 +2736,18 @@ let App = {
                     }
                 },
                 {
+                    name: 'park',
+                    onclick: () => { // going to park with random pet
+                        Activities.goToPark();
+                    }
+                },
+                {
+                    name: `visit doctor`,
+                    onclick: () => {
+                        Activities.goToClinic();
+                    }
+                },
+                {
                     _disable: App.petDefinition.lifeStage < 2,
                     name: `work`,
                     onclick: () => {
@@ -2753,18 +2766,6 @@ let App = {
                             },
                         ])
                         return true;
-                    }
-                },
-                {
-                    name: 'park',
-                    onclick: () => { // going to park with random pet
-                        Activities.goToPark();
-                    }
-                },
-                {
-                    name: `visit doctor`,
-                    onclick: () => {
-                        Activities.goToClinic();
                     }
                 },
                 // {
