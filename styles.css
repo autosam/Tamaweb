@@ -593,6 +593,10 @@ button {
     align-items: center;
 }
 
+.justify-center {
+    justify-content: center;
+}
+
 .overflow-hidden {
     overflow: hidden;
 }
@@ -1328,6 +1332,11 @@ a.generic-btn:before {
     color: #ffc280 !important;
     border-color: #ffd2a1 !important;
     text-shadow: none !important;
+}
+
+.generic-btn:disabled>* {
+    opacity: 0.5;
+    filter: contrast(0.5);
 }
 
 .generic-btn.stylized {

@@ -1375,7 +1375,7 @@ let App = {
                     }
                 },
                 {
-                    name: 'clean',
+                    name: 'clean room',
                     onclick: () => {
                         App.handlers.clean();
                     }
@@ -1420,6 +1420,8 @@ let App = {
             ])
         },
         open_settings: function(){
+            const ignoreFirstDivider = !(App.deferredInstallPrompt || !App.isOnItch);
+
             const settings = App.displayList([
                 {
                     _ignore: !App.isTester(),
@@ -1469,7 +1471,6 @@ let App = {
                     _ignore: !App.deferredInstallPrompt,
                     name: 'install app',
                     onclick: () => {
-                        // App.pet.stats.gold += 250;
                         App.installAsPWA();
                         return true;
                     },
@@ -1600,7 +1601,7 @@ let App = {
                         return true;
                     },
                 },
-                { type: 'separator' },
+                { type: 'separator', _ignore: ignoreFirstDivider },
                 {
                     name: `gameplay settings`,
                     onclick: () => {
@@ -2300,7 +2301,7 @@ let App = {
                 },
                 {
                     // _ignore: !App.isTester(),
-                    _disable: App.petDefinition.lifeStage < 1,
+                    _disable: App.petDefinition.lifeStage <= 0,
                     name: `cook`,
                     onclick: () => {
                         return App.displayConfirm(`You take 3 pictures to use as ingredients for your soup! after that, tap to stir until it's mixed!`, [
@@ -2358,6 +2359,25 @@ let App = {
                     }
                 },
                 {
+                    name: 'set nickname',
+                    onclick: () => {
+                        App.displayPrompt(`Enter your pet's name:`, [
+                            {
+                                name: 'set',
+                                onclick: (value) => {
+                                    if(!value) return false;
+
+                                    App.pet.petDefinition.name = value;
+                                    App.save();
+                                    App.displayPopup(`Name set to "${App.pet.petDefinition.name}"`)
+                                }
+                            },
+                            {name: 'cancel', class: 'back-btn', onclick: () => {}},
+                        ], App.pet.petDefinition.name);
+                        return true;
+                    }
+                },
+                {
                     _disable: !App.petDefinition.deceasedPredecessors?.length,
                     name: `past generations`,
                     onclick: () => {
@@ -2383,26 +2403,6 @@ let App = {
                         return true;
                     }
                 },
-                {
-                    name: 'set nickname',
-                    onclick: () => {
-                        App.displayPrompt(`Enter your pet's name:`, [
-                            {
-                                name: 'set',
-                                onclick: (value) => {
-                                    if(!value) return false;
-
-                                    App.pet.petDefinition.name = value;
-                                    App.save();
-                                    App.displayPopup(`Name set to "${App.pet.petDefinition.name}"`)
-                                }
-                            },
-                            {name: 'cancel', class: 'back-btn', onclick: () => {}},
-                        ], App.pet.petDefinition.name);
-                        return true;
-                    }
-                },
-
             ])
         },
         open_profile: function(){
@@ -2834,13 +2834,6 @@ let App = {
                                 }
                             },
                             {
-                                name: 'park',
-                                onclick: () => {
-                                    App.closeAllDisplays();
-                                    Activities.goToPark(friendDef);
-                                }
-                            },
-                            {
                                 name: 'invite',
                                 onclick: () => {
                                     App.closeAllDisplays();
@@ -2848,6 +2841,15 @@ let App = {
                                 }
                             },
                             {
+                                _disable: App.petDefinition.lifeStage <= 0,
+                                name: 'park',
+                                onclick: () => {
+                                    App.closeAllDisplays();
+                                    Activities.goToPark(friendDef);
+                                }
+                            },
+                            {
+                                _disable: App.petDefinition.lifeStage <= 0,
                                 name: 'gift',
                                 onclick: () => {
                                     App.displayConfirm(`Are you sure you want to give gift to ${icon} ${name}?`, [
@@ -2903,6 +2905,7 @@ let App = {
         open_phone: function(){
             App.displayList([
                 {
+                    _disable: App.petDefinition.lifeStage <= 0,
                     name: `<span style="color: #ff00c6"><i class="icon fa-solid fa-globe"></i> hubchi</span>`,
                     onclick: () => {
                         if(App.petDefinition.lifeStage <= 0){
@@ -3396,9 +3399,11 @@ let App = {
                     onclick: () => {
                         const imgPath = 'resources/img/ui/';
                         const images = `
+                        <div class="flex justify-center">
                             <img src="${imgPath}facing_left.png"></img>
                             <img src="${imgPath}facing_center.png"></img>
                             <img src="${imgPath}facing_right.png"></img>
+                        </div>
                         `
                         App.displayPopup(`Try to predict your opponents next stance ${images} and mimic them!`, tutorialDisplayTime, () => Activities.opponentMimicGame())
                         return false;
