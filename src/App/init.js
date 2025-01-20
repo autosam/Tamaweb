@@ -1,13 +1,17 @@
-import { playEggUfoAnimation, stayAtParents, seaVacation } from "@Activities";
-import { App } from "App";
-import { Drawer } from "Drawer";
-import moment from "libs/moment";
-import { Missions } from "Missions";
-import { Object2d } from "Object2d";
-import { PetDefinition } from "PetDefinition";
-import { UI } from "UiHelper";
-import { getRandomName, randomFromArray } from "Utils";
-import { VERSION } from "Version";
+import {
+  playEggUfoAnimation,
+  stayAtParents,
+  seaVacation,
+} from "@tamaweb/Activities";
+import { App } from "@tamaweb/App";
+import { Drawer } from "@tamaweb/Drawer";
+import moment from "@tamaweb/libs/moment";
+import { Missions } from "@tamaweb/Missions";
+import { Object2d } from "@tamaweb/Object2d";
+import { PetDefinition } from "@tamaweb/PetDefinition";
+import { UI } from "@tamaweb/UiHelper";
+import { getRandomName, randomFromArray } from "@tamaweb/Utils";
+import { VERSION } from "@tamaweb/Version";
 
 export async function init() {
   // init

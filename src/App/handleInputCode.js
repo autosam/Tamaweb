@@ -1,7 +1,7 @@
-import { redecorRoom } from "@Activities";
-import { App } from "App";
-import { Definitions } from "Definitions";
-import { PetDefinition } from "PetDefinition";
+import { redecorRoom } from "@tamaweb/Activities";
+import { App } from "@tamaweb/App";
+import { Definitions } from "@tamaweb/Definitions";
+import { PetDefinition } from "@tamaweb/PetDefinition";
 
 export function handleInputCode(rawCode) {
   const addEvent = App.addEvent;

@@ -1,4 +1,4 @@
-const path = require("path");
+import path from "path";
 
 module.exports = {
   entry: "./src/index.js",
@@ -8,7 +8,7 @@ module.exports = {
   },
   mode: "development",
   resolve: {
-    alias: { "@tamaweb": path.resolve(__dirname, "./src") },
+    alias: { "@tamaweb/*": path.resolve(__dirname, "./src/*") },
     extensions: [".js"],
   },
 };

@@ -1,7 +1,7 @@
-import { App } from "../App";
-import { Missions } from "../Missions";
-import { Pet } from "../Pet";
-import { random } from "../Utils";
+import { App } from "@tamaweb/App";
+import { Missions } from "@tamaweb/Missions";
+import { Pet } from "@tamaweb/Pet";
+import { random } from "@tamaweb/Utils";
 
 export function goToPark(otherPetDef) {
   if (!otherPetDef) {

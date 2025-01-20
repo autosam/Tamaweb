@@ -1,7 +1,7 @@
-import { App } from "../App";
-import { Definitions } from "../Definitions";
-import { Missions } from "../Missions";
-import { random } from "../Utils";
+import { App } from "@tamaweb/App";
+import { Definitions } from "@tamaweb/Definitions";
+import { Missions } from "@tamaweb/Missions";
+import { random } from "@tamaweb/Utils";
 import { task_floatingHearts } from "./task_floatingHearts";
 
 export async function pet() {

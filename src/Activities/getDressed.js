@@ -1,5 +1,5 @@
-import { App } from "../App";
-import { Object2d } from "../Object2d";
+import { App } from "@tamaweb/App";
+import { Object2d } from "@tamaweb/Object2d";
 
 export async function getDressed(middleFn, onEndFn, cheer) {
   App.closeAllDisplays();

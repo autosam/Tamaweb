@@ -1,6 +1,6 @@
-import { App } from "../App";
-import { Object2d } from "../Object2d";
-import { lerp } from "../Utils";
+import { App } from "@tamaweb/App";
+import { Object2d } from "@tamaweb/Object2d";
+import { lerp } from "@tamaweb/Utils";
 
 export function playEggUfoAnimation(callback) {
   if (!App.pet.eggObject) return;

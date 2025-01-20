@@ -1,4 +1,4 @@
-import { pRandom } from "./Utils";
+import { pRandom } from "@tamaweb/Utils";
 
 export class Drawer {
   constructor(canvas, optWidth, optHeight) {
@@ -43,9 +43,7 @@ export class Drawer {
           : object.width || object.image.width;
         object.x =
           this.getRelativePositionX(
-            Number(
-              object.x.toString().slice(0, object.x.toString().length - 1),
-            ),
+            Number(object.x.toString().slice(0, object.x.toString().length - 1))
           ) -
           width / 2;
       }
@@ -55,7 +53,7 @@ export class Drawer {
           : object.height || object.image.height;
         object.y =
           this.getRelativePositionY(
-            Number(object.y.slice(0, object.y.length - 1)),
+            Number(object.y.slice(0, object.y.length - 1))
           ) -
           height / 2;
       }
@@ -122,7 +120,7 @@ export class Drawer {
             radius,
             0,
             Math.PI * 2,
-            false,
+            false
           );
           context.clip();
         }
@@ -167,7 +165,7 @@ export class Drawer {
               x,
               dy + (half === 0 ? 0 : upperHalfHeight), // adjusting destination y for lower half
               cellSize,
-              dh, // using calculated height for the half
+              dh // using calculated height for the half
             );
           };
 
@@ -179,7 +177,7 @@ export class Drawer {
             x,
             y,
             object.width || image.width,
-            object.height || image.height,
+            object.height || image.height
           );
         }
 
@@ -238,7 +236,7 @@ export class Drawer {
             area[2],
             0,
             2 * Math.PI,
-            false,
+            false
           );
           this.context.fillStyle = "rgba(124, 55, 29, 0.6)";
           this.context.fill();
@@ -269,7 +267,7 @@ export class Drawer {
       0,
       0,
       this.bounds.width,
-      this.bounds.height,
+      this.bounds.height
     );
   }
   drawImmediate(entity) {

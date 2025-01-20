@@ -1,6 +1,6 @@
-import { App } from "../App";
-import { Definitions } from "../Definitions";
-import { Object2d } from "../Object2d";
+import { App } from "@tamaweb/App";
+import { Definitions } from "@tamaweb/Definitions";
+import { Object2d } from "@tamaweb/Object2d";
 import { task_endWork } from "./task_endWork";
 
 export function officeWork() {

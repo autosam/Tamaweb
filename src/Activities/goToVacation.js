@@ -1,4 +1,4 @@
-import { App } from "../App";
+import { App } from "@tamaweb/App";
 import { task_foam } from "./task_foam";
 
 export function goToVacation(vacationFn) {

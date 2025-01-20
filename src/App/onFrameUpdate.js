@@ -1,5 +1,5 @@
-import { App } from "App";
-import { clamp } from "Utils";
+import { App } from "@tamaweb/App";
+import { clamp } from "@tamaweb/Utils";
 
 export function onFrameUpdate(time) {
   App.date = new Date();

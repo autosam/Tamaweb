@@ -1,6 +1,6 @@
-import { App } from "../App";
-import { Pet } from "../Pet";
-import { PetDefinition } from "../PetDefinition";
+import { App } from "@tamaweb/App";
+import { Pet } from "@tamaweb/Pet";
+import { PetDefinition } from "@tamaweb/PetDefinition";
 
 export function inviteDoctorVisit() {
   App.setScene(App.scene.home);

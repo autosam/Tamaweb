@@ -1,7 +1,7 @@
-import { App } from "../App";
-import { Pet } from "../Pet";
-import { PetDefinition } from "../PetDefinition";
-import { random } from "../Utils";
+import { App } from "@tamaweb/App";
+import { Pet } from "@tamaweb/Pet";
+import { PetDefinition } from "@tamaweb/PetDefinition";
+import { random } from "@tamaweb/Utils";
 
 export function encounter() {
   if (random(0, 256) != 1) return false;

@@ -1,7 +1,7 @@
-import { App } from "../App";
-import { Missions } from "../Missions";
-import { Object2d } from "../Object2d";
-import { random } from "../Utils";
+import { App } from "@tamaweb/App";
+import { Missions } from "@tamaweb/Missions";
+import { Object2d } from "@tamaweb/Object2d";
+import { random } from "@tamaweb/Utils";
 
 export function bathe() {
   App.closeAllDisplays();

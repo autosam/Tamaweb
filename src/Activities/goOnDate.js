@@ -1,7 +1,7 @@
-import { App } from "../App";
-import { Definitions } from "../Definitions";
-import { Pet } from "../Pet";
-import { random } from "../Utils";
+import { App } from "@tamaweb/App";
+import { Definitions } from "@tamaweb/Definitions";
+import { Pet } from "@tamaweb/Pet";
+import { random } from "@tamaweb/Utils";
 
 export async function goOnDate(otherPetDef = App.getRandomPetDef(), onFailEnd) {
   App.closeAllDisplays();

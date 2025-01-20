@@ -1,7 +1,7 @@
-import { App } from "../App";
-import { Definitions } from "../Definitions";
-import { Object2d } from "../Object2d";
-import { Pet } from "../Pet";
+import { App } from "@tamaweb/App";
+import { Definitions } from "@tamaweb/Definitions";
+import { Object2d } from "@tamaweb/Object2d";
+import { Pet } from "@tamaweb/Pet";
 import { task_foam } from "./task_foam";
 
 export function wedding(otherPetDef) {

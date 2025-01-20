@@ -1,8 +1,8 @@
-import { App } from "./App";
-import { Definitions } from "./Definitions";
-import moment from "./libs/moment";
-import { Missions } from "./Missions";
-import { random, clamp, randomFromArray } from "./Utils";
+import { App } from "@tamaweb/App";
+import { Definitions } from "@tamaweb/Definitions";
+import moment from "@tamaweb/libs/moment";
+import { Missions } from "@tamaweb/Missions";
+import { random, clamp, randomFromArray } from "@tamaweb/Utils";
 
 export class PetDefinition {
   // sprite data
@@ -493,7 +493,7 @@ export class PetDefinition {
     if (!this.friends.length) return false;
 
     let parents = this.friends.filter(
-      (friendDef) => friendDef.stats.is_player_family,
+      (friendDef) => friendDef.stats.is_player_family
     );
     if (!parents.length) return false;
 
@@ -598,7 +598,7 @@ export class PetDefinition {
     this.stats.current_care = clamp(
       this.stats.current_care,
       1,
-      this.stats.max_care,
+      this.stats.max_care
     );
   }
 

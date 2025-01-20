@@ -1,4 +1,4 @@
-import { App } from "App";
+import { App } from "@tamaweb/App";
 
 export function registerOnDrawEvent(fn) {
   return App.registeredDrawEvents.push(fn) - 1;

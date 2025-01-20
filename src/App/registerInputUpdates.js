@@ -1,4 +1,4 @@
-import { App } from "App";
+import { App } from "@tamaweb/App";
 
 export function registerInputUpdates() {
   document.addEventListener("mousemove", (evt) => {

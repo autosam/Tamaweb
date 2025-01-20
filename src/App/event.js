@@ -1,4 +1,4 @@
-import { App } from "App";
+import { App } from "@tamaweb/App";
 
 export function addEvent(name, payload, force) {
   if (!App.gameEventsHistory[name] || force) {

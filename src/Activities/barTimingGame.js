@@ -1,7 +1,7 @@
-import { App } from "../App";
-import { Definitions } from "../Definitions";
-import { Missions } from "../Missions";
-import { clamp } from "../Utils";
+import { App } from "@tamaweb/App";
+import { Definitions } from "@tamaweb/Definitions";
+import { Missions } from "@tamaweb/Missions";
+import { clamp } from "@tamaweb/Utils";
 
 export function barTimingGame() {
   App.closeAllDisplays();

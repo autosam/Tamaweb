@@ -1,5 +1,5 @@
-import { App } from "../App";
-import { Pet } from "../Pet";
+import { App } from "@tamaweb/App";
+import { Pet } from "@tamaweb/Pet";
 import { task_foam } from "./task_foam";
 
 export function seaVacation() {

@@ -1,3 +1,7 @@
+import { App } from "@tamaweb/App";
+import { Object2d } from "@tamaweb/Object2d";
+import { random, lerp } from "@tamaweb/Utils";
+
 export const Definitions = {
   /* MAIN MENU */
   main_menu: [
@@ -745,13 +749,13 @@ export const Definitions = {
             me.currentPosition.x = lerp(
               me.currentPosition.x,
               me.targetPosition.x,
-              0.0005 * App.nDeltaTime,
+              0.0005 * App.nDeltaTime
             );
             me.x = me.currentPosition.x;
             me.currentPosition.y = lerp(
               me.currentPosition.y,
               me.targetPosition.y,
-              0.0005 * App.nDeltaTime,
+              0.0005 * App.nDeltaTime
             );
             me.y = me.currentPosition.y + Math.sin(me.animationFloat);
 
@@ -761,7 +765,7 @@ export const Definitions = {
             me.movementMult = lerp(
               me.movementMult,
               me.targetMovementMult * me.movementMultDirection,
-              0.01 * App.nDeltaTime,
+              0.01 * App.nDeltaTime
             );
           },
         });

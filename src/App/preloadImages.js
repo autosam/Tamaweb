@@ -1,4 +1,4 @@
-const { App } = require("App");
+const { App } = require("@tamaweb/App");
 
 function preloadImages(urls) {
   const promises = urls.map((url) => {

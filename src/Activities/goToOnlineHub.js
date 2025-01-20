@@ -1,9 +1,9 @@
-import { App } from "../App";
-import { Definitions } from "../Definitions";
-import { Missions } from "../Missions";
-import { Pet } from "../Pet";
-import { PetDefinition } from "../PetDefinition";
-import { random } from "../Utils";
+import { App } from "@tamaweb/App";
+import { Definitions } from "@tamaweb/Definitions";
+import { Missions } from "@tamaweb/Missions";
+import { Pet } from "@tamaweb/Pet";
+import { PetDefinition } from "@tamaweb/PetDefinition";
+import { random } from "@tamaweb/Utils";
 import { goOnDate } from "./goOnDate";
 import { invitePlaydate } from "./invitePlaydate";
 import { onlineHubTransition } from "./onlineHubTransition";

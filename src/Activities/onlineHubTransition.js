@@ -1,7 +1,7 @@
-import { App } from "../App";
-import { Missions } from "../Missions";
-import { Object2d } from "../Object2d";
-import { clamp } from "../Utils";
+import { App } from "@tamaweb/App";
+import { Missions } from "@tamaweb/Missions";
+import { Object2d } from "@tamaweb/Object2d";
+import { clamp } from "@tamaweb/Utils";
 
 export function onlineHubTransition(onEndFn) {
   Missions.done(Missions.TYPES.visit_online_hub);

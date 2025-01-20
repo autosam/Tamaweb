@@ -1,35 +1,13 @@
-import { Definitions } from "Definitions";
-import { Drawer } from "Drawer";
-import moment from "libs/moment";
-import { Missions } from "Missions";
-import { Object2d } from "Object2d";
-import { Pet } from "Pet";
-import { PetDefinition } from "PetDefinition";
-import { Scene } from "Scene";
-import { UI } from "UiHelper";
 import {
-  getRandomName,
-  randomFromArray,
-  clamp,
-  random,
-  pRandomFromArray,
-  ellipsis,
-  sanitize,
-  pRandom,
-} from "./Utils";
-import { VERSION } from "./Version";
-import {
-  playEggUfoAnimation,
-  stayAtParents,
-  seaVacation,
-  redecorRoom,
   getMail,
   encounter,
   pet,
+  stayAtParents,
   goToGarden,
   bathe,
   poop,
   cookingGame,
+  redecorRoom,
   getDressed,
   goToMall,
   goToMarket,
@@ -45,10 +23,29 @@ import {
   goToOnlineHub,
   birthday,
   inviteDoctorVisit,
+  seaVacation,
   opponentMimicGame,
   fallingStuffGame,
   barTimingGame,
-} from "@Activities";
+} from "@tamaweb/Activities";
+import { Definitions } from "@tamaweb/Definitions";
+import { Drawer } from "@tamaweb/Drawer";
+import moment from "@tamaweb/libs/moment";
+import { Missions } from "@tamaweb/Missions";
+import { Object2d } from "@tamaweb/Object2d";
+import { Pet } from "@tamaweb/Pet";
+import { PetDefinition } from "@tamaweb/PetDefinition";
+import { UI } from "@tamaweb/UiHelper";
+import {
+  random,
+  pRandom,
+  randomFromArray,
+  pRandomFromArray,
+  getRandomName,
+  ellipsis,
+  sanitize,
+} from "@tamaweb/Utils";
+import { VERSION } from "@tamaweb/Version";
 
 export * from "./App/applySettings";
 export * from "./App/checkResourceOverride";

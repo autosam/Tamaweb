@@ -1,8 +1,8 @@
-import { App } from "App";
-import { Object2d } from "Object2d";
-import { Pet } from "Pet";
-import { Scene } from "Scene";
-import { random, randomFromArray } from "Utils";
+import { App } from "@tamaweb/App";
+import { Object2d } from "@tamaweb/Object2d";
+import { Pet } from "@tamaweb/Pet";
+import { Scene } from "@tamaweb/Scene";
+import { random, randomFromArray } from "@tamaweb/Utils";
 
 export const scene = {
   home: new Scene({

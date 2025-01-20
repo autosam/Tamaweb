@@ -1,6 +1,6 @@
-import { App } from "../App";
-import { Missions } from "../Missions";
-import { Pet } from "../Pet";
+import { App } from "@tamaweb/App";
+import { Missions } from "@tamaweb/Missions";
+import { Pet } from "@tamaweb/Pet";
 
 export function goToMarket() {
   App.toggleGameplayControls(false, () => {

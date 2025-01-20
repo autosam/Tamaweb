@@ -1,4 +1,4 @@
-import { App } from "../App";
+import { App } from "@tamaweb/App";
 
 export function dbg_randomMarriage() {
   App.pet.removeObject();

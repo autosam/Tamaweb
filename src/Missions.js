@@ -1,7 +1,7 @@
-import { App } from "./App";
-import { Definitions } from "./Definitions";
-import moment from "./libs/moment";
-import { random, randomFromArray } from "./Utils";
+import { App } from "@tamaweb/App";
+import { Definitions } from "@tamaweb/Definitions";
+import moment from "@tamaweb/libs/moment";
+import { randomFromArray, random } from "@tamaweb/Utils";
 
 export const Missions = {
   current: [],
@@ -164,7 +164,7 @@ export const Missions = {
             `,
         5000,
         null,
-        true,
+        true
       );
     };
 
@@ -225,7 +225,7 @@ export const Missions = {
               chest.name +
               `<br><small class="inline-list">${chest.info}<small>` +
               App.getBadge(
-                `${App.getIcon("coins", true)} <span style="margin-left: 3px">${chest.price}</span>`,
+                `${App.getIcon("coins", true)} <span style="margin-left: 3px">${chest.price}</span>`
               ),
             _disable: chest.price > Missions.currentPts,
             class: "large",
@@ -250,7 +250,7 @@ export const Missions = {
                     class: "back-btn",
                     onclick: () => {},
                   },
-                ],
+                ]
               );
               return true;
             },
@@ -265,7 +265,7 @@ export const Missions = {
         },
       ],
       null,
-      "Rewards",
+      "Rewards"
     );
     return list;
   },
@@ -297,7 +297,7 @@ export const Missions = {
           _mount: (me) =>
             (me.innerHTML = App.createStepper(
               this.MAX_STEPS,
-              Missions.currentStep,
+              Missions.currentStep
             ).node.outerHTML),
           name: "",
           type: "empty",
@@ -352,7 +352,7 @@ export const Missions = {
         },
       ],
       null,
-      "Missions",
+      "Missions"
     );
 
     return list;

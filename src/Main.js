@@ -1,3 +1,5 @@
+import { App } from "@tamaweb/App";
+
 export class SpriteElement extends HTMLElement {
   constructor() {
     super();

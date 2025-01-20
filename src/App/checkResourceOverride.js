@@ -1,4 +1,4 @@
-import { App } from "App";
+import { App } from "@tamaweb/App";
 
 export function checkResourceOverride(res) {
   if (!res) return res;

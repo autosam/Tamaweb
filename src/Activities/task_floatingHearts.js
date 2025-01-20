@@ -1,6 +1,6 @@
-import { App } from "../App";
-import { Object2d } from "../Object2d";
-import { random, randomFromArray } from "../Utils";
+import { App } from "@tamaweb/App";
+import { Object2d } from "@tamaweb/Object2d";
+import { random, randomFromArray } from "@tamaweb/Utils";
 
 export function task_floatingHearts(num) {
   if (!num) num = random(1, 4);

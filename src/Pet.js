@@ -1,10 +1,16 @@
-import * as Activities from "./Activities";
-import { App } from "./App";
-import { Definitions } from "./Definitions";
-import { Missions } from "./Missions";
-import { Object2d } from "./Object2d";
-import { PetDefinition } from "./PetDefinition";
-import { getRandomName, randomFromArray, random, clamp, lerp } from "./Utils";
+import * as Activities from "@tamaweb/Activities";
+import { App } from "@tamaweb/App";
+import { Definitions } from "@tamaweb/Definitions";
+import { Missions } from "@tamaweb/Missions";
+import { Object2d } from "@tamaweb/Object2d";
+import { PetDefinition } from "@tamaweb/PetDefinition";
+import {
+  getRandomName,
+  randomFromArray,
+  random,
+  clamp,
+  lerp,
+} from "@tamaweb/Utils";
 
 export class Pet extends Object2d {
   // basic init
@@ -121,7 +127,7 @@ export class Pet extends Object2d {
   createAccessories() {
     // removing old accessories
     this.accessoryObjects.forEach((accessoryObject) =>
-      accessoryObject?.removeObject(),
+      accessoryObject?.removeObject()
     );
     this.accessoryObjects = [];
 
@@ -215,7 +221,7 @@ export class Pet extends Object2d {
               App.pet = App.createActivePet(App.petDefinition);
               setTimeout(() => {
                 Activities.playEggUfoAnimation(() =>
-                  App.handlers.show_set_pet_name_dialog(),
+                  App.handlers.show_set_pet_name_dialog()
                 );
               }, 100);
               App.setScene(App.scene.home);
@@ -228,7 +234,7 @@ export class Pet extends Object2d {
             onclick: () => {},
           },
         ],
-        false,
+        false
       );
     });
 
@@ -269,7 +275,7 @@ export class Pet extends Object2d {
       this.eggObject.setImg("resources/img/misc/egg_02.png");
       setTimeout(
         () => this.eggObject?.setImg("resources/img/misc/egg.png"),
-        200,
+        200
       );
       if (Date.now() > this.hatchTime) {
         this.stats.is_egg = false;
@@ -336,7 +342,7 @@ export class Pet extends Object2d {
     if (
       App.petDefinition.checkWant(
         foodSpriteCellNumber == wantedFoodItem?.sprite,
-        App.constants.WANT_TYPES.food,
+        App.constants.WANT_TYPES.food
       )
     ) {
       forced = true;
@@ -410,12 +416,12 @@ export class Pet extends Object2d {
           foodSpriteIndex = clamp(
             foodSpriteIndex + 1,
             baseFoodSpriteIndex,
-            baseFoodSpriteIndex + 2,
+            baseFoodSpriteIndex + 2
           );
 
           App.uiFood.setAttribute("index", foodSpriteIndex);
         }
-      },
+      }
     );
 
     return true;
@@ -448,7 +454,7 @@ export class Pet extends Object2d {
 
     App.petDefinition.checkWant(
       this.stats.current_want.item == item.name,
-      App.constants.WANT_TYPES.item,
+      App.constants.WANT_TYPES.item
     );
 
     this.stopMove();
@@ -477,7 +483,7 @@ export class Pet extends Object2d {
         pet: App.pet,
         item: item,
         itemObject,
-      }),
+      })
     );
   }
   playCheeringAnimationIfTrue(requirement, onEndFn) {
@@ -488,7 +494,7 @@ export class Pet extends Object2d {
     this.stopMove();
     if (!noSoundAndIcon)
       setTimeout(() =>
-        this.playSound("resources/sounds/cheer_success.ogg", true),
+        this.playSound("resources/sounds/cheer_success.ogg", true)
       );
     const stateName = !noSoundAndIcon ? "cheering_with_icon" : "cheering";
     this.triggerScriptedState(stateName, 2000, null, true, () => {
@@ -575,7 +581,7 @@ export class Pet extends Object2d {
         this.triggerScriptedState(
           animation.name,
           animation.length,
-          random(10000, 20000),
+          random(10000, 20000)
         );
         this.stopMove();
       } else if (random(0, 105) < 3 && this.isMainPet) {
@@ -669,7 +675,7 @@ export class Pet extends Object2d {
     stats.current_cleanliness = clamp(
       stats.current_cleanliness,
       0,
-      stats.max_cleanliness,
+      stats.max_cleanliness
     );
 
     // depletion
@@ -758,10 +764,10 @@ export class Pet extends Object2d {
     // increasing
     const careIncreaseThreshold = this.stats.hunger_satisfaction || 85; // this value is based on lowest satisfaction stat
     const eligibleForCareIncrease = careAffectingStats.every(
-      (statName) => this.stats[statName] > careIncreaseThreshold,
+      (statName) => this.stats[statName] > careIncreaseThreshold
     );
     const shouldResetCareIncreaseFlag = careAffectingStats.some(
-      (statName) => this.stats[statName] < 65,
+      (statName) => this.stats[statName] < 65
     );
     if (eligibleForCareIncrease) {
       if (this.stats.should_care_increase) {
@@ -778,28 +784,28 @@ export class Pet extends Object2d {
       stats.hunger_min_desire,
       "hungry",
       stats.hunger_satisfaction,
-      "full",
+      "full"
     );
     this.triggerMoodlet(
       stats.current_sleep,
       stats.sleep_min_desire,
       "sleepy",
       stats.sleep_satisfaction,
-      "rested",
+      "rested"
     );
     this.triggerMoodlet(
       stats.current_fun,
       stats.fun_min_desire,
       "bored",
       stats.fun_satisfaction,
-      "amused",
+      "amused"
     );
     this.triggerMoodlet(
       stats.current_health,
       stats.max_health * 0.25,
       "sick",
       stats.max_health * 0.8,
-      "healthy",
+      "healthy"
     );
   }
   triggerMoodlet(current, min, minName, max, maxName) {
@@ -1000,7 +1006,7 @@ export class Pet extends Object2d {
     if (App.lastTime > this.nextRandomTargetSelect) {
       this.targetX = random(
         this.drawer.getRelativePositionX(0),
-        this.drawer.getRelativePositionX(100) - this.spritesheet.cellSize,
+        this.drawer.getRelativePositionX(100) - this.spritesheet.cellSize
       );
       this.nextRandomTargetSelect = 0;
     }
@@ -1031,7 +1037,7 @@ export class Pet extends Object2d {
         if (this.y >= startY) {
           this.stopScriptedState();
         }
-      },
+      }
     );
   }
   simulateAwayProgression(elapsedTime) {
@@ -1060,7 +1066,7 @@ export class Pet extends Object2d {
 
     const startTime = Date.now();
     let iterations = Math.floor(
-      clamp(elapsedTime / 1000, 0, maxOfflineProgressionSeconds) * 2,
+      clamp(elapsedTime / 1000, 0, maxOfflineProgressionSeconds) * 2
     );
     for (let i = 0; i < iterations; i++) {
       elapsedTime -= 500;
@@ -1126,7 +1132,7 @@ export class Pet extends Object2d {
     if (this.stats.current_want.type) {
       this.showThought(
         this.stats.current_want.type,
-        this.stats.current_want.item,
+        this.stats.current_want.item
       );
     }
   }

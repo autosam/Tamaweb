@@ -1,4 +1,4 @@
-import { App } from "../App";
+import { App } from "@tamaweb/App";
 
 export function goToGarden() {
   App.pet.stopScriptedState();

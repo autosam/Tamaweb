@@ -1,4 +1,4 @@
-import { ellipsis } from "./Utils";
+import { ellipsis } from "@tamaweb/Utils";
 
 export const UI = {
   specialProps: ["componentType", "parent", "children"],

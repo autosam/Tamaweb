@@ -1,7 +1,7 @@
-import { App } from "../App";
-import { Definitions } from "../Definitions";
-import { Pet } from "../Pet";
-import { PetDefinition } from "../PetDefinition";
+import { App } from "@tamaweb/App";
+import { Definitions } from "@tamaweb/Definitions";
+import { Pet } from "@tamaweb/Pet";
+import { PetDefinition } from "@tamaweb/PetDefinition";
 import { task_foam } from "./task_foam";
 
 export function redecorRoom() {

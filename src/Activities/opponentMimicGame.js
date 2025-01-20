@@ -1,9 +1,9 @@
-import { App } from "../App";
-import { Definitions } from "../Definitions";
-import { Missions } from "../Missions";
-import { Pet } from "../Pet";
-import { PetDefinition } from "../PetDefinition";
-import { random, randomFromArray } from "../Utils";
+import { App } from "@tamaweb/App";
+import { Definitions } from "@tamaweb/Definitions";
+import { Missions } from "@tamaweb/Missions";
+import { Pet } from "@tamaweb/Pet";
+import { PetDefinition } from "@tamaweb/PetDefinition";
+import { random, randomFromArray } from "@tamaweb/Utils";
 
 export function opponentMimicGame() {
   App.closeAllDisplays();

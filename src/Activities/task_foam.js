@@ -1,5 +1,5 @@
-import { App } from "../App";
-import { Object2d } from "../Object2d";
+import { App } from "@tamaweb/App";
+import { Object2d } from "@tamaweb/Object2d";
 
 export function task_foam(middleFn, endFn) {
   let foam = new Object2d({

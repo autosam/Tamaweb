@@ -1,4 +1,4 @@
-import { App } from "../App";
+import { App } from "@tamaweb/App";
 
 export function stayAtParents(end) {
   App.sendAnalytics("stay_at_parents");

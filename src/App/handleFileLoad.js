@@ -1,4 +1,3 @@
-// @ts-nocheck
 export function handleFileLoad(
   inputElement,
   readType = "readAsDataURL",

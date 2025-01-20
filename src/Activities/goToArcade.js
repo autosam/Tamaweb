@@ -1,5 +1,5 @@
-import { App } from "../App";
-import { Pet } from "../Pet";
+import { App } from "@tamaweb/App";
+import { Pet } from "@tamaweb/Pet";
 
 export function goToArcade() {
   App.toggleGameplayControls(false, () => {

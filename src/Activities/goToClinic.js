@@ -1,5 +1,5 @@
-import { App } from "../App";
-import { Missions } from "../Missions";
+import { App } from "@tamaweb/App";
+import { Missions } from "@tamaweb/Missions";
 
 export function goToClinic() {
   App.toggleGameplayControls(false);

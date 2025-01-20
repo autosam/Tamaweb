@@ -1,8 +1,8 @@
-import { App } from "../App";
-import { Definitions } from "../Definitions";
-import { Missions } from "../Missions";
-import { Object2d } from "../Object2d";
-import { Pet } from "../Pet";
+import { App } from "@tamaweb/App";
+import { Definitions } from "@tamaweb/Definitions";
+import { Missions } from "@tamaweb/Missions";
+import { Object2d } from "@tamaweb/Object2d";
+import { Pet } from "@tamaweb/Pet";
 
 export function inviteGiveGift(otherPetDef) {
   App.setScene(App.scene.home);

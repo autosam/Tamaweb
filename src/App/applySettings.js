@@ -1,6 +1,6 @@
-import { App } from "App";
-import { Definitions } from "Definitions";
-import { UI } from "UiHelper";
+import { App } from "@tamaweb/App";
+import { Definitions } from "@tamaweb/Definitions";
+import { UI } from "@tamaweb/UiHelper";
 
 export function applySettings() {
   const graphicsWrapper = document.querySelector(".graphics-wrapper");

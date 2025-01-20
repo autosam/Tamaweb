@@ -1,7 +1,6 @@
-import { UI } from "./UiHelper";
-import { App } from "./App";
-import { Missions } from "./Missions";
-import * as Activities from "./Activities";
+import { App } from "@tamaweb/App";
+import { Missions } from "@tamaweb/Missions";
+import * as Activities from "@tamaweb/Activities";
 
 export class SpriteElement extends HTMLElement {
   constructor() {
@@ -94,7 +93,7 @@ function handleServiceWorker() {
             class: "back-btn",
             onclick: () => {
               App.displayPopup(
-                `You can install the game as an app anytime from the <b>settings</b>`,
+                `You can install the game as an app anytime from the <b>settings</b>`
               );
             },
           },

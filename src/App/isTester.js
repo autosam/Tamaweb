@@ -1,4 +1,4 @@
-import { App } from "App";
+import { App } from "@tamaweb/App";
 
 export function isTester() {
   const testers = ["Saman", "samandev"];
