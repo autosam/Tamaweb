@@ -13,8 +13,11 @@
     "eslint": "^9.18.0",
     "eslint-import-resolver-alias": "^1.1.2",
     "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-no-relative-import-paths": "^1.6.1",
+    "eslint-plugin-path": "^1.4.0-beta.0",
     "prettier": "^3.4.2",
     "webpack": "^5.97.1",
     "webpack-cli": "^6.0.1"
-  }
+  },
+  "type": "module"
 }

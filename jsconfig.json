@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "checkJs": true,
-    "baseUrl": "./src",
+    // "baseUrl": "./src"
     "paths": {
-      "@Activities": ["Activities/"]
+      "@tamaweb/*": ["./src/*"]
     }
   },
   "include": ["src/**/*"],

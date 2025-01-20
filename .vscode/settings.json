@@ -3,5 +3,8 @@
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.addMissingImports.ts": "always"
-  }
+  },
+  "eslint.workingDirectories": ["./"],
+  "eslint.validate": [{ "language": "javascript", "autoFix": true }],
+  "javascript.preferences.importModuleSpecifier": "non-relative"
 }

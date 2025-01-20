@@ -1,0 +1,1 @@
+npx eslint ./src --fix
