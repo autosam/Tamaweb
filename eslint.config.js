@@ -2,7 +2,7 @@ const path = require("path");
 
 module.exports = [
   {
-    files: ["src/*.js"],
+    files: ["src/**/*.js"],
     plugins: {
       import: require("eslint-plugin-import"),
       "module-resolver": require("eslint-plugin-module-resolver"),
