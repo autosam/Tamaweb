@@ -3556,7 +3556,11 @@ let App = {
             .map((_, i) => `
                 <div 
                     class="stepper__step ${i+1 <= currentStep ? "active" : ""}"
-                ></div>
+                >
+                    <span class="stepper__text">
+                    <i class="fa fa-solid fa-check"></i>
+                    </span>
+                </div>
             `).join('\n')
             }
         `

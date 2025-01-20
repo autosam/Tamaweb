@@ -1846,7 +1846,7 @@ hr {
   }
 
 
-  .stepper {
+.stepper {
     display: flex;
     justify-content: space-between;
     position: relative;
@@ -1866,9 +1866,20 @@ hr {
     border-radius: 100%;
     border: 2px solid rgb(255, 128, 0);
     background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .stepper__step.active {
     background: rgb(255, 128, 0);
+}
+.stepper__step > span {
+    display: none;
+}
+.stepper__step.active > span {
+    font-size: xx-small;
+    color: #ffffff;
+    display: block;
 }
 
 /* pet collection */
