@@ -52,8 +52,10 @@ const UI = {
         element.close = () => element.remove();
         return element;
     },
-    empty: () => {
-        return document.createElement('div');
+    empty: (className) => {
+        const e = document.createElement('div');
+        if(className) e.className = className;
+        return e;
     },
     genericListContainer: (backFn, backFnTitle) => {
         let backBtnName = 'Back';

@@ -2416,21 +2416,38 @@ let App = {
             ])
         },
         open_profile: function(){
+            const petTraitIcons = [
+                {
+                    title: 'Potty-trained',
+                    img: 'resources/img/misc/poop.png',
+                    condition: App.pet.stats.is_potty_trained
+                },
+            ]
+
             const list = UI.genericListContainer();
-            const content = UI.empty();
-            content.style.height = '100%';
+            const content = UI.empty('flex flex-dir-col flex-1');
             content.innerHTML = `
-                <div class="user-id surface-stylized text-transform-none">
-                    uid:<span>${(App.userName ?? '') + '-' + App.userId?.toString().slice(0, 5)}</span>
-                </div>
-                <div class="flex-center inner-padding surface-stylized height-auto">
+                <div class="flex-center flex-1 flex flex-gap-05 inner-padding surface-stylized height-auto relative">
                     ${App.petDefinition.getCSprite()}
                     <b>
                         ${App.petDefinition.name} 
                         <br>
                         <small>${App.petDefinition.getLifeStageLabel()} - gen ${App.petDefinition.family.length + 1}</small>
                     </b>
-                    Born ${moment(App.petDefinition.birthday).utc().fromNow()}
+                    <span>
+                        Born ${moment(App.petDefinition.birthday).utc().fromNow()}
+                    </span>
+                    <div class="pet-trait-icons-container">
+                    ${petTraitIcons.map(icon => {
+                        return `<div title="${icon.title}" class="pet-trait-icon ${!icon.condition ? 'disabled' : ''}">
+                            <img src="${icon.img}"></img>
+                        </div>`
+                    }).join('')}
+                    </div>
+                </div>
+                <div class="user-id surface-stylized inner-padding text-transform-none">
+                    <div><small>uid:</small></div>
+                    <span>${(App.userName ?? '') + '-' + App.userId?.toString().slice(0, 5)}</span>
                 </div>
             `
 
