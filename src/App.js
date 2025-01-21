@@ -1119,16 +1119,11 @@ let App = {
         const shouldDeliver = moment().startOf('day').diff(moment(newspaperDeliveryMs), 'days') > 0;
         if(shouldDeliver && !App.pet.stats.is_sleeping){
             setTimeout(() => {
-                const checkForDecentDeliveryTime = () => {
-                    if(App.pet.isDuringScriptedState() || App.haveAnyDisplays()) 
-                        return;
-
-                    App.unregisterOnDrawEvent(checkForDecentDeliveryTime);
+                App.queueEvent(() => {
                     Activities.getMail();
                     const nextMs = Date.now();
                     App.addRecord('newspaper_delivery_ms', nextMs, true);
-                }
-                App.registerOnDrawEvent(checkForDecentDeliveryTime);
+                })
             }, random(1000, 2000))
         }
 
