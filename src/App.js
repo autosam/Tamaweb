@@ -1096,6 +1096,16 @@ let App = {
             ...props
         });
     },
+    queueEvent: function(payloadFn){
+        const checkForDecentTime = () => {
+            if(App.pet.isDuringScriptedState() || App.haveAnyDisplays()) 
+                return;
+
+            App.unregisterOnDrawEvent(checkForDecentTime);
+            payloadFn?.();
+        }
+        App.registerOnDrawEvent(checkForDecentTime);
+    },
     runRandomEncounters: function(){
         if(
             App.pet.stats.is_egg ||

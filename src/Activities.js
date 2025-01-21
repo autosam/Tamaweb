@@ -1187,15 +1187,12 @@ class Activities {
             });
         });
     }
-    static poop(){
-        // todo: add automatic pooping and poop training symbols to player
-
+    static poop(force){
         App.closeAllDisplays();
         App.setScene(App.scene.bathroom);
         App.toggleGameplayControls(false);
-        Missions.done(Missions.TYPES.use_toilet);
-
-        if(App.pet.stats.current_bladder > App.pet.stats.max_bladder / 2){ // more than half
+        
+        if(!force && App.pet.stats.current_bladder > App.pet.stats.max_bladder / 2){ // more than half
             App.pet.playRefuseAnimation(() => {
                 App.setScene(App.scene.home);
                 App.toggleGameplayControls(true);
@@ -1203,10 +1200,17 @@ class Activities {
             return;
         }
 
+        Missions.done(Missions.TYPES.use_toilet);
         App.definitions.achievements.use_toilet_x_times.advance();
 
         App.pet.needsToiletOverlay.hidden = false;
         App.pet.stats.current_bladder = App.pet.stats.max_bladder;
+        if(App.petDefinition.lifeStage <= 0 && !force) {
+            // make pet potty trained if used toilet more than 2 to 4 times and is baby
+            if(++App.pet.stats.used_toilet > random(2, 4)){
+                App.pet.stats.is_potty_trained = true;
+            }
+        }
         App.pet.stopMove();
         App.pet.x = '21%';
         App.pet.y = '85%';

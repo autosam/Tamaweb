@@ -209,6 +209,8 @@ class PetDefinition {
             next_refresh_ms: new Date().getTime() + random(5000, 30000),
         },
         should_care_increase: true,
+        used_toilet: 0,
+        is_potty_trained: false,
     }
     friends = [];
     family = [];
@@ -272,6 +274,8 @@ class PetDefinition {
                     current_want: this.stats.current_want,
                     current_care: this.stats.current_care,
                     should_care_increase: this.stats.should_care_increase,
+                    used_toilet: this.stats.used_toilet,
+                    is_potty_trained: this.stats.is_potty_trained,
                 }
                 return;
             }

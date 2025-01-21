@@ -608,8 +608,13 @@ class Pet extends Object2d {
         stats.current_bladder -= bladder_depletion_rate;
         if(stats.current_bladder <= 0){
             stats.current_bladder = stats.max_bladder;
-            this.stats.has_poop_out = true;
-            // console.log('pooping myself');
+            if(!stats.is_potty_trained)
+                this.stats.has_poop_out = true;
+            else if(!isOfflineProgression) {
+                App.queueEvent(() => {
+                    Activities.poop(true);
+                })
+            }
         }
         if(stats.current_bladder <= stats.max_bladder / 4){
             this.needsToiletOverlay.hidden = false;
