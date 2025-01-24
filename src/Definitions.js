@@ -551,6 +551,13 @@ App.definitions = {
             interaction_time: 60000,
             interruptable: true,
         },
+        "rattle": {
+            sprite: 8,
+            fun_replenish: 20,
+            price: 0,
+            interaction_time: 60000,
+            interruptable: true,
+        },
     },
 
     /* ROOM BACKGROUNDS */
