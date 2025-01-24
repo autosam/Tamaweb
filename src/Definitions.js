@@ -483,15 +483,6 @@ App.definitions = {
             price: 0,
             age: [0],
         },
-        "medicine": {
-            sprite: 1050,
-            hunger_replenish: 0,
-            fun_replenish: -20,
-            health_replenish: 999,
-            price: 20,
-            type: 'med',
-            age: [0, 1, 2],
-        },
         "sleep replacement": {
             sprite: 1050,
             hunger_replenish: -25,
@@ -501,6 +492,15 @@ App.definitions = {
             type: 'med',
             age: [0, 1, 2],
             isNew: false,
+        },
+        "medicine": {
+            sprite: 1050,
+            hunger_replenish: 0,
+            fun_replenish: -20,
+            health_replenish: 999,
+            price: 20,
+            type: 'med',
+            age: [0, 1, 2],
         },
     },
 

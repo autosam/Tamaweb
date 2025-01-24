@@ -2232,7 +2232,7 @@ let App = {
                 }
 
                 // some entries become randomly unavailable to buy for the day
-                if(++index && buyMode && !random(0, 1, dayId + (index * 256))){
+                if(++index && buyMode && !random(0, 1, dayId + (index * 256)) && currentType !== 'med'){
                     continue;
                 }
 
