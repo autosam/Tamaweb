@@ -46,7 +46,7 @@ body {
     left: 0px;
     width: 100%;
     color: #ffb362;
-    z-index: 99;
+    z-index: 9999;
     top: 0px;
     height: 100%;
     display: flex;
@@ -244,6 +244,7 @@ body {
 .generic-slider-container .main-container {
     display: flex;
     /* height: 100%; */
+    flex-grow: 1;
     height: 145px;
     width: 100%;
     justify-content: space-between;
@@ -794,6 +795,7 @@ c-sprite {
 .pet-trait-icon.disabled {
     position: relative;
     filter: grayscale();
+    pointer-events: initial;
 }
 .pet-trait-icon.disabled:after {
     width: 100%;
@@ -1990,4 +1992,21 @@ a {
 .credit-author {
     margin: 5px -10px;
     padding: 5px 10px;
+}
+
+/* fullscreen mode */
+.graphics-wrapper.fullscreen {
+    position: fixed;
+    height: 100vh;
+    width: 100vw;
+    max-width: unset;
+    transform: unset !important;
+}
+.graphics-wrapper.fullscreen .screen-wrapper {
+    height: 100%;
+}
+.graphics-wrapper.fullscreen .graphics-canvas {
+    object-fit: fill;
+    height: 100%;
+    width: 100%;
 }

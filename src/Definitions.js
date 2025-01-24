@@ -611,6 +611,11 @@ App.definitions = {
             price: 300,
             isNew: false,
         },
+        "gothic": {
+            image: 'resources/img/background/house/cc_03.png',
+            price: 300,
+            isNew: true,
+        },
     },
 
     /* SHELL BACKGROUNDS */
@@ -623,6 +628,22 @@ App.definitions = {
             onlineShopAccessible: true,
             unlockLikes: 30,
             unlockKey: 'unlock_cloof_shell_bg',
+        },
+        {
+            image: 'resources/img/ui/shell_background_12.png',
+            isNew: true,
+        },
+        {
+            image: 'resources/img/ui/shell_background_13.png',
+            isNew: true,
+        },
+        {
+            image: 'resources/img/ui/shell_background_14.png',
+            isNew: true,
+        },
+        {
+            image: 'resources/img/ui/shell_background_15.png',
+            isNew: true,
         },
         {
             image: 'resources/img/ui/shell_background_07.png',

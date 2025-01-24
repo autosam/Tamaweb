@@ -352,6 +352,10 @@ let App = {
     applySettings: function(){
         const graphicsWrapper = document.querySelector('.graphics-wrapper');
 
+        // fullscreen param
+        const isFullscreen = new URLSearchParams(location.search).has('fullscreen');
+        if(isFullscreen) graphicsWrapper.classList.add('fullscreen');
+
         // background
         document.body.style.backgroundColor = this.settings.backgroundColor;
         const metaThemeColor = document.querySelector('meta[name="theme-color"]');
