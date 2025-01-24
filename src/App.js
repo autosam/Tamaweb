@@ -23,6 +23,13 @@ let App = {
             rows: 33,
             columns: 33,
         },
+        ITEM_SPRITESHEET: 'resources/img/item/items.png',
+        ITEM_SPRITESHEET_DIMENSIONS: {
+            cellNumber: 1,
+            cellSize: 22,
+            rows: 10,
+            columns: 10,
+        },
         SLEEP_START: 21,
         SLEEP_END: 8,
         PARENT_DAYCARE_START: 8,
@@ -4026,7 +4033,17 @@ let App = {
             src="${FOOD_SPRITESHEET}"></c-sprite>`;
     },
     getItemCSprite: function(index){
-        return `<c-sprite width="22" height="22" index="${(index - 1)}" src="resources/img/item/items.png"></c-sprite>`
+        const {ITEM_SPRITESHEET_DIMENSIONS, ITEM_SPRITESHEET} = App.constants;
+        const size = 
+            ITEM_SPRITESHEET_DIMENSIONS.rows 
+                * ITEM_SPRITESHEET_DIMENSIONS.cellSize;
+        return `<c-sprite 
+            naturalWidth="${size}" 
+            naturalHeight="${size}" 
+            width="22" 
+            height="22" 
+            index="${(index - 1)}" 
+            src="${ITEM_SPRITESHEET}"></c-sprite>`
     },
     getAccessoryCSprite: function(name){
         const current = App.definitions.accessories[name];
