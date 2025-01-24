@@ -1141,19 +1141,66 @@ class Pet extends Object2d {
         },
         playingWithItem: function(){
             // this.pet, this.item, this.itemObject
-            const possibleStates = ['cheering', 'eating', 'shocked', 'sitting', 'blush'];
-            
+
             if(this.lastMs && App.time <= this.lastMs + 500) return;
             this.lastMs = App.time;
 
             switch(this.item?.name){
+                case "microphone":
+                    this.pet.x = randomFromArray(['25%', '50%', '75%']);
+                    this.pet.y = '85%';
+                    this.pet.inverted = !this.pet.inverted;
+
+                    this.itemObject.x = this.pet.x;
+                    this.itemObject.y = ((App.drawer.getRelativePositionY(92) - App.constants.ITEM_SPRITESHEET_DIMENSIONS.cellSize));
+                    this.itemObject.z = this.pet.z + 0.1;
+                    this.itemObject.inverted = this.pet.inverted;
+
+                    this.itemObject.onDraw = function() {
+                        if(!this._animFloat) this._animFloat = 0;
+                        this._animFloat += 0.005 * App.deltaTime;
+                        this.rotation = 0 + (Math.sin(this._animFloat) * 25);
+                        console.log(this.rotation)
+                    }
+                    break;
+
+                case "smartphone":
+                case "magazine":
+                    this.pet.setState(randomFromArray(['sitting', 'sitting', this.item?.name === 'smartphone' ? 'eating' : 'sitting', 'shocked', 'blush']));
+                    this.itemObject.x = this.pet.x + App.petDefinition.spritesheet.cellSize / 1.5;
+                    this.itemObject.y = ((this.pet.y - 13) + random(-2, 2));
+                    break;
+
+                case "ball":
+                    this.pet.y = '100%';
+                    this.pet.x = '50%';
+
+                    this.itemObject.x = randomFromArray(['40%', '60%']);
+                    this.itemObject.y = ((App.drawer.getRelativePositionY(95) - App.constants.ITEM_SPRITESHEET_DIMENSIONS.cellSize) + random(-2, 2));
+                    this.itemObject.z = this.pet.z + (randomFromArray([0.1, -0.1]));
+
+                    break;
+                case "music player":
+                    this.pet.x = randomFromArray(['25%', '50%', '75%']);
+                    this.pet.y = randomFromArray(['100%', '80%', '90%']);
+                    this.pet.inverted = !this.pet.inverted;
+
+                    this.itemObject.x = '50%';
+                    this.itemObject.y = '70%';
+
+                    this.itemObject.onDraw = function() {
+                        if(!this._animFloat) this._animFloat = 0;
+                        this._animFloat += 0.015 * App.deltaTime;
+                        this.scale = 1 + (Math.sin(this._animFloat) * 0.09);
+                    }
+                    break;
                 case "dumble":
                     this.pet.setState(randomFromArray(['uncomfortable', 'shocked']));
                     this.pet.x = '50%';
                     this.pet.y = '90%';
                     this.itemObject.z = this.pet.z + 0.1;
                     this.itemObject.x = '50%';
-                    this.itemObject.y = ((App.drawer.getRelativePositionY(95) - 20) + random(-2, 2));
+                    this.itemObject.y = ((App.drawer.getRelativePositionY(95) - App.constants.ITEM_SPRITESHEET_DIMENSIONS.cellSize) + random(-2, 2));
                     this.itemObject.inverted = !this.itemObject.inverted;
                     break;
                 case "foxy":
@@ -1175,6 +1222,7 @@ class Pet extends Object2d {
                     break;
                 default:
                     if(Math.random() < 0.5){
+                        const possibleStates = ['cheering', 'eating', 'shocked', 'sitting', 'blush'];
                         this.pet.setState(randomFromArray(possibleStates));
                         this.pet.inverted = random(0, 1) ? true : false;
                         // if(this.pet.inverted){
