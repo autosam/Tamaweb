@@ -506,6 +506,13 @@ App.definitions = {
 
     /* ITEMS */
     item: {
+        "rattle": {
+            sprite: 8,
+            fun_replenish: 15,
+            price: 50,
+            interaction_time: 8100,
+            age: [0],
+        },
         "foxy": {
             sprite: 1,
             fun_replenish: 20,
@@ -515,8 +522,9 @@ App.definitions = {
         },
         "dumble": {
             sprite: 2,
-            fun_replenish: 10,
-            price: 100
+            fun_replenish: 15,
+            price: 100,
+            age: [1, 2],
         },
         "music player": {
             sprite: 3,
@@ -536,6 +544,7 @@ App.definitions = {
             price: 350,
             interaction_time: 100000,
             interruptable: true,
+            age: [1, 2],
         },
         "magazine": {
             sprite: 6,
@@ -543,18 +552,12 @@ App.definitions = {
             price: 20,
             interaction_time: 60000,
             interruptable: true,
+            age: [1, 2],
         },
         "microphone": {
             sprite: 7,
             fun_replenish: 20,
             price: 75,
-            interaction_time: 60000,
-            interruptable: true,
-        },
-        "rattle": {
-            sprite: 8,
-            fun_replenish: 20,
-            price: 0,
             interaction_time: 60000,
             interruptable: true,
         },

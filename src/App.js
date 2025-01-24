@@ -59,6 +59,7 @@ let App = {
         ACTIVE_PET_Z: 5,
         NPC_PET_Z: 4.6,
         POOP_Z: 4.59,
+        ACTIVE_ITEM_Z: 4.595,
         CHRISTMAS_TREE_Z: 4.58,
     },
     routes: {
@@ -2350,6 +2351,10 @@ let App = {
                 {
                     name: 'profile',
                     onclick: () => {
+                        if(!App.userName){
+                            App.handlers.show_set_username_dialog();
+                            return true;
+                        }
                         App.handlers.open_profile();
                         return true;
                     }
@@ -2567,7 +2572,11 @@ let App = {
                         if(customPayload){
                             return customPayload({...current, name: item});
                         }
-                        App.pet.useItem({...current, name: item});
+
+                        if("age" in current && !current.age?.includes(App.petDefinition.lifeStage)){
+                            return App.displayPopup(`This item is not appropriate for ${App.petDefinition.name}'s age!`);
+                        }
+                        Activities.useItem({...current, name: item});
 
                         // let useditem = App.pet.feed(current.sprite, current.hunger_replenish, current.type);
                         // if(useditem) {
@@ -3976,7 +3985,7 @@ let App = {
         if(forCurrentUser){
             return +(
                 App.getDayId() + (App.userId || 1234)
-            ).slice(0, 16);
+            ).toString().slice(0, 16);
         }
 
         const date = new Date();

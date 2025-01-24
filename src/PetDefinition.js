@@ -220,7 +220,7 @@ class PetDefinition {
             'bread': 1,
             'slice of pizza': 3,
         },
-        item: { },
+        item: { 'rattle': 1 },
         accessory: { },
     }
     accessories = [];

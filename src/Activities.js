@@ -1,4 +1,50 @@
 class Activities {
+    static async useItem(item){
+        App.closeAllDisplays();
+        
+        const itemObject = new Object2d({
+            img: App.constants.ITEM_SPRITESHEET,
+            spritesheet: {
+                ...App.constants.ITEM_SPRITESHEET_DIMENSIONS,
+                cellNumber: item.sprite,
+            },
+            x: '55%', y: '47%', z: App.constants.ACTIVE_ITEM_Z
+        });
+
+        Missions.done(Missions.TYPES.play_item);
+
+
+        App.toggleGameplayControls(false);
+
+        const interruptFn = () => {
+            App.pet.stopScriptedState();
+        }
+        App.toggleGameplayControls(false, (item.interruptable ? interruptFn : false))
+
+        App.petDefinition.checkWant(App.pet.stats.current_want.item == item.name, App.constants.WANT_TYPES.item);
+
+        if(item.handler){
+            return item.handler(App.pet, item, itemObject);
+        }
+
+        App.pet.stopMove();
+        App.pet.x = '30%';
+        App.pet.y = '63%';
+        App.pet.inverted = true;
+        App.pet.staticShadow = true;
+        App.pet.triggerScriptedState('cheering', item.interaction_time || 10000, false, true, () => {  
+            App.drawer.removeObject(itemObject);
+
+            App.pet.stats.current_fun += item.fun_replenish || 0;
+            App.pet.stats.current_sleep += item.sleep_replenish || 0;
+
+            App.pet.playCheeringAnimation();
+
+            App.setScene(App.currentScene); // to reset pet pos
+            
+            App.toggleGameplayControls(true);
+        }, Pet.scriptedEventDrivers.playingWithItem.bind({pet: App.pet, item: item, itemObject}))
+    }
     static async goOnDate(otherPetDef = App.getRandomPetDef(), onFailEnd){
         App.closeAllDisplays();
         App.toggleGameplayControls(false);

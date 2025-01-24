@@ -374,51 +374,6 @@ class Pet extends Object2d {
 
         return true;
     }
-    useItem(item){
-        App.closeAllDisplays();
-        
-        let itemObject = new Object2d({
-            img: "resources/img/item/items.png",
-            spritesheet: {
-                cellNumber: item.sprite,
-                cellSize: 22,
-                rows: 10,
-                columns: 10
-            },
-            x: 20, y: 20
-        });
-
-        Missions.done(Missions.TYPES.play_item);
-
-        itemObject.x = '55%', itemObject.y = '47%';
-
-        App.toggleGameplayControls(false);
-
-        let interruptFn = () => {
-            App.pet.stopScriptedState();
-        }
-        App.toggleGameplayControls(false, (item.interruptable ? interruptFn : false))
-
-        App.petDefinition.checkWant(this.stats.current_want.item == item.name, App.constants.WANT_TYPES.item);
-
-        this.stopMove();
-        this.x = '30%';
-        this.y = '63%';
-        this.inverted = true;
-        this.staticShadow = true;
-        this.triggerScriptedState('cheering', item.interaction_time || 10000, false, true, () => {  
-            App.drawer.removeObject(itemObject);
-
-            App.pet.stats.current_fun += item.fun_replenish || 0;
-            App.pet.stats.current_sleep += item.sleep_replenish || 0;
-
-            App.pet.playCheeringAnimation();
-
-            App.setScene(App.currentScene); // to reset pet pos
-            
-            App.toggleGameplayControls(true);
-        }, Pet.scriptedEventDrivers.playingWithItem.bind({pet: App.pet, item: item, itemObject}))
-    }
     playCheeringAnimationIfTrue(requirement, onEndFn){
         if(requirement)
             this.playCheeringAnimation(onEndFn);
@@ -1185,14 +1140,43 @@ class Pet extends Object2d {
             }
         },
         playingWithItem: function(){
-            // if(!this.item) return false;
+            // this.pet, this.item, this.itemObject
+            const possibleStates = ['cheering', 'eating', 'shocked', 'sitting', 'blush'];
+            
+            if(this.lastMs && App.time <= this.lastMs + 500) return;
+            this.lastMs = App.time;
 
             switch(this.item?.name){
+                case "dumble":
+                    this.pet.setState(randomFromArray(['uncomfortable', 'shocked']));
+                    this.pet.x = '50%';
+                    this.pet.y = '90%';
+                    this.itemObject.z = this.pet.z + 0.1;
+                    this.itemObject.x = '50%';
+                    this.itemObject.y = ((App.drawer.getRelativePositionY(95) - 20) + random(-2, 2));
+                    this.itemObject.inverted = !this.itemObject.inverted;
+                    break;
+                case "foxy":
+                    this.pet.setState(randomFromArray(['cheering', 'shocked', 'blush']));
+                    this.itemObject.z = this.pet.z + 0.1;
+                    this.itemObject.x = this.pet.x + App.petDefinition.spritesheet.cellSize / 2;
+                    this.itemObject.y = ((this.pet.y - 13) + random(-2, 2));
+                    this.itemObject.inverted = !this.itemObject.inverted;
+                    break;
+                case "rattle":
+                    this.pet.y = '100%';
+
+                    this.pet.x = randomFromArray(['30%', '50%', '70%']);
+
+                    const possibleItemPositions = ['25%', '50%', '75%'];
+                    this.itemObject.x = randomFromArray(possibleItemPositions);
+                    this.itemObject.y = randomFromArray(possibleItemPositions);
+                    this.itemObject.inverted = !this.itemObject.inverted;
+                    break;
                 default:
-                    const possibleStates = ['cheering', 'eating', 'shocked', 'sitting', 'blush'];
-                    if(Math.random() < 0.007){
+                    if(Math.random() < 0.5){
                         this.pet.setState(randomFromArray(possibleStates));
-                        // this.pet.inverted = random(0, 1) ? true : false;
+                        this.pet.inverted = random(0, 1) ? true : false;
                         // if(this.pet.inverted){
                         //     this.itemObject.x = '75%';
                         // } else {
