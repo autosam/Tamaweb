@@ -622,19 +622,15 @@ App.definitions = {
     shell_background: [
         // default shell bg will be the first one here
         {
-            image: 'resources/img/ui/shell_background_cloof_01.png',
-            name: 'cloofy',
+            image: 'resources/img/ui/shell_background_07.png',
             isNew: false,
-            onlineShopAccessible: true,
-            unlockLikes: 30,
-            unlockKey: 'unlock_cloof_shell_bg',
-        },
-        {
-            image: 'resources/img/ui/shell_background_12.png',
-            isNew: true,
         },
         {
             image: 'resources/img/ui/shell_background_13.png',
+            isNew: true,
+        },
+        {
+            image: 'resources/img/ui/shell_background_12.png',
             isNew: true,
         },
         {
@@ -644,10 +640,6 @@ App.definitions = {
         {
             image: 'resources/img/ui/shell_background_15.png',
             isNew: true,
-        },
-        {
-            image: 'resources/img/ui/shell_background_07.png',
-            isNew: false,
         },
         {
             image: 'resources/img/ui/shell_background_08.png',
@@ -682,6 +674,14 @@ App.definitions = {
         },
         {
             image: 'resources/img/ui/shell_background_06.png',
+        },
+        {
+            image: 'resources/img/ui/shell_background_cloof_01.png',
+            name: 'cloofy',
+            isNew: false,
+            onlineShopAccessible: true,
+            unlockLikes: 30,
+            unlockKey: 'unlock_cloof_shell_bg',
         },
     ],
 

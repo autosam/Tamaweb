@@ -4118,7 +4118,7 @@ let App = {
         
         App.playTime = parseInt(window.localStorage.getItem('play_time') || 0);
 
-        let shellBackground = window.localStorage.getItem('shell_background_v2.1') || App.definitions.shell_background[1].image;
+        let shellBackground = window.localStorage.getItem('shell_background_v2.1') || App.definitions.shell_background[0].image;
 
         let missions = window.localStorage.getItem('missions');
         missions = missions ? JSON.parse(missions) : {};
