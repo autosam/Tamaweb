@@ -620,14 +620,15 @@ App.definitions = {
 
     /* SHELL BACKGROUNDS */
     shell_background: [
-        // default shell bg will be the first one here
         {
             image: 'resources/img/ui/shell_background_07.png',
             isNew: false,
         },
+        // default shell bg will be the one here
         {
             image: 'resources/img/ui/shell_background_13.png',
             isNew: true,
+            isDefault: true,
         },
         {
             image: 'resources/img/ui/shell_background_12.png',

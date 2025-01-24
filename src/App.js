@@ -8,7 +8,7 @@ let App = {
         vibrate: true,
         displayShell: true,
         displayShellButtons: true,
-        shellShape: 1,
+        shellShape: 6,
         backgroundColor: '#FFDEAD',
         notifications: false,
         automaticAging: false,
@@ -1831,9 +1831,10 @@ let App = {
                             {
                                 _mount: (e) => {
                                     const hasNew = App.definitions.shell_background.some((entry) => {
-                                        const isUnlocked = entry.unlockKey && App.getRecord(entry.unlockKey);
+                                        const isUnlocked = entry.unlockKey ? App.getRecord(entry.unlockKey) : true;
                                         return entry.isNew && isUnlocked;
                                     });
+                                    console.log({hasNew})
                                     e.innerHTML = `change shell ${hasNew ? App.getBadge() : ''}`
                                 },
                                 onclick: () => {
@@ -2636,9 +2637,8 @@ let App = {
             let sliderInstance;
             const list = App.definitions.shell_background
             .filter(current => !(current.unlockKey && !App.getRecord(current.unlockKey)))
+            .sort((a, b) => b.isNew - a.isNew)
             .map(current => {
-                // check for unlockables
-
                 return {
                     name: `<img src="${current.image}"></img>${current.isNew ? App.getBadge() : ''}`,
                     onclick: (btn, list) => {
@@ -4118,7 +4118,9 @@ let App = {
         
         App.playTime = parseInt(window.localStorage.getItem('play_time') || 0);
 
-        let shellBackground = window.localStorage.getItem('shell_background_v2.1') || App.definitions.shell_background[0].image;
+        let shellBackground = 
+            window.localStorage.getItem('shell_background_v2.1') || 
+            App.definitions.shell_background.find(shell => shell.isDefault).image;
 
         let missions = window.localStorage.getItem('missions');
         missions = missions ? JSON.parse(missions) : {};
