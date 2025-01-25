@@ -28,8 +28,8 @@ class Activities {
         }
 
         App.pet.stopMove();
-        App.pet.x = '30%';
-        App.pet.y = '63%';
+        App.pet.x = randomFromArray(['50%', '25%', '75%']);
+        App.pet.y = '92%';
         App.pet.inverted = true;
         App.pet.staticShadow = true;
         App.pet.triggerScriptedState('cheering', item.interaction_time || 10000, false, true, () => {  
