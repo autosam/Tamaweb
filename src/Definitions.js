@@ -630,11 +630,69 @@ App.definitions = {
 
     /* ROOM PLACEABLE FURNITURE */
     furniture: [
+        // right
         {
-            name: 'Debug 1',
-            id: "dbg_01",
-            image: 'resources/img/furniture/dbg_01.png',
-        }
+            name: 'CLR Bookcase',
+            image: 'resources/img/furniture/bookcase_colorful.png',
+            id: "bookcase_colorful",
+        },
+        {
+            name: 'Wooden Bookcase',
+            image: 'resources/img/furniture/bookcase_wooden.png',
+            id: "bookcase_wooden",
+        },
+        {
+            name: 'Peachy Pot',
+            image: 'resources/img/furniture/pot_peachy.png',
+            id: "pot_peachy",
+        },
+        {
+            name: 'Blue Stand',
+            image: 'resources/img/furniture/stand_blue.png',
+            id: "stand_blue",
+        },
+        {
+            name: 'Lite Stand',
+            image: 'resources/img/furniture/stand_rainbow.png',
+            id: "stand_rainbow",
+        },
+
+        // left
+        {
+            name: 'Blue Sofa',
+            image: 'resources/img/furniture/sofa_blue.png',
+            id: "sofa_blue",
+        },
+        {
+            name: 'Clood Sofa',
+            image: 'resources/img/furniture/sofa_clood.png',
+            id: "sofa_clood",
+        },
+        {
+            name: 'Futura Sofa',
+            image: 'resources/img/furniture/sofa_futura.png',
+            id: "sofa_futura",
+        },
+        {
+            name: 'Peachy Sofa',
+            image: 'resources/img/furniture/sofa_peachy.png',
+            id: "sofa_peachy",
+        },
+        {
+            name: 'Pink Sofa',
+            image: 'resources/img/furniture/sofa_pink.png',
+            id: "sofa_pink",
+        },
+        {
+            name: 'Lite Sofa',
+            image: 'resources/img/furniture/sofa_rainbow.png',
+            id: "sofa_rainbow",
+        },
+        {
+            name: 'Woodleather Sofa',
+            image: 'resources/img/furniture/sofa_woodleather.png',
+            id: "sofa_woodleather",
+        },
     ],
 
     /* SHELL BACKGROUNDS */

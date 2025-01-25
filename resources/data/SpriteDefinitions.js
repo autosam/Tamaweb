@@ -56,9 +56,6 @@ const SPRITES = [
     "resources/img/background/sky/snow_01.png",
 
     // furniture
-    "resources/img/furniture/dbg_01.png",
-    "resources/img/furniture/dbg_02.png",
-    "resources/img/furniture/dbg_03.png",
 
     // items
     "resources/img/item/foods.png",

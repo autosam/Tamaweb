@@ -1,7 +1,7 @@
 let App = {
     PI2: Math.PI * 2, INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', userName: null, ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
     gameEventsHistory: {}, deferredInstallPrompt: null, shellBackground: '', isOnItch: false, isOnElectronClient: false, hour: 12,
-    misc: {}, mods: [], records: {}, temp: {},
+    misc: {}, mods: [], records: {}, temp: {}, ownedFurniture: [{id: "sofa_blue", x: '50%', y: '50%', isActive: false}],
     settings: {
         screenSize: 1,
         playSound: true,
@@ -975,29 +975,33 @@ let App = {
 
         this.applySky();
     },
-    handleFurnitureSpawn(){
+    getFurnitureDefFromId(id){
+        return App.definitions.furniture.find(current => current.id === id);
+    },
+    handleFurnitureSpawn(furnitureData = App.ownedFurniture){
         if(App.activeFurnitureObjects?.length){
             App.activeFurnitureObjects.forEach(o => o.removeObject());
         }
 
         App.activeFurnitureObjects = [];
 
-        const furnitureData = [
-            {id: "dbg_01", x: '50%', y: '50%'},
-        ]
-
         furnitureData.forEach(furniture => {
-            const furnitureDef = App.definitions.furniture.find(f => furniture.id === f.id);
+            if(!furniture.isActive) return;
+            const furnitureDef = App.getFurnitureDefFromId(furniture.id);
             if(!furnitureDef) 
                 return console.log('furniture was not found', furniture);
             const furnitureObject = new Object2d({
-                image: App.preloadedResources[furnitureDef.image],
+                // image: App.preloadedResources[furnitureDef.image],
+                img: furnitureDef.image,
                 x: furniture.x || 0,
                 y: furniture.y || 0,
                 z: furniture.z || App.constants.BACKGROUND_Z + 0.1,
+                def: furniture,
             })
             App.activeFurnitureObjects.push(furnitureObject);
         })
+
+        return App.activeFurnitureObjects;
     },
     editFurniture(gameObject, callbackFn){
         if(!gameObject) return false;
@@ -1464,6 +1468,13 @@ let App = {
                         return true;
                     }
                 },
+                {
+                    name: `furniture ${App.getBadge()}`,
+                    onclick: () => {
+                        App.closeAllDisplays();
+                        App.handlers.open_active_furniture_list();
+                    }
+                }
             ])
         },
         open_bathroom_menu: function(){
@@ -2843,6 +2854,46 @@ let App = {
                 }, 
                 buyMode ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}` : null);
             return sliderInstance;
+        },
+        open_active_furniture_list: function(){
+            const list = [
+                ...App.activeFurnitureObjects.map(savedFurniture => {
+                    const furnitureDef = App.getFurnitureDefFromId(savedFurniture.def.id);
+                    return {
+                        name: furnitureDef.name,
+                        onclick: () => {
+                            App.closeAllDisplays();
+                            console.log(savedFurniture)
+                            App.editFurniture(savedFurniture);
+                        }
+                    }
+                })
+            ]
+
+            const occupiedLength = list.length;
+            for(let i = 0; i < 5 - occupiedLength; i++){
+                list.push({
+                    name: '<div class="width-full flex-center"> + </div>',
+                    onclick: () => {
+                        App.displayList(App.ownedFurniture.map(furniture => {
+                            const def = App.getFurnitureDefFromId(furniture.id);
+                            return {
+                                name: def.name,
+                                onclick: () => {
+                                    furniture.isActive = true;
+                                    App.closeAllDisplays();
+                                    const furnitureObjects = App.handleFurnitureSpawn();
+                                    const currentObject = furnitureObjects.find(f => f.def.id === def.id);
+                                    App.editFurniture(currentObject);
+                                    console.log(currentObject);
+                                }
+                            }
+                        }))
+                    }
+                })
+            }
+
+            return App.displayList([...list]);
         },
         open_activity_list: function(){
             return App.displayList([
