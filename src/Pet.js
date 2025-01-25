@@ -1139,9 +1139,7 @@ class Pet extends Object2d {
                 this.pet.targetX = -20;
             }
         },
-        playingWithItem: function(){
-            // this.pet, this.item, this.itemObject
-
+        playingWithItem: function(){ // this.pet, this.item, this.itemObject
             if(this.lastMs && App.time <= this.lastMs + 500) return;
             this.lastMs = App.time;
 
