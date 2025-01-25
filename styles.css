@@ -571,6 +571,14 @@ button {
     text-transform: uppercase;
 }
 
+.absolute-fullscreen {
+    top: 0;
+    left: 0;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+}
+
 .flex-center {
     display: flex;
     flex-direction: column;
@@ -2009,4 +2017,43 @@ a {
     object-fit: fill;
     height: 100%;
     width: 100%;
+}
+
+/* directional controller ui */
+.directional-control__container {
+    height: 100%;
+    display: flex;
+}
+.directional-control__container .controls-y {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    flex-grow: 1;
+}
+.directional-control__container .controls-x {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+.directional-control__container .control {
+    display: inline-flex;
+    width: 26px;
+    height: 26px;
+    background: #00000061;
+    justify-content: center;
+    align-items: center;
+    border-radius: 100%;
+    cursor: pointer;
+}
+.directional-control__container .bottom-container {
+    width: 100%;
+    display: inline-flex;
+    justify-content: space-between;
+}
+
+.directional-control__container .bottom-container > * {
+    width: 33%;
+    display: inline-flex;
+    justify-content: center;
 }

@@ -61,6 +61,7 @@ let App = {
         POOP_Z: 4.59,
         ACTIVE_ITEM_Z: 4.595,
         CHRISTMAS_TREE_Z: 4.58,
+        BACKGROUND_Z: -10,
     },
     routes: {
         BLOG: 'https://tamawebgame.github.io/blog/',
@@ -110,7 +111,7 @@ let App = {
 
         // creating game objects
         App.background = new Object2d({
-            image: null, x: 0, y: 0, width: 96, height: 96, z: -10,
+            image: null, x: 0, y: 0, width: 96, height: 96, z: App.constants.BACKGROUND_Z,
         })
         // App.foodsSpritesheet = new Object2d({
         //     image: App.preloadedResources["resources/img/item/foods.png"],
@@ -797,6 +798,8 @@ let App = {
                         x: 60, y: 12, z: App.constants.CHRISTMAS_TREE_Z,
                     });
                 }
+
+                App.handleFurnitureSpawn();
             },
             onUnload: () => {
                 App.poop.absHidden = true;
@@ -971,6 +974,92 @@ let App = {
         }
 
         this.applySky();
+    },
+    handleFurnitureSpawn(){
+        if(App.activeFurnitureObjects?.length){
+            App.activeFurnitureObjects.forEach(o => o.removeObject());
+        }
+
+        App.activeFurnitureObjects = [];
+
+        const furnitureData = [
+            {id: "dbg_01", x: '50%', y: '50%'},
+        ]
+
+        furnitureData.forEach(furniture => {
+            const furnitureDef = App.definitions.furniture.find(f => furniture.id === f.id);
+            if(!furnitureDef) 
+                return console.log('furniture was not found', furniture);
+            const furnitureObject = new Object2d({
+                image: App.preloadedResources[furnitureDef.image],
+                x: furniture.x || 0,
+                y: furniture.y || 0,
+                z: furniture.z || App.constants.BACKGROUND_Z + 0.1,
+            })
+            App.activeFurnitureObjects.push(furnitureObject);
+        })
+    },
+    editFurniture(gameObject, callbackFn){
+        if(!gameObject) return false;
+
+        const editDisplay = document.createElement('div');
+        editDisplay.className = 'absolute-fullscreen'
+        document.querySelector('.screen-wrapper').appendChild(editDisplay)
+        editDisplay.close = () => editDisplay.remove();
+        editDisplay.innerHTML = `
+            <div class="directional-control__container">
+                <div class="controls-y">
+                    <div class="control" id="up"><i class="fa fa-angle-up"></i></div>
+                    <div class="controls-x">
+                        <div class="control" id="left"><i class="fa fa-angle-left"></i></div>
+                        <div class="control" id="right"><i class="fa fa-angle-right"></i></div>
+                    </div>
+                    <div class="bottom-container">
+                        <div id="cancel">cancel</div>
+                        <div>
+                            <div class="control" id="down"><i class="fa fa-angle-down"></i></div>
+                        </div>
+                        <div id="apply">apply</div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const objectInitialPosition = {x: gameObject.x, y: gameObject.y, z: gameObject.z};
+
+        const leftButton = editDisplay.querySelector('.control#left');
+        const rightButton = editDisplay.querySelector('.control#right');
+        const upButton = editDisplay.querySelector('.control#up');
+        const downButton = editDisplay.querySelector('.control#down');
+        [leftButton, rightButton, upButton, downButton].forEach(button => {
+            button.onclick = () => {
+                moveObject(button);
+            }
+        })
+
+        const moveObject = (button) => {
+            const unit = 4.8;
+            switch(button){
+                case leftButton: gameObject.x -= unit; break;
+                case rightButton: gameObject.x += unit; break;
+                case upButton: gameObject.y -= unit; break;
+                case downButton: gameObject.y += unit; break;
+            }
+        }
+
+        editDisplay.querySelector('#apply').onclick = () => {
+            editDisplay.close();
+            callbackFn?.(true);
+        };
+        editDisplay.querySelector('#cancel').onclick = () => {
+            editDisplay.close();
+            gameObject.x = objectInitialPosition.x;
+            gameObject.y = objectInitialPosition.y;
+            gameObject.z = objectInitialPosition.z;
+            callbackFn?.(false);
+        };
+
+        return true;
     },
     applySky() {
         const { AFTERNOON_TIME, EVENING_TIME, NIGHT_TIME } = App.constants;

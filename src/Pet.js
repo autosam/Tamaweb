@@ -1158,7 +1158,6 @@ class Pet extends Object2d {
                         if(!this._animFloat) this._animFloat = 0;
                         this._animFloat += 0.005 * App.deltaTime;
                         this.rotation = 0 + (Math.sin(this._animFloat) * 25);
-                        console.log(this.rotation)
                     }
                     break;
 

@@ -628,6 +628,15 @@ App.definitions = {
         },
     },
 
+    /* ROOM PLACEABLE FURNITURE */
+    furniture: [
+        {
+            name: 'Debug 1',
+            id: "dbg_01",
+            image: 'resources/img/furniture/dbg_01.png',
+        }
+    ],
+
     /* SHELL BACKGROUNDS */
     shell_background: [
         {

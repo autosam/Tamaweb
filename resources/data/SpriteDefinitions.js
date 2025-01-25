@@ -42,7 +42,7 @@ const SPRITES = [
     "resources/img/background/outside/vacation_sea_l_03.png",
     "resources/img/background/outside/garden_01.png",
 
-    // sky and weather
+    // sky
     "resources/img/background/sky/morning.png",
     "resources/img/background/sky/morning_overlay.png",
     "resources/img/background/sky/afternoon.png",
@@ -51,9 +51,14 @@ const SPRITES = [
     "resources/img/background/sky/evening_overlay.png",
     "resources/img/background/sky/night.png",
     "resources/img/background/sky/night_overlay.png",
-
+    // weather
     "resources/img/background/sky/rain_01.png",
     "resources/img/background/sky/snow_01.png",
+
+    // furniture
+    "resources/img/furniture/dbg_01.png",
+    "resources/img/furniture/dbg_02.png",
+    "resources/img/furniture/dbg_03.png",
 
     // items
     "resources/img/item/foods.png",
