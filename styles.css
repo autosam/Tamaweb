@@ -2034,6 +2034,7 @@ a {
     align-items: center;
     justify-content: space-between;
     flex-grow: 1;
+    padding: 4px;
 }
 .directional-control__container .controls-x {
     width: 100%;
@@ -2044,20 +2045,29 @@ a {
     display: inline-flex;
     width: 26px;
     height: 26px;
-    background: #00000061;
+    background: #ffefde;
+    color: #af5b00;
     justify-content: center;
     align-items: center;
     border-radius: 100%;
     cursor: pointer;
+}
+.directional-control__container .control#cancel {
+    color: #3d00ff;
+    background-color: #d1c3ff;
+}
+.directional-control__container .control#apply {
+    background-color: #ff00c6;
+    color: white;
 }
 .directional-control__container .bottom-container {
     width: 100%;
     display: inline-flex;
     justify-content: space-between;
 }
-
 .directional-control__container .bottom-container > * {
-    width: 33%;
+    /* width: 33%; */
     display: inline-flex;
     justify-content: center;
+    align-items: center;
 }

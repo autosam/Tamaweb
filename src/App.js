@@ -976,6 +976,12 @@ let App = {
 
         this.applySky();
     },
+    isRoomFurnishable(){
+        return App.scene.home.image?.includes('furnishable/');
+    },
+    getFurnishableBackground(backgroundSrc){
+        return backgroundSrc.replace('house/', 'house/furnishable/');
+    },
     getFurnitureDefFromId(id){
         return App.definitions.furniture.find(current => current.id === id);
     },
@@ -986,7 +992,7 @@ let App = {
 
         App.activeFurnitureObjects = [];
 
-        if(removeOnly) return;
+        if(removeOnly || !App.isRoomFurnishable()) return;
 
         furnitureData.forEach(furniture => {
             if(!furniture.isActive) return;
@@ -1031,11 +1037,9 @@ let App = {
                         <div class="control" id="right"><i class="fa fa-angle-right"></i></div>
                     </div>
                     <div class="bottom-container">
-                        <div id="cancel">cancel</div>
-                        <div>
-                            <div class="control" id="down"><i class="fa fa-angle-down"></i></div>
-                        </div>
-                        <div id="apply">apply</div>
+                        <div class="control" id="cancel"><i class="fa fa-times"></i></div>
+                        <div class="control" id="down"><i class="fa fa-angle-down"></i></div>
+                        <div class="control" id="apply"><i class="fa fa-check"></i></div>
                     </div>
                 </div>
             </div>
@@ -1499,6 +1503,26 @@ let App = {
                 {
                     name: `furniture ${App.getBadge()}`,
                     onclick: () => {
+                        if(!App.isRoomFurnishable()){
+                            return App.displayConfirm(`Your room came fully furnished.<br><br>Would you like to remove the default furniture set and customize it?`, [
+                                {
+                                    name: 'yes',
+                                    onclick: () => {
+                                        App.closeAllDisplays();
+                                        Activities.redecorRoom(() => {
+                                            App.handlers.open_active_furniture_list();
+                                        })
+                                        App.scene.home.image = 
+                                            App.getFurnishableBackground(App.scene.home.image);
+                                    }
+                                },
+                                {
+                                    name: 'no',
+                                    onclick: () => {},
+                                    class: 'back-btn',
+                                }
+                            ])
+                        }
                         App.closeAllDisplays();
                         App.handlers.open_active_furniture_list();
                     }
@@ -2728,12 +2752,17 @@ let App = {
             return sliderInstance;
             return App.displayList(list);
         },
-        open_room_background_list: function(){
+        open_room_background_list: function(onlyFurnishables){
             let list = [];
             let sliderInstance;
             let salesDay = App.isSalesDay();
             for(let room of Object.keys(App.definitions.room_background)){
-                let current = App.definitions.room_background[room];
+                const absCurrent = App.definitions.room_background[room];
+                let current = 
+                    onlyFurnishables ?
+                    {...absCurrent, image: App.getFurnishableBackground(absCurrent.image)} :
+                    absCurrent;
+
 
                 // check for unlockables
                 if(current.unlockKey && !App.getRecord(current.unlockKey)){
@@ -2742,7 +2771,9 @@ let App = {
 
                 // 50% off on sales day
                 let price = current.price;
-                if(salesDay) price = Math.round(price / 2);
+                if(onlyFurnishables) price /= 1.5;
+                if(salesDay) price = price / 2;
+                price = Math.round(price);
 
                 const image = App.checkResourceOverride(current.image);
 
@@ -2966,7 +2997,8 @@ let App = {
                                     }
                                 },
                                 {
-                                    name: 'remove from room',
+                                    name: 'remove',
+                                    class: 'back-btn',
                                     onclick: () => {
                                         savedFurniture.def.isActive = false;
                                         App.handleFurnitureSpawn();
@@ -3655,8 +3687,16 @@ let App = {
                 {
                     name: `redécor room ${hasNewDecor ? App.getBadge() : ''}`,
                     onclick: () => {
-                        App.handlers.open_room_background_list(true);
-                        return true;
+                        return App.displayList([
+                            {
+                                name: 'Pre-furnished',
+                                onclick: () => App.handlers.open_room_background_list(),
+                            },
+                            {
+                                name: 'Customizable',
+                                onclick: () => App.handlers.open_room_background_list(true)
+                            }
+                        ])
                     }
                 },
                 {
@@ -4717,5 +4757,5 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
 
 // todo: debug remove later
-App.ownedFurniture = JSON.parse('[{"id":"bookcase_colorful","x":76.79999999999998,"y":24.000000000000007,"isActive":true},{"id":"bookcase_wooden","x":"50%","y":"50%","isActive":false},{"id":"pot_peachy","x":"50%","y":"50%","isActive":false},{"id":"stand_blue","x":"50%","y":"50%","isActive":false},{"id":"stand_rainbow","x":"50%","y":"50%","isActive":false},{"id":"sofa_blue","x":"50%","y":"50%","isActive":false},{"id":"sofa_clood","x":"50%","y":"50%","isActive":false},{"id":"sofa_futura","x":"50%","y":"50%","isActive":false},{"id":"sofa_peachy","x":"50%","y":"50%","isActive":false},{"id":"sofa_pink","x":"50%","y":"50%","isActive":false},{"id":"sofa_rainbow","x":"50%","y":"50%","isActive":false},{"id":"sofa_woodleather","x":"50%","y":"50%","isActive":false}]');
+// App.ownedFurniture = JSON.parse('[{"id":"bookcase_colorful","x":76.79999999999998,"y":24.000000000000007,"isActive":true},{"id":"bookcase_wooden","x":"50%","y":"50%","isActive":false},{"id":"pot_peachy","x":"50%","y":"50%","isActive":false},{"id":"stand_blue","x":"50%","y":"50%","isActive":false},{"id":"stand_rainbow","x":"50%","y":"50%","isActive":false},{"id":"sofa_blue","x":"50%","y":"50%","isActive":false},{"id":"sofa_clood","x":"50%","y":"50%","isActive":false},{"id":"sofa_futura","x":"50%","y":"50%","isActive":false},{"id":"sofa_peachy","x":"50%","y":"50%","isActive":false},{"id":"sofa_pink","x":"50%","y":"50%","isActive":false},{"id":"sofa_rainbow","x":"50%","y":"50%","isActive":false},{"id":"sofa_woodleather","x":"50%","y":"50%","isActive":false}]');
 App.ownedFurniture = JSON.parse('[{"id":"bookcase_colorful","x":76.79999999999998,"y":24.000000000000007,"isActive":true},{"id":"bookcase_wooden","x":50.19999999999999,"y":11.399999999999999,"isActive":true,"z":-9.893460000000001},{"id":"pot_peachy","x":"50%","y":"50%","isActive":false},{"id":"stand_blue","x":69.79999999999998,"y":45.099999999999994,"isActive":true,"z":-9.892990000000001},{"id":"stand_rainbow","x":"50%","y":"50%","isActive":false},{"id":"sofa_blue","x":"50%","y":"50%","isActive":false},{"id":"sofa_clood","x":"50%","y":"50%","isActive":false},{"id":"sofa_futura","x":"50%","y":"50%","isActive":false},{"id":"sofa_peachy","x":"50%","y":"50%","isActive":false},{"id":"sofa_pink","x":"50%","y":"50%","isActive":false},{"id":"sofa_rainbow","x":"50%","y":"50%","isActive":false},{"id":"sofa_woodleather","x":"50%","y":"50%","isActive":false}]');

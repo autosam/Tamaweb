@@ -1454,7 +1454,7 @@ class Activities {
             });
         });
     }
-    static redecorRoom(){
+    static redecorRoom(callbackFn){
         App.setScene(App.scene.home);
         App.toggleGameplayControls(false);
         let otherPetDef = new PetDefinition({
@@ -1510,6 +1510,7 @@ class Activities {
                 App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => App.setScene(App.scene.home));
                 App.drawer.removeObject(otherPet);
                 App.toggleGameplayControls(true);
+                callbackFn?.();
             });
         }
 

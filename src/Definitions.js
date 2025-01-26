@@ -632,12 +632,12 @@ App.definitions = {
     furniture: [
         // right
         {
-            name: 'CLR Bookcase',
+            name: 'CLR bookshelf',
             image: 'resources/img/furniture/bookcase_colorful.png',
             id: "bookcase_colorful",
         },
         {
-            name: 'Wooden Bookcase',
+            name: 'Wooden bookshelf',
             image: 'resources/img/furniture/bookcase_wooden.png',
             id: "bookcase_wooden",
         },
@@ -656,6 +656,38 @@ App.definitions = {
             image: 'resources/img/furniture/stand_rainbow.png',
             id: "stand_rainbow",
         },
+        {
+            name: 'Bear',
+            image: 'resources/img/furniture/bear_gothic.png',
+            id: "bear_gothic",
+        },
+        
+        {
+            name: 'Gothic Bookcase',
+            image: 'resources/img/furniture/bookcase_gothic.png',
+            id: "bookcase_gothic",
+        },
+        {
+            name: 'Broken Heart',
+            image: 'resources/img/furniture/broken_heart_gothic.png',
+            id: "broken_heart_gothic",
+        },
+        {
+            name: 'CLR Cabinet',
+            image: 'resources/img/furniture/cabinet_clr.png',
+            id: "cabinet_clr",
+        },
+        {
+            name: 'Bunny Cake',
+            image: 'resources/img/furniture/cake_gothic.png',
+            id: "cake_gothic",
+        },
+        {
+            name: 'CC Plant',
+            image: 'resources/img/furniture/plant_gothic.png',
+            id: "plant_gothic",
+        },
+
 
         // left
         {
@@ -692,6 +724,11 @@ App.definitions = {
             name: 'Woodleather Sofa',
             image: 'resources/img/furniture/sofa_woodleather.png',
             id: "sofa_woodleather",
+        },
+        {
+            name: 'Gothic Chair',
+            image: 'resources/img/furniture/chair_gothic.png',
+            id: "chair_gothic",
         },
     ],
 
