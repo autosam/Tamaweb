@@ -3695,7 +3695,7 @@ let App = {
                             {
                                 name: 'Customizable',
                                 onclick: () => App.handlers.open_room_background_list(true)
-                            }
+                            },
                         ])
                     }
                 },
@@ -3732,13 +3732,8 @@ let App = {
                     }
                 },
                 {
-                    name: `
-                    <small>
-                        <i class="fa-solid fa-info-circle"></i>
-                        Shop stock changes daily, so check back often for new food and snacks!
-                    </small>
-                    `,
-                    type: 'text',
+                    name: `Shop stock changes daily, so check back often for new food and snacks!`,
+                    type: 'info',
                 },
             ])
         },
@@ -3957,10 +3952,19 @@ let App = {
                     element.innerHTML = item.name;
                     defaultClassName = ``;
                     break;
+                case "info":
                 case "text":
                     element = document.createElement('p');
                     element.innerHTML = item.name;
                     defaultClassName = `inner-padding b-radius-10 uppercase list-text ${item.solid ? 'solid-' : ''}surface-stylized ${item.bold ? 'text-bold' : ''}`;
+                    if(item.type === 'info'){
+                        element.innerHTML = `
+                            <small>
+                                <i class="fa-solid fa-info-circle"></i>
+                                ${item.name}
+                            </small>
+                        `;
+                    }
                     break;
                 case "separator":
                     element = document.createElement('hr');
@@ -4461,7 +4465,8 @@ let App = {
 
         let shellBackground = 
             window.localStorage.getItem('shell_background_v2.1') || 
-            App.definitions.shell_background.find(shell => shell.isDefault).image;
+            App.definitions.shell_background.find(shell => shell.isDefault).image ||
+            App.definitions.shell_background[1].image;
 
         let missions = window.localStorage.getItem('missions');
         missions = missions ? JSON.parse(missions) : {};

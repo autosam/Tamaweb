@@ -358,15 +358,12 @@ class Activities {
                 ...petInteractions,
                 {
                     name: `
-                    <small>
-                        <i class="fa-solid fa-info-circle"></i>
                         Every time you interact with another pet you'll receive 
                         <i class="fa-solid fa-thumbs-up"></i> ${INTERACTION_LIKES.receiving} 
                         and they'll receive
                         <i class="fa-solid fa-thumbs-up"></i> ${INTERACTION_LIKES.outgoing} 
-                    </small>
                     `,
-                    type: 'text',
+                    type: 'info',
                 },
             ])
         }

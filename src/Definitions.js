@@ -738,7 +738,6 @@ App.definitions = {
             image: 'resources/img/ui/shell_background_07.png',
             isNew: false,
         },
-        // default shell bg will be the one here
         {
             image: 'resources/img/ui/shell_background_13.png',
             isNew: true,
