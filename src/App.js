@@ -1014,7 +1014,6 @@ let App = {
                     me.z = App.constants.BACKGROUND_Z + 
                             0.3 + 
                             ((me.y + (me.image.height)) * 0.01);
-                    console.log('checking', me.z, me.image.height)
                 }
             })
             App.activeFurnitureObjects.push(furnitureObject);
