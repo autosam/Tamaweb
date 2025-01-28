@@ -1,4 +1,4 @@
-App.definitions = {
+const DEFINITIONS = {
     /* MAIN MENU */
     main_menu: [
         {
@@ -561,6 +561,20 @@ App.definitions = {
             interaction_time: 60000,
             interruptable: true,
         },
+        "grimoire": {
+            sprite: 9,
+            fun_replenish: 20,
+            price: 200,
+            interaction_time: 60000,
+            interruptable: true,
+        },
+        "bear": {
+            sprite: 10,
+            fun_replenish: 30,
+            price: 180,
+            interaction_time: 60000,
+            interruptable: true,
+        },
     },
 
     /* ROOM BACKGROUNDS */
@@ -626,10 +640,74 @@ App.definitions = {
             price: 300,
             isNew: true,
         },
+        "valentine": {
+            image: 'resources/img/background/house/cc_04.png',
+            price: 350,
+            isNew: true,
+        },
+        "arcade": {
+            image: 'resources/img/background/house/cc_05.png',
+            price: 200,
+            isNew: true,
+        },
     },
 
     /* ROOM PLACEABLE FURNITURE */
     furniture: [
+        // valentine set
+        {
+            name: 'Valentine Bear',
+            image: 'resources/img/furniture/bear_valentine.png',
+            id: "bear_valentine",
+        },
+        {
+            name: 'Valentine Heart',
+            image: 'resources/img/furniture/broken_heart_valentine.png',
+            id: "broken_heart_valentine",
+        },
+        {
+            name: 'Valentine Cake',
+            image: 'resources/img/furniture/cake_valentine.png',
+            id: "cake_valentine",
+        },
+        {
+            name: 'Valentine Gift',
+            image: 'resources/img/furniture/gift_valentine.png',
+            id: "gift_valentine",
+        },
+        {
+            name: 'Valentine Chair',
+            image: 'resources/img/furniture/chair_valentine.png',
+            id: "chair_valentine",
+        },
+
+        // gothic set
+        {
+            name: 'Gothic Bookcase',
+            image: 'resources/img/furniture/bookcase_gothic.png',
+            id: "bookcase_gothic",
+        },
+        {
+            name: 'Gothic Chair',
+            image: 'resources/img/furniture/chair_gothic.png',
+            id: "chair_gothic",
+        },
+        {
+            name: 'Gothic Doll',
+            image: 'resources/img/furniture/doll_gothic.png',
+            id: "doll_gothic",
+        },
+        {
+            name: 'Gothic Vase',
+            image: 'resources/img/furniture/vase_gothic.png',
+            id: "vase_gothic",
+        },
+        {
+            name: 'Gothic Statue',
+            image: 'resources/img/furniture/statue_gothic.png',
+            id: "statue_gothic",
+        },
+        
         // right
         {
             name: 'CLR bookshelf',
@@ -637,63 +715,81 @@ App.definitions = {
             id: "bookcase_colorful",
         },
         {
+            name: 'Pink Sofa',
+            image: 'resources/img/furniture/sofa_pink.png',
+            id: "sofa_pink",
+        },
+
+        {
             name: 'Wooden bookshelf',
             image: 'resources/img/furniture/bookcase_wooden.png',
             id: "bookcase_wooden",
         },
+        {
+            name: 'Woodleather Sofa',
+            image: 'resources/img/furniture/sofa_woodleather.png',
+            id: "sofa_woodleather",
+        },
+
         {
             name: 'Peachy Pot',
             image: 'resources/img/furniture/pot_peachy.png',
             id: "pot_peachy",
         },
         {
+            name: 'Peachy Sofa',
+            image: 'resources/img/furniture/sofa_peachy.png',
+            id: "sofa_peachy",
+        },
+
+        {
             name: 'Blue Stand',
             image: 'resources/img/furniture/stand_blue.png',
             id: "stand_blue",
         },
+        {
+            name: 'Blue Sofa',
+            image: 'resources/img/furniture/sofa_blue.png',
+            id: "sofa_blue",
+        },
+
         {
             name: 'Lite Stand',
             image: 'resources/img/furniture/stand_rainbow.png',
             id: "stand_rainbow",
         },
         {
-            name: 'Bear',
-            image: 'resources/img/furniture/bear_gothic.png',
-            id: "bear_gothic",
+            name: 'Lite Sofa',
+            image: 'resources/img/furniture/sofa_rainbow.png',
+            id: "sofa_rainbow",
         },
-        
+
         {
-            name: 'Gothic Bookcase',
-            image: 'resources/img/furniture/bookcase_gothic.png',
-            id: "bookcase_gothic",
-        },
-        {
-            name: 'Broken Heart',
-            image: 'resources/img/furniture/broken_heart_gothic.png',
-            id: "broken_heart_gothic",
+            name: 'Astra Sofa',
+            image: 'resources/img/furniture/sofa_astra.png',
+            id: "sofa_astra",
         },
         {
-            name: 'CLR Cabinet',
-            image: 'resources/img/furniture/cabinet_clr.png',
-            id: "cabinet_clr",
+            name: 'Astra Cactus',
+            image: 'resources/img/furniture/pot_astra.png',
+            id: "pot_astra",
         },
+
+        // misc
         {
-            name: 'Bunny Cake',
-            image: 'resources/img/furniture/cake_gothic.png',
-            id: "cake_gothic",
+            name: 'CC Cabinet',
+            image: 'resources/img/furniture/cabinet_01.png',
+            id: "cabinet_01",
         },
         {
             name: 'CC Plant',
-            image: 'resources/img/furniture/plant_gothic.png',
-            id: "plant_gothic",
+            image: 'resources/img/furniture/plant_01.png',
+            id: "plant_01",
         },
-
-
-        // left
         {
-            name: 'Blue Sofa',
-            image: 'resources/img/furniture/sofa_blue.png',
-            id: "sofa_blue",
+            name: 'Seafloor Sofa',
+            image: 'resources/img/furniture/seafloor_sofa.png',
+            id: "seafloor_sofa",
         },
         {
             name: 'Clood Sofa',
@@ -704,31 +800,6 @@ App.definitions = {
             name: 'Futura Sofa',
             image: 'resources/img/furniture/sofa_futura.png',
             id: "sofa_futura",
-        },
-        {
-            name: 'Peachy Sofa',
-            image: 'resources/img/furniture/sofa_peachy.png',
-            id: "sofa_peachy",
-        },
-        {
-            name: 'Pink Sofa',
-            image: 'resources/img/furniture/sofa_pink.png',
-            id: "sofa_pink",
-        },
-        {
-            name: 'Lite Sofa',
-            image: 'resources/img/furniture/sofa_rainbow.png',
-            id: "sofa_rainbow",
-        },
-        {
-            name: 'Woodleather Sofa',
-            image: 'resources/img/furniture/sofa_woodleather.png',
-            id: "sofa_woodleather",
-        },
-        {
-            name: 'Gothic Chair',
-            image: 'resources/img/furniture/chair_gothic.png',
-            id: "chair_gothic",
         },
     ],
 
