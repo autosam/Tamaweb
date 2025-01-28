@@ -2067,19 +2067,20 @@ a {
     display: inline-flex;
     width: 26px;
     height: 26px;
-    background: #ffefde;
-    color: #af5b00;
+    background: #d1c3ff;
+    color: #3d00ff;
     justify-content: center;
     align-items: center;
     border-radius: 100%;
     cursor: pointer;
+    mix-blend-mode: lighten;
 }
 .directional-control__container .control#cancel {
-    color: #3d00ff;
-    background-color: #d1c3ff;
+    color: #a30000;
+    background-color: #ffc3c3;
 }
 .directional-control__container .control#apply {
-    background-color: #ff00c6;
+    background-color: #0f8500;
     color: white;
 }
 .directional-control__container .bottom-container {

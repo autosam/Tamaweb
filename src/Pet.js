@@ -1140,10 +1140,41 @@ class Pet extends Object2d {
             }
         },
         playingWithItem: function(){ // this.pet, this.item, this.itemObject
-            if(this.lastMs && App.time <= this.lastMs + 500) return;
-            this.lastMs = App.time;
+            const skipLimitedFpsItems = ['grimoire'];
+
+            if(!skipLimitedFpsItems.includes(this.item?.name)){
+                if(this.lastMs && App.time <= this.lastMs + 500) return;
+                this.lastMs = App.time;
+            }
 
             switch(this.item?.name){
+                case "grimoire":
+                    if(!this.startTime) {
+                        this.startTime = App.time;
+                        this.float = 0;
+                        this.x = 0;
+                        this.itemObject.scale = 1;
+                        this.itemObject.opacity = 1;
+                    }
+                    if(App.time <= this.startTime + 2000){
+                        this.pet.setState('idle');
+                        this.pet.x = '50%';
+                        this.pet.y = '80%';
+                        this.itemObject.x = '50%';
+                    } else {
+                        this.pet.setState(this.itemObject.opacity > 0 ? 'shocked' : 'mild_uncomfortable');
+                        this.float += 0.025 * App.deltaTime;
+                        this.x = this.pet.x;
+                        this.itemObject.x = this.x - (Math.cos(this.float) * 20);
+                        this.itemObject.scale += this.float * 0.001;
+                        if(this.float > 80){
+                            this.itemObject.opacity -= 0.001 * App.deltaTime;
+                            console.log(this.itemObject.opacity)
+                        }
+                    }
+                    this.itemObject.y = 70 - (Math.sin(this.float) * 20);
+                    this.itemObject.z = App.constants.ACTIVE_PET_Z + 0.1;
+                    break;
                 case "microphone":
                     this.pet.x = randomFromArray(['25%', '50%', '75%']);
                     this.pet.y = '85%';
@@ -1201,10 +1232,12 @@ class Pet extends Object2d {
                     this.itemObject.inverted = !this.itemObject.inverted;
                     break;
                 case "foxy":
+                case "bear":
                     this.pet.setState(randomFromArray(['cheering', 'shocked', 'blush']));
+                    const xOffset = (App.petDefinition.spritesheet.cellSize / 2) * (random(0, 1) ? -0.5 : 1);
                     this.itemObject.z = this.pet.z + 0.1;
-                    this.itemObject.x = this.pet.x + App.petDefinition.spritesheet.cellSize / 2;
-                    this.itemObject.y = ((this.pet.y - 13) + random(-2, 2));
+                    this.itemObject.x = this.pet.x + xOffset;
+                    this.itemObject.y = ((this.pet.y - 10) + random(-2, 2));
                     this.itemObject.inverted = !this.itemObject.inverted;
                     break;
                 case "rattle":

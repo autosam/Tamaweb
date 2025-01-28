@@ -94,6 +94,10 @@ let App = {
         }
         this.applySettings();
 
+        // furniture
+        if(loadedData.furniture)
+        this.ownedFurniture = loadedData.furniture;
+
         // handle preloading
         let forPreload = [
             ...SPRITES,
@@ -1083,16 +1087,40 @@ let App = {
         }
 
         editDisplay.querySelector('#apply').onclick = () => {
-            gameObject.def.x = gameObject.x;
-            gameObject.def.y = gameObject.y;
-            gameObject.def.z = gameObject.z;
-            onEndFn(true);
+            App.displayConfirm(`Do you want to save the current placement?`, [
+                {
+                    name: 'yes',
+                    onclick: () => {
+                        gameObject.def.x = gameObject.x;
+                        gameObject.def.y = gameObject.y;
+                        gameObject.def.z = gameObject.z;
+                        onEndFn(true);
+                    }
+                },
+                {
+                    name: 'no',
+                    class: 'back-btn',
+                    onclick: () => {}
+                }
+            ])
         };
         editDisplay.querySelector('#cancel').onclick = () => {
-            gameObject.x = objectInitialPosition.x;
-            gameObject.y = objectInitialPosition.y;
-            gameObject.z = objectInitialPosition.z;
-            onEndFn(false);
+            App.displayConfirm(`Are you sure you want to cancel the current placement?`, [
+                {
+                    name: 'yes',
+                    onclick: () => {
+                        gameObject.x = objectInitialPosition.x;
+                        gameObject.y = objectInitialPosition.y;
+                        gameObject.z = objectInitialPosition.z;
+                        onEndFn(false);
+                    }
+                },
+                {
+                    name: 'no',
+                    class: 'back-btn',
+                    onclick: () => {}
+                }
+            ])
         };
 
         return true;
@@ -2954,6 +2982,12 @@ let App = {
                     onclick: (btn, list) => {
                         if(owned) return App.displayPopup(`You already own the this furniture!`);
 
+                        if(App.pet.stats.gold < price){
+                            App.displayPopup(`Don't have enough gold!`);
+                            return true;
+                        }
+                        App.pet.stats.gold -= price;
+
                         App.ownedFurniture.push({
                             id: current.id,
                             x: '50%', y: '50%',
@@ -3000,10 +3034,22 @@ let App = {
                                     name: 'remove',
                                     class: 'back-btn',
                                     onclick: () => {
-                                        savedFurniture.def.isActive = false;
-                                        App.handleFurnitureSpawn();
-                                        App.closeAllDisplays();
-                                        App.handlers.open_active_furniture_list();
+                                        return App.displayConfirm(`Are you sure you want to remove this furniture from the room?`, [
+                                            {
+                                                name: 'yes',
+                                                onclick: () => {
+                                                    savedFurniture.def.isActive = false;
+                                                    App.handleFurnitureSpawn();
+                                                    App.closeAllDisplays();
+                                                    App.handlers.open_active_furniture_list();
+                                                }
+                                            },
+                                            {
+                                                name: 'no',
+                                                class: 'back-btn',
+                                                onclick: () => {}
+                                            }
+                                        ])
                                     }     
                                 }
                             ])
@@ -3017,14 +3063,8 @@ let App = {
                 list.push({
                     name: '<div class="width-full flex-center"> + </div>',
                     onclick: () => { // add furniture
-                        if(!App.ownedFurniture?.length){
-                            return App.displayPopup('You down own any furniture, purchase some from the mall')
-                        }
-
-                        return App.displayList(
-                            App.ownedFurniture
-                            .filter(f => !f.isActive)
-                            .map(furniture => {
+                        const list = App.ownedFurniture?.filter(f => !f.isActive)
+                        .map(furniture => {
                             const def = App.getFurnitureDefFromId(furniture.id);
                             return {
                                 name: App.getPersona(def.name, def.image),
@@ -3042,7 +3082,13 @@ let App = {
                                     });
                                 }
                             }
-                        }), null, 'Add furniture');
+                        })
+
+                        if(!App.ownedFurniture?.length || !list.length){
+                            return App.displayPopup('You down own any furniture, purchase some from the mall')
+                        }
+
+                        return App.displayList(list, null, 'Add furniture');
                     }
                 })
             }
@@ -4427,6 +4473,7 @@ let App = {
             currentPts: Missions.currentPts,
             refreshTime: Missions.refreshTime
         }))
+        window.localStorage.setItem('furniture', JSON.stringify(App.ownedFurniture));
         // -3600000
         if(!noIndicator){
             const saveIcon = document.querySelector('.save-indicator');
@@ -4471,6 +4518,9 @@ let App = {
         let missions = window.localStorage.getItem('missions');
         missions = missions ? JSON.parse(missions) : {};
 
+        let furniture = window.localStorage.getItem('furniture');
+        furniture = furniture ? JSON.parse(furniture) : false;
+
         App.loadedData = {
             pet, 
             settings, 
@@ -4482,6 +4532,7 @@ let App = {
             mods,
             records,
             missions,
+            furniture
         };
 
         return App.loadedData;
@@ -4759,8 +4810,3 @@ window.addEventListener('beforeinstallprompt', (e) => {
         })
     }
 });
-
-
-// todo: debug remove later
-// App.ownedFurniture = JSON.parse('[{"id":"bookcase_colorful","x":76.79999999999998,"y":24.000000000000007,"isActive":true},{"id":"bookcase_wooden","x":"50%","y":"50%","isActive":false},{"id":"pot_peachy","x":"50%","y":"50%","isActive":false},{"id":"stand_blue","x":"50%","y":"50%","isActive":false},{"id":"stand_rainbow","x":"50%","y":"50%","isActive":false},{"id":"sofa_blue","x":"50%","y":"50%","isActive":false},{"id":"sofa_clood","x":"50%","y":"50%","isActive":false},{"id":"sofa_futura","x":"50%","y":"50%","isActive":false},{"id":"sofa_peachy","x":"50%","y":"50%","isActive":false},{"id":"sofa_pink","x":"50%","y":"50%","isActive":false},{"id":"sofa_rainbow","x":"50%","y":"50%","isActive":false},{"id":"sofa_woodleather","x":"50%","y":"50%","isActive":false}]');
-App.ownedFurniture = JSON.parse('[{"id":"bookcase_colorful","x":76.79999999999998,"y":24.000000000000007,"isActive":true},{"id":"bookcase_wooden","x":50.19999999999999,"y":11.399999999999999,"isActive":true,"z":-9.893460000000001},{"id":"pot_peachy","x":"50%","y":"50%","isActive":false},{"id":"stand_blue","x":69.79999999999998,"y":45.099999999999994,"isActive":true,"z":-9.892990000000001},{"id":"stand_rainbow","x":"50%","y":"50%","isActive":false},{"id":"sofa_blue","x":"50%","y":"50%","isActive":false},{"id":"sofa_clood","x":"50%","y":"50%","isActive":false},{"id":"sofa_futura","x":"50%","y":"50%","isActive":false},{"id":"sofa_peachy","x":"50%","y":"50%","isActive":false},{"id":"sofa_pink","x":"50%","y":"50%","isActive":false},{"id":"sofa_rainbow","x":"50%","y":"50%","isActive":false},{"id":"sofa_woodleather","x":"50%","y":"50%","isActive":false}]');

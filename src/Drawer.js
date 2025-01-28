@@ -93,7 +93,7 @@ class Drawer {
                 }
 
                 if (opacity !== undefined) {
-                    context.globalAlpha = opacity;
+                    context.globalAlpha = clamp(opacity, 0, App.INF);
                 }
 
                 if (spritesheet) {

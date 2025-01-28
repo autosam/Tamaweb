@@ -54,6 +54,11 @@ class PetDefinition {
                 interval: 2,
             },
         },
+        mild_uncomfortable: {
+            start: 4,
+            end: 5,
+            frameTime: 500,
+        },
         angry: {
             start: 6,
             end: 7,

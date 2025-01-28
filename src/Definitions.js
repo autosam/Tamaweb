@@ -565,14 +565,14 @@ const DEFINITIONS = {
             sprite: 9,
             fun_replenish: 20,
             price: 200,
-            interaction_time: 60000,
-            interruptable: true,
+            interaction_time: 8000,
+            interruptable: false,
         },
         "bear": {
             sprite: 10,
             fun_replenish: 30,
             price: 180,
-            interaction_time: 60000,
+            interaction_time: 10000,
             interruptable: true,
         },
     },
@@ -659,26 +659,31 @@ const DEFINITIONS = {
             name: 'Valentine Bear',
             image: 'resources/img/furniture/bear_valentine.png',
             id: "bear_valentine",
+            price: 200,
         },
         {
             name: 'Valentine Heart',
             image: 'resources/img/furniture/broken_heart_valentine.png',
             id: "broken_heart_valentine",
+            price: 160,
         },
         {
             name: 'Valentine Cake',
             image: 'resources/img/furniture/cake_valentine.png',
             id: "cake_valentine",
+            price: 120,
         },
         {
             name: 'Valentine Gift',
             image: 'resources/img/furniture/gift_valentine.png',
             id: "gift_valentine",
+            price: 120,
         },
         {
             name: 'Valentine Chair',
             image: 'resources/img/furniture/chair_valentine.png',
             id: "chair_valentine",
+            price: 150,
         },
 
         // gothic set
@@ -686,26 +691,31 @@ const DEFINITIONS = {
             name: 'Gothic Bookcase',
             image: 'resources/img/furniture/bookcase_gothic.png',
             id: "bookcase_gothic",
+            price: 150,
         },
         {
             name: 'Gothic Chair',
             image: 'resources/img/furniture/chair_gothic.png',
             id: "chair_gothic",
+            price: 150,
         },
         {
             name: 'Gothic Doll',
             image: 'resources/img/furniture/doll_gothic.png',
             id: "doll_gothic",
+            price: 120,
         },
         {
             name: 'Gothic Vase',
             image: 'resources/img/furniture/vase_gothic.png',
             id: "vase_gothic",
+            price: 120,
         },
         {
             name: 'Gothic Statue',
             image: 'resources/img/furniture/statue_gothic.png',
             id: "statue_gothic",
+            price: 150,
         },
         
         // right
@@ -713,66 +723,78 @@ const DEFINITIONS = {
             name: 'CLR bookshelf',
             image: 'resources/img/furniture/bookcase_colorful.png',
             id: "bookcase_colorful",
+            price: 120,
         },
         {
             name: 'Pink Sofa',
             image: 'resources/img/furniture/sofa_pink.png',
             id: "sofa_pink",
+            price: 150,
         },
 
         {
             name: 'Wooden bookshelf',
             image: 'resources/img/furniture/bookcase_wooden.png',
             id: "bookcase_wooden",
+            price: 100,
         },
         {
             name: 'Woodleather Sofa',
             image: 'resources/img/furniture/sofa_woodleather.png',
             id: "sofa_woodleather",
+            price: 120,
         },
 
         {
             name: 'Peachy Pot',
             image: 'resources/img/furniture/pot_peachy.png',
             id: "pot_peachy",
+            price: 80,
         },
         {
             name: 'Peachy Sofa',
             image: 'resources/img/furniture/sofa_peachy.png',
             id: "sofa_peachy",
+            price: 150,
         },
 
         {
             name: 'Blue Stand',
             image: 'resources/img/furniture/stand_blue.png',
             id: "stand_blue",
+            price: 80,
         },
         {
             name: 'Blue Sofa',
             image: 'resources/img/furniture/sofa_blue.png',
             id: "sofa_blue",
+            price: 80,
         },
 
         {
             name: 'Lite Stand',
             image: 'resources/img/furniture/stand_rainbow.png',
             id: "stand_rainbow",
+            price: 120,
         },
         {
             name: 'Lite Sofa',
             image: 'resources/img/furniture/sofa_rainbow.png',
             id: "sofa_rainbow",
+            price: 120,
         },
 
         {
             name: 'Astra Sofa',
             image: 'resources/img/furniture/sofa_astra.png',
             id: "sofa_astra",
+            price: 120,
         },
         {
             name: 'Astra Cactus',
             image: 'resources/img/furniture/pot_astra.png',
             id: "pot_astra",
+            price: 120,
         },
 
         // misc
@@ -780,26 +802,31 @@ const DEFINITIONS = {
             name: 'CC Cabinet',
             image: 'resources/img/furniture/cabinet_01.png',
             id: "cabinet_01",
+            price: 120,
         },
         {
             name: 'CC Plant',
             image: 'resources/img/furniture/plant_01.png',
             id: "plant_01",
+            price: 100,
         },
         {
             name: 'Seafloor Sofa',
             image: 'resources/img/furniture/seafloor_sofa.png',
             id: "seafloor_sofa",
+            price: 120,
         },
         {
             name: 'Clood Sofa',
             image: 'resources/img/furniture/sofa_clood.png',
             id: "sofa_clood",
+            price: 120,
         },
         {
             name: 'Futura Sofa',
             image: 'resources/img/furniture/sofa_futura.png',
             id: "sofa_futura",
+            price: 120,
         },
     ],
 
