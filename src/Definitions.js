@@ -1199,7 +1199,51 @@ const DEFINITIONS = {
 
                 return cloof;
             }
-        }
+        },
+        'cupid wings': {
+            image: 'resources/img/accessory/cupid_wings_01.png',
+            front: false,
+            price: 350,
+            isNew: true,
+        },
+        'purple headphones': {
+            image: 'resources/img/accessory/purple_headphones_01.png',
+            front: true,
+            price: 300,
+            isNew: true,
+        },
+        // gothic
+        'demon wings': {
+            image: 'resources/img/accessory/demon_wings_01.png',
+            front: false,
+            price: 350,
+            isNew: true,
+        },
+        'fork': {
+            image: 'resources/img/accessory/fork_01.png',
+            front: true,
+            price: 250,
+            isNew: true,
+        },
+        'gothic hat': {
+            image: 'resources/img/accessory/gothic_hat_01.png',
+            front: true,
+            price: 350,
+            isNew: true,
+        },
+        // valentine
+        /* 'bear hat': {
+            image: 'resources/img/accessory/bear_hat_01.png',
+            front: true,
+            price: 400,
+            isNew: true,
+        },
+        'bunny balloon': {
+            image: 'resources/img/accessory/bunny_balloon_01.png',
+            front: true,
+            price: 350,
+            isNew: true,
+        }, */
     },
 
     /* ACHIEVEMENTS */
