@@ -135,6 +135,6 @@ const SPRITES = [
     "accessory/cloof_01.png",
 ].map(resource => 'resources/img/' + resource);
 
-SPRITES.push(
-    ...DEFINITIONS.furniture.map(f => f.image)
-)
+// SPRITES.push(
+//     ...DEFINITIONS.furniture.map(f => f.image)
+// )

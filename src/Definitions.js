@@ -1,4 +1,4 @@
-const DEFINITIONS = {
+App.definitions = {
     /* MAIN MENU */
     main_menu: [
         {
@@ -640,21 +640,21 @@ const DEFINITIONS = {
             price: 300,
             isNew: true,
         },
-        "valentine": {
-            image: 'resources/img/background/house/cc_04.png',
-            price: 350,
-            isNew: true,
-        },
         "arcade": {
             image: 'resources/img/background/house/cc_05.png',
             price: 200,
             isNew: true,
         },
+        /* "valentine": {
+            image: 'resources/img/background/house/cc_04.png',
+            price: 350,
+            isNew: true,
+        }, */
     },
 
     /* ROOM PLACEABLE FURNITURE */
     furniture: [
-        // valentine set
+        /* // valentine set
         {
             name: 'Valentine Bear',
             image: 'resources/img/furniture/bear_valentine.png',
@@ -684,7 +684,7 @@ const DEFINITIONS = {
             image: 'resources/img/furniture/chair_valentine.png',
             id: "chair_valentine",
             price: 150,
-        },
+        }, */
 
         // gothic set
         {
@@ -717,8 +717,33 @@ const DEFINITIONS = {
             id: "statue_gothic",
             price: 150,
         },
-        
-        // right
+
+        // arcade
+        {
+            name: 'Arcade Machines',
+            image: 'resources/img/furniture/arcade_machines.png',
+            id: "arcade_machines",
+            price: 120,
+        },
+        {
+            name: 'Claw Machine',
+            image: 'resources/img/furniture/arcade_machine.png',
+            id: "claw_machine",
+            price: 120,
+        },
+        {
+            name: 'Race Car Mini Bed',
+            image: 'resources/img/furniture/race_car_minibed.png',
+            id: "race_car_minibed",
+            price: 120,
+        },
+        {
+            name: 'Arcade Sofa',
+            image: 'resources/img/furniture/sofa_arcade.png',
+            id: "sofa_arcade",
+            price: 120,
+        },
+
         {
             name: 'CLR bookshelf',
             image: 'resources/img/furniture/bookcase_colorful.png',
@@ -1200,18 +1225,6 @@ const DEFINITIONS = {
                 return cloof;
             }
         },
-        'cupid wings': {
-            image: 'resources/img/accessory/cupid_wings_01.png',
-            front: false,
-            price: 350,
-            isNew: true,
-        },
-        'purple headphones': {
-            image: 'resources/img/accessory/purple_headphones_01.png',
-            front: true,
-            price: 300,
-            isNew: true,
-        },
         // gothic
         'demon wings': {
             image: 'resources/img/accessory/demon_wings_01.png',
@@ -1229,6 +1242,20 @@ const DEFINITIONS = {
             image: 'resources/img/accessory/gothic_hat_01.png',
             front: true,
             price: 350,
+            isNew: true,
+        },
+        // end gothic
+        'cupid wings': {
+            icon: 'resources/img/accessory/cupid_wings_01_icon.png',
+            image: 'resources/img/accessory/cupid_wings_01.png',
+            front: false,
+            price: 350,
+            isNew: true,
+        },
+        'purple headphones': {
+            image: 'resources/img/accessory/purple_headphones_01.png',
+            front: true,
+            price: 300,
             isNew: true,
         },
         // valentine
