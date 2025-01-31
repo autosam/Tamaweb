@@ -963,6 +963,9 @@ let App = {
         beach: new Scene({
             image: 'resources/img/background/house/beach_01.png',
         }),
+        skate_park: new Scene({
+            image: 'resources/img/background/outside/skatepark_01.png',
+        }),
     },
     setScene(scene){
         App.currentScene?.onUnload?.(scene);
@@ -2733,7 +2736,8 @@ let App = {
                 const iconElement = App.getItemCSprite(current.sprite);
 
                 list.push({
-                    name: `${iconElement} ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>${buyMode ? `$${price}` : ''}</b>`,
+                    isNew: !!current.isNew,
+                    name: `${iconElement} ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>${buyMode ? `$${price}` : ''}</b> ${current.isNew ? App.getBadge() : ''}`,
                     onclick: (btn, list) => {
                         if(buyMode){
                             if(App.pet.stats.gold < price){
@@ -2775,6 +2779,7 @@ let App = {
                 return;
             }
 
+            list = list.sort((a, b) => b.isNew - a.isNew)
             sliderInstance = App.displaySlider(list, activeIndex, {accept: buyMode ? 'Purchase' : 'Use'}, buyMode ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}` : null);
             return sliderInstance;
             return App.displayList(list);
@@ -3707,6 +3712,13 @@ let App = {
                     true;
                 return App.definitions.accessories[key].isNew && isUnlocked;
             });
+            const hasNewItem = Object.keys(App.definitions.item).some(key => {
+                const isUnlocked = 
+                    App.definitions.item[key].unlockKey ? 
+                    App.getRecord(App.definitions.item[key].unlockKey) : 
+                    true;
+                return App.definitions.item[key].isNew && isUnlocked;
+            });
 
             const backFn = () => { // unused
                 setTimeout(() => App.handlers.open_activity_list(), 0)
@@ -3714,7 +3726,7 @@ let App = {
 
             App.displayList([
                 {
-                    name: 'buy items',
+                    name: `buy items ${hasNewItem ? App.getBadge() : ''}`,
                     onclick: () => {
                         App.handlers.open_item_list(true);
                         return true;

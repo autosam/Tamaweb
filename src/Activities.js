@@ -43,6 +43,8 @@ class Activities {
             App.setScene(App.currentScene); // to reset pet pos
             
             App.toggleGameplayControls(true);
+
+            item.onEnd?.();
         }, Pet.scriptedEventDrivers.playingWithItem.bind({pet: App.pet, item: item, itemObject}))
     }
     static async goOnDate(otherPetDef = App.getRandomPetDef(), onFailEnd){

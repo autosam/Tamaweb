@@ -1140,7 +1140,7 @@ class Pet extends Object2d {
             }
         },
         playingWithItem: function(){ // this.pet, this.item, this.itemObject
-            const skipLimitedFpsItems = ['grimoire'];
+            const skipLimitedFpsItems = ['grimoire', 'skate'];
 
             if(!skipLimitedFpsItems.includes(this.item?.name)){
                 if(this.lastMs && App.time <= this.lastMs + 500) return;
@@ -1148,6 +1148,48 @@ class Pet extends Object2d {
             }
 
             switch(this.item?.name){
+                case "skate":
+                    if(!this.init){
+                        this.init = true;
+                        App.setScene(App.scene.skate_park);
+                        this.animationPosition = {x: -30, y: 75};
+                        this.pet.setState('idle_side');
+                        this.pet.inverted = true;
+                        this.animationSpeed = 0.075;
+                        this.petOffset = {x: 0, y: 0};
+                    }
+
+
+                    this.animationPosition.x += this.animationSpeed * App.nDeltaTime;
+                    const isRightPast = this.animationPosition.x > App.drawer.bounds.width + 32;
+                    const isLeftPast = this.animationPosition.x < -64;
+
+                    if(isRightPast || isLeftPast) {
+                        // crossed
+                        this.animationSpeed = (isRightPast ? -0.075 : 0.075);
+                        this.pet.inverted = this.animationSpeed > 0;
+
+
+                        if(random(0, 2) && this.itemObject.rotation === 0){
+                            this.petOffset.y + 5;
+                            this.itemObject.rotation = 15;
+                            this.pet.setState('jumping');
+                            this.animationPosition.y = 55;
+                        } else {
+                            this.pet.setState('idle_side');
+                            this.itemObject.rotation = 0;
+                            this.petOffset.x = 0;
+                            this.petOffset.y = 0;
+                            this.animationPosition.y = 75;
+                        }
+                    }
+
+                    this.pet.x = this.animationPosition.x + this.petOffset.x + (this.pet.petDefinition.spritesheet.offsetY || 0);
+                    this.pet.y = this.animationPosition.y + this.petOffset.y + (this.pet.petDefinition.spritesheet.offsetY || 0);
+
+                    this.itemObject.x = this.animationPosition.x + 5;
+                    this.itemObject.y = this.animationPosition.y;
+                    break;
                 case "grimoire":
                     if(!this.startTime) {
                         this.startTime = App.time;
