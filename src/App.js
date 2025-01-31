@@ -1628,6 +1628,16 @@ let App = {
                                 Vaira Smythe
                             </a>
                         </div>
+                        <div class="credit-author surface-stylized">
+                            <a href="https://www.tiktok.com/@prion_sigma" target="_blank">
+                                Prion Sigma
+                            </a>
+                        </div>
+                        <div class="credit-author surface-stylized">
+                            <a href="https://www.artstation.com/pistispixel" target="_blank">
+                                Piixel_Nun
+                            </a>
+                        </div>
                     `
                 },
             ])
