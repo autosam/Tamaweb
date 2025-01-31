@@ -425,6 +425,17 @@ let App = {
         if(App.currentScene){
             App.setScene(App.currentScene);
         }
+
+        // screenshot
+        document.querySelector('.logo').ondblclick = () => {
+            if(App.haveAnyDisplays()) return;
+            const overlay = document.querySelector('.screenshot-overlay');
+            UI.show(overlay);
+            setTimeout(() => UI.hide(overlay), 200);
+            App.playSound('resources/sounds/camera_shutter_01.ogg')
+            const name = 'Tamaweb_' + moment().format('D-M-YY_h-m-s');
+            downloadCanvasAsImage(App.drawer.canvas, name)
+        }
     },
     loadMods: function(mods){
         if(!mods || !mods.length) return;

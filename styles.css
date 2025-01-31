@@ -1862,8 +1862,8 @@ hr {
     margin: 0 !important;
 }
 
-/* tapping */
-.tap-reminder {
+/* full device screen overlay */
+.full-device-overlay {
     position: fixed;
     top: 0;
     width: 100%;

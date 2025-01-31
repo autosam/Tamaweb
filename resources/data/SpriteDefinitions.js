@@ -180,6 +180,7 @@ const SPRITES = [
     "ui/logo_mask.png",
     "ui/logo_trans_01.png",
     "ui/pointer_right.png",
+    "ui/screenshot_overlay.png",
     "ui/shell_background_01.png",
     "ui/shell_background_02.png",
     "ui/shell_background_03.png",
