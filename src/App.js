@@ -3742,6 +3742,10 @@ let App = {
                                 name: 'Customizable',
                                 onclick: () => App.handlers.open_room_background_list(true)
                             },
+                            {
+                                type: 'info',
+                                name: 'Place up to 5 furniture items of your choosing in customizable rooms.',
+                            },
                         ])
                     }
                 },

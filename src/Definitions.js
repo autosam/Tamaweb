@@ -824,6 +824,54 @@ App.definitions = {
 
         // misc
         {
+            name: 'Pink Pillow Pile',
+            image: 'resources/img/furniture/pink_pillow.png',
+            id: "pink_pillow",
+            price: 150,
+        },
+        {
+            name: 'Girl Doll',
+            image: 'resources/img/furniture/doll_girl.png',
+            id: "doll_girl",
+            price: 200,
+        },
+        {
+            name: 'Dog Box',
+            image: 'resources/img/furniture/dog_box.png',
+            id: "dog_box",
+            price: 200,
+        },
+        {
+            name: 'Ret TV',
+            image: 'resources/img/furniture/tv_01.png',
+            id: "tv_01",
+            price: 300,
+        },
+        {
+            name: 'Orange Chair',
+            image: 'resources/img/furniture/chair_orange.png',
+            id: "chair_orange",
+            price: 200,
+        },
+        {
+            name: 'Sty Table',
+            image: 'resources/img/furniture/table_01.png',
+            id: "table_01",
+            price: 250,
+        },
+        {
+            name: 'Mushroom Lamp',
+            image: 'resources/img/furniture/mushroom_lamp.png',
+            id: "mushroom_lamp",
+            price: 200,
+        },
+        {
+            name: 'Pink Fan',
+            image: 'resources/img/furniture/fan.png',
+            id: "pink_fan",
+            price: 120,
+        },
+        {
             name: 'CC Cabinet',
             image: 'resources/img/furniture/cabinet_01.png',
             id: "cabinet_01",
