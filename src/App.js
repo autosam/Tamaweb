@@ -432,7 +432,7 @@ let App = {
             const overlay = document.querySelector('.screenshot-overlay');
             UI.show(overlay);
             setTimeout(() => UI.hide(overlay), 200);
-            App.playSound('resources/sounds/camera_shutter_01.ogg')
+            App.playSound('resources/sounds/camera_shutter_01.ogg');
             const name = 'Tamaweb_' + moment().format('D-M-YY_h-m-s');
             downloadCanvasAsImage(App.drawer.canvas, name)
         }
@@ -1090,6 +1090,7 @@ let App = {
                 case upButton: gameObject.y -= unit; break;
                 case downButton: gameObject.y += unit; break;
             }
+            App.playSound('resources/sounds/ui_click_04.ogg');
         }
 
         const onEndFn = (state) => {
@@ -1100,6 +1101,7 @@ let App = {
         }
 
         editDisplay.querySelector('#apply').onclick = () => {
+            App.playSound('resources/sounds/ui_click_03.ogg');
             App.displayConfirm(`Do you want to save the current placement?`, [
                 {
                     name: 'yes',
@@ -1118,6 +1120,7 @@ let App = {
             ])
         };
         editDisplay.querySelector('#cancel').onclick = () => {
+            App.playSound('resources/sounds/ui_click_02.ogg');
             App.displayConfirm(`Are you sure you want to cancel the current placement?`, [
                 {
                     name: 'yes',

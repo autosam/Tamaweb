@@ -1211,7 +1211,6 @@ class Pet extends Object2d {
                         this.itemObject.scale += this.float * 0.001;
                         if(this.float > 80){
                             this.itemObject.opacity -= 0.001 * App.deltaTime;
-                            console.log(this.itemObject.opacity)
                         }
                     }
                     this.itemObject.y = 70 - (Math.sin(this.float) * 20);
