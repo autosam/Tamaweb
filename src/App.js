@@ -697,7 +697,7 @@ let App = {
             return;
         }
 
-        if(addEvent(`update_11_notice`, () => {
+        if(addEvent(`update_12.1_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
@@ -706,7 +706,7 @@ let App = {
                     bold: true,
                 },
                 {
-                    name: `Check out the new offline/online dating feature, mail deliveries, new backgrounds, tons of rebalancing and bugfixes and much more!`,
+                    name: `Check out the new customizable furniture system, new items, accessories, rooms, potty training and much more!`,
                     type: 'text',
                 },
                 {
@@ -1091,6 +1091,7 @@ let App = {
                 case downButton: gameObject.y += unit; break;
             }
             App.playSound('resources/sounds/ui_click_04.ogg');
+            App.vibrate();
         }
 
         const onEndFn = (state) => {
@@ -1102,6 +1103,7 @@ let App = {
 
         editDisplay.querySelector('#apply').onclick = () => {
             App.playSound('resources/sounds/ui_click_03.ogg');
+            App.vibrate();
             App.displayConfirm(`Do you want to save the current placement?`, [
                 {
                     name: 'yes',
@@ -1121,6 +1123,7 @@ let App = {
         };
         editDisplay.querySelector('#cancel').onclick = () => {
             App.playSound('resources/sounds/ui_click_02.ogg');
+            App.vibrate();
             App.displayConfirm(`Are you sure you want to cancel the current placement?`, [
                 {
                     name: 'yes',
@@ -3127,7 +3130,7 @@ let App = {
         open_activity_list: function(){
             return App.displayList([
                 {
-                    name: `mall`,
+                    name: `mall ${App.getBadge()}`,
                     onclick: () => {
                         Activities.goToMall();
                     }
