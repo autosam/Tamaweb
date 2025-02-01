@@ -803,8 +803,10 @@ c-sprite {
     padding: 6px;
     text-shadow: none !important;
     margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
-
 .pet-trait-icons-container {
     display: flex;
     align-self: center;

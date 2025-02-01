@@ -598,7 +598,7 @@ let App = {
                 switch(commandType){
                     case 'save':
                         try {
-                            const b64 = atob(commandPayload.replace(':endsave', ''));
+                            const b64 = decodeURIComponent(atob(commandPayload.replace(':endsave', '')));
                             console.log(b64)
                             let json = JSON.parse(b64);
                             if(!json.pet){
@@ -2131,7 +2131,7 @@ let App = {
                     name: 'get save code',
                     onclick: () => {
                         // let charCode = 'save:' + btoa(JSON.stringify(window.localStorage));
-                        let charCode = `save:${btoa(JSON.stringify(window.localStorage))}:endsave`;
+                        let charCode = `save:${btoa(encodeURIComponent(JSON.stringify(window.localStorage)))}:endsave`;
                         App.displayConfirm(`Here you'll be able to copy your unique save code and continue your playthrough on another device`, [
                             {
                                 name: 'ok',
@@ -2652,6 +2652,8 @@ let App = {
                 },
             ]
 
+            const UID = App.userName ? `${(App.userName ?? '') + '-' + App.userId?.toString().slice(0, 5)}` : '';
+
             const list = UI.genericListContainer();
             const content = UI.empty('flex flex-dir-col flex-1');
             content.innerHTML = `
@@ -2674,10 +2676,24 @@ let App = {
                     </div>
                 </div>
                 <div class="user-id surface-stylized inner-padding text-transform-none">
-                    <div><small>uid:</small></div>
-                    <span>${(App.userName ?? '') + '-' + App.userId?.toString().slice(0, 5)}</span>
+                    <div>
+                        <small>uid:</small>
+                        <span>${UID}</span>
+                    </div>
+                    <small style="display: flex;justify-content: flex-end;"> <button class="generic-btn stylized uppercase" id="copy-btn"> <i class="fa-solid fa-copy"></i> </button> </small>
                 </div>
             `
+
+            const copyUIDButton = content.querySelector('#copy-btn');
+            const isClipboardAvailable = "clipboard" in navigator && !App.isOnItch && UID;
+            if(isClipboardAvailable){
+                copyUIDButton.onclick = () => {
+                    navigator.clipboard.writeText(UID);
+                    App.displayPopup('UID Copied!');
+                }
+            } else {
+                copyUIDButton.remove();
+            }
 
             list.appendChild(content);
         },
