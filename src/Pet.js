@@ -227,30 +227,51 @@ class Pet extends Object2d {
         this.x = -600;
 
         App.toggleGameplayControls(false, () => {
-            App.displayPopup('wait for your egg to hatch');
+            App.displayPopup('Wait for your egg to hatch');
         })
 
         if(!this.eggObject){
             this.eggStartTime = Date.now();
-            this.hatchTime = this.eggStartTime + random(20000, 60000);
+            this.hatchTime = this.eggStartTime + random(15000, 30000);
             this.eggObject = new Object2d({
                 img: 'resources/img/misc/egg.png',
                 x: '50%', 
                 y: '80%',
             });
+            this.eggMotionFloat = 0;
+            this.eggMotionFloatSpeed = 0.001;
+            return;
         }
 
-        if(Math.random() < 0.006){
-            this.eggObject.setImg('resources/img/misc/egg_02.png');
-            setTimeout(() => this.eggObject?.setImg('resources/img/misc/egg.png'), 200);
-            if(Date.now() > this.hatchTime){
-                this.stats.is_egg = false;
-                App.setScene(App.scene.home);
-                App.toggleGameplayControls(true);
-                this.eggObject?.removeObject();
-                this.eggObject = null;
-                this.triggerScriptedState('uncomfortable', 5000);
-            }
+        this.eggMotionFloatSpeed = clamp(this.eggMotionFloatSpeed + (0.000001 * App.deltaTime), 0, 0.02);
+
+        this.eggMotionFloat += this.eggMotionFloatSpeed * App.deltaTime;
+        const motion = Math.sin(this.eggMotionFloat);
+
+        if(this.eggMotionFloatSpeed === 0.02){
+            this.eggObject.setImg('resources/img/misc/egg_02.png')
+        }
+        // this.eggObject.rotation = Math.round(motion / 22.5) * 22.5;
+        this.eggObject.x = 40 + (motion * 1.5);
+        
+        // this.eggObject.x += this.eggCurrentDirection * App.nDeltaTime;
+        // if(this.eggObject.x > 55 - 8 || this.eggObject.x < 45 - 8) this.eggCurrentDirection *= -1;
+
+        // this.eggObject.rotation = lerp(this.eggObject.rotation, 0, 0.01 * App.nDeltaTime);
+
+        // if(Math.random() < 0.01){
+        //     // this.eggObject.setImg('resources/img/misc/egg_02.png');
+        //     // setTimeout(() => this.eggObject?.setImg('resources/img/misc/egg.png'), 200);
+        //     this.eggObject.rotation = randomFromArray([45, -45])
+        // }
+
+        if(Date.now() > this.hatchTime){
+            this.stats.is_egg = false;
+            App.setScene(App.scene.home);
+            App.toggleGameplayControls(true);
+            this.eggObject?.removeObject();
+            this.eggObject = null;
+            this.triggerScriptedState('uncomfortable', 5000);
         }
     }
     _switchScene(scene){

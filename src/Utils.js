@@ -123,6 +123,9 @@ function downloadUpscaledCanvasAsImage(canvas, imageName, scale = 1){
     scaledCanvas.width = canvas.width * scale;
     scaledCanvas.height = canvas.height * scale;
     const scaledCtx = scaledCanvas.getContext("2d");
+    scaledCtx.msImageSmoothingEnabled = false;
+    scaledCtx.mozImageSmoothingEnabled = false;
+    scaledCtx.webkitImageSmoothingEnabled = false;
     scaledCtx.imageSmoothingEnabled = false;
     scaledCtx.drawImage(canvas, 0, 0, scaledCanvas.width, scaledCanvas.height);
 

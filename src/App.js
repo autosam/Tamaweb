@@ -697,7 +697,7 @@ let App = {
             return;
         }
 
-        if(addEvent(`update_12.1_notice`, () => {
+        if(addEvent(`update_12_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
@@ -1282,7 +1282,14 @@ let App = {
     },
     queueEvent: function(payloadFn){
         const checkForDecentTime = () => {
-            if(App.pet.isDuringScriptedState() || App.haveAnyDisplays()) 
+            if(
+                App.pet.isDuringScriptedState() || 
+                App.haveAnyDisplays() || 
+                App.pet.stats.is_egg || 
+                App.pet.stats.is_dead || 
+                App.pet.stats.is_at_parents ||
+                App.currentScene !== App.scene.home
+            )
                 return;
 
             App.unregisterOnDrawEvent(checkForDecentTime);
