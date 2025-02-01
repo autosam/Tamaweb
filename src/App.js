@@ -431,10 +431,10 @@ let App = {
             if(App.haveAnyDisplays()) return;
             const overlay = document.querySelector('.screenshot-overlay');
             UI.show(overlay);
-            setTimeout(() => UI.hide(overlay), 200);
+            setTimeout(() => UI.hide(overlay), 250);
             App.playSound('resources/sounds/camera_shutter_01.ogg');
             const name = 'Tamaweb_' + moment().format('D-M-YY_h-m-s');
-            downloadCanvasAsImage(App.drawer.canvas, name)
+            downloadUpscaledCanvasAsImage(App.drawer.canvas, name, 5)
         }
     },
     loadMods: function(mods){
