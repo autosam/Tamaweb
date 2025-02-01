@@ -28,8 +28,8 @@ class Activities {
         }
 
         App.pet.stopMove();
-        App.pet.x = '30%';
-        App.pet.y = '63%';
+        App.pet.x = randomFromArray(['50%', '25%', '75%']);
+        App.pet.y = '92%';
         App.pet.inverted = true;
         App.pet.staticShadow = true;
         App.pet.triggerScriptedState('cheering', item.interaction_time || 10000, false, true, () => {  
@@ -43,6 +43,8 @@ class Activities {
             App.setScene(App.currentScene); // to reset pet pos
             
             App.toggleGameplayControls(true);
+
+            item.onEnd?.();
         }, Pet.scriptedEventDrivers.playingWithItem.bind({pet: App.pet, item: item, itemObject}))
     }
     static async goOnDate(otherPetDef = App.getRandomPetDef(), onFailEnd){
@@ -358,15 +360,12 @@ class Activities {
                 ...petInteractions,
                 {
                     name: `
-                    <small>
-                        <i class="fa-solid fa-info-circle"></i>
                         Every time you interact with another pet you'll receive 
                         <i class="fa-solid fa-thumbs-up"></i> ${INTERACTION_LIKES.receiving} 
                         and they'll receive
                         <i class="fa-solid fa-thumbs-up"></i> ${INTERACTION_LIKES.outgoing} 
-                    </small>
                     `,
-                    type: 'text',
+                    type: 'info',
                 },
             ])
         }
@@ -1454,7 +1453,7 @@ class Activities {
             });
         });
     }
-    static redecorRoom(){
+    static redecorRoom(callbackFn){
         App.setScene(App.scene.home);
         App.toggleGameplayControls(false);
         let otherPetDef = new PetDefinition({
@@ -1510,6 +1509,7 @@ class Activities {
                 App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => App.setScene(App.scene.home));
                 App.drawer.removeObject(otherPet);
                 App.toggleGameplayControls(true);
+                callbackFn?.();
             });
         }
 

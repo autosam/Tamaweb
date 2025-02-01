@@ -1,7 +1,7 @@
 let App = {
     PI2: Math.PI * 2, INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', userName: null, ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
     gameEventsHistory: {}, deferredInstallPrompt: null, shellBackground: '', isOnItch: false, isOnElectronClient: false, hour: 12,
-    misc: {}, mods: [], records: {}, temp: {},
+    misc: {}, mods: [], records: {}, temp: {}, ownedFurniture: [],
     settings: {
         screenSize: 1,
         playSound: true,
@@ -61,6 +61,7 @@ let App = {
         POOP_Z: 4.59,
         ACTIVE_ITEM_Z: 4.595,
         CHRISTMAS_TREE_Z: 4.58,
+        BACKGROUND_Z: -10,
     },
     routes: {
         BLOG: 'https://tamawebgame.github.io/blog/',
@@ -92,6 +93,10 @@ let App = {
         }
         this.applySettings();
 
+        // furniture
+        if(loadedData.furniture)
+        this.ownedFurniture = loadedData.furniture;
+
         // handle preloading
         let forPreload = [
             ...SPRITES,
@@ -110,7 +115,7 @@ let App = {
 
         // creating game objects
         App.background = new Object2d({
-            image: null, x: 0, y: 0, width: 96, height: 96, z: -10,
+            image: null, x: 0, y: 0, width: 96, height: 96, z: App.constants.BACKGROUND_Z,
         })
         // App.foodsSpritesheet = new Object2d({
         //     image: App.preloadedResources["resources/img/item/foods.png"],
@@ -420,6 +425,17 @@ let App = {
         if(App.currentScene){
             App.setScene(App.currentScene);
         }
+
+        // screenshot
+        document.querySelector('.logo').ondblclick = () => {
+            if(App.haveAnyDisplays()) return;
+            const overlay = document.querySelector('.screenshot-overlay');
+            UI.show(overlay);
+            setTimeout(() => UI.hide(overlay), 250);
+            App.playSound('resources/sounds/camera_shutter_01.ogg');
+            const name = 'Tamaweb_' + moment().format('D-M-YY_h-m-s');
+            downloadUpscaledCanvasAsImage(App.drawer.canvas, name, 5)
+        }
     },
     loadMods: function(mods){
         if(!mods || !mods.length) return;
@@ -582,7 +598,7 @@ let App = {
                 switch(commandType){
                     case 'save':
                         try {
-                            const b64 = atob(commandPayload.replace(':endsave', ''));
+                            const b64 = decodeURIComponent(atob(commandPayload.replace(':endsave', '')));
                             console.log(b64)
                             let json = JSON.parse(b64);
                             if(!json.pet){
@@ -681,7 +697,7 @@ let App = {
             return;
         }
 
-        if(addEvent(`update_11_notice`, () => {
+        if(addEvent(`update_12_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
@@ -690,7 +706,7 @@ let App = {
                     bold: true,
                 },
                 {
-                    name: `Check out the new offline/online dating feature, mail deliveries, new backgrounds, tons of rebalancing and bugfixes and much more!`,
+                    name: `Check out the new customizable furniture system, new items, accessories, rooms, potty training and much more!`,
                     type: 'text',
                 },
                 {
@@ -797,11 +813,14 @@ let App = {
                         x: 60, y: 12, z: App.constants.CHRISTMAS_TREE_Z,
                     });
                 }
+
+                App.handleFurnitureSpawn();
             },
             onUnload: () => {
                 App.poop.absHidden = true;
                 App.pet.staticShadow = true;
                 this.christmasTree?.removeObject();
+                App.handleFurnitureSpawn(null, true);
             }
         }),
         kitchen: new Scene({
@@ -955,6 +974,9 @@ let App = {
         beach: new Scene({
             image: 'resources/img/background/house/beach_01.png',
         }),
+        skate_park: new Scene({
+            image: 'resources/img/background/outside/skatepark_01.png',
+        }),
     },
     setScene(scene){
         App.currentScene?.onUnload?.(scene);
@@ -971,6 +993,156 @@ let App = {
         }
 
         this.applySky();
+    },
+    isRoomFurnishable(){
+        return App.scene.home.image?.includes('furnishable/');
+    },
+    getFurnishableBackground(backgroundSrc){
+        return backgroundSrc.replace('house/', 'house/furnishable/');
+    },
+    getFurnitureDefFromId(id){
+        return App.definitions.furniture.find(current => current.id === id);
+    },
+    handleFurnitureSpawn(furnitureData = App.ownedFurniture, removeOnly){
+        if(App.activeFurnitureObjects?.length){
+            App.activeFurnitureObjects.forEach(o => o.removeObject());
+        }
+
+        App.activeFurnitureObjects = [];
+
+        if(removeOnly || !App.isRoomFurnishable()) return;
+
+        furnitureData.forEach(furniture => {
+            if(!furniture.isActive) return;
+            const furnitureDef = App.getFurnitureDefFromId(furniture.id);
+            if(!furnitureDef) 
+                return console.log('furniture was not found', furniture);
+            let lastY = 0;
+            const furnitureObject = new Object2d({
+                // image: App.preloadedResources[furnitureDef.image],
+                img: furnitureDef.image,
+                x: furniture.x || 0,
+                y: furniture.y || 0,
+                z: furniture.z || App.constants.BACKGROUND_Z + 0.1,
+                def: furniture,
+                onDraw: (me) => {
+                    if(lastY === me.y) return;
+                    lastY = me.y;
+                    me.z = App.constants.BACKGROUND_Z + 
+                            0.3 + 
+                            ((me.y + (me.image.height)) * 0.01);
+                }
+            })
+            App.activeFurnitureObjects.push(furnitureObject);
+        })
+
+        return App.activeFurnitureObjects;
+    },
+    editFurniture(gameObject, callbackFn){
+        if(!gameObject) return false;
+
+        const editDisplay = document.createElement('div');
+        editDisplay.className = 'absolute-fullscreen'
+        document.querySelector('.screen-wrapper').appendChild(editDisplay)
+        editDisplay.close = () => editDisplay.remove();
+        editDisplay.innerHTML = `
+            <div class="directional-control__container">
+                <div class="controls-y">
+                    <div class="control" id="up"><i class="fa fa-angle-up"></i></div>
+                    <div class="controls-x">
+                        <div class="control" id="left"><i class="fa fa-angle-left"></i></div>
+                        <div class="control" id="right"><i class="fa fa-angle-right"></i></div>
+                    </div>
+                    <div class="bottom-container">
+                        <div class="control" id="cancel"><i class="fa fa-times"></i></div>
+                        <div class="control" id="down"><i class="fa fa-angle-down"></i></div>
+                        <div class="control" id="apply"><i class="fa fa-check"></i></div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        let blinkerFloat = 0;
+        const onEditDrawEvent = () => {
+            blinkerFloat += 0.0085 * App.deltaTime;
+            blinkerFloat = blinkerFloat % App.PI2;
+            gameObject.opacity =  Math.max(0.65, 0.65 + Math.sin(blinkerFloat) * 0.2);
+        }
+        App.registerOnDrawEvent(onEditDrawEvent);
+
+        const objectInitialPosition = {x: gameObject.x, y: gameObject.y, z: gameObject.z};
+
+        const leftButton = editDisplay.querySelector('.control#left');
+        const rightButton = editDisplay.querySelector('.control#right');
+        const upButton = editDisplay.querySelector('.control#up');
+        const downButton = editDisplay.querySelector('.control#down');
+        [leftButton, rightButton, upButton, downButton].forEach(button => {
+            button.onclick = () => {
+                moveObject(button);
+            }
+        })
+
+        const moveObject = (button) => {
+            const unit = 2.4;
+            switch(button){
+                case leftButton: gameObject.x -= unit; break;
+                case rightButton: gameObject.x += unit; break;
+                case upButton: gameObject.y -= unit; break;
+                case downButton: gameObject.y += unit; break;
+            }
+            App.playSound('resources/sounds/ui_click_04.ogg');
+            App.vibrate();
+        }
+
+        const onEndFn = (state) => {
+            editDisplay.close();
+            App.unregisterOnDrawEvent(onEditDrawEvent);
+            gameObject.opacity = 1;
+            callbackFn?.(state);
+        }
+
+        editDisplay.querySelector('#apply').onclick = () => {
+            App.playSound('resources/sounds/ui_click_03.ogg');
+            App.vibrate();
+            App.displayConfirm(`Do you want to save the current placement?`, [
+                {
+                    name: 'yes',
+                    onclick: () => {
+                        gameObject.def.x = gameObject.x;
+                        gameObject.def.y = gameObject.y;
+                        gameObject.def.z = gameObject.z;
+                        onEndFn(true);
+                    }
+                },
+                {
+                    name: 'no',
+                    class: 'back-btn',
+                    onclick: () => {}
+                }
+            ])
+        };
+        editDisplay.querySelector('#cancel').onclick = () => {
+            App.playSound('resources/sounds/ui_click_02.ogg');
+            App.vibrate();
+            App.displayConfirm(`Are you sure you want to cancel the current placement?`, [
+                {
+                    name: 'yes',
+                    onclick: () => {
+                        gameObject.x = objectInitialPosition.x;
+                        gameObject.y = objectInitialPosition.y;
+                        gameObject.z = objectInitialPosition.z;
+                        onEndFn(false);
+                    }
+                },
+                {
+                    name: 'no',
+                    class: 'back-btn',
+                    onclick: () => {}
+                }
+            ])
+        };
+
+        return true;
     },
     applySky() {
         const { AFTERNOON_TIME, EVENING_TIME, NIGHT_TIME } = App.constants;
@@ -1110,7 +1282,14 @@ let App = {
     },
     queueEvent: function(payloadFn){
         const checkForDecentTime = () => {
-            if(App.pet.isDuringScriptedState() || App.haveAnyDisplays()) 
+            if(
+                App.pet.isDuringScriptedState() || 
+                App.haveAnyDisplays() || 
+                App.pet.stats.is_egg || 
+                App.pet.stats.is_dead || 
+                App.pet.stats.is_at_parents ||
+                App.currentScene !== App.scene.home
+            )
                 return;
 
             App.unregisterOnDrawEvent(checkForDecentTime);
@@ -1375,6 +1554,33 @@ let App = {
                         return true;
                     }
                 },
+                {
+                    name: `furniture ${App.getBadge()}`,
+                    onclick: () => {
+                        if(!App.isRoomFurnishable()){
+                            return App.displayConfirm(`Your room came fully furnished.<br><br>Would you like to remove the default furniture set and customize it?`, [
+                                {
+                                    name: 'yes',
+                                    onclick: () => {
+                                        App.closeAllDisplays();
+                                        Activities.redecorRoom(() => {
+                                            App.handlers.open_active_furniture_list();
+                                        })
+                                        App.scene.home.image = 
+                                            App.getFurnishableBackground(App.scene.home.image);
+                                    }
+                                },
+                                {
+                                    name: 'no',
+                                    onclick: () => {},
+                                    class: 'back-btn',
+                                }
+                            ])
+                        }
+                        App.closeAllDisplays();
+                        App.handlers.open_active_furniture_list();
+                    }
+                }
             ])
         },
         open_bathroom_menu: function(){
@@ -1430,6 +1636,16 @@ let App = {
                         <div class="credit-author surface-stylized">
                             <a href="https://vairasmythe.carrd.co/" target="_blank">
                                 Vaira Smythe
+                            </a>
+                        </div>
+                        <div class="credit-author surface-stylized">
+                            <a href="https://www.tiktok.com/@prion_sigma" target="_blank">
+                                Prion Sigma
+                            </a>
+                        </div>
+                        <div class="credit-author surface-stylized">
+                            <a href="https://www.artstation.com/pistispixel" target="_blank">
+                                Piixel_Nun
                             </a>
                         </div>
                     `
@@ -1915,7 +2131,7 @@ let App = {
                     name: 'get save code',
                     onclick: () => {
                         // let charCode = 'save:' + btoa(JSON.stringify(window.localStorage));
-                        let charCode = `save:${btoa(JSON.stringify(window.localStorage))}:endsave`;
+                        let charCode = `save:${btoa(encodeURIComponent(JSON.stringify(window.localStorage)))}:endsave`;
                         App.displayConfirm(`Here you'll be able to copy your unique save code and continue your playthrough on another device`, [
                             {
                                 name: 'ok',
@@ -2436,6 +2652,8 @@ let App = {
                 },
             ]
 
+            const UID = App.userName ? `${(App.userName ?? '') + '-' + App.userId?.toString().slice(0, 5)}` : '';
+
             const list = UI.genericListContainer();
             const content = UI.empty('flex flex-dir-col flex-1');
             content.innerHTML = `
@@ -2458,10 +2676,24 @@ let App = {
                     </div>
                 </div>
                 <div class="user-id surface-stylized inner-padding text-transform-none">
-                    <div><small>uid:</small></div>
-                    <span>${(App.userName ?? '') + '-' + App.userId?.toString().slice(0, 5)}</span>
+                    <div>
+                        <small>uid:</small>
+                        <span>${UID}</span>
+                    </div>
+                    <small style="display: flex;justify-content: flex-end;"> <button class="generic-btn stylized uppercase" id="copy-btn"> <i class="fa-solid fa-copy"></i> </button> </small>
                 </div>
             `
+
+            const copyUIDButton = content.querySelector('#copy-btn');
+            const isClipboardAvailable = "clipboard" in navigator && !App.isOnItch && UID;
+            if(isClipboardAvailable){
+                copyUIDButton.onclick = () => {
+                    navigator.clipboard.writeText(UID);
+                    App.displayPopup('UID Copied!');
+                }
+            } else {
+                copyUIDButton.remove();
+            }
 
             list.appendChild(content);
         },
@@ -2554,7 +2786,8 @@ let App = {
                 const iconElement = App.getItemCSprite(current.sprite);
 
                 list.push({
-                    name: `${iconElement} ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>${buyMode ? `$${price}` : ''}</b>`,
+                    isNew: !!current.isNew,
+                    name: `${iconElement} ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>${buyMode ? `$${price}` : ''}</b> ${current.isNew ? App.getBadge() : ''}`,
                     onclick: (btn, list) => {
                         if(buyMode){
                             if(App.pet.stats.gold < price){
@@ -2596,16 +2829,22 @@ let App = {
                 return;
             }
 
+            list = list.sort((a, b) => b.isNew - a.isNew)
             sliderInstance = App.displaySlider(list, activeIndex, {accept: buyMode ? 'Purchase' : 'Use'}, buyMode ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}` : null);
             return sliderInstance;
             return App.displayList(list);
         },
-        open_room_background_list: function(){
+        open_room_background_list: function(onlyFurnishables){
             let list = [];
             let sliderInstance;
             let salesDay = App.isSalesDay();
             for(let room of Object.keys(App.definitions.room_background)){
-                let current = App.definitions.room_background[room];
+                const absCurrent = App.definitions.room_background[room];
+                let current = 
+                    onlyFurnishables ?
+                    {...absCurrent, image: App.getFurnishableBackground(absCurrent.image)} :
+                    absCurrent;
+
 
                 // check for unlockables
                 if(current.unlockKey && !App.getRecord(current.unlockKey)){
@@ -2614,7 +2853,9 @@ let App = {
 
                 // 50% off on sales day
                 let price = current.price;
-                if(salesDay) price = Math.round(price / 2);
+                if(onlyFurnishables) price /= 1.5;
+                if(salesDay) price = price / 2;
+                price = Math.round(price);
 
                 const image = App.checkResourceOverride(current.image);
 
@@ -2755,10 +2996,164 @@ let App = {
                 buyMode ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}` : null);
             return sliderInstance;
         },
+        open_furniture_list: function(activeIndex){
+            let list = [];
+            let sliderInstance;
+            let salesDay = App.isSalesDay();
+
+            App.definitions.furniture.forEach(current => {
+                // // check for unlockables
+                // if(current.unlockKey && !App.getRecord(current.unlockKey)){
+                //     continue;
+                // }
+
+                // 50% off on sales day
+                let price = current.price ?? 1;
+                if(salesDay) price = Math.round(price / 2);
+                const owned = !!App.ownedFurniture.find(f => f.id === current.id);
+                
+                const reopen = () => {
+                    App.handlers.open_furniture_list(sliderInstance?.getCurrentIndex());
+                    return false;
+                }
+
+                const image = App.checkResourceOverride(current.image);
+                const name = `
+                <img style="min-height: 64px; object-fit: contain;" src="${image}"></img> 
+                ${current.name.toUpperCase()} 
+                <b>
+                ${
+                    owned ? 'OWNED' : `$${price}`
+                }
+                </b> 
+                ${current.isNew ? App.getBadge() : ''}
+                `
+
+
+                list.push({
+                    isNew: !!current.isNew,
+                    name,
+                    onclick: (btn, list) => {
+                        if(owned) return App.displayPopup(`You already own the this furniture!`);
+
+                        if(App.pet.stats.gold < price){
+                            App.displayPopup(`Don't have enough gold!`);
+                            return true;
+                        }
+                        App.pet.stats.gold -= price;
+
+                        App.ownedFurniture.push({
+                            id: current.id,
+                            x: '50%', y: '50%',
+                            isActive: false
+                        })
+
+                        return reopen();
+                    }
+                })
+            })
+
+            list = list.sort((a, b) => b.isNew - a.isNew)
+            sliderInstance = App.displaySlider(
+                list, 
+                activeIndex, 
+                {accept: 'Purchase'}, 
+                `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}`
+            );
+            return sliderInstance;
+        },
+        open_active_furniture_list: function(){
+            const list = [
+                ...App.activeFurnitureObjects.map(savedFurniture => {
+                    const furnitureDef = App.getFurnitureDefFromId(savedFurniture.def.id);
+                    const persona = App.getPersona(furnitureDef.name, furnitureDef.image);
+                    return {
+                        name: persona,
+                        onclick: () => {
+                            return App.displayList([
+                                {
+                                    name: `<div class="flex flex-center height-auto">${persona}</div>`,
+                                    type: 'text',
+                                },
+                                {
+                                    name: 'edit position',
+                                    onclick: () => {
+                                        App.closeAllDisplays();
+                                        App.editFurniture(savedFurniture, () => {
+                                            App.handlers.open_active_furniture_list();
+                                        });
+                                    }
+                                },
+                                {
+                                    name: 'remove',
+                                    class: 'back-btn',
+                                    onclick: () => {
+                                        return App.displayConfirm(`Are you sure you want to remove this furniture from the room?`, [
+                                            {
+                                                name: 'yes',
+                                                onclick: () => {
+                                                    savedFurniture.def.isActive = false;
+                                                    App.handleFurnitureSpawn();
+                                                    App.closeAllDisplays();
+                                                    App.handlers.open_active_furniture_list();
+                                                }
+                                            },
+                                            {
+                                                name: 'no',
+                                                class: 'back-btn',
+                                                onclick: () => {}
+                                            }
+                                        ])
+                                    }     
+                                }
+                            ])
+                        }
+                    }
+                })
+            ]
+
+            const occupiedLength = list.length;
+            for(let i = 0; i < 5 - occupiedLength; i++){
+                list.push({
+                    name: '<div class="width-full flex-center"> + </div>',
+                    onclick: () => { // add furniture
+                        const list = App.ownedFurniture?.filter(f => !f.isActive)
+                        .map(furniture => {
+                            const def = App.getFurnitureDefFromId(furniture.id);
+                            return {
+                                _ignore: !def,
+                                name: App.getPersona(def?.name, def?.image),
+                                onclick: () => {
+                                    furniture.isActive = true;
+                                    App.closeAllDisplays();
+                                    const furnitureObjects = App.handleFurnitureSpawn();
+                                    const currentObject = furnitureObjects.find(f => f.def.id === def.id);
+                                    App.editFurniture(currentObject, (state) => {
+                                        if(!state) {
+                                            furniture.isActive = false;
+                                        };
+                                        App.handleFurnitureSpawn();
+                                        App.handlers.open_active_furniture_list();
+                                    });
+                                }
+                            }
+                        })
+
+                        if(!App.ownedFurniture?.length || !list.length){
+                            return App.displayPopup('You down own any furniture, purchase some from the mall')
+                        }
+
+                        return App.displayList(list, null, 'Add furniture');
+                    }
+                })
+            }
+
+            return App.displayList([...list]);
+        },
         open_activity_list: function(){
             return App.displayList([
                 {
-                    name: `mall`,
+                    name: `mall ${App.getBadge()}`,
                     onclick: () => {
                         Activities.goToMall();
                     }
@@ -3367,6 +3762,13 @@ let App = {
                     true;
                 return App.definitions.accessories[key].isNew && isUnlocked;
             });
+            const hasNewItem = Object.keys(App.definitions.item).some(key => {
+                const isUnlocked = 
+                    App.definitions.item[key].unlockKey ? 
+                    App.getRecord(App.definitions.item[key].unlockKey) : 
+                    true;
+                return App.definitions.item[key].isNew && isUnlocked;
+            });
 
             const backFn = () => { // unused
                 setTimeout(() => App.handlers.open_activity_list(), 0)
@@ -3374,7 +3776,7 @@ let App = {
 
             App.displayList([
                 {
-                    name: 'buy items',
+                    name: `buy items ${hasNewItem ? App.getBadge() : ''}`,
                     onclick: () => {
                         App.handlers.open_item_list(true);
                         return true;
@@ -3393,10 +3795,29 @@ let App = {
                 {
                     name: `redécor room ${hasNewDecor ? App.getBadge() : ''}`,
                     onclick: () => {
-                        App.handlers.open_room_background_list(true);
-                        return true;
+                        return App.displayList([
+                            {
+                                name: 'Pre-furnished',
+                                onclick: () => App.handlers.open_room_background_list(),
+                            },
+                            {
+                                name: 'Customizable',
+                                onclick: () => App.handlers.open_room_background_list(true)
+                            },
+                            {
+                                type: 'info',
+                                name: 'Place up to 5 furniture items of your choosing in customizable rooms.',
+                            },
+                        ])
                     }
                 },
+                {
+                    name: `Buy furniture ${App.getBadge()}`,
+                    onclick: () => {
+                        App.handlers.open_furniture_list();
+                        return true;
+                    }
+                }
             ]);
         },
         open_market_menu: function(){
@@ -3423,13 +3844,8 @@ let App = {
                     }
                 },
                 {
-                    name: `
-                    <small>
-                        <i class="fa-solid fa-info-circle"></i>
-                        Shop stock changes daily, so check back often for new food and snacks!
-                    </small>
-                    `,
-                    type: 'text',
+                    name: `Shop stock changes daily, so check back often for new food and snacks!`,
+                    type: 'info',
                 },
             ])
         },
@@ -3648,10 +4064,19 @@ let App = {
                     element.innerHTML = item.name;
                     defaultClassName = ``;
                     break;
+                case "info":
                 case "text":
                     element = document.createElement('p');
                     element.innerHTML = item.name;
                     defaultClassName = `inner-padding b-radius-10 uppercase list-text ${item.solid ? 'solid-' : ''}surface-stylized ${item.bold ? 'text-bold' : ''}`;
+                    if(item.type === 'info'){
+                        element.innerHTML = `
+                            <small>
+                                <i class="fa-solid fa-info-circle"></i>
+                                ${item.name}
+                            </small>
+                        `;
+                    }
                     break;
                 case "separator":
                     element = document.createElement('hr');
@@ -4061,6 +4486,12 @@ let App = {
             ? `<div style="width: 1"><img style="width: 36px; outline: none" src="${image}"></img></div>`
             : `<c-sprite width="64" height="36" index="0" src="${image}"></c-sprite>`;
     },
+    getPersona: function(name, image){
+        return `
+            <img style="height: inherit; width: 32px; object-fit: contain; margin-right: 10px" src="${image}"></img>
+            <span class="overflow-hidden ellipsis">${name}<span>
+        `
+    },
     isCompanionAllowed: function(room){
         if(!room) room = App.currentScene;
 
@@ -4108,6 +4539,7 @@ let App = {
             currentPts: Missions.currentPts,
             refreshTime: Missions.refreshTime
         }))
+        window.localStorage.setItem('furniture', JSON.stringify(App.ownedFurniture));
         // -3600000
         if(!noIndicator){
             const saveIcon = document.querySelector('.save-indicator');
@@ -4146,10 +4578,14 @@ let App = {
 
         let shellBackground = 
             window.localStorage.getItem('shell_background_v2.1') || 
-            App.definitions.shell_background.find(shell => shell.isDefault).image;
+            App.definitions.shell_background.find(shell => shell.isDefault).image ||
+            App.definitions.shell_background[1].image;
 
         let missions = window.localStorage.getItem('missions');
         missions = missions ? JSON.parse(missions) : {};
+
+        let furniture = window.localStorage.getItem('furniture');
+        furniture = furniture ? JSON.parse(furniture) : false;
 
         App.loadedData = {
             pet, 
@@ -4162,6 +4598,7 @@ let App = {
             mods,
             records,
             missions,
+            furniture
         };
 
         return App.loadedData;
