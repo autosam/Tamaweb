@@ -483,15 +483,6 @@ App.definitions = {
             price: 0,
             age: [0],
         },
-        "medicine": {
-            sprite: 1050,
-            hunger_replenish: 0,
-            fun_replenish: -20,
-            health_replenish: 999,
-            price: 20,
-            type: 'med',
-            age: [0, 1, 2],
-        },
         "sleep replacement": {
             sprite: 1050,
             hunger_replenish: -25,
@@ -502,13 +493,57 @@ App.definitions = {
             age: [0, 1, 2],
             isNew: false,
         },
+        "medicine": {
+            sprite: 1050,
+            hunger_replenish: 0,
+            fun_replenish: -20,
+            health_replenish: 999,
+            price: 20,
+            type: 'med',
+            age: [0, 1, 2],
+        },
     },
 
     /* ITEMS */
     item: {
+        "rattle": {
+            sprite: 8,
+            fun_replenish: 15,
+            price: 50,
+            interaction_time: 8100,
+            age: [0],
+            isNew: true,
+        },
+        "grimoire": {
+            sprite: 9,
+            fun_replenish: 12,
+            price: 200,
+            interaction_time: 8000,
+            interruptable: false,
+            isNew: true,
+            age: [1, 2],
+        },
+        "bear": {
+            sprite: 10,
+            fun_replenish: 20,
+            price: 180,
+            interaction_time: 10000,
+            interruptable: true,
+            isNew: true,
+        },
+        "skate": {
+            sprite: 11,
+            fun_replenish: 25,
+            price: 250,
+            interaction_time: 30000,
+            interruptable: true,
+            isNew: true,
+            onEnd: () => App.setScene(App.scene.home),
+            age: [1, 2],
+        },
         "foxy": {
             sprite: 1,
-            fun_replenish: 20,
+            fun_replenish: 15,
             price: 50,
             interaction_time: 12000,
             interruptable: true,
@@ -516,26 +551,28 @@ App.definitions = {
         "dumble": {
             sprite: 2,
             fun_replenish: 10,
-            price: 100
+            price: 100,
+            age: [1, 2],
         },
         "music player": {
             sprite: 3,
-            fun_replenish: 20,
+            fun_replenish: 15,
             price: 65
         },
         "ball": {
             sprite: 4,
-            fun_replenish: 30,
+            fun_replenish: 20,
             price: 35,
             interaction_time: 100000,
             interruptable: true,
         },
         "smartphone": {
             sprite: 5,
-            fun_replenish: 80,
+            fun_replenish: 30,
             price: 350,
             interaction_time: 100000,
             interruptable: true,
+            age: [1, 2],
         },
         "magazine": {
             sprite: 6,
@@ -543,10 +580,11 @@ App.definitions = {
             price: 20,
             interaction_time: 60000,
             interruptable: true,
+            age: [1, 2],
         },
         "microphone": {
             sprite: 7,
-            fun_replenish: 20,
+            fun_replenish: 15,
             price: 75,
             interaction_time: 60000,
             interruptable: true,
@@ -611,22 +649,295 @@ App.definitions = {
             price: 300,
             isNew: false,
         },
+        "gothic": {
+            image: 'resources/img/background/house/cc_03.png',
+            price: 300,
+            isNew: true,
+        },
+        "arcade": {
+            image: 'resources/img/background/house/cc_05.png',
+            price: 200,
+            isNew: true,
+        },
+        /* "valentine": {
+            image: 'resources/img/background/house/cc_04.png',
+            price: 350,
+            isNew: true,
+        }, */
     },
+
+    /* ROOM PLACEABLE FURNITURE */
+    furniture: [
+        /* // valentine set
+        {
+            name: 'Valentine Bear',
+            image: 'resources/img/furniture/bear_valentine.png',
+            id: "bear_valentine",
+            price: 200,
+        },
+        {
+            name: 'Valentine Heart',
+            image: 'resources/img/furniture/broken_heart_valentine.png',
+            id: "broken_heart_valentine",
+            price: 160,
+        },
+        {
+            name: 'Valentine Cake',
+            image: 'resources/img/furniture/cake_valentine.png',
+            id: "cake_valentine",
+            price: 120,
+        },
+        {
+            name: 'Valentine Gift',
+            image: 'resources/img/furniture/gift_valentine.png',
+            id: "gift_valentine",
+            price: 120,
+        },
+        {
+            name: 'Valentine Chair',
+            image: 'resources/img/furniture/chair_valentine.png',
+            id: "chair_valentine",
+            price: 150,
+        }, */
+
+        // gothic set
+        {
+            name: 'Gothic Bookcase',
+            image: 'resources/img/furniture/bookcase_gothic.png',
+            id: "bookcase_gothic",
+            price: 150,
+        },
+        {
+            name: 'Gothic Chair',
+            image: 'resources/img/furniture/chair_gothic.png',
+            id: "chair_gothic",
+            price: 150,
+        },
+        {
+            name: 'Gothic Doll',
+            image: 'resources/img/furniture/doll_gothic.png',
+            id: "doll_gothic",
+            price: 120,
+        },
+        {
+            name: 'Gothic Vase',
+            image: 'resources/img/furniture/vase_gothic.png',
+            id: "vase_gothic",
+            price: 120,
+        },
+        {
+            name: 'Gothic Statue',
+            image: 'resources/img/furniture/statue_gothic.png',
+            id: "statue_gothic",
+            price: 150,
+        },
+
+        // arcade
+        {
+            name: 'Arcade Machines',
+            image: 'resources/img/furniture/arcade_machines.png',
+            id: "arcade_machines",
+            price: 120,
+        },
+        {
+            name: 'Claw Machine',
+            image: 'resources/img/furniture/arcade_machine.png',
+            id: "claw_machine",
+            price: 120,
+        },
+        {
+            name: 'Race Car Mini Bed',
+            image: 'resources/img/furniture/race_car_minibed.png',
+            id: "race_car_minibed",
+            price: 120,
+        },
+        {
+            name: 'Arcade Sofa',
+            image: 'resources/img/furniture/sofa_arcade.png',
+            id: "sofa_arcade",
+            price: 120,
+        },
+
+        {
+            name: 'CLR bookshelf',
+            image: 'resources/img/furniture/bookcase_colorful.png',
+            id: "bookcase_colorful",
+            price: 120,
+        },
+        {
+            name: 'Pink Sofa',
+            image: 'resources/img/furniture/sofa_pink.png',
+            id: "sofa_pink",
+            price: 150,
+        },
+
+        {
+            name: 'Wooden bookshelf',
+            image: 'resources/img/furniture/bookcase_wooden.png',
+            id: "bookcase_wooden",
+            price: 100,
+        },
+        {
+            name: 'Woodleather Sofa',
+            image: 'resources/img/furniture/sofa_woodleather.png',
+            id: "sofa_woodleather",
+            price: 120,
+        },
+
+        {
+            name: 'Peachy Pot',
+            image: 'resources/img/furniture/pot_peachy.png',
+            id: "pot_peachy",
+            price: 80,
+        },
+        {
+            name: 'Peachy Sofa',
+            image: 'resources/img/furniture/sofa_peachy.png',
+            id: "sofa_peachy",
+            price: 150,
+        },
+
+        {
+            name: 'Blue Stand',
+            image: 'resources/img/furniture/stand_blue.png',
+            id: "stand_blue",
+            price: 80,
+        },
+        {
+            name: 'Blue Sofa',
+            image: 'resources/img/furniture/sofa_blue.png',
+            id: "sofa_blue",
+            price: 80,
+        },
+
+        {
+            name: 'Lite Stand',
+            image: 'resources/img/furniture/stand_rainbow.png',
+            id: "stand_rainbow",
+            price: 120,
+        },
+        {
+            name: 'Lite Sofa',
+            image: 'resources/img/furniture/sofa_rainbow.png',
+            id: "sofa_rainbow",
+            price: 120,
+        },
+        {
+            name: 'Astra Sofa',
+            image: 'resources/img/furniture/sofa_astra.png',
+            id: "sofa_astra",
+            price: 120,
+        },
+        {
+            name: 'Astra Cactus',
+            image: 'resources/img/furniture/pot_astra.png',
+            id: "pot_astra",
+            price: 120,
+        },
+
+        // misc
+        {
+            name: 'Pink Pillow Pile',
+            image: 'resources/img/furniture/pink_pillow.png',
+            id: "pink_pillow",
+            price: 150,
+        },
+        {
+            name: 'Girl Doll',
+            image: 'resources/img/furniture/doll_girl.png',
+            id: "doll_girl",
+            price: 200,
+        },
+        {
+            name: 'Dog Box',
+            image: 'resources/img/furniture/dog_box.png',
+            id: "dog_box",
+            price: 200,
+        },
+        {
+            name: 'Ret TV',
+            image: 'resources/img/furniture/tv_01.png',
+            id: "tv_01",
+            price: 300,
+        },
+        {
+            name: 'Orange Chair',
+            image: 'resources/img/furniture/chair_orange.png',
+            id: "chair_orange",
+            price: 200,
+        },
+        {
+            name: 'Sty Table',
+            image: 'resources/img/furniture/table_01.png',
+            id: "table_01",
+            price: 250,
+        },
+        {
+            name: 'Mushroom Lamp',
+            image: 'resources/img/furniture/mushroom_lamp.png',
+            id: "mushroom_lamp",
+            price: 200,
+        },
+        {
+            name: 'Pink Fan',
+            image: 'resources/img/furniture/fan.png',
+            id: "pink_fan",
+            price: 120,
+        },
+        {
+            name: 'CC Cabinet',
+            image: 'resources/img/furniture/cabinet_01.png',
+            id: "cabinet_01",
+            price: 120,
+        },
+        {
+            name: 'CC Plant',
+            image: 'resources/img/furniture/plant_01.png',
+            id: "plant_01",
+            price: 100,
+        },
+        {
+            name: 'Seafloor Sofa',
+            image: 'resources/img/furniture/seafloor_sofa.png',
+            id: "seafloor_sofa",
+            price: 120,
+        },
+        {
+            name: 'Clood Sofa',
+            image: 'resources/img/furniture/sofa_clood.png',
+            id: "sofa_clood",
+            price: 120,
+        },
+        {
+            name: 'Futura Sofa',
+            image: 'resources/img/furniture/sofa_futura.png',
+            id: "sofa_futura",
+            price: 120,
+        },
+    ],
 
     /* SHELL BACKGROUNDS */
     shell_background: [
-        // default shell bg will be the first one here
-        {
-            image: 'resources/img/ui/shell_background_cloof_01.png',
-            name: 'cloofy',
-            isNew: false,
-            onlineShopAccessible: true,
-            unlockLikes: 30,
-            unlockKey: 'unlock_cloof_shell_bg',
-        },
         {
             image: 'resources/img/ui/shell_background_07.png',
             isNew: false,
+        },
+        {
+            image: 'resources/img/ui/shell_background_13.png',
+            isNew: true,
+            isDefault: true,
+        },
+        {
+            image: 'resources/img/ui/shell_background_12.png',
+            isNew: true,
+        },
+        {
+            image: 'resources/img/ui/shell_background_14.png',
+            isNew: true,
+        },
+        {
+            image: 'resources/img/ui/shell_background_15.png',
+            isNew: true,
         },
         {
             image: 'resources/img/ui/shell_background_08.png',
@@ -661,6 +972,14 @@ App.definitions = {
         },
         {
             image: 'resources/img/ui/shell_background_06.png',
+        },
+        {
+            image: 'resources/img/ui/shell_background_cloof_01.png',
+            name: 'cloofy',
+            isNew: false,
+            onlineShopAccessible: true,
+            unlockLikes: 30,
+            unlockKey: 'unlock_cloof_shell_bg',
         },
     ],
 
@@ -966,7 +1285,53 @@ App.definitions = {
 
                 return cloof;
             }
-        }
+        },
+        // gothic
+        'demon wings': {
+            image: 'resources/img/accessory/demon_wings_01.png',
+            front: false,
+            price: 350,
+            isNew: true,
+        },
+        'fork': {
+            image: 'resources/img/accessory/fork_01.png',
+            front: true,
+            price: 250,
+            isNew: true,
+        },
+        'gothic hat': {
+            image: 'resources/img/accessory/gothic_hat_01.png',
+            front: true,
+            price: 350,
+            isNew: true,
+        },
+        // end gothic
+        'cupid wings': {
+            icon: 'resources/img/accessory/cupid_wings_01_icon.png',
+            image: 'resources/img/accessory/cupid_wings_01.png',
+            front: false,
+            price: 350,
+            isNew: true,
+        },
+        'purple headphones': {
+            image: 'resources/img/accessory/purple_headphones_01.png',
+            front: true,
+            price: 300,
+            isNew: true,
+        },
+        // valentine
+        /* 'bear hat': {
+            image: 'resources/img/accessory/bear_hat_01.png',
+            front: true,
+            price: 400,
+            isNew: true,
+        },
+        'bunny balloon': {
+            image: 'resources/img/accessory/bunny_balloon_01.png',
+            front: true,
+            price: 350,
+            isNew: true,
+        }, */
     },
 
     /* ACHIEVEMENTS */

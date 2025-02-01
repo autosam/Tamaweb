@@ -1,4 +1,52 @@
 class Activities {
+    static async useItem(item){
+        App.closeAllDisplays();
+        
+        const itemObject = new Object2d({
+            img: App.constants.ITEM_SPRITESHEET,
+            spritesheet: {
+                ...App.constants.ITEM_SPRITESHEET_DIMENSIONS,
+                cellNumber: item.sprite,
+            },
+            x: '55%', y: '47%', z: App.constants.ACTIVE_ITEM_Z
+        });
+
+        Missions.done(Missions.TYPES.play_item);
+
+
+        App.toggleGameplayControls(false);
+
+        const interruptFn = () => {
+            App.pet.stopScriptedState();
+        }
+        App.toggleGameplayControls(false, (item.interruptable ? interruptFn : false))
+
+        App.petDefinition.checkWant(App.pet.stats.current_want.item == item.name, App.constants.WANT_TYPES.item);
+
+        if(item.handler){
+            return item.handler(App.pet, item, itemObject);
+        }
+
+        App.pet.stopMove();
+        App.pet.x = randomFromArray(['50%', '25%', '75%']);
+        App.pet.y = '92%';
+        App.pet.inverted = true;
+        App.pet.staticShadow = true;
+        App.pet.triggerScriptedState('cheering', item.interaction_time || 10000, false, true, () => {  
+            App.drawer.removeObject(itemObject);
+
+            App.pet.stats.current_fun += item.fun_replenish || 0;
+            App.pet.stats.current_sleep += item.sleep_replenish || 0;
+
+            App.pet.playCheeringAnimation();
+
+            App.setScene(App.currentScene); // to reset pet pos
+            
+            App.toggleGameplayControls(true);
+
+            item.onEnd?.();
+        }, Pet.scriptedEventDrivers.playingWithItem.bind({pet: App.pet, item: item, itemObject}))
+    }
     static async goOnDate(otherPetDef = App.getRandomPetDef(), onFailEnd){
         App.closeAllDisplays();
         App.toggleGameplayControls(false);
@@ -312,15 +360,12 @@ class Activities {
                 ...petInteractions,
                 {
                     name: `
-                    <small>
-                        <i class="fa-solid fa-info-circle"></i>
                         Every time you interact with another pet you'll receive 
                         <i class="fa-solid fa-thumbs-up"></i> ${INTERACTION_LIKES.receiving} 
                         and they'll receive
                         <i class="fa-solid fa-thumbs-up"></i> ${INTERACTION_LIKES.outgoing} 
-                    </small>
                     `,
-                    type: 'text',
+                    type: 'info',
                 },
             ])
         }
@@ -1187,15 +1232,12 @@ class Activities {
             });
         });
     }
-    static poop(){
-        // todo: add automatic pooping and poop training symbols to player
-
+    static poop(force){
         App.closeAllDisplays();
         App.setScene(App.scene.bathroom);
         App.toggleGameplayControls(false);
-        Missions.done(Missions.TYPES.use_toilet);
-
-        if(App.pet.stats.current_bladder > App.pet.stats.max_bladder / 2){ // more than half
+        
+        if(!force && App.pet.stats.current_bladder > App.pet.stats.max_bladder / 2){ // more than half
             App.pet.playRefuseAnimation(() => {
                 App.setScene(App.scene.home);
                 App.toggleGameplayControls(true);
@@ -1203,10 +1245,17 @@ class Activities {
             return;
         }
 
+        Missions.done(Missions.TYPES.use_toilet);
         App.definitions.achievements.use_toilet_x_times.advance();
 
         App.pet.needsToiletOverlay.hidden = false;
         App.pet.stats.current_bladder = App.pet.stats.max_bladder;
+        if(App.petDefinition.lifeStage <= 0 && !force) {
+            // make pet potty trained if used toilet more than 2 to 4 times and is baby
+            if(++App.pet.stats.used_toilet > random(2, 4)){
+                App.pet.stats.is_potty_trained = true;
+            }
+        }
         App.pet.stopMove();
         App.pet.x = '21%';
         App.pet.y = '85%';
@@ -1404,7 +1453,7 @@ class Activities {
             });
         });
     }
-    static redecorRoom(){
+    static redecorRoom(callbackFn){
         App.setScene(App.scene.home);
         App.toggleGameplayControls(false);
         let otherPetDef = new PetDefinition({
@@ -1460,6 +1509,7 @@ class Activities {
                 App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => App.setScene(App.scene.home));
                 App.drawer.removeObject(otherPet);
                 App.toggleGameplayControls(true);
+                callbackFn?.();
             });
         }
 

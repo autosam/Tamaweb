@@ -54,6 +54,11 @@ class PetDefinition {
                 interval: 2,
             },
         },
+        mild_uncomfortable: {
+            start: 4,
+            end: 5,
+            frameTime: 500,
+        },
         angry: {
             start: 6,
             end: 7,
@@ -209,6 +214,8 @@ class PetDefinition {
             next_refresh_ms: new Date().getTime() + random(5000, 30000),
         },
         should_care_increase: true,
+        used_toilet: 0,
+        is_potty_trained: false,
     }
     friends = [];
     family = [];
@@ -218,7 +225,7 @@ class PetDefinition {
             'bread': 1,
             'slice of pizza': 3,
         },
-        item: { },
+        item: { 'rattle': 1 },
         accessory: { },
     }
     accessories = [];
@@ -272,6 +279,8 @@ class PetDefinition {
                     current_want: this.stats.current_want,
                     current_care: this.stats.current_care,
                     should_care_increase: this.stats.should_care_increase,
+                    used_toilet: this.stats.used_toilet,
+                    is_potty_trained: this.stats.is_potty_trained,
                 }
                 return;
             }

@@ -246,11 +246,8 @@ const Missions = {
                 }
             }),
             {
-                name: `<small>
-                    <i class="fa-solid fa-info-circle"></i>
-                    The + symbol represents the drop chance for each entry. The more + symbols, the higher the chance of that item dropping.
-                </small>`,
-                type: 'text'
+                name: `The + symbol represents the drop chance for each entry. The more + symbols, the higher the chance of that item dropping.`,
+                type: 'info'
             },
         ], null, 'Rewards');
         return list;
@@ -324,11 +321,8 @@ const Missions = {
                 }
             }),
             {
-                name: `<small>
-                    <i class="fa-solid fa-info-circle"></i>
-                    refreshes ${moment(Missions.refreshTime).fromNow()}
-                </small>`,
-                type: 'text'
+                name: `refreshes ${moment(Missions.refreshTime).fromNow()}`,
+                type: 'info'
             },
         ], null, 'Missions')
 

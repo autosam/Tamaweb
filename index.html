@@ -13,7 +13,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tamaweb</title>
-    <meta name="description" content="A virtual pet game inspired by modern Tamagotchi's where you get to raise your own pets!">
+    <meta name="description" content="A virtual pet game inspired by modern Tamagotchis where you get to raise your own pets!">
     <meta name="google-site-verification" content="dAerKFKSFvPgRL2A-O23ToYFXoNvqHutmDyC2QhvkHM" />
     <link rel="apple-touch-icon" sizes="57x57" href="apple-icon-57x57.png">
     <link rel="apple-touch-icon" sizes="60x60" href="apple-icon-60x60.png">
@@ -71,8 +71,13 @@
                 <canvas style="cursor: pointer;" onclick="App.handlers.open_main_menu()" class="graphics-canvas" width="96" height="96"></canvas>
 
                 <!-- tapping reminder -->
-                <div class="tap-reminder" style="display: none;">
+                <div class="full-device-overlay tap-reminder" style="display: none;">
                     <img src="resources/img/ui/tap_01.png"></img>
+                </div>
+
+                <!-- screenshot overlay -->
+                <div class="full-device-overlay screenshot-overlay" style="display: none;">
+                    <img class="width-full" src="resources/img/ui/screenshot_overlay.png"></img>
                 </div>
             </div>
         </div>

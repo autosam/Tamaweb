@@ -227,30 +227,51 @@ class Pet extends Object2d {
         this.x = -600;
 
         App.toggleGameplayControls(false, () => {
-            App.displayPopup('wait for your egg to hatch');
+            App.displayPopup('Wait for your egg to hatch');
         })
 
         if(!this.eggObject){
             this.eggStartTime = Date.now();
-            this.hatchTime = this.eggStartTime + random(20000, 60000);
+            this.hatchTime = this.eggStartTime + random(15000, 30000);
             this.eggObject = new Object2d({
                 img: 'resources/img/misc/egg.png',
                 x: '50%', 
                 y: '80%',
             });
+            this.eggMotionFloat = 0;
+            this.eggMotionFloatSpeed = 0.001;
+            return;
         }
 
-        if(Math.random() < 0.006){
-            this.eggObject.setImg('resources/img/misc/egg_02.png');
-            setTimeout(() => this.eggObject?.setImg('resources/img/misc/egg.png'), 200);
-            if(Date.now() > this.hatchTime){
-                this.stats.is_egg = false;
-                App.setScene(App.scene.home);
-                App.toggleGameplayControls(true);
-                this.eggObject?.removeObject();
-                this.eggObject = null;
-                this.triggerScriptedState('uncomfortable', 5000);
-            }
+        this.eggMotionFloatSpeed = clamp(this.eggMotionFloatSpeed + (0.000001 * App.deltaTime), 0, 0.02);
+
+        this.eggMotionFloat += this.eggMotionFloatSpeed * App.deltaTime;
+        const motion = Math.sin(this.eggMotionFloat);
+
+        if(this.eggMotionFloatSpeed === 0.02){
+            this.eggObject.setImg('resources/img/misc/egg_02.png')
+        }
+        // this.eggObject.rotation = Math.round(motion / 22.5) * 22.5;
+        this.eggObject.x = 40 + (motion * 1.5);
+        
+        // this.eggObject.x += this.eggCurrentDirection * App.nDeltaTime;
+        // if(this.eggObject.x > 55 - 8 || this.eggObject.x < 45 - 8) this.eggCurrentDirection *= -1;
+
+        // this.eggObject.rotation = lerp(this.eggObject.rotation, 0, 0.01 * App.nDeltaTime);
+
+        // if(Math.random() < 0.01){
+        //     // this.eggObject.setImg('resources/img/misc/egg_02.png');
+        //     // setTimeout(() => this.eggObject?.setImg('resources/img/misc/egg.png'), 200);
+        //     this.eggObject.rotation = randomFromArray([45, -45])
+        // }
+
+        if(Date.now() > this.hatchTime){
+            this.stats.is_egg = false;
+            App.setScene(App.scene.home);
+            App.toggleGameplayControls(true);
+            this.eggObject?.removeObject();
+            this.eggObject = null;
+            this.triggerScriptedState('uncomfortable', 5000);
         }
     }
     _switchScene(scene){
@@ -373,51 +394,6 @@ class Pet extends Object2d {
         });
 
         return true;
-    }
-    useItem(item){
-        App.closeAllDisplays();
-        
-        let itemObject = new Object2d({
-            img: "resources/img/item/items.png",
-            spritesheet: {
-                cellNumber: item.sprite,
-                cellSize: 22,
-                rows: 10,
-                columns: 10
-            },
-            x: 20, y: 20
-        });
-
-        Missions.done(Missions.TYPES.play_item);
-
-        itemObject.x = '55%', itemObject.y = '47%';
-
-        App.toggleGameplayControls(false);
-
-        let interruptFn = () => {
-            App.pet.stopScriptedState();
-        }
-        App.toggleGameplayControls(false, (item.interruptable ? interruptFn : false))
-
-        App.petDefinition.checkWant(this.stats.current_want.item == item.name, App.constants.WANT_TYPES.item);
-
-        this.stopMove();
-        this.x = '30%';
-        this.y = '63%';
-        this.inverted = true;
-        this.staticShadow = true;
-        this.triggerScriptedState('cheering', item.interaction_time || 10000, false, true, () => {  
-            App.drawer.removeObject(itemObject);
-
-            App.pet.stats.current_fun += item.fun_replenish || 0;
-            App.pet.stats.current_sleep += item.sleep_replenish || 0;
-
-            App.pet.playCheeringAnimation();
-
-            App.setScene(App.currentScene); // to reset pet pos
-            
-            App.toggleGameplayControls(true);
-        }, Pet.scriptedEventDrivers.playingWithItem.bind({pet: App.pet, item: item, itemObject}))
     }
     playCheeringAnimationIfTrue(requirement, onEndFn){
         if(requirement)
@@ -608,8 +584,13 @@ class Pet extends Object2d {
         stats.current_bladder -= bladder_depletion_rate;
         if(stats.current_bladder <= 0){
             stats.current_bladder = stats.max_bladder;
-            this.stats.has_poop_out = true;
-            // console.log('pooping myself');
+            if(!stats.is_potty_trained)
+                this.stats.has_poop_out = true;
+            else if(!isOfflineProgression) {
+                App.queueEvent(() => {
+                    Activities.poop(true);
+                })
+            }
         }
         if(stats.current_bladder <= stats.max_bladder / 4){
             this.needsToiletOverlay.hidden = false;
@@ -1179,15 +1160,163 @@ class Pet extends Object2d {
                 this.pet.targetX = -20;
             }
         },
-        playingWithItem: function(){
-            // if(!this.item) return false;
+        playingWithItem: function(){ // this.pet, this.item, this.itemObject
+            const skipLimitedFpsItems = ['grimoire', 'skate'];
+
+            if(!skipLimitedFpsItems.includes(this.item?.name)){
+                if(this.lastMs && App.time <= this.lastMs + 500) return;
+                this.lastMs = App.time;
+            }
 
             switch(this.item?.name){
+                case "skate":
+                    if(!this.init){
+                        this.init = true;
+                        App.setScene(App.scene.skate_park);
+                        this.animationPosition = {x: -30, y: 75};
+                        this.pet.setState('idle_side');
+                        this.pet.inverted = true;
+                        this.animationSpeed = 0.075;
+                        this.petOffset = {x: 0, y: 0};
+                    }
+
+
+                    this.animationPosition.x += this.animationSpeed * App.nDeltaTime;
+                    const isRightPast = this.animationPosition.x > App.drawer.bounds.width + 32;
+                    const isLeftPast = this.animationPosition.x < -64;
+
+                    if(isRightPast || isLeftPast) {
+                        // crossed
+                        this.animationSpeed = (isRightPast ? -0.075 : 0.075);
+                        this.pet.inverted = this.animationSpeed > 0;
+
+
+                        if(random(0, 2) && this.itemObject.rotation === 0){
+                            this.petOffset.y + 5;
+                            this.itemObject.rotation = 15;
+                            this.pet.setState('jumping');
+                            this.animationPosition.y = 55;
+                        } else {
+                            this.pet.setState('idle_side');
+                            this.itemObject.rotation = 0;
+                            this.petOffset.x = 0;
+                            this.petOffset.y = 0;
+                            this.animationPosition.y = 75;
+                        }
+                    }
+
+                    this.pet.x = this.animationPosition.x + this.petOffset.x + (this.pet.petDefinition.spritesheet.offsetY || 0);
+                    this.pet.y = this.animationPosition.y + this.petOffset.y + (this.pet.petDefinition.spritesheet.offsetY || 0);
+
+                    this.itemObject.x = this.animationPosition.x + 5;
+                    this.itemObject.y = this.animationPosition.y;
+                    break;
+                case "grimoire":
+                    if(!this.startTime) {
+                        this.startTime = App.time;
+                        this.float = 0;
+                        this.x = 0;
+                        this.itemObject.scale = 1;
+                        this.itemObject.opacity = 1;
+                    }
+                    if(App.time <= this.startTime + 2000){
+                        this.pet.setState('idle');
+                        this.pet.x = '50%';
+                        this.pet.y = '80%';
+                        this.itemObject.x = '50%';
+                    } else {
+                        this.pet.setState(this.itemObject.opacity > 0 ? 'shocked' : 'mild_uncomfortable');
+                        this.float += 0.025 * App.deltaTime;
+                        this.x = this.pet.x;
+                        this.itemObject.x = this.x - (Math.cos(this.float) * 20);
+                        this.itemObject.scale += this.float * 0.001;
+                        if(this.float > 80){
+                            this.itemObject.opacity -= 0.001 * App.deltaTime;
+                        }
+                    }
+                    this.itemObject.y = 70 - (Math.sin(this.float) * 20);
+                    this.itemObject.z = App.constants.ACTIVE_PET_Z + 0.1;
+                    break;
+                case "microphone":
+                    this.pet.x = randomFromArray(['25%', '50%', '75%']);
+                    this.pet.y = '85%';
+                    this.pet.inverted = !this.pet.inverted;
+
+                    this.itemObject.x = this.pet.x;
+                    this.itemObject.y = ((App.drawer.getRelativePositionY(92) - App.constants.ITEM_SPRITESHEET_DIMENSIONS.cellSize));
+                    this.itemObject.z = this.pet.z + 0.1;
+                    this.itemObject.inverted = this.pet.inverted;
+
+                    this.itemObject.onDraw = function() {
+                        if(!this._animFloat) this._animFloat = 0;
+                        this._animFloat += 0.005 * App.deltaTime;
+                        this.rotation = 0 + (Math.sin(this._animFloat) * 25);
+                    }
+                    break;
+
+                case "smartphone":
+                case "magazine":
+                    this.pet.setState(randomFromArray(['sitting', 'sitting', this.item?.name === 'smartphone' ? 'eating' : 'sitting', 'shocked', 'blush']));
+                    this.itemObject.x = this.pet.x + App.petDefinition.spritesheet.cellSize / 1.5;
+                    this.itemObject.y = ((this.pet.y - 13) + random(-2, 2));
+                    break;
+
+                case "ball":
+                    this.pet.y = '100%';
+                    this.pet.x = '50%';
+
+                    this.itemObject.x = randomFromArray(['40%', '60%']);
+                    this.itemObject.y = ((App.drawer.getRelativePositionY(95) - App.constants.ITEM_SPRITESHEET_DIMENSIONS.cellSize) + random(-2, 2));
+                    this.itemObject.z = this.pet.z + (randomFromArray([0.1, -0.1]));
+
+                    break;
+                case "music player":
+                    this.pet.x = randomFromArray(['25%', '50%', '75%']);
+                    this.pet.y = randomFromArray(['100%', '80%', '90%']);
+                    this.pet.inverted = !this.pet.inverted;
+
+                    this.itemObject.x = '50%';
+                    this.itemObject.y = '70%';
+
+                    this.itemObject.onDraw = function() {
+                        if(!this._animFloat) this._animFloat = 0;
+                        this._animFloat += 0.015 * App.deltaTime;
+                        this.scale = 1 + (Math.sin(this._animFloat) * 0.09);
+                    }
+                    break;
+                case "dumble":
+                    this.pet.setState(randomFromArray(['uncomfortable', 'shocked']));
+                    this.pet.x = '50%';
+                    this.pet.y = '90%';
+                    this.itemObject.z = this.pet.z + 0.1;
+                    this.itemObject.x = '50%';
+                    this.itemObject.y = ((App.drawer.getRelativePositionY(95) - App.constants.ITEM_SPRITESHEET_DIMENSIONS.cellSize) + random(-2, 2));
+                    this.itemObject.inverted = !this.itemObject.inverted;
+                    break;
+                case "foxy":
+                case "bear":
+                    this.pet.setState(randomFromArray(['cheering', 'shocked', 'blush']));
+                    const xOffset = (App.petDefinition.spritesheet.cellSize / 2) * (random(0, 1) ? -0.5 : 1);
+                    this.itemObject.z = this.pet.z + 0.1;
+                    this.itemObject.x = this.pet.x + xOffset;
+                    this.itemObject.y = ((this.pet.y - 10) + random(-2, 2));
+                    this.itemObject.inverted = !this.itemObject.inverted;
+                    break;
+                case "rattle":
+                    this.pet.y = '100%';
+
+                    this.pet.x = randomFromArray(['30%', '50%', '70%']);
+
+                    const possibleItemPositions = ['25%', '50%', '75%'];
+                    this.itemObject.x = randomFromArray(possibleItemPositions);
+                    this.itemObject.y = randomFromArray(possibleItemPositions);
+                    this.itemObject.inverted = !this.itemObject.inverted;
+                    break;
                 default:
-                    const possibleStates = ['cheering', 'eating', 'shocked', 'sitting', 'blush'];
-                    if(Math.random() < 0.007){
+                    if(Math.random() < 0.5){
+                        const possibleStates = ['cheering', 'eating', 'shocked', 'sitting', 'blush'];
                         this.pet.setState(randomFromArray(possibleStates));
-                        // this.pet.inverted = random(0, 1) ? true : false;
+                        this.pet.inverted = random(0, 1) ? true : false;
                         // if(this.pet.inverted){
                         //     this.itemObject.x = '75%';
                         // } else {
