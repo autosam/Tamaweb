@@ -2095,3 +2095,9 @@ a {
     justify-content: center;
     align-items: center;
 }
+
+/* label */
+.label {
+    color: #ff833b;
+    margin-left: 10px;
+}

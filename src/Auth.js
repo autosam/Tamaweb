@@ -77,6 +77,7 @@ const Auth = (() => {
             })
             .catch((error) => {
                 console.error("Error posting user data: ", error.message);
+                handleError(error.code);
             });
     };
 
@@ -95,8 +96,16 @@ const Auth = (() => {
             })
             .catch((error) => {
                 console.error("Error getting user data: ", error.message);
+                handleError(error.code);
             });
     };
+
+    const handleError = (code) => {
+        switch(code){
+            case "permission-denied":
+                setCookie();
+        }
+    }
 
     return {
         signUp,

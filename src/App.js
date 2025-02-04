@@ -1325,6 +1325,52 @@ let App = {
         if(Activities.encounter()) return;
     },
     handlers: {
+        open_account_sync: function(){
+            const showAccountSyncUI = (actionButtonTitle, actionButtonOnClick) => {
+                const container = UI.genericListContainer();
+                container.style.background = 'var(--background-a)';
+                const content = UI.empty('flex flex-dir-col flex-1 justify-between');
+                content.style.marginTop = '5px';
+                container.appendChild(content);
+                content.innerHTML = `
+                    <div class="flex flex-dir-col justify-center">
+                        <small class="label">Email:</small>
+                        <input id="email"></input>
+                        <small class="label">Password:</small>
+                        <input type="password" id="password"></input>
+                    </div>
+                    <button class="generic-btn stylized flex-center" id="submit-action">${actionButtonTitle}</button>
+                `;
+
+                container.querySelector('#submit-action').onclick = () => {
+                    const email = container.querySelector('#email').value;
+                    const password = container.querySelector('#password').value;
+                    actionButtonOnClick?.(email, password)
+                }
+
+                return container;
+            }
+
+            return App.displayList([
+                {
+                    name: 'login',
+                    onclick: () => {
+                        return showAccountSyncUI('Login', (email, password) => {
+                            const popup = App.displayPopup('Logging in ...');
+                            Auth.signIn(email, password)
+                            .then(res => console.log('LOGIN', res))
+                            .finally(() => popup.close());
+                        })
+                    }
+                },
+                {
+                    name: 'sign up',
+                    onclick: () => {
+                        return showAccountSyncUI('Create Account', Auth.signUp)
+                    }
+                },
+            ])
+        },
         show_rating_dialog: function(){
             return App.displayConfirm(`If you're enjoying the game, please consider <b>rating it</b> on Itch. Your feedback makes a huge difference and helps us a lot!`,
                 [
@@ -1659,6 +1705,12 @@ let App = {
             const ignoreFirstDivider = !(App.deferredInstallPrompt || !App.isOnItch);
 
             const settings = App.displayList([
+                {
+                    name: `Account Sync ${App.getBadge()}`,
+                    onclick: () => {
+                        return App.handlers.open_account_sync();
+                    }
+                },
                 {
                     _ignore: !App.isTester(),
                     name: `devtools ${App.getBadge('debug', 'neutral')}`,
