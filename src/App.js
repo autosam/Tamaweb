@@ -4611,31 +4611,42 @@ let App = {
             this.audioChannelIsBusy = true;
         } catch(e) {}
     },
+    serializer: function(type){
+        const entries = [
+            'pet',
+            'settings',
+            'last_time',
+            ''
+        ]
+    },
     save: function(noIndicator){
+        const setItem = (key, value) => {
+            localforage.setItem(key, value);
+        }
         // setCookie('pet', App.pet.serializeStats(), 365);
-        window.localStorage.setItem('pet', App.pet.serializeStats());
-        window.localStorage.setItem('settings', JSON.stringify(App.settings));
-        window.localStorage.setItem('last_time', Date.now());
-        // window.localStorage.setItem('last_time', Date.now() - 86400 * 1000 * 10);
-        window.localStorage.setItem('user_id', App.userId);
-        window.localStorage.setItem('user_name', App.userName);
-        window.localStorage.setItem('ingame_events_history', JSON.stringify(App.gameEventsHistory));
-        window.localStorage.setItem('play_time', App.playTime);
-        window.localStorage.setItem('shell_background_v2.1', App.shellBackground);
-        window.localStorage.setItem('mods', JSON.stringify(App.mods));
-        window.localStorage.setItem('records', JSON.stringify(App.records));
-        window.localStorage.setItem('room_customization', JSON.stringify({
+        setItem('pet', JSON.parse(App.pet.serializeStats()));
+        setItem('settings', (App.settings));
+        setItem('last_time', Date.now());
+        // setItem('last_time', Date.now() - 86400 * 1000 * 10);
+        setItem('user_id', App.userId);
+        setItem('user_name', App.userName);
+        setItem('ingame_events_history', (App.gameEventsHistory));
+        setItem('play_time', App.playTime);
+        setItem('shell_background_v2.1', App.shellBackground);
+        setItem('mods', (App.mods));
+        setItem('records', (App.records));
+        setItem('room_customization', ({
             home: {
                 image: App.scene.home.image,
             }
         }))
-        window.localStorage.setItem('missions', JSON.stringify({
+        setItem('missions', ({
             current: Missions.current,
             currentStep: Missions.currentStep,
             currentPts: Missions.currentPts,
             refreshTime: Missions.refreshTime
         }))
-        window.localStorage.setItem('furniture', JSON.stringify(App.ownedFurniture));
+        setItem('furniture', (App.ownedFurniture));
         // -3600000
         if(!noIndicator){
             const saveIcon = document.querySelector('.save-indicator');
@@ -4644,44 +4655,50 @@ let App = {
         }
     },
     load: function(){
-        let pet = window.localStorage.getItem('pet');
-            pet = pet ? JSON.parse(pet) : {};
+        const getItem = (key) => {
+            return localforage.getItem(key);
+        }
 
-        let settings = window.localStorage.getItem('settings');
-            settings = settings ? JSON.parse(settings) : null;
-
-        let lastTime = window.localStorage.getItem('last_time') || false;
-
-        let eventsHistory = window.localStorage.getItem('ingame_events_history');
-            eventsHistory = eventsHistory ? JSON.parse(eventsHistory) : null;
-
-        let roomCustomizations = window.localStorage.getItem('room_customization');
-        roomCustomizations = roomCustomizations ? JSON.parse(roomCustomizations) : null;
-
-        let mods = window.localStorage.getItem('mods');
-        mods = mods ? JSON.parse(mods) : App.mods;
-
-        let records = window.localStorage.getItem('records');
-        records = records ? JSON.parse(records) : App.records;
-
-        // user
-        let userId = window.localStorage.getItem('user_id') || random(100000000000, 999999999999);
-        App.userId = userId;
-        let userName = window.localStorage.getItem('user_name');
-        App.userName = userName == 'null' ? null : userName;
-        
-        App.playTime = parseInt(window.localStorage.getItem('play_time') || 0);
-
-        let shellBackground = 
-            window.localStorage.getItem('shell_background_v2.1') || 
-            App.definitions.shell_background.find(shell => shell.isDefault).image ||
-            App.definitions.shell_background[1].image;
-
-        let missions = window.localStorage.getItem('missions');
-        missions = missions ? JSON.parse(missions) : {};
-
-        let furniture = window.localStorage.getItem('furniture');
-        furniture = furniture ? JSON.parse(furniture) : false;
+        (async () => {
+            let pet = getItem('pet');
+                pet = pet ? JSON.parse(pet) : {};
+    
+            let settings = getItem('settings');
+                settings = settings ? JSON.parse(settings) : null;
+    
+            let lastTime = getItem('last_time') || false;
+    
+            let eventsHistory = getItem('ingame_events_history');
+                eventsHistory = eventsHistory ? JSON.parse(eventsHistory) : null;
+    
+            let roomCustomizations = getItem('room_customization');
+            roomCustomizations = roomCustomizations ? JSON.parse(roomCustomizations) : null;
+    
+            let mods = getItem('mods');
+            mods = mods ? JSON.parse(mods) : App.mods;
+    
+            let records = getItem('records');
+            records = records ? JSON.parse(records) : App.records;
+    
+            // user
+            let userId = getItem('user_id') || random(100000000000, 999999999999);
+            App.userId = userId;
+            let userName = getItem('user_name');
+            App.userName = userName == 'null' ? null : userName;
+            
+            App.playTime = parseInt(getItem('play_time') || 0);
+    
+            let shellBackground = 
+                getItem('shell_background_v2.1') || 
+                App.definitions.shell_background.find(shell => shell.isDefault).image ||
+                App.definitions.shell_background[1].image;
+    
+            let missions = getItem('missions');
+            missions = missions ? JSON.parse(missions) : {};
+    
+            let furniture = getItem('furniture');
+            furniture = furniture ? JSON.parse(furniture) : false;
+        })()
 
         App.loadedData = {
             pet, 
