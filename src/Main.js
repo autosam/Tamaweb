@@ -69,43 +69,5 @@ function handleServiceWorker(){
     });
 }
 
-function setupFirebase(){
-    if(typeof firebase === undefined) return;
-
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-    const firebaseConfig = {
-        apiKey: "AIzaSyAfGAIhUNAFY1VgZmtp71edZjMF3Ss1hCE",
-        authDomain: "tamawebdb.firebaseapp.com",
-        projectId: "tamawebdb",
-        storageBucket: "tamawebdb.firebasestorage.app",
-        messagingSenderId: "405198385098",
-        appId: "1:405198385098:web:2562998641a31ec976a933",
-        measurementId: "G-LWNYV05LFT"
-    };
-    
-    firebase.initializeApp(firebaseConfig);
-
-    // Initialize Firestore
-    const db = firebase.firestore();
-
-
-    
-
-    // Retrieve user documents
-    db.collection("users").get().then(function(querySnapshot) {
-        querySnapshot.forEach(function(doc) {
-            // Access data and likes fields
-            var userData = doc.data().data;
-            var userLikes = doc.data().likes;
-            console.log(doc)
-            console.log(`Data: ${userData}, Likes: ${userLikes}`);
-        });
-    }).catch(function(error) {
-        console.error("Error retrieving documents: ", error);
-    });
-
-}
-
-setupFirebase();
 handleServiceWorker();
 App.init();

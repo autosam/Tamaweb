@@ -81,6 +81,9 @@ let App = {
         let loadedData = this.load();
         console.log({loadedData});
 
+        // sync data to firestore
+        Auth.postUserData(loadedData);
+
         // shell background
         this.setShellBackground(loadedData.shellBackground);
 
