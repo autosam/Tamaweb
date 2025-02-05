@@ -1533,7 +1533,7 @@ let App = {
                         App.pet.showCurrentWant();
                     }
                 },
-            ])
+            ], null, 'Care')
         },
         open_stuff_menu: function(){
             App.displayList([
@@ -1581,7 +1581,7 @@ let App = {
                         App.handlers.open_active_furniture_list();
                     }
                 }
-            ])
+            ], null, 'Stuff')
         },
         open_bathroom_menu: function(){
             App.displayList([
@@ -1603,7 +1603,7 @@ let App = {
                         App.handlers.clean();
                     }
                 }
-            ])
+            ], null, 'Cleaning')
         },
         open_credits: function(){
             return App.displayList([
@@ -2280,7 +2280,7 @@ let App = {
                         return true;
                     },
                 },
-            ])
+            ], null, 'Settings')
         },
         open_stats: function(){
             const list = UI.genericListContainer();
@@ -2552,7 +2552,7 @@ let App = {
                         
                     }
                 }
-            ])
+            ], null, 'Feeding')
         },
         open_stats_menu: function(){
             const hasNewlyUnlockedAchievements = App.handlers.open_achievements_list(true);
@@ -2641,7 +2641,7 @@ let App = {
                         return true;
                     }
                 },
-            ])
+            ], null, 'Information')
         },
         open_profile: function(){
             const petTraitIcons = [
@@ -2676,7 +2676,7 @@ let App = {
                     </div>
                 </div>
                 <div class="user-id surface-stylized inner-padding text-transform-none">
-                    <div>
+                    <div class="flex flex-dir-col">
                         <small>uid:</small>
                         <span>${UID}</span>
                     </div>
@@ -3212,7 +3212,7 @@ let App = {
                 //         return true;
                 //     }
                 // },
-            ])
+            ], null, 'Activities')
         },
         open_friends_list: function(onClickOverride){
             if(!App.petDefinition.friends.length){
@@ -3557,7 +3557,7 @@ let App = {
                         return true;
                     }
                 }
-            ])
+            ], null, 'Phone')
         },
         open_social_media: function(){
             if(!App.temp.seenSocialMediaPosts){

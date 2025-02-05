@@ -29,6 +29,7 @@
 
 html {
     font-family: 'PixelOld', 'Pixel', serif;
+    word-spacing: -3px;
     /* letter-spacing: -2px; */
 }
 
