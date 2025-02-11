@@ -240,6 +240,7 @@ class PetDefinition {
 
     getSpritesheetDefinition(){
         this.spritesheet = this.spritesheetDefinitions[this.lifeStage + ''];
+        return this.spritesheet;
     }
     
     serializables = [
@@ -612,6 +613,8 @@ class PetDefinition {
     }
 
     static _getLifeStage(sprite){
+        if(sprite?.includes('animal')) return 0;
+
         if(PET_BABY_CHARACTERS.some(char => char === sprite)) return 0;
         else if(PET_TEEN_CHARACTERS.some(char => char === sprite)) return 1;
         return 2;
