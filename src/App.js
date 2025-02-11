@@ -562,6 +562,10 @@ let App = {
         let codeEventId = `input_code_event_${code}`;
 
         switch(code){
+            case "ERROR":
+                App.displayPopup(`Exec undefinedFunction`);
+                undefinedFunction();
+                break;
             case "XUZFWQ":
                 if(!addEvent(codeEventId, () => {
                     App.pet.stats.gold += 250;
