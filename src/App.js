@@ -338,6 +338,17 @@ let App = {
         setTimeout(() => {
             UI.fadeOut(document.querySelector('.loading-text'));
         })
+
+        // rudder stack
+        this.initRudderStack();
+    },
+    initRudderStack: function(){
+        rudderanalytics.identify(App.userId, {
+            username: App.userName,
+            petName: App.petDefinition?.name,
+            playTime: App.playTime,
+            isOnItch: App.isOnItch,
+        })
     },
     registerInputUpdates: function(){
         document.addEventListener('mousemove', (evt) => {
@@ -4636,6 +4647,10 @@ let App = {
         if(!force && App.ENV !== 'prod') return;
 
         if(!type) type = 'default';
+
+        rudderanalytics.track(
+            type, {value},
+        );
 
         if(App.isOnItch) type += '_itch';
         else if(App.isOnElectronClient) type += '_electron';
