@@ -4522,13 +4522,15 @@ let App = {
     },
     playSound: function(path, force){
         if(!App.settings.playSound) return;
-
+    
         if(this.audioChannelIsBusy && !force) return false;
 
-        if(this.audioElement.src != path)
-            this.audioElement.src = path;
-        this.audioElement.play();
-        this.audioChannelIsBusy = true;
+        try {
+            if(this.audioElement.src != path)
+                this.audioElement.src = path;
+            this.audioElement.play();
+            this.audioChannelIsBusy = true;
+        } catch(e) {}
     },
     save: function(noIndicator){
         // setCookie('pet', App.pet.serializeStats(), 365);
