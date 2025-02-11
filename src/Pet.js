@@ -16,6 +16,7 @@ class Pet extends Object2d {
     accessoryObjects = [];
     castShadow = true;
     speedOverride = 0;
+    calculateStats = false;
 
     constructor(petDefinition, additionalProps){
         const image = petDefinition.spriteSkin 
@@ -493,7 +494,7 @@ class Pet extends Object2d {
         }
     }
     statsManager(isOfflineProgression, hour){
-        if(!this.isMainPet || this.stats.is_dead) return;
+        if((!this.isMainPet && !this.calculateStats) || this.stats.is_dead) return;
         if(!hour) hour = App.hour;
 
         let stats = this.stats;

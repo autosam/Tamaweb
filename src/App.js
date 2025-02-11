@@ -104,6 +104,7 @@ let App = {
             ...PET_TEEN_CHARACTERS,
             ...PET_BABY_CHARACTERS,
             ...NPC_CHARACTERS,
+            ...ANIMAL_CHARACTERS,
         ];
         this.preloadedResources = {};
         const preloadedResources = await this.preloadImages(forPreload);
@@ -328,6 +329,13 @@ let App = {
 
         // missions
         Missions.init(loadedData.missions);
+
+        // pet animal
+        const animalDefinition = new PetDefinition({
+            name: getRandomName(),
+            sprite: randomFromArray(ANIMAL_CHARACTERS),
+        })
+        App.animal = new Pet(animalDefinition, {calculateStats: true, z: App.constants.ACTIVE_PET_Z + 0.01});
 
         // saver
         setInterval(() => {
