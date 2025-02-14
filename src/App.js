@@ -697,7 +697,7 @@ let App = {
             return;
         }
 
-        if(addEvent(`update_12_notice`, () => {
+        if(addEvent(`update_13_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
@@ -706,7 +706,7 @@ let App = {
                     bold: true,
                 },
                 {
-                    name: `Check out the new customizable furniture system, new items, accessories, rooms, potty training and much more!`,
+                    name: `Happy Valentine Day! Check out the new Valentine-themed items, rooms and furniture items!`,
                     type: 'text',
                 },
                 {
