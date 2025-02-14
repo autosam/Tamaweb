@@ -512,7 +512,7 @@ App.definitions = {
             price: 50,
             interaction_time: 8100,
             age: [0],
-            isNew: true,
+            isNew: false,
         },
         "grimoire": {
             sprite: 9,
@@ -520,7 +520,7 @@ App.definitions = {
             price: 200,
             interaction_time: 8000,
             interruptable: false,
-            isNew: true,
+            isNew: false,
             age: [1, 2],
         },
         "bear": {
@@ -529,7 +529,7 @@ App.definitions = {
             price: 180,
             interaction_time: 10000,
             interruptable: true,
-            isNew: true,
+            isNew: false,
         },
         "skate": {
             sprite: 11,
@@ -537,7 +537,7 @@ App.definitions = {
             price: 250,
             interaction_time: 30000,
             interruptable: true,
-            isNew: true,
+            isNew: false,
             onEnd: () => App.setScene(App.scene.home),
             age: [1, 2],
         },
@@ -652,53 +652,58 @@ App.definitions = {
         "gothic": {
             image: 'resources/img/background/house/cc_03.png',
             price: 300,
-            isNew: true,
+            isNew: false,
         },
         "arcade": {
             image: 'resources/img/background/house/cc_05.png',
             price: 200,
-            isNew: true,
+            isNew: false,
         },
-        /* "valentine": {
+        "valentine": {
             image: 'resources/img/background/house/cc_04.png',
             price: 350,
             isNew: true,
-        }, */
+        },
     },
 
     /* ROOM PLACEABLE FURNITURE */
     furniture: [
-        /* // valentine set
+        // valentine set
         {
             name: 'Valentine Bear',
             image: 'resources/img/furniture/bear_valentine.png',
             id: "bear_valentine",
             price: 200,
+            isNew: true,
         },
         {
             name: 'Valentine Heart',
             image: 'resources/img/furniture/broken_heart_valentine.png',
             id: "broken_heart_valentine",
             price: 160,
+            isNew: true,
         },
         {
             name: 'Valentine Cake',
             image: 'resources/img/furniture/cake_valentine.png',
             id: "cake_valentine",
             price: 120,
+            isNew: true,
         },
         {
             name: 'Valentine Gift',
             image: 'resources/img/furniture/gift_valentine.png',
             id: "gift_valentine",
             price: 120,
+            isNew: true,
         },
         {
             name: 'Valentine Chair',
             image: 'resources/img/furniture/chair_valentine.png',
             id: "chair_valentine",
             price: 150,
-        }, */
+            isNew: true,
+        },
 
         // gothic set
         {
@@ -924,20 +929,20 @@ App.definitions = {
         },
         {
             image: 'resources/img/ui/shell_background_13.png',
-            isNew: true,
+            isNew: false,
             isDefault: true,
         },
         {
             image: 'resources/img/ui/shell_background_12.png',
-            isNew: true,
+            isNew: false,
         },
         {
             image: 'resources/img/ui/shell_background_14.png',
-            isNew: true,
+            isNew: false,
         },
         {
             image: 'resources/img/ui/shell_background_15.png',
-            isNew: true,
+            isNew: false,
         },
         {
             image: 'resources/img/ui/shell_background_08.png',
@@ -1291,19 +1296,19 @@ App.definitions = {
             image: 'resources/img/accessory/demon_wings_01.png',
             front: false,
             price: 350,
-            isNew: true,
+            isNew: false,
         },
         'fork': {
             image: 'resources/img/accessory/fork_01.png',
             front: true,
             price: 250,
-            isNew: true,
+            isNew: false,
         },
         'gothic hat': {
             image: 'resources/img/accessory/gothic_hat_01.png',
             front: true,
             price: 350,
-            isNew: true,
+            isNew: false,
         },
         // end gothic
         'cupid wings': {
@@ -1311,16 +1316,16 @@ App.definitions = {
             image: 'resources/img/accessory/cupid_wings_01.png',
             front: false,
             price: 350,
-            isNew: true,
+            isNew: false,
         },
         'purple headphones': {
             image: 'resources/img/accessory/purple_headphones_01.png',
             front: true,
             price: 300,
-            isNew: true,
+            isNew: false,
         },
         // valentine
-        /* 'bear hat': {
+        'bear hat': {
             image: 'resources/img/accessory/bear_hat_01.png',
             front: true,
             price: 400,
@@ -1331,7 +1336,7 @@ App.definitions = {
             front: true,
             price: 350,
             isNew: true,
-        }, */
+        },
     },
 
     /* ACHIEVEMENTS */

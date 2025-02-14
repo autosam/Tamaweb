@@ -29,6 +29,7 @@
 
 html {
     font-family: 'PixelOld', 'Pixel', serif;
+    word-spacing: -3px;
     /* letter-spacing: -2px; */
 }
 
@@ -1466,6 +1467,21 @@ a.generic-btn:before {
     border-top-right-radius: 10px;
     border-bottom-right-radius: 10px;
     top: 5px */
+}
+
+.generic-btn.sticky-top {
+    position: sticky;
+    left: 0;
+    top: 0;
+    z-index: 2;
+    margin: -4px -4px 4px -4px;
+    border-radius: 0;
+}
+
+.generic-btn .ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
 }
 
 .generic-btn.stylizedd {

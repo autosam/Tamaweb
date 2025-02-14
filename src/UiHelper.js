@@ -77,12 +77,12 @@ const UI = {
             list.classList.add('menu-animation');
         }
         if(backFn !== false){
-            list.style.paddingTop = '32px';
+            list.style.paddingTop = '0';
             UI.create({
                 parent: list,
                 componentType: 'button',
                 innerHTML: ellipsis(backBtnName, 13),
-                className: 'back-btn generic-btn solid primary bold floating-top no-anim',
+                className: 'back-btn generic-btn solid primary bold sticky-top no-anim',
                 onclick: () => {
                     if(backFn) backFn();
                     list.close();
