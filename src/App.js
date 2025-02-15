@@ -30,6 +30,19 @@ let App = {
             rows: 10,
             columns: 10,
         },
+        PLANT_SPRITESHEET: 'resources/img/item/plants.png',
+        PLANT_SPRITESHEET_DIMENSIONS: {
+            cellNumber: 1,
+            cellSize: 24,
+            rows: 28,
+            columns: 28,
+        },
+        PLANT_AGE: {
+            seedling: 0,
+            tiny: 1,
+            grown: 2,
+            dead: 3,
+        },
         SLEEP_START: 21,
         SLEEP_END: 8,
         PARENT_DAYCARE_START: 8,
@@ -1060,6 +1073,58 @@ let App = {
             onUnload: () => {
                 this.fortuneTellerNpc?.removeObject();
                 this.underlay?.removeObject();
+            }
+        }),
+        garden_inner: new Scene({
+            image: 'resources/img/background/outside/garden_inner_01.png',
+            petY: '95%',
+            shadowOffset: -5,
+            onLoad: () => {
+                const {PLANT_AGE} = App.constants;
+                App.pet.staticShadow = false;
+                const gardenPlants = [
+                    ["red tulip", PLANT_AGE.grown],
+                    ["red tulip", PLANT_AGE.seedling],
+                    ["red tulip", PLANT_AGE.dead],
+                    ["red tulip", PLANT_AGE.tiny],
+                    ["red tulip", PLANT_AGE.grown],
+                    ["red tulip", PLANT_AGE.grown],
+                ]
+
+                const getPlantPosition = (i) => {
+                    const xOffset = 2;
+                    const maxCols = 3;
+                    return {
+                        x: (i % maxCols === 0) ? xOffset : xOffset + (24 * (i % maxCols)),
+                        y: 24 + (Math.floor(i / maxCols) * 20),
+                    }                
+                }
+
+                this.spawnedPlants = gardenPlants.map(([plantName, plantAge], i) => {
+                    const plantDefinition = App.definitions.plant[plantName];
+                    if(!plantDefinition){
+                        return console.log('plant not found:', plantName);
+                    }
+                    const position = getPlantPosition(i);
+                    const patch = new Object2d({
+                        img: 'resources/img/misc/garden_patch_01.png',
+                        x: position.x,
+                        y: position.y + 12,
+                    })
+                    const object = new Object2d({
+                        image: App.preloadedResources[App.constants.PLANT_SPRITESHEET],
+                        spritesheet: {
+                            ...App.constants.PLANT_SPRITESHEET_DIMENSIONS,
+                            cellNumber: plantDefinition.sprite + plantAge, // fix this
+                        },
+                        ...position,
+                    })
+                    return object;
+                })
+            },
+            onUnload: () => {
+                App.pet.staticShadow = true;
+                this.spawnedPlants?.forEach(o => o.removeObject());
             }
         }),
     },
