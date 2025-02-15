@@ -591,6 +591,13 @@ App.definitions = {
         },
     },
 
+    /* GARDENING PLANTS */
+    plant: {
+        "red tulip": {
+            sprite: 1,
+        },
+    },
+
     /* ROOM BACKGROUNDS */
     room_background: {
         "blue": {
