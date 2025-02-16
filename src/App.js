@@ -1056,6 +1056,7 @@ let App = {
     editFurniture(gameObject, callbackFn){
         if(!gameObject) return false;
 
+        App.toggleGameplayControls(false);
         const editDisplay = document.createElement('div');
         editDisplay.className = 'absolute-fullscreen'
         document.querySelector('.screen-wrapper').appendChild(editDisplay)
@@ -1110,6 +1111,7 @@ let App = {
         }
 
         const onEndFn = (state) => {
+            App.toggleGameplayControls(true);
             editDisplay.close();
             App.unregisterOnDrawEvent(onEditDrawEvent);
             gameObject.opacity = 1;
