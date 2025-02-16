@@ -1926,14 +1926,16 @@ let App = {
                                             </b>
                                         `
                                     }
-                                    content.querySelector('#add').onclick = () => {
-                                        App.settings.sleepingHoursOffset++;
+                                    const updateOffset = (amount) => {
+                                        App.settings.sleepingHoursOffset = clamp(
+                                            App.settings.sleepingHoursOffset + amount,
+                                            -24, 
+                                            24
+                                        );
                                         updateUI();
                                     }
-                                    content.querySelector('#subtract').onclick = () => {
-                                        App.settings.sleepingHoursOffset--;
-                                        updateUI();
-                                    }
+                                    content.querySelector('#add').onclick = () => updateOffset(1);
+                                    content.querySelector('#subtract').onclick = () => updateOffset(-1);
                                     updateUI();
 
                                     list.appendChild(content);
@@ -4467,9 +4469,7 @@ let App = {
         }
     },
     clampWithin24HourFormat: function(hour){
-        if(hour >= 24) return hour - 24;
-        else if(hour < 0) return hour + 24;
-        return hour;
+        return ((hour % 24) + 24) % 24;
     },
     getFoodCSprite: function(index){
         const {FOOD_SPRITESHEET_DIMENSIONS, FOOD_SPRITESHEET} = App.constants;
