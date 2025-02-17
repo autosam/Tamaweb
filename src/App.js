@@ -3497,7 +3497,7 @@ let App = {
                             {
                                 name: 'get code',
                                 onclick: () => {
-                                    let charCode = 'friend:' + btoa(JSON.stringify(window.localStorage));
+                                    let charCode = 'friend:' + btoa(encodeURIComponent(JSON.stringify(window.localStorage)));
                                     navigator.clipboard.writeText(charCode);
                                     console.log(charCode);
                                     App.displayConfirm(`Your friend code has been copied to the clipboard!`, [
@@ -3527,7 +3527,7 @@ let App = {
 
                                                 let b64 = rawCode.replace('friend:', '');
                                                 try {
-                                                    b64 = atob(b64);
+                                                    b64 = decodeURIComponent(atob(b64));
                                                     let json = JSON.parse(b64);
                                                     if(!json.pet){
                                                         throw 'error';
