@@ -70,9 +70,15 @@ const Missions = {
         }
     },
     refresh: function(){
+        const oneDayInMs = 1000 * 60 * 60 * 24;
+
         this.current = [];
         this.currentStep = 0;
-        this.refreshTime = (this.refreshTime || Date.now()) + (1000 * 60 * 60 * 24); // resets in 24hrs
+        if(!this.refreshTime) this.refreshTime = Date.now() + oneDayInMs;
+        else while(this.refreshTime < Date.now()) { // resets in 24hrs
+            this.refreshTime += oneDayInMs;
+        }
+        
         for(let i = 0; i < 8; i++){
             let type;
             while(!type || this.current.find(m => m.type === type)){

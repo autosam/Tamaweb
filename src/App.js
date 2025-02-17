@@ -1056,6 +1056,7 @@ let App = {
     editFurniture(gameObject, callbackFn){
         if(!gameObject) return false;
 
+        App.toggleGameplayControls(false);
         const editDisplay = document.createElement('div');
         editDisplay.className = 'absolute-fullscreen'
         document.querySelector('.screen-wrapper').appendChild(editDisplay)
@@ -1110,6 +1111,7 @@ let App = {
         }
 
         const onEndFn = (state) => {
+            App.toggleGameplayControls(true);
             editDisplay.close();
             App.unregisterOnDrawEvent(onEditDrawEvent);
             gameObject.opacity = 1;
@@ -1157,6 +1159,7 @@ let App = {
             ])
         };
 
+        App.sendAnalytics('edit_furniture');
         return true;
     },
     applySky() {
@@ -1924,14 +1927,16 @@ let App = {
                                             </b>
                                         `
                                     }
-                                    content.querySelector('#add').onclick = () => {
-                                        App.settings.sleepingHoursOffset++;
+                                    const updateOffset = (amount) => {
+                                        App.settings.sleepingHoursOffset = clamp(
+                                            App.settings.sleepingHoursOffset + amount,
+                                            -24, 
+                                            24
+                                        );
                                         updateUI();
                                     }
-                                    content.querySelector('#subtract').onclick = () => {
-                                        App.settings.sleepingHoursOffset--;
-                                        updateUI();
-                                    }
+                                    content.querySelector('#add').onclick = () => updateOffset(1);
+                                    content.querySelector('#subtract').onclick = () => updateOffset(-1);
                                     updateUI();
 
                                     list.appendChild(content);
@@ -3493,7 +3498,7 @@ let App = {
                             {
                                 name: 'get code',
                                 onclick: () => {
-                                    let charCode = 'friend:' + btoa(JSON.stringify(window.localStorage));
+                                    let charCode = 'friend:' + btoa(encodeURIComponent(JSON.stringify(window.localStorage)));
                                     navigator.clipboard.writeText(charCode);
                                     console.log(charCode);
                                     App.displayConfirm(`Your friend code has been copied to the clipboard!`, [
@@ -3523,7 +3528,7 @@ let App = {
 
                                                 let b64 = rawCode.replace('friend:', '');
                                                 try {
-                                                    b64 = atob(b64);
+                                                    b64 = decodeURIComponent(atob(b64));
                                                     let json = JSON.parse(b64);
                                                     if(!json.pet){
                                                         throw 'error';
@@ -4465,9 +4470,7 @@ let App = {
         }
     },
     clampWithin24HourFormat: function(hour){
-        if(hour >= 24) return hour - 24;
-        else if(hour < 0) return hour + 24;
-        return hour;
+        return ((hour % 24) + 24) % 24;
     },
     getFoodCSprite: function(index){
         const {FOOD_SPRITESHEET_DIMENSIONS, FOOD_SPRITESHEET} = App.constants;
