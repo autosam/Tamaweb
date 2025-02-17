@@ -1159,6 +1159,7 @@ let App = {
             ])
         };
 
+        App.sendAnalytics('edit_furniture');
         return true;
     },
     applySky() {
