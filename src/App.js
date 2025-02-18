@@ -330,13 +330,6 @@ let App = {
         // missions
         Missions.init(loadedData.missions);
 
-        // pet animal
-        const animalDefinition = new PetDefinition({
-            name: getRandomName(),
-            sprite: randomFromArray(ANIMAL_CHARACTERS),
-        })
-        App.animal = new Pet(animalDefinition, {calculateStats: true, z: App.constants.ACTIVE_PET_Z + 0.01});
-
         // saver
         setInterval(() => {
             App.save(true);
@@ -988,9 +981,11 @@ let App = {
             petY: '95%',
             shadowOffset: -5,
             onLoad: () => {
+                App.handleAnimalSpawn(true);
                 App.pet.staticShadow = false;
             },
             onUnload: () => {
+                App.handleAnimalSpawn(false);
                 App.pet.staticShadow = true;
             }
         }),
@@ -1170,6 +1165,27 @@ let App = {
         App.sendAnalytics('edit_furniture');
         return true;
     },
+    handleAnimalSpawn(state) {
+        if(!state){
+            return this._spawnedAnimals?.forEach?.(p => p.removeObject?.());
+        }
+
+        const animals = [ // mock
+            {
+                name: getRandomName(),
+                sprite: ANIMAL_CHARACTERS[0],
+            },
+            {
+                name: getRandomName(),
+                sprite: ANIMAL_CHARACTERS[1],
+            }
+        ];
+        
+        this._spawnedAnimals = animals?.map(def => {
+            const petDef = new PetDefinition(def);
+            return App.createAnimal(petDef);
+        })
+    },
     applySky() {
         const { AFTERNOON_TIME, EVENING_TIME, NIGHT_TIME } = App.constants;
         const date = new Date();
@@ -1306,13 +1322,20 @@ let App = {
             ...props
         });
     },
+    createAnimal: function(petDef){
+        petDef.stats.speed = 0.035;
+        petDef.stats.wander_min = 0.5;
+        petDef.stats.wander_max = 2;
+        petDef.maxStats();
+        return new Animal(petDef);
+    },
     queueEvent: function(payloadFn){
         const checkForDecentTime = () => {
             if(
                 App.pet.isDuringScriptedState() || 
                 App.haveAnyDisplays() || 
                 App.pet.stats.is_egg || 
-                App.pet.stats.is_dead || 
+                App.pet.stats.is_dead ||
                 App.pet.stats.is_at_parents ||
                 App.currentScene !== App.scene.home
             )
