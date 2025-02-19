@@ -407,31 +407,10 @@ class PetDefinition {
     }
 
     ageUp(isNpc){
-        const careRating = !isNpc ? this.stats.current_care : random(1, 3);
-        let possibleEvolutions = GROWTH_CHART[this.sprite];
-        if(!possibleEvolutions){
-            possibleEvolutions = GROWTH_CHART[randomFromArray(Object.keys(GROWTH_CHART))]
-        }
+        const evolutions = this.getPossibleEvolutions(isNpc);
+        if(!evolutions) return false;
 
-        switch(this.lifeStage){
-            case 0:
-                let targetEvolutions;
-                switch(careRating){
-                    case 1: targetEvolutions = possibleEvolutions.slice(0, 2); break; // low care
-                    case 3: targetEvolutions = possibleEvolutions.slice(5); break; // high care
-                    default: targetEvolutions = possibleEvolutions.slice(2, 5); // default medium care
-                }
-                this.sprite = randomFromArray(targetEvolutions);
-                break;
-            case 1:
-                switch(careRating){
-                    case 1: this.sprite = possibleEvolutions[0]; break; // low care
-                    case 3: this.sprite = possibleEvolutions[2]; break; // high care
-                    default: this.sprite = possibleEvolutions[1]; // default medium care
-                }
-                break;
-            case 2: return;
-        }
+        this.sprite = randomFromArray(evolutions);
 
         this.lastBirthday = new Date();
         this.prepareSprite();
@@ -441,6 +420,31 @@ class PetDefinition {
         })
 
         return true;
+    }
+
+    getPossibleEvolutions(isNpc){
+        const careRating = !isNpc ? this.stats.current_care : random(1, 3);
+        let possibleEvolutions = GROWTH_CHART[this.sprite];
+        if(!possibleEvolutions){
+            possibleEvolutions = GROWTH_CHART[randomFromArray(Object.keys(GROWTH_CHART))]
+        }
+
+        switch(this.lifeStage){
+            case 0:
+                switch(careRating){
+                    case 1: return possibleEvolutions.slice(0, 2); // low care
+                    case 3: return possibleEvolutions.slice(5); // high care
+                    default: return possibleEvolutions.slice(2, 5); // default medium care
+                }
+            case 1:
+                switch(careRating){
+                    case 1: return [possibleEvolutions[0]]; // low care
+                    case 3: return [possibleEvolutions[2]]; // high care
+                    default: return [possibleEvolutions[1]]; // default medium care
+                }
+        }
+
+        return false;
     }
 
     addFriend(friendDef, friendship){
