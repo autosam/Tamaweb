@@ -299,6 +299,7 @@ class PetDefinition {
             s[serializable] = this[serializable];
         });
 
+        return s;
         if(noStringify) return s;
         return JSON.stringify(s);
     }
