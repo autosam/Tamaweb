@@ -2261,7 +2261,7 @@ let App = {
                                 onclick: (data) => {
                                     if(!data) return true;
                                     App.displayPopup(`<b>Suggestion sent!</b><br> thanks for participating!`, 4000);
-                                    App.sendAnalytics('game_feedback', data, true);
+                                    App.sendFeedback(data);
                                 },
                             },
                             {
@@ -4659,9 +4659,18 @@ let App = {
         if(App.isOnItch) type += '_itch';
         else if(App.isOnElectronClient) type += '_electron';
 
-        let user = (App.userName ? App.userName + '-' : '') + App.userId;
-        let url = `https://docs.google.com/forms/d/e/1FAIpQLSfzl5hhhnV3IAdxuA90ieEaeBAhCY9Bh4s151huzTMeByMwiw/formResponse?usp=pp_url&entry.1384465975=${user}&entry.1653037117=${App.petDefinition?.name || ''}&entry.1322693089=${type}&entry.1403809294=${value || ''}`;
+        const user = (App.userName ? App.userName + '-' : '') + App.userId;
+        const url = `https://docs.google.com/forms/d/e/1FAIpQLSfzl5hhhnV3IAdxuA90ieEaeBAhCY9Bh4s151huzTMeByMwiw/formResponse?usp=pp_url&entry.1384465975=${user}&entry.1653037117=${App.petDefinition?.name || ''}&entry.1322693089=${type}&entry.1403809294=${value || ''}`;
 
+        fetch(url).catch(e => {});
+    },
+    sendFeedback: function(text){
+        if(!text) return;
+
+        const sendingText = `[game:${VERSION}-pl:${App.isOnItch ? 'itch' : 'web'}]: ${text}`;
+
+        const user = (App.userName ? App.userName + '-' : '') + App.userId;
+        const url = `https://docs.google.com/forms/d/e/1FAIpQLSenonpIhjHL8BYJbnOHqF2KudJiDciEveJG56BdGsvJ01-rTA/formResponse?usp=pp_url&entry.1753365981=${user}&entry.233513152=${sendingText}`;
         fetch(url).catch(e => {});
     },
     installAsPWA: function() { 
