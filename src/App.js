@@ -77,8 +77,17 @@ let App = {
         if(location.host.indexOf('itch') !== -1) App.isOnItch = true;
         if(navigator?.userAgent == 'electron-client') App.isOnElectronClient = true;
 
+        // localforage store
+        App.dbStore = localforage.createInstance({
+            name: "tamaweb-store"
+        });
+
         // load data
-        let loadedData = this.load();
+        let loadedData = await this.load();
+        if(!loadedData.lastTime){
+            console.log('legacy: loading from localStorage');
+            loadedData = this.legacy_load();
+        }
         console.log({loadedData});
 
         // shell background
@@ -619,8 +628,7 @@ let App = {
                             if(!json.pet){
                                 throw 'error';
                             }
-                            let petDef = JSON.parse(json.pet);
-                            console.log(json.user_id, App.userId, json.user_id === App.userId);
+                            let petDef = json.pet;
     
                             let def = new PetDefinition().loadStats(petDef);
                             
@@ -636,11 +644,14 @@ let App = {
                                                         {
                                                             name: 'yes',
                                                             onclick: () => {
-                                                                App.loadFromJson(json);
-                                                                App.displayPopup(`${def.name} is now your pet!`, App.INF);
-                                                                setTimeout(() => {
-                                                                    location.reload();  
-                                                                }, 3000);
+                                                                App.displayPopup('Loading...', App.INF);
+
+                                                                App.loadFromJson(json, () => {
+                                                                    App.displayPopup(`${def.name} is now your pet!`, App.INF);
+                                                                    setTimeout(() => {
+                                                                        location.reload();  
+                                                                    }, 3000);
+                                                                });
                                                             }
                                                         },
                                                         {
@@ -2172,9 +2183,13 @@ let App = {
                 { type: 'separator' },
                 {
                     name: 'get save code',
-                    onclick: () => {
+                    onclick: async () => {
                         // let charCode = 'save:' + btoa(JSON.stringify(window.localStorage));
-                        let charCode = `save:${btoa(encodeURIComponent(JSON.stringify(window.localStorage)))}:endsave`;
+                        // let charCode = `save:${btoa(encodeURIComponent(JSON.stringify(window.localStorage)))}:endsave`;
+                        const loadingPopup = App.displayPopup('loading...');
+                        const storage = await App.getDBItems();
+                        loadingPopup.close();
+                        const charCode = `save:${btoa(encodeURIComponent(JSON.stringify(storage)))}:endsave`;
                         App.displayConfirm(`Here you'll be able to copy your unique save code and continue your playthrough on another device`, [
                             {
                                 name: 'ok',
@@ -2215,13 +2230,17 @@ let App = {
                         App.displayConfirm('Are you sure you want to delete your saved pet?', [
                             {
                                 name: 'yes (delete)',
-                                onclick: () => {
+                                onclick: async () => {
                                     App.save();
                                     App.save = () => {};
-                                    // window.localStorage.clear();
                                     window.localStorage.removeItem('last_time');
                                     window.localStorage.removeItem('pet');
+
                                     App.displayPopup('resetting...', App.INF);
+
+                                    await App.dbStore.removeItem('last_time');
+                                    await App.dbStore.removeItem('pet');
+
                                     location.reload();
                                     return false;
                                 }
@@ -2245,10 +2264,11 @@ let App = {
                                     App.displayConfirm('Are you sure? There is no way to revert this.', [
                                         {
                                             name: 'yes (delete)',
-                                            onclick: () => {
+                                            onclick: async () => {
                                                 App.save = () => {};
-                                                window.localStorage.clear();
+                                                // window.localStorage.clear();
                                                 App.displayPopup('resetting...', App.INF);
+                                                await App.dbStore.clear();
                                                 location.reload();
                                                 return false;
                                             }
@@ -4622,7 +4642,7 @@ let App = {
     },
     save: function(noIndicator){
         const setItem = (key, value) => {
-            localforage.setItem(key, value);
+            return App.dbStore.setItem(key, value);
         }
         // setCookie('pet', App.pet.serializeStats(), 365);
         setItem('pet', JSON.parse(App.pet.serializeStats()));
@@ -4655,51 +4675,45 @@ let App = {
             setTimeout(() => saveIcon.style.display = 'none', 2000);
         }
     },
-    load: function(){
-        const getItem = (key) => {
-            return localforage.getItem(key);
-        }
+    legacy_load: function(){
+        let pet = window.localStorage.getItem('pet');
+            pet = pet ? JSON.parse(pet) : {};
 
-        (async () => {
-            let pet = getItem('pet');
-                pet = pet ? JSON.parse(pet) : {};
-    
-            let settings = getItem('settings');
-                settings = settings ? JSON.parse(settings) : null;
-    
-            let lastTime = getItem('last_time') || false;
-    
-            let eventsHistory = getItem('ingame_events_history');
-                eventsHistory = eventsHistory ? JSON.parse(eventsHistory) : null;
-    
-            let roomCustomizations = getItem('room_customization');
-            roomCustomizations = roomCustomizations ? JSON.parse(roomCustomizations) : null;
-    
-            let mods = getItem('mods');
-            mods = mods ? JSON.parse(mods) : App.mods;
-    
-            let records = getItem('records');
-            records = records ? JSON.parse(records) : App.records;
-    
-            // user
-            let userId = getItem('user_id') || random(100000000000, 999999999999);
-            App.userId = userId;
-            let userName = getItem('user_name');
-            App.userName = userName == 'null' ? null : userName;
-            
-            App.playTime = parseInt(getItem('play_time') || 0);
-    
-            let shellBackground = 
-                getItem('shell_background_v2.1') || 
-                App.definitions.shell_background.find(shell => shell.isDefault).image ||
-                App.definitions.shell_background[1].image;
-    
-            let missions = getItem('missions');
-            missions = missions ? JSON.parse(missions) : {};
-    
-            let furniture = getItem('furniture');
-            furniture = furniture ? JSON.parse(furniture) : false;
-        })()
+        let settings = window.localStorage.getItem('settings');
+            settings = settings ? JSON.parse(settings) : null;
+
+        let lastTime = window.localStorage.getItem('last_time') || false;
+
+        let eventsHistory = window.localStorage.getItem('ingame_events_history');
+            eventsHistory = eventsHistory ? JSON.parse(eventsHistory) : null;
+
+        let roomCustomizations = window.localStorage.getItem('room_customization');
+        roomCustomizations = roomCustomizations ? JSON.parse(roomCustomizations) : null;
+
+        let mods = window.localStorage.getItem('mods');
+        mods = mods ? JSON.parse(mods) : App.mods;
+
+        let records = window.localStorage.getItem('records');
+        records = records ? JSON.parse(records) : App.records;
+
+        // user
+        let userId = window.localStorage.getItem('user_id') || random(100000000000, 999999999999);
+        App.userId = userId;
+        let userName = window.localStorage.getItem('user_name');
+        App.userName = userName == 'null' ? null : userName;
+        
+        App.playTime = parseInt(window.localStorage.getItem('play_time') || 0);
+
+        let shellBackground = 
+            window.localStorage.getItem('shell_background_v2.1') || 
+            App.definitions.shell_background.find(shell => shell.isDefault).image ||
+            App.definitions.shell_background[1].image;
+
+        let missions = window.localStorage.getItem('missions');
+        missions = missions ? JSON.parse(missions) : {};
+
+        let furniture = window.localStorage.getItem('furniture');
+        furniture = furniture ? JSON.parse(furniture) : false;
 
         App.loadedData = {
             pet, 
@@ -4717,7 +4731,62 @@ let App = {
 
         return App.loadedData;
     },
-    loadFromJson: function(json){
+    load: async function() {
+        const getItem = async (key, defaultValue) => {
+            const value = await App.dbStore.getItem(key);
+            return value !== null ? value : defaultValue;
+        }
+    
+        const lastTime = await getItem('last_time', false);
+        const pet = await getItem('pet', {});
+        const settings = await getItem('settings', null);
+        const eventsHistory = await getItem('ingame_events_history', null);
+        const roomCustomizations = await getItem('room_customization', null);
+        const mods = await getItem('mods', App.mods);
+        const records = await getItem('records', App.records);
+    
+        const userId = await getItem('user_id', random(100000000000, 999999999999));
+        App.userId = userId;
+    
+        const userName = await getItem('user_name', null);
+        App.userName = userName == 'null' ? null : userName;
+    
+        App.playTime = parseInt(await getItem('play_time', 0), 10);
+    
+        const shellBackground = await getItem('shell_background_v2.1', 
+            App.definitions.shell_background.find(shell => shell.isDefault).image ||
+            App.definitions.shell_background[1].image);
+    
+        const missions = await getItem('missions', {});
+        const furniture = await getItem('furniture', false);
+    
+        App.loadedData = {
+            pet,
+            settings,
+            lastTime,
+            eventsHistory,
+            roomCustomizations,
+            shellBackground,
+            playTime: App.playTime,
+            mods,
+            records,
+            missions,
+            furniture
+        };
+    
+        return App.loadedData;
+    },
+    getDBItems: async function(){
+        const keys = await App.dbStore.keys();
+        const items = {};
+
+        for (const key of keys) {
+            items[key] = await App.dbStore.getItem(key);
+        }
+    
+        return items;
+    },
+    loadFromJson: async function(json, callbackFn){
         const ignoreKeys = [
             'user_name',
             'user_id',
@@ -4729,14 +4798,17 @@ let App = {
         App.save = () => {};
         for(let key of Object.keys(json)){
             if(ignoreKeys.includes(key)) continue;
-            window.localStorage.setItem(key, json[key]);
+            await App.dbStore.setItem(key, json[key]);
         }
         const allowedKeys = [...Object.keys(json), ...ignoreKeys];
-        Object.keys(localStorage).forEach(key => {
+        const currentKeys = await App.dbStore.keys();
+        for(let key of currentKeys){
             if(!allowedKeys.includes(key)){
-                window.localStorage.removeItem(key);
+                await App.dbStore.removeItem(key);
             }
-        })
+        }
+
+        callbackFn?.();
     },
     vibrate: function(dur){
         if(!navigator?.vibrate || !App.settings.vibrate) return;
