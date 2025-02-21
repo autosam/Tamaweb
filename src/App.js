@@ -991,6 +991,28 @@ let App = {
         skate_park: new Scene({
             image: 'resources/img/background/outside/skatepark_01.png',
         }),
+        fortune_teller: new Scene({
+            image: 'resources/img/background/house/fortune_teller_01.png',
+            onLoad: () => {
+                const npcDef = new PetDefinition({
+                    sprite: 'resources/img/character/chara_362b.png',
+                    accessories: ['witch hat'],
+                })
+                this.fortuneTellerNpc = new Pet(npcDef);
+                this.fortuneTellerNpc.stopMove();
+                this.fortuneTellerNpc.x = '80%';
+                this.fortuneTellerNpc.triggerScriptedState('idle', App.INF, false, true);
+
+                this.underlay = new Object2d({
+                    img: 'resources/img/background/house/fortune_teller_01_underlay.png',
+                    z: App.constants.BACKGROUND_Z - 1, x: 0, y: 0,
+                })
+            },
+            onUnload: () => {
+                this.fortuneTellerNpc?.removeObject();
+                this.underlay?.removeObject();
+            }
+        }),
     },
     setScene(scene){
         App.currentScene?.onUnload?.(scene);
