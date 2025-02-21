@@ -576,6 +576,10 @@ class PetDefinition {
         else this.stats.current_care -= 1;
         this.stats.current_care = clamp(this.stats.current_care, 1, this.stats.max_care);
     }
+    getCharHash(){
+        const sprite = this.sprite.split('/').at(-1) || this.sprite;
+        return hashCode(sprite);
+    }
 
     spritesheetDefinitions = {
         '0': { // baby
@@ -623,5 +627,14 @@ class PetDefinition {
 
     static getCharCode(sprite){
         return sprite.replace(/\D+/g, '');
+    }
+
+    static getOffspringSprite(petA, petB, spritesArray = PET_BABY_CHARACTERS){
+        const seed = (petA.getCharHash() + petB.getCharHash());
+        pRandom.save();
+        pRandom.seed = seed;
+        const sprite = pRandomFromArray(spritesArray) || spritesArray[0];
+        pRandom.load();
+        return sprite;
     }
 }
