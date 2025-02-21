@@ -37,6 +37,8 @@ const SPRITES = [
     "background/house/dark_overlay.png",
     "background/house/ex_01.png",
     "background/house/ex_01_fs.png",
+    "background/house/fortune_teller_01.png",
+    "background/house/fortune_teller_01_underlay.png",
     "background/house/furnishable/02.png",
     "background/house/furnishable/03.png",
     "background/house/furnishable/04.png",
