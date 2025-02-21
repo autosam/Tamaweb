@@ -2232,8 +2232,6 @@ let App = {
                                 onclick: async () => {
                                     App.save();
                                     App.save = () => {};
-                                    window.localStorage.removeItem('last_time');
-                                    window.localStorage.removeItem('pet');
 
                                     App.displayPopup('resetting...', App.INF);
 
@@ -2265,7 +2263,6 @@ let App = {
                                             name: 'yes (delete)',
                                             onclick: async () => {
                                                 App.save = () => {};
-                                                // window.localStorage.clear();
                                                 App.displayPopup('resetting...', App.INF);
                                                 await App.dbStore.clear();
                                                 location.reload();
@@ -4644,7 +4641,7 @@ let App = {
             return App.dbStore.setItem(key, value);
         }
         // setCookie('pet', App.pet.serializeStats(), 365);
-        setItem('pet', JSON.parse(App.pet.serializeStats()));
+        setItem('pet', App.pet.serializeStats());
         setItem('settings', (App.settings));
         setItem('last_time', Date.now());
         // setItem('last_time', Date.now() - 86400 * 1000 * 10);
@@ -4736,9 +4733,9 @@ let App = {
             return value !== null ? value : defaultValue;
         }
     
-        const lastTime = await getItem('last_time', false);
         const pet = await getItem('pet', {});
         const settings = await getItem('settings', null);
+        const lastTime = await getItem('last_time', false);
         const eventsHistory = await getItem('ingame_events_history', null);
         const roomCustomizations = await getItem('room_customization', null);
         const mods = await getItem('mods', App.mods);
