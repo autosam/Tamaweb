@@ -3194,9 +3194,59 @@ let App = {
                 {
                     name: `game center`,
                     onclick: () => {
-                        // App.handlers.open_game_list();
                         Activities.goToArcade();
-                        // return true;
+                    }
+                },
+                {
+                    name: `fortune teller ${App.getBadge()}`,
+                    onclick: () => {
+                        return App.displayList([
+                            {
+                                _disable: App.petDefinition.lifeStage === 2,
+                                name: 'Next Evolution',
+                                onclick: () => {
+                                    return App.displayConfirm(`Do you want to see ${App.petDefinition.name}'s <b>next possible life stage(s)</b> based on the current <b>care rating</b>?`, [
+                                        {
+                                            name: 'yes ($100)',
+                                            onclick: () => {
+                                                if(!App.pay(100)) return;
+                                                App.closeAllDisplays();
+                                                Activities.goToFortuneTeller();
+                                            }
+                                        },
+                                        {
+                                            name: 'no',
+                                            class: 'back-btn',
+                                            onclick: () => {}
+                                        }
+                                    ])
+                                }
+                            },
+                            {
+                                _disable: App.petDefinition.lifeStage !== 2,
+                                name: 'Offspring with ...',
+                                onclick: () => {
+                                    App.handlers.open_friends_list((friendDef) => {
+                                        return App.displayConfirm(`Do you want to see ${friendDef.name} and ${App.petDefinition.name}'s baby <b>offspring</b>?`, [
+                                            {
+                                                name: 'yes ($100)',
+                                                onclick: () => {
+                                                    if(!App.pay(100)) return;
+                                                    App.closeAllDisplays();
+                                                    Activities.goToFortuneTeller(friendDef);
+                                                }
+                                            },
+                                            {
+                                                name: 'no',
+                                                class: 'back-btn',
+                                                onclick: () => {}
+                                            }
+                                        ])
+                                    })
+                                    return true;
+                                }
+                            }
+                        ])
                     }
                 },
                 {
@@ -4691,6 +4741,14 @@ let App = {
     addNumToObject: function(obj, key, amount){
         if(!obj[key]) obj[key] = amount;
         else obj[key] += amount;
+    },
+    pay: function(amount){
+        if(App.pet.stats.gold < amount){
+            App.displayPopup(`Don't have enough gold!`);
+            return false;
+        }
+        App.pet.stats.gold -= amount;
+        return true;
     },
     useWebcam: function(callback, facingMode, shutterDelay){
         if(!facingMode) facingMode = 'environment';
