@@ -35,6 +35,7 @@ class Activities {
             setTimeout(() => target = 0, 4000);
             pet.onDraw = (me) => {
                 me.opacity = lerp(me.opacity, target, 0.0025 * App.nDeltaTime);
+                Object2d.animations.bob(me, 0.005, 0.1);
             }
         }
 
