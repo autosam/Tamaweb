@@ -216,17 +216,9 @@ class Activities {
         App.toggleGameplayControls(false, () => {
             return App.displayList([
                 {
-                    name: '<small> coming soon... </small>',
-                    type: 'text',
-                },
-                {
-                    name: '<i class="icon fa-solid fa-home"></i> go inside',
+                    name: '<i class="icon fa-solid fa-arrow-left"></i> backyard',
                     onclick: () => {
-                        App.setScene(App.scene.home);
-                        App.toggleGameplayControls(true);
-                        App.pet.stopScriptedState();
-                        App.pet.x = '0%';
-                        App.pet.targetX = 50;
+                        Activities.goToGarden();
                     }
                 }
             ])
@@ -240,8 +232,10 @@ class Activities {
         App.toggleGameplayControls(false, () => {
             return App.displayList([
                 {
-                    name: '<small> coming soon... </small>',
-                    type: 'text',
+                    name: 'Garden',
+                    onclick: () => {
+                        Activities.goToInnerGarden();
+                    }
                 },
                 {
                     name: '<i class="icon fa-solid fa-home"></i> go inside',

@@ -1112,6 +1112,7 @@ let App = {
                         y: position.y + 12,
                     })
                     const object = new Object2d({
+                        parent: patch,
                         image: App.preloadedResources[App.constants.PLANT_SPRITESHEET],
                         spritesheet: {
                             ...App.constants.PLANT_SPRITESHEET_DIMENSIONS,
@@ -1119,7 +1120,7 @@ let App = {
                         },
                         ...position,
                     })
-                    return object;
+                    return patch;
                 })
             },
             onUnload: () => {
@@ -1764,7 +1765,6 @@ let App = {
                     }
                 },
                 {
-                    _ignore: true,
                     name: `backyard ${App.getBadge()}`,
                     onclick: () => {
                         Activities.goToGarden();
