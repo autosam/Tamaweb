@@ -1050,7 +1050,9 @@ class Pet extends Object2d {
                 })
                 break;
             case App.constants.WANT_TYPES.playdate:
-                const friendDef = this.petDefinition.friends[item];
+                const friendDef = item instanceof PetDefinition 
+                    ? item 
+                    : this.petDefinition.friends[item];
                 if(!friendDef) break;
                 new Object2d({
                     parent: bubble,
