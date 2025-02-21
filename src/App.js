@@ -1242,9 +1242,10 @@ let App = {
         parentB.stats.is_player_family = true;
 
         // new pet
+        const sprite = PetDefinition.getOffspringSprite(parentA, parentB);
         newPetDefinition = new PetDefinition({
             name: getRandomName(),
-            sprite: randomFromArray(PET_BABY_CHARACTERS),
+            sprite,
         }).setStats({is_egg: true});
 
         newPetDefinition.friends = [
