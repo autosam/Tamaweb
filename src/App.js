@@ -3257,7 +3257,7 @@ let App = {
                                                 onclick: () => {}
                                             }
                                         ])
-                                    })
+                                    }, true);
                                     return true;
                                 }
                             }
@@ -3306,13 +3306,17 @@ let App = {
                 // },
             ], null, 'Activities')
         },
-        open_friends_list: function(onClickOverride){
-            if(!App.petDefinition.friends.length){
+        open_friends_list: function(onClickOverride, excludeFamily){
+            const friends = excludeFamily
+                ? App.petDefinition.friends.filter(p => !p.stats.is_player_family)
+                : App.petDefinition.friends;
+
+            if(!friends.length){
                 App.displayPopup(`${App.petDefinition.name} doesn't have any friends right now<br><br><small>Visit the park to find new friends<small>`, 4000);
                 return;
             }
 
-            const friendsList = App.displayList(App.petDefinition.friends.map((friendDef, index) => {
+            const friendsList = App.displayList(friends.map((friendDef, index) => {
                 const name = friendDef.name || 'Unknown';
                 const icon = friendDef.getCSprite();
                 return {

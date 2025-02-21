@@ -512,7 +512,7 @@ class Activities {
                                     username: query
                                 }));
                                 
-                                if(!data.status) return App.displayPopup(`Username not found <br> <small>(Make sure you are searching for user id not pet name)</small>`);
+                                if(!data.status) return App.displayPopup(`Username not found <br> <small>(Make sure you are searching for user id, not pet name)</small>`);
 
                                 if(data.data === hasUploadedPetDef.data) {
                                     return App.displayPopup(`Something went wrong!`);
@@ -657,13 +657,16 @@ class Activities {
                         `,
                     },
                     {
-                        _ignore: hasUploadedPetDef.status,
                         name: 'Upload character',
                         onclick: handleUploadCharacter
                     },
                     {
                         name: '<i class="icon fa-solid fa-home"></i> return home',
                         onclick: handleReturnHome
+                    },
+                    {
+                        name: `Hubchi is an online hub for players to interact with each other and win rewards!`,
+                        type: 'info'
                     },
                 ])
             }
