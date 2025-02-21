@@ -1,4 +1,66 @@
 class Activities {
+    static async goToFortuneTeller(otherPetDef = App.getRandomPetDef()){
+        App.toggleGameplayControls(false);
+        App.setScene(App.scene.fortune_teller);
+
+        let evolutions = App.petDefinition.getPossibleEvolutions();
+
+        if(!evolutions){
+            evolutions = [PetDefinition.getOffspringSprite(App.petDefinition, otherPetDef)];
+            
+            App.pet.showThought(App.constants.WANT_TYPES.playdate, otherPetDef);
+        }
+
+        const petsToReveal = evolutions.map((sprite) => {
+            const pet = new Pet(
+                new PetDefinition({
+                    sprite,
+                }),
+                {
+                    x: '50%',
+                    y: '55%',
+                    z: App.constants.BACKGROUND_Z - 1,
+                    opacity: 0,
+                    castShadow: false,
+                }
+            );
+
+            pet.triggerScriptedState('idle', App.INF, 0, true);
+
+            return pet;
+        })
+
+        const fadeInAndOut = (pet) => {
+            let target = 1;
+            setTimeout(() => target = 0, 4000);
+            pet.onDraw = (me) => {
+                me.opacity = lerp(me.opacity, target, 0.0025 * App.nDeltaTime);
+            }
+        }
+
+        App.pet.stopMove();
+        App.pet.x = -30;
+        App.pet.targetX = 50;
+        App.pet.triggerScriptedState('moving', 3000, null, true, () => {
+            App.pet.x = '20%';
+            App.pet.inverted = true;
+            App.pet.triggerScriptedState('idle', 2000, null, true, () => {
+                const delayBetweenReveals = 6000;
+                const maxWaitTime = petsToReveal.length * delayBetweenReveals;
+                App.pet.triggerScriptedState('shocked', maxWaitTime, null, true, () => {
+                    App.pet.playCheeringAnimation(() => {
+                        petsToReveal.forEach(p => p?.removeObject());
+                        App.setScene(App.scene.home);
+                        App.toggleGameplayControls(true);
+                    }, true);
+                });
+                petsToReveal.forEach((p, i) => {
+                    setTimeout(() => fadeInAndOut(p), i * delayBetweenReveals);
+                });
+
+            });
+        });
+    }
     static async useItem(item){
         App.closeAllDisplays();
         
