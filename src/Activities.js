@@ -53,7 +53,7 @@ class Activities {
                         petsToReveal.forEach(p => p?.removeObject());
                         App.setScene(App.scene.home);
                         App.toggleGameplayControls(true);
-                    }, true);
+                    });
                 });
                 petsToReveal.forEach((p, i) => {
                     setTimeout(() => fadeInAndOut(p), i * delayBetweenReveals);
@@ -1332,7 +1332,7 @@ class Activities {
             });
         });
     }
-    static wedding(otherPetDef){
+    static wedding(otherPetDef = App.getRandomPetDef()){
         App.closeAllDisplays();
         App.setScene(App.scene.wedding);
         App.toggleGameplayControls(false);
