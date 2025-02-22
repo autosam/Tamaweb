@@ -3421,7 +3421,7 @@ let App = {
                 ? App.petDefinition.friends.filter(p => !p.stats.is_player_family)
                 : App.petDefinition.friends;
 
-            if(!friends.length){
+            if(!friends.length && !additionalButtons.length){
                 App.displayPopup(`${App.petDefinition.name} doesn't have any friends right now<br><br><small>Visit the park to find new friends<small>`, 4000);
                 return;
             }
