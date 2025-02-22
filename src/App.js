@@ -68,14 +68,17 @@ let App = {
         ITCH_REVIEW: 'https://samandev.itch.io/tamaweb/rate?source=game',
     },
     async init () {
-        // init
-        this.initSound();
-        this.drawer = new Drawer(document.querySelector('.graphics-canvas'));
-        Object2d.setDrawer(App.drawer);
+        // window load events
+        this.registerLoadEvents();
 
         // check for platforms
         if(location.host.indexOf('itch') !== -1) App.isOnItch = true;
         if(navigator?.userAgent == 'electron-client') App.isOnElectronClient = true;
+
+        // init
+        this.initSound();
+        App.drawer = new Drawer(document.querySelector('.graphics-canvas'));
+        Object2d.setDrawer(App.drawer);
 
         // localforage store
         App.dbStore = localforage.createInstance({
@@ -104,7 +107,7 @@ let App = {
 
         // furniture
         if(loadedData.furniture)
-        this.ownedFurniture = loadedData.furniture;
+            this.ownedFurniture = loadedData.furniture;
 
         // handle preloading
         let forPreload = [
@@ -265,43 +268,6 @@ let App = {
             Activities.seaVacation();
         }
 
-        // entries
-        window.onload = function () {
-            const analyticsData = {
-                session_id: App.sessionId,
-                play_time_mins: (Math.round(App.playTime) / 1000 / 60).toFixed(2),
-                away: (App.awayTime || -1),
-                sprite: App.petDefinition.sprite,
-                is_egg: App.pet.stats.is_egg,
-                gold: App.pet.stats.gold,
-                ver: VERSION
-            }
-            App.sendAnalytics('login', JSON.stringify(analyticsData));
-
-            // update(0);
-            App.targetFps = 60;
-            App.fpsInterval = 1000 / App.targetFps;
-            App.fpsLastTime = Date.now();
-            App.fpsStartTime = App.fpsLastTime;
-            App.onFrameUpdate(0);
-        }
-        window.onbeforeunload = function(){
-            const analyticsData = {
-                session_id: App.sessionId,
-                hunger: Math.round(App.pet.stats.current_hunger),
-                fun: Math.round(App.pet.stats.current_fun),
-                health: Math.round(App.pet.stats.current_health),
-                sleep: Math.round(App.pet.stats.current_sleep),
-                bladder: Math.round(App.pet.stats.current_bladder),
-                is_egg: App.pet.stats.is_egg,
-                has_poop_out: App.pet.stats.has_poop_out,
-                is_sleeping: App.pet.stats.is_sleeping,
-            }
-            App.sendAnalytics('logout', JSON.stringify(analyticsData));
-
-            App.save();
-        }
-
         // touch / mouse pos on canvas
         App.registerInputUpdates();
 
@@ -350,6 +316,9 @@ let App = {
 
         // rudder stack
         this.initRudderStack();
+
+        // session start event
+        App.sendSessionEvent(true);
     },
     initRudderStack: function(){
         rudderanalytics.identify(App.userId, {
@@ -381,6 +350,48 @@ let App = {
     
             App.mouse = { x: x / 2, y: y / 2 };
         })
+    },
+    registerLoadEvents: function(){
+        // entries
+        window.onload = function () {
+            // update(0);
+            App.targetFps = 60;
+            App.fpsInterval = 1000 / App.targetFps;
+            App.fpsLastTime = Date.now();
+            App.fpsStartTime = App.fpsLastTime;
+            App.onFrameUpdate(0);
+        }
+        window.onbeforeunload = function(){
+            App.sendSessionEvent(false);
+            App.save();
+        }
+    },
+    sendSessionEvent: function(login){
+        if(login){
+            const analyticsData = {
+                session_id: App.sessionId,
+                play_time_mins: (Math.round(App.playTime) / 1000 / 60).toFixed(2),
+                away: (App.awayTime || -1),
+                sprite: App.petDefinition.sprite,
+                is_egg: App.pet.stats.is_egg,
+                gold: App.pet.stats.gold,
+                ver: VERSION
+            }
+            App.sendAnalytics('login', JSON.stringify(analyticsData));
+        } else {
+            const analyticsData = {
+                session_id: App.sessionId,
+                hunger: Math.round(App.pet.stats.current_hunger),
+                fun: Math.round(App.pet.stats.current_fun),
+                health: Math.round(App.pet.stats.current_health),
+                sleep: Math.round(App.pet.stats.current_sleep),
+                bladder: Math.round(App.pet.stats.current_bladder),
+                is_egg: App.pet.stats.is_egg,
+                has_poop_out: App.pet.stats.has_poop_out,
+                is_sleeping: App.pet.stats.is_sleeping,
+            }
+            App.sendAnalytics('logout', JSON.stringify(analyticsData));
+        }
     },
     applySettings: function(){
         const graphicsWrapper = document.querySelector('.graphics-wrapper');
@@ -512,8 +523,8 @@ let App = {
 
         if(App.fpsElapsedTime > App.fpsInterval){
             App.fpsLastTime = App.fpsCurrentTime - (App.fpsElapsedTime % App.fpsInterval);
-            App.drawer.draw();
-            if(App.onDraw) App.onDraw();
+            App.drawer?.draw();
+            App.onDraw?.();
             if(App.registeredDrawEvents.length){
                 App.registeredDrawEvents.forEach(fn => fn());
             }
@@ -711,7 +722,7 @@ let App = {
         }
     },
     handleInGameEvents: function(){
-        if(!App.awayTime || App.awayTime == -1) {
+        if(!App.awayTime || App.awayTime === -1) {
             App.handlers.show_onboarding();
             return;
         }
@@ -5060,7 +5071,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     App.deferredInstallPrompt = e;
 
-    if(App.awayTime !== -1){
+    const showInstallPrompt = () => {
         App.addEvent(`pwa_install_notice_01`, () => {
             App.displayConfirm(`Do you want to install <b>Tamaweb</b> as an app?`, [
                 {
@@ -5079,4 +5090,14 @@ window.addEventListener('beforeinstallprompt', (e) => {
             ])
         })
     }
+
+    let checkTries = 10;
+    const checkForAwayTimeAndInit = () => {
+        if(checkTries-- < 0) return;
+        if(App.awayTime){
+            showInstallPrompt();
+        } else setTimeout(checkForAwayTimeAndInit, 500)
+    }
+
+    checkForAwayTimeAndInit();
 });
