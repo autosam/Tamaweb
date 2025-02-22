@@ -1384,6 +1384,88 @@ let App = {
         if(Activities.encounter()) return;
     },
     handlers: {
+        open_hubchi_search: function(){
+            const prompt = App.displayPrompt(
+                `
+                Enter your friend's username (or UID): <small>(Case sensitive)</small>
+                <button id="help" style="position: absolute; bottom: 0; right: 0" class="generic-btn stylized"><b>?</b></button>
+                `, 
+                [
+                {
+                    name: '<i class="fa-solid fa-search icon"></i> search',
+                    onclick: (query) => {
+                        if(!query.trim()) return App.displayPopup('Please enter a valid username.');
+                        const searchingPopup = App.displayPopup(`Searching for "${query}"...`, App.INF);
+                        App.apiService.getPetDef(query)
+                            .then(data => {
+                                App.sendAnalytics('username_search', JSON.stringify({
+                                    status: data.status,
+                                    username: query
+                                }));
+                                
+                                if(!data.status) return App.displayPopup(`Username not found <br> <small>(Make sure you are searching for user id, not pet name)</small>`);
+
+                                // if(data.data === hasUploadedPetDef.data) {
+                                if(App.userName.indexOf(query) === 0){
+                                    return App.displayPopup(`Something went wrong!`);
+                                }
+                                
+                                prompt.close();
+                                try {
+                                    const def = new PetDefinition(JSON.parse(data.data));
+                                    App.displayConfirm(`Do you want to add ${def.getCSprite()} ${def.name} to your friends list?`, [
+                                        {
+                                            name: 'yes',
+                                            onclick: () => {
+                                                App.closeAllDisplays();
+                                                const addedFriend = App.petDefinition.addFriend(def, 1);
+                                                if (addedFriend) {
+                                                    App.displayPopup(`${def.getCSprite()} ${def.name} has been added to the friends list!`, 3000);
+                                                    addInteraction(def);
+                                                } else {
+                                                    App.displayPopup(`You are already friends with ${def.name}`, 3000);
+                                                }
+                                                return false;
+                                            }
+                                        },
+                                        {
+                                            name: 'no',
+                                            class: 'back-btn',
+                                            onclick: () => { }
+                                        },
+                                    ])  
+                                } catch(e) {
+                                    App.displayPopup('Something went wrong!');
+                                }
+                            })
+                            .finally(() => searchingPopup.close())
+                        return true;
+                    }
+                },
+                {
+                    name: 'cancel',
+                    class: 'back-btn',
+                    onclick: () => {}
+                }
+            ])
+            prompt.querySelector('#help').onclick = () => {
+                App.displayConfirm(`
+                        <div> Your friend must have uploaded their character to <b style="color: #ff00c6">Hubchi</b> </div>
+                        <br>
+                        <div> Ensure you search for their <b>UID</b> <small>(located in the profile section)</small> and <b>not their pet name</b> </div>
+                        <br>
+                        <div> UID is <b>case sensitive</b> </div>
+                    `, 
+                    [
+                        {
+                            name: 'ok',
+                            onclick: () => {}
+                        }
+                    ]
+                );
+            }
+            return prompt;
+        },
         show_rating_dialog: function(){
             return App.displayConfirm(`If you're enjoying the game, please consider <b>rating it</b> on Itch. Your feedback makes a huge difference and helps us a lot!`,
                 [
@@ -3334,7 +3416,7 @@ let App = {
                 // },
             ], null, 'Activities')
         },
-        open_friends_list: function(onClickOverride, excludeFamily){
+        open_friends_list: function(onClickOverride, excludeFamily, additionalButtons = []){
             const friends = excludeFamily
                 ? App.petDefinition.friends.filter(p => !p.stats.is_player_family)
                 : App.petDefinition.friends;
@@ -3344,27 +3426,28 @@ let App = {
                 return;
             }
 
-            const friendsList = App.displayList(friends.map((friendDef, index) => {
+            let friendsList;
+            const mappedFriendsList = friends.map((friendDef, index) => {
                 const name = friendDef.name || 'Unknown';
                 const icon = friendDef.getCSprite();
                 return {
                     name: icon + name,
                     onclick: () => {
-                        if(onClickOverride) return onClickOverride(friendDef);
+                        if (onClickOverride) return onClickOverride(friendDef);
                         const friendActivitiesList = App.displayList([
                             {
                                 name: 'info',
                                 onclick: () => {
                                     const list = UI.genericListContainer();
                                     UI.genericListContainerContent(`
-                                    <div class="inner-padding uppercase surface-stylized b-radius-10">
-                                        ${icon} ${friendDef.name}
-                                        <br>
-                                        <b>Friendship:</b> ${App.createProgressbar( friendDef.getFriendship() / 100 * 100 ).node.outerHTML}
-                                        <hr>
-                                        <b>Age:</b> ${friendDef.getLifeStageLabel()}
-                                    </div>
-                                    `, list);
+                                <div class="inner-padding uppercase surface-stylized b-radius-10">
+                                    ${icon} ${friendDef.name}
+                                    <br>
+                                    <b>Friendship:</b> ${App.createProgressbar(friendDef.getFriendship() / 100 * 100).node.outerHTML}
+                                    <hr>
+                                    <b>Age:</b> ${friendDef.getLifeStageLabel()}
+                                </div>
+                                `, list);
 
                                     return true;
                                 }
@@ -3373,7 +3456,7 @@ let App = {
                                 _ignore: App.petDefinition.lifeStage < 2 || friendDef.lifeStage < 2 || friendDef.stats.is_player_family,
                                 name: `go on date`,
                                 onclick: () => {
-                                    if(friendDef.getFriendship() < 60){
+                                    if (friendDef.getFriendship() < 60) {
                                         return App.displayPopup(`${App.petDefinition.name}'s friendship with ${friendDef.name} is too low <br><br> they don't want to go on a date.`, 5000);
                                     }
 
@@ -3387,7 +3470,7 @@ let App = {
                                         {
                                             name: 'cancel',
                                             class: 'back-btn',
-                                            onclick: () => {}
+                                            onclick: () => { }
                                         }
                                     ])
 
@@ -3461,7 +3544,14 @@ let App = {
                         return true;
                     }
                 }
-            }));
+            });
+
+            friendsList = App.displayList(
+                [
+                    ...mappedFriendsList,
+                    ...additionalButtons,
+                ]
+            );
         },
         open_phone: function(){
             App.displayList([
@@ -3523,7 +3613,12 @@ let App = {
                 {
                     name: 'friends',
                     onclick: () => {
-                        App.handlers.open_friends_list();
+                        App.handlers.open_friends_list(null, null, [
+                            {
+                                name: `<i class="fa-solid fa-plus icon"></i> Add Friend ${App.getBadge()}`,
+                                onclick: () => App.handlers.open_hubchi_search(),
+                            }
+                        ]);
                         return true;
                     }
                 },
@@ -4747,7 +4842,7 @@ let App = {
             return value !== null ? value : defaultValue;
         }
 
-        await new Promise(resolve => setTimeout(resolve, 5000))
+        // await new Promise(resolve => setTimeout(resolve, 5000))
     
         const pet = await getItem('pet', {});
         const settings = await getItem('settings', null);

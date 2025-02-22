@@ -498,66 +498,8 @@ class Activities {
                 },
             ])
         }
-        const handleFriendSearch = () => {
-            const prompt = App.displayPrompt(`Enter your friend's username (or UID): <small>(Case sensitive)</small>`, [
-                {
-                    name: '<i class="fa-solid fa-search icon"></i> search',
-                    onclick: (query) => {
-                        if(!query.trim()) return App.displayPopup('Please enter a valid username.');
-                        const searchingPopup = App.displayPopup(`Searching for "${query}"...`, App.INF);
-                        App.apiService.getPetDef(query)
-                            .then(data => {
-                                App.sendAnalytics('username_search', JSON.stringify({
-                                    status: data.status,
-                                    username: query
-                                }));
-                                
-                                if(!data.status) return App.displayPopup(`Username not found <br> <small>(Make sure you are searching for user id, not pet name)</small>`);
-
-                                if(data.data === hasUploadedPetDef.data) {
-                                    return App.displayPopup(`Something went wrong!`);
-                                }
-                                
-                                prompt.close();
-                                try {
-                                    const def = new PetDefinition(JSON.parse(data.data));
-                                    App.displayConfirm(`Do you want to add ${def.getCSprite()} ${def.name} to your friends list?`, [
-                                        {
-                                            name: 'yes',
-                                            onclick: () => {
-                                                App.closeAllDisplays();
-                                                const addedFriend = App.petDefinition.addFriend(def, 1);
-                                                if (addedFriend) {
-                                                    App.displayPopup(`${def.getCSprite()} ${def.name} has been added to the friends list!`, 3000);
-                                                    addInteraction(def);
-                                                } else {
-                                                    App.displayPopup(`You are already friends with ${def.name}`, 3000);
-                                                }
-                                                return false;
-                                            }
-                                        },
-                                        {
-                                            name: 'no',
-                                            class: 'back-btn',
-                                            onclick: () => { }
-                                        },
-                                    ])  
-                                } catch(e) {
-                                    App.displayPopup('Something went wrong!');
-                                }
-                            })
-                            .finally(() => searchingPopup.close())
-                        return true;
-                    }
-                },
-                {
-                    name: 'cancel',
-                    class: 'back-btn',
-                    onclick: () => {}
-                }
-            ])
-            return prompt;
-        }
+        const handleFriendSearch = () => App.handlers.open_hubchi_search();
+        
         const handleRewardStore = () => {
             const showItem = (image, name, description, unlockLikesReq, unlockKey) => {
                 const isUnlocked = App.getRecord(unlockKey);
