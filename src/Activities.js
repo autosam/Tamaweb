@@ -216,7 +216,31 @@ class Activities {
         App.toggleGameplayControls(false, () => {
             return App.displayList([
                 {
-                    name: '<i class="icon fa-solid fa-arrow-left"></i> backyard',
+                    name: '<i class="icon fa-solid fa-plus icon"></i> plant',
+                    onclick: () => {
+                        const allPlantsList = Object.keys(App.definitions.plant)
+                            .map(plantName => {
+                                const plantDef = App.definitions.plant[plantName];
+                                const icon = App.getGenericCSprite(
+                                    plantDef.sprite + App.constants.PLANT_AGE.grown, 
+                                    App.constants.PLANT_SPRITESHEET, 
+                                    App.constants.PLANT_SPRITESHEET_DIMENSIONS
+                                );
+                                return {
+                                    name: `<span class="icon">${icon}</span> ${plantName}`,
+                                    onclick: () => {
+                                        if(App.plants.length !== 6){
+                                            App.plants.push([plantName, App.constants.PLANT_AGE.seedling]);
+                                            App.handleGardenPlantsSpawn(true);
+                                        }
+                                    }
+                                }
+                            })
+                        App.displayList(allPlantsList)
+                    }
+                },
+                {
+                    name: '<i class="icon fa-solid fa-arrow-left icon"></i> backyard',
                     onclick: () => {
                         Activities.goToGarden();
                     }

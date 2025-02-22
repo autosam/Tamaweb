@@ -1,7 +1,7 @@
 let App = {
     PI2: Math.PI * 2, INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', userName: null, ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
     gameEventsHistory: {}, deferredInstallPrompt: null, shellBackground: '', isOnItch: false, isOnElectronClient: false, hour: 12,
-    misc: {}, mods: [], records: {}, temp: {}, ownedFurniture: [],
+    misc: {}, mods: [], records: {}, temp: {}, ownedFurniture: [], plants: [],
     settings: {
         screenSize: 1,
         playSound: true,
@@ -122,6 +122,10 @@ let App = {
         // furniture
         if(loadedData.furniture)
             this.ownedFurniture = loadedData.furniture;
+
+        // plants
+        if(loadedData.plants)
+            this.plants = loadedData.plants;
 
         // handle preloading
         let forPreload = [
@@ -1080,52 +1084,12 @@ let App = {
             petY: '95%',
             shadowOffset: -5,
             onLoad: () => {
-                const {PLANT_AGE} = App.constants;
+                App.handleGardenPlantsSpawn(true);
                 App.pet.staticShadow = false;
-                const gardenPlants = [
-                    ["red tulip", PLANT_AGE.grown],
-                    ["red tulip", PLANT_AGE.seedling],
-                    ["red tulip", PLANT_AGE.dead],
-                    ["red tulip", PLANT_AGE.tiny],
-                    ["red tulip", PLANT_AGE.grown],
-                    ["red tulip", PLANT_AGE.grown],
-                ]
-
-                const getPlantPosition = (i) => {
-                    const xOffset = 2;
-                    const maxCols = 3;
-                    return {
-                        x: (i % maxCols === 0) ? xOffset : xOffset + (24 * (i % maxCols)),
-                        y: 24 + (Math.floor(i / maxCols) * 20),
-                    }                
-                }
-
-                this.spawnedPlants = gardenPlants.map(([plantName, plantAge], i) => {
-                    const plantDefinition = App.definitions.plant[plantName];
-                    if(!plantDefinition){
-                        return console.log('plant not found:', plantName);
-                    }
-                    const position = getPlantPosition(i);
-                    const patch = new Object2d({
-                        img: 'resources/img/misc/garden_patch_01.png',
-                        x: position.x,
-                        y: position.y + 12,
-                    })
-                    const object = new Object2d({
-                        parent: patch,
-                        image: App.preloadedResources[App.constants.PLANT_SPRITESHEET],
-                        spritesheet: {
-                            ...App.constants.PLANT_SPRITESHEET_DIMENSIONS,
-                            cellNumber: plantDefinition.sprite + plantAge, // fix this
-                        },
-                        ...position,
-                    })
-                    return patch;
-                })
             },
             onUnload: () => {
+                App.handleGardenPlantsSpawn(false);
                 App.pet.staticShadow = true;
-                this.spawnedPlants?.forEach(o => o.removeObject());
             }
         }),
     },
@@ -1298,10 +1262,65 @@ let App = {
         App.sendAnalytics('edit_furniture');
         return true;
     },
+    handleGardenPlantsSpawn(shouldSpawn){
+        this.spawnedPlants?.forEach(o => o.removeObject());
+
+        if(!shouldSpawn){
+            return false;
+        }
+
+        const {PLANT_AGE} = App.constants;
+        const gardenPlants = App.plants;
+        // const gardenPlants = [
+        //     ["red tulip", PLANT_AGE.grown],
+        //     ["red tulip", PLANT_AGE.seedling],
+        //     ["red tulip", PLANT_AGE.dead],
+        //     ["red tulip", PLANT_AGE.tiny],
+        //     ["red tulip", PLANT_AGE.grown],
+        //     ["red tulip", PLANT_AGE.grown],
+        // ]
+
+        const getPlantPosition = (i) => {
+            const xOffset = 2;
+            const maxCols = 3;
+            return {
+                x: (i % maxCols === 0) ? xOffset : xOffset + (24 * (i % maxCols)),
+                y: 24 + (Math.floor(i / maxCols) * 20),
+            }                
+        }
+
+        this.spawnedPlants = [];
+        for(let i = 0; i < 6; i++){
+            const [plantName, plantAge] = App.plants?.at(i) ?? [];
+            
+            const position = getPlantPosition(i);
+
+            const patch = new Object2d({
+                img: 'resources/img/misc/garden_patch_01.png',
+                x: position.x,
+                y: position.y + 12,
+            })
+
+            const plantDefinition = App.definitions.plant[plantName];
+            if(plantDefinition){
+                const plant = new Object2d({
+                    parent: patch,
+                    image: App.preloadedResources[App.constants.PLANT_SPRITESHEET],
+                    spritesheet: {
+                        ...App.constants.PLANT_SPRITESHEET_DIMENSIONS,
+                        cellNumber: plantDefinition.sprite + plantAge, // fix this
+                    },
+                    ...position,
+                })
+            }
+
+            this.spawnedPlants.push(patch);
+        }
+    },
     applySky() {
         const { AFTERNOON_TIME, EVENING_TIME, NIGHT_TIME } = App.constants;
         const date = new Date();
-        const h = new Date().getHours();
+        const h = App.clampWithin24HourFormat(new Date().getHours() + App.settings.sleepingHoursOffset);
         // const h = 20;
 
         const isOutside = App.background.imageSrc?.indexOf('outside/') != -1;
@@ -2161,6 +2180,7 @@ let App = {
                                             24
                                         );
                                         updateUI();
+                                        App.applySky();
                                     }
                                     content.querySelector('#add').onclick = () => updateOffset(1);
                                     content.querySelector('#subtract').onclick = () => updateOffset(-1);
@@ -2170,7 +2190,6 @@ let App = {
                                     return true;
                                 }
                             },
-
                         ])
                     }
                 },
@@ -4804,8 +4823,8 @@ let App = {
         return `<c-sprite 
             naturalWidth="${size}" 
             naturalHeight="${size}" 
-            width="22" 
-            height="22" 
+            width="${ITEM_SPRITESHEET_DIMENSIONS.cellSize}" 
+            height="${ITEM_SPRITESHEET_DIMENSIONS.cellSize}" 
             index="${(index - 1)}" 
             src="${ITEM_SPRITESHEET}"></c-sprite>`
     },
@@ -4815,6 +4834,16 @@ let App = {
         return current.icon
             ? `<div style="width: 1"><img style="width: 36px; outline: none" src="${image}"></img></div>`
             : `<c-sprite width="64" height="36" index="0" src="${image}"></c-sprite>`;
+    },
+    getGenericCSprite: function(index, spritesheet, dimensions){
+        const size = dimensions.rows * dimensions.cellSize;
+        return `<c-sprite 
+            naturalWidth="${size}" 
+            naturalHeight="${size}" 
+            width="${dimensions.cellSize}" 
+            height="${dimensions.cellSize}" 
+            index="${(index - 1)}" 
+            src="${spritesheet}"></c-sprite>`;
     },
     getPersona: function(name, image){
         return `
@@ -4875,12 +4904,75 @@ let App = {
             refreshTime: Missions.refreshTime
         }))
         setItem('furniture', (App.ownedFurniture));
+        setItem('plants', App.plants);
+
         // -3600000
         if(!noIndicator){
             const saveIcon = document.querySelector('.save-indicator');
             saveIcon.style.display = '';
             setTimeout(() => saveIcon.style.display = 'none', 2000);
         }
+    },
+    load: async function() {
+        const getItem = async (key, defaultValue) => {
+            const value = await App.dbStore.getItem(key);
+            return value !== null ? value : defaultValue;
+        }
+
+        // await new Promise(resolve => setTimeout(resolve, 5000))
+    
+        const pet = await getItem('pet', {});
+        const settings = await getItem('settings', null);
+        const lastTime = await getItem('last_time', false);
+        const eventsHistory = await getItem('ingame_events_history', null);
+        const roomCustomizations = await getItem('room_customization', null);
+        const mods = await getItem('mods', App.mods);
+        const records = await getItem('records', App.records);
+    
+        const userId = await getItem('user_id', random(100000000000, 999999999999));
+        App.userId = userId;
+    
+        const userName = await getItem('user_name', null);
+        App.userName = userName == 'null' ? null : userName;
+    
+        App.playTime = parseInt(await getItem('play_time', 0), 10);
+    
+        const shellBackground = await getItem('shell_background_v2.1', 
+            App.definitions.shell_background.find(shell => shell.isDefault).image ||
+            App.definitions.shell_background[1].image);
+    
+        const missions = await getItem('missions', {});
+        const furniture = await getItem('furniture', false);
+        const plants = await getItem('plants', App.plants);
+
+        console.log({loadedPlants: plants})
+
+        App.loadedData = {
+            pet,
+            settings,
+            lastTime,
+            eventsHistory,
+            roomCustomizations,
+            shellBackground,
+            playTime: App.playTime,
+            mods,
+            records,
+            missions,
+            furniture,
+            plants
+        };
+    
+        return App.loadedData;
+    },
+    getDBItems: async function(){
+        const keys = await App.dbStore.keys();
+        const items = {};
+
+        for (const key of keys) {
+            items[key] = await App.dbStore.getItem(key);
+        }
+    
+        return items;
     },
     legacy_load: function(){
         let pet = window.localStorage.getItem('pet');
@@ -4923,6 +5015,7 @@ let App = {
         furniture = furniture ? JSON.parse(furniture) : false;
 
         App.loadedData = {
+            ...(App.loadedData || {}),
             pet, 
             settings, 
             lastTime, 
@@ -4937,63 +5030,6 @@ let App = {
         };
 
         return App.loadedData;
-    },
-    load: async function() {
-        const getItem = async (key, defaultValue) => {
-            const value = await App.dbStore.getItem(key);
-            return value !== null ? value : defaultValue;
-        }
-
-        // await new Promise(resolve => setTimeout(resolve, 5000))
-    
-        const pet = await getItem('pet', {});
-        const settings = await getItem('settings', null);
-        const lastTime = await getItem('last_time', false);
-        const eventsHistory = await getItem('ingame_events_history', null);
-        const roomCustomizations = await getItem('room_customization', null);
-        const mods = await getItem('mods', App.mods);
-        const records = await getItem('records', App.records);
-    
-        const userId = await getItem('user_id', random(100000000000, 999999999999));
-        App.userId = userId;
-    
-        const userName = await getItem('user_name', null);
-        App.userName = userName == 'null' ? null : userName;
-    
-        App.playTime = parseInt(await getItem('play_time', 0), 10);
-    
-        const shellBackground = await getItem('shell_background_v2.1', 
-            App.definitions.shell_background.find(shell => shell.isDefault).image ||
-            App.definitions.shell_background[1].image);
-    
-        const missions = await getItem('missions', {});
-        const furniture = await getItem('furniture', false);
-    
-        App.loadedData = {
-            pet,
-            settings,
-            lastTime,
-            eventsHistory,
-            roomCustomizations,
-            shellBackground,
-            playTime: App.playTime,
-            mods,
-            records,
-            missions,
-            furniture
-        };
-    
-        return App.loadedData;
-    },
-    getDBItems: async function(){
-        const keys = await App.dbStore.keys();
-        const items = {};
-
-        for (const key of keys) {
-            items[key] = await App.dbStore.getItem(key);
-        }
-    
-        return items;
     },
     loadFromJson: async function(json, callbackFn){
         const ignoreKeys = [
