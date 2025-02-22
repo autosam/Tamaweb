@@ -3602,8 +3602,11 @@ let App = {
                         App.displayList([
                             {
                                 name: 'get code',
-                                onclick: () => {
-                                    let charCode = 'friend:' + btoa(encodeURIComponent(JSON.stringify(window.localStorage)));
+                                onclick: async () => {
+                                    const loading = App.displayPopup('Loading...', App.INF);
+                                    const pet = await App.dbStore.getItem('pet');
+                                    loading.close();
+                                    let charCode = 'friend:' + btoa(encodeURIComponent(JSON.stringify({ user_id: App.userId, pet })));
                                     navigator.clipboard.writeText(charCode);
                                     console.log(charCode);
                                     App.displayConfirm(`Your friend code has been copied to the clipboard!`, [
@@ -3641,7 +3644,7 @@ let App = {
 
                                                     if(json.user_id === App.userId) return App.displayPopup(`You can't add yourself as a friend!`);
 
-                                                    let petDef = JSON.parse(json.pet);
+                                                    let petDef = json.pet;
 
                                                     let def = new PetDefinition().loadStats(petDef);
                                                     
@@ -4744,6 +4747,8 @@ let App = {
             const value = await App.dbStore.getItem(key);
             return value !== null ? value : defaultValue;
         }
+
+        await new Promise(resolve => setTimeout(resolve, 5000))
     
         const pet = await getItem('pet', {});
         const settings = await getItem('settings', null);
