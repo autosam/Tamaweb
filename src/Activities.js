@@ -229,7 +229,7 @@ class Activities {
                                 return {
                                     name: `<span class="icon">${icon}</span> ${plantName}`,
                                     onclick: () => {
-                                        if(App.plants.length !== 6){
+                                        if(App.plants.length !== App.constants.MAX_PLANTS){
                                             App.plants.push([plantName, App.constants.PLANT_AGE.seedling]);
                                             App.handleGardenPlantsSpawn(true);
                                         }

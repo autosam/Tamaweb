@@ -43,6 +43,8 @@ let App = {
             grown: 2,
             dead: 3,
         },
+        MAX_PLANTS: 8,
+        PLANT_GROWTH_DELAY: 5000,
         SLEEP_START: 21,
         SLEEP_END: 8,
         PARENT_DAYCARE_START: 8,
@@ -1282,16 +1284,17 @@ let App = {
 
         const getPlantPosition = (i) => {
             const xOffset = 2;
-            const maxCols = 3;
+            const maxCols = 4;
             return {
-                x: (i % maxCols === 0) ? xOffset : xOffset + (24 * (i % maxCols)),
+                x: (i % maxCols === 0) ? xOffset : xOffset + (23 * (i % maxCols)),
                 y: 24 + (Math.floor(i / maxCols) * 20),
             }                
         }
 
         this.spawnedPlants = [];
-        for(let i = 0; i < 6; i++){
-            const [plantName, plantAge] = App.plants?.at(i) ?? [];
+        for(let i = 0; i < App.constants.MAX_PLANTS; i++){
+            let savedPlant = App.plants?.at(i);
+            let [plantName, plantAge, plantLastGrowthTime] = savedPlant ?? [];
             
             const position = getPlantPosition(i);
 
@@ -1302,7 +1305,20 @@ let App = {
             })
 
             const plantDefinition = App.definitions.plant[plantName];
+            // todo: make a plant class and move all plant related logic there
             if(plantDefinition){
+                // check for growth
+                if (!plantLastGrowthTime) plantLastGrowthTime = Date.now();
+                let refreshTime = plantLastGrowthTime + App.constants.PLANT_GROWTH_DELAY;
+
+                while (refreshTime < Date.now()) {
+                    plantLastGrowthTime += App.constants.PLANT_GROWTH_DELAY;
+                    plantAge = clamp(plantAge + 1, PLANT_AGE.seedling, PLANT_AGE.grown);
+                    refreshTime = plantLastGrowthTime + App.constants.PLANT_GROWTH_DELAY;
+                }
+                savedPlant[1] = plantAge;
+                savedPlant[2] = plantLastGrowthTime;
+
                 const plant = new Object2d({
                     parent: patch,
                     image: App.preloadedResources[App.constants.PLANT_SPRITESHEET],
@@ -4944,8 +4960,6 @@ let App = {
         const missions = await getItem('missions', {});
         const furniture = await getItem('furniture', false);
         const plants = await getItem('plants', App.plants);
-
-        console.log({loadedPlants: plants})
 
         App.loadedData = {
             pet,
