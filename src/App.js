@@ -3611,7 +3611,7 @@ let App = {
                     }
                 },
                 {
-                    name: 'friends',
+                    name: `friends ${App.getBadge()}`,
                     onclick: () => {
                         App.handlers.open_friends_list(null, null, [
                             {
