@@ -34,6 +34,17 @@ class SpriteElement extends HTMLElement {
     }
 }
 
+/* Object.defineProperty(HTMLElement.prototype, 'safeInnerHTML', {
+    get: function() {
+        return this.innerHTML;
+    },
+    set: function(content) {
+        // const sanitizedContent = DOMPurify.sanitize(content);
+        const sanitizedContent = sanitize(content);
+        this.innerHTML = sanitizedContent;
+    }
+}); */
+
 customElements.define("c-sprite", SpriteElement);
 
 function handleServiceWorker(){
