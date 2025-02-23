@@ -1384,7 +1384,7 @@ let App = {
         if(Activities.encounter()) return;
     },
     handlers: {
-        open_hubchi_search: function(){
+        open_hubchi_search: function(onAddCallback){
             const prompt = App.displayPrompt(
                 `
                 Enter your friend's username (or UID): <small>(Case sensitive)</small>
@@ -1421,7 +1421,8 @@ let App = {
                                                 const addedFriend = App.petDefinition.addFriend(def, 1);
                                                 if (addedFriend) {
                                                     App.displayPopup(`${def.getCSprite()} ${def.name} has been added to the friends list!`, 3000);
-                                                    addInteraction(def);
+                                                    App.apiService.addInteraction(def.ownerId);
+                                                    onAddCallback?.(def);
                                                 } else {
                                                     App.displayPopup(`You are already friends with ${def.name}`, 3000);
                                                 }
