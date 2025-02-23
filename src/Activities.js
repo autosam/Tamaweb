@@ -300,8 +300,8 @@ class Activities {
             outgoing: hasUploadedPetDef.interactionOutgoingLikes ?? 0,
             receiving: hasUploadedPetDef.interactionReceivingLikes ?? 0,
         }
-        const addInteraction = (def) => {
-            App.apiService.addInteraction(def.ownerId);
+        const addInteraction = (def, skipApi) => {
+            if(!skipApi) App.apiService.addInteraction(def.ownerId);
             def.interactions = (def.interactions ?? 0) + INTERACTION_LIKES.outgoing;
             hasUploadedPetDef.interactions = (hasUploadedPetDef.interactions ?? 0) + INTERACTION_LIKES.receiving;
         }
@@ -498,7 +498,7 @@ class Activities {
                 },
             ])
         }
-        const handleFriendSearch = () => App.handlers.open_hubchi_search();
+        const handleFriendSearch = () => App.handlers.open_hubchi_search((def) => addInteraction(def, true));
         
         const handleRewardStore = () => {
             const showItem = (image, name, description, unlockLikesReq, unlockKey) => {
