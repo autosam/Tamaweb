@@ -222,7 +222,7 @@ class Activities {
                             .map(plantName => {
                                 const plantDef = App.definitions.plant[plantName];
                                 const icon = App.getGenericCSprite(
-                                    plantDef.sprite + App.constants.PLANT_AGE.grown, 
+                                    plantDef.sprite + Plant.AGE.grown, 
                                     App.constants.PLANT_SPRITESHEET, 
                                     App.constants.PLANT_SPRITESHEET_DIMENSIONS
                                 );
@@ -230,13 +230,20 @@ class Activities {
                                     name: `<span class="icon">${icon}</span> ${plantName}`,
                                     onclick: () => {
                                         if(App.plants.length !== App.constants.MAX_PLANTS){
-                                            App.plants.push([plantName, App.constants.PLANT_AGE.seedling]);
+                                            const plant = new Plant({name: plantName});
+                                            App.plants.push(plant);
                                             App.handleGardenPlantsSpawn(true);
                                         }
                                     }
                                 }
                             })
                         App.displayList(allPlantsList)
+                    }
+                },
+                {
+                    name: 'water',
+                    onclick: () => {
+                        App.plants.forEach(p => p.water());
                     }
                 },
                 {

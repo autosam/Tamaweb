@@ -37,14 +37,7 @@ let App = {
             rows: 28,
             columns: 28,
         },
-        PLANT_AGE: {
-            seedling: 0,
-            tiny: 1,
-            grown: 2,
-            dead: 3,
-        },
         MAX_PLANTS: 8,
-        PLANT_GROWTH_DELAY: 5000,
         SLEEP_START: 21,
         SLEEP_END: 8,
         PARENT_DAYCARE_START: 8,
@@ -127,7 +120,7 @@ let App = {
 
         // plants
         if(loadedData.plants)
-            this.plants = loadedData.plants;
+            this.plants = loadedData.plants.map(p => new Plant(p));
 
         // handle preloading
         let forPreload = [
@@ -1271,17 +1264,6 @@ let App = {
             return false;
         }
 
-        const {PLANT_AGE} = App.constants;
-        const gardenPlants = App.plants;
-        // const gardenPlants = [
-        //     ["red tulip", PLANT_AGE.grown],
-        //     ["red tulip", PLANT_AGE.seedling],
-        //     ["red tulip", PLANT_AGE.dead],
-        //     ["red tulip", PLANT_AGE.tiny],
-        //     ["red tulip", PLANT_AGE.grown],
-        //     ["red tulip", PLANT_AGE.grown],
-        // ]
-
         const getPlantPosition = (i) => {
             const xOffset = 2;
             const maxCols = 4;
@@ -1293,43 +1275,15 @@ let App = {
 
         this.spawnedPlants = [];
         for(let i = 0; i < App.constants.MAX_PLANTS; i++){
-            let savedPlant = App.plants?.at(i);
-            let [plantName, plantAge, plantLastGrowthTime] = savedPlant ?? [];
-            
-            const position = getPlantPosition(i);
+            let currentPlant = App.plants?.at(i);
 
+            const position = getPlantPosition(i);
             const patch = new Object2d({
                 img: 'resources/img/misc/garden_patch_01.png',
                 x: position.x,
                 y: position.y + 12,
             })
-
-            const plantDefinition = App.definitions.plant[plantName];
-            // todo: make a plant class and move all plant related logic there
-            if(plantDefinition){
-                // check for growth
-                if (!plantLastGrowthTime) plantLastGrowthTime = Date.now();
-                let refreshTime = plantLastGrowthTime + App.constants.PLANT_GROWTH_DELAY;
-
-                while (refreshTime < Date.now()) {
-                    plantLastGrowthTime += App.constants.PLANT_GROWTH_DELAY;
-                    plantAge = clamp(plantAge + 1, PLANT_AGE.seedling, PLANT_AGE.grown);
-                    refreshTime = plantLastGrowthTime + App.constants.PLANT_GROWTH_DELAY;
-                }
-                savedPlant[1] = plantAge;
-                savedPlant[2] = plantLastGrowthTime;
-
-                const plant = new Object2d({
-                    parent: patch,
-                    image: App.preloadedResources[App.constants.PLANT_SPRITESHEET],
-                    spritesheet: {
-                        ...App.constants.PLANT_SPRITESHEET_DIMENSIONS,
-                        cellNumber: plantDefinition.sprite + plantAge, // fix this
-                    },
-                    ...position,
-                })
-            }
-
+            currentPlant?.createObject2d(patch);
             this.spawnedPlants.push(patch);
         }
     },
