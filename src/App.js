@@ -771,16 +771,16 @@ let App = {
                     },
                 }
             ]);
-        })) return;
+        })) return;  */
 
-        if(addEvent(`discord_server_01_notice`, () => {
-            App.displayConfirm(`<b>We have a Discord server now!</b>Join to see the growth chart and decide which features get in the game first!`, [
+        /* if(addEvent(`discord_server_01_notice`, () => {
+            App.displayConfirm(`<b>We have a Discord server!</b>Join to see the growth chart and decide which features get in the game first!`, [
                 {
                     name: 'next',
                     onclick: () => {
                         App.displayConfirm(`Do you want to join and get updated on all the latest changes and exclusive items?`, [
                             {
-                                link: 'https://discord.gg/FdwmmWRaTd',
+                                link: 'https://tamawebgame.github.io/discord',
                                 name: 'yes',
                                 onclick: () => {
                                     return false;
@@ -1631,7 +1631,7 @@ let App = {
                     <br>
                     SamanDev
                     <small>
-                        <a href="https://discord.gg/FdwmmWRaTd" target="_blank">discord</a>
+                        <a href="https://tamawebgame.github.io/discord" target="_blank">discord</a>
                         <a href="https://samandev.itch.io" target="_blank">itch</a>
                     </small>
                     `
@@ -2288,7 +2288,7 @@ let App = {
                 },
                 {
                     // _ignore: true,
-                    link: 'https://discord.gg/FdwmmWRaTd',
+                    link: 'https://tamawebgame.github.io/discord',
                     name: '<b>join discord</b>',
                     onclick: () => true,
                 },
