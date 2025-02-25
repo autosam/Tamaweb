@@ -782,6 +782,7 @@ let App = {
                     name: 'join (+$200)',
                     onclick: () => {
                         App.pet.stats.gold += 200;
+                        App.sendAnalytics('discord_02_notice_accept');
                         return false;
                     },
                 }, 
@@ -793,6 +794,7 @@ let App = {
                     }
                 }
             ]);
+            App.sendAnalytics('discord_02_notice_shown');
         })) return;
 
         /* if(App.isSalesDay()){
