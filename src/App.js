@@ -66,6 +66,7 @@ let App = {
     routes: {
         BLOG: 'https://tamawebgame.github.io/blog/',
         ITCH_REVIEW: 'https://samandev.itch.io/tamaweb/rate?source=game',
+        DISCORD: 'https://tamawebgame.github.io/discord',
     },
     async init () {
         // init
@@ -773,30 +774,26 @@ let App = {
             ]);
         })) return;  */
 
-        /* if(addEvent(`discord_server_01_notice`, () => {
-            App.displayConfirm(`<b>We have a Discord server!</b>Join to see the growth chart and decide which features get in the game first!`, [
+
+        if(addEvent(`discord_server_02_notice`, () => {
+            App.displayConfirm(`<b>We have a Discord server!</b><br>Join us for early sneak peeks at upcoming features, interact with our community, and more!`, [
                 {
-                    name: 'next',
+                    link: App.routes.DISCORD,
+                    name: 'join (+$200)',
                     onclick: () => {
-                        App.displayConfirm(`Do you want to join and get updated on all the latest changes and exclusive items?`, [
-                            {
-                                link: 'https://tamawebgame.github.io/discord',
-                                name: 'yes',
-                                onclick: () => {
-                                    return false;
-                                },
-                            }, 
-                            {
-                                name: 'no',
-                                onclick: () => {
-                                    App.displayPopup('You can join the server through <b>Settings > Join Discord</b> if you ever change your mind', 5000)
-                                }
-                            }
-                        ]);
+                        App.pet.stats.gold += 200;
+                        return false;
                     },
+                }, 
+                {
+                    name: 'cancel',
+                    class: 'back-btn',
+                    onclick: () => {
+                        App.displayPopup('You can join the server through <b>Settings > Join Discord</b> if you ever change your mind', 5000)
+                    }
                 }
             ]);
-        })) return; */
+        })) return;
 
         /* if(App.isSalesDay()){
             if(addEvent(`sales_day_${dayId}_notice`, () => {
@@ -1631,7 +1628,7 @@ let App = {
                     <br>
                     SamanDev
                     <small>
-                        <a href="https://tamawebgame.github.io/discord" target="_blank">discord</a>
+                        <a href="${App.routes.DISCORD}" target="_blank">discord</a>
                         <a href="https://samandev.itch.io" target="_blank">itch</a>
                     </small>
                     `
@@ -2288,7 +2285,7 @@ let App = {
                 },
                 {
                     // _ignore: true,
-                    link: 'https://tamawebgame.github.io/discord',
+                    link: App.routes.DISCORD,
                     name: '<b>join discord</b>',
                     onclick: () => true,
                 },
