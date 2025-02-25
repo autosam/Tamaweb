@@ -66,6 +66,7 @@ let App = {
     routes: {
         BLOG: 'https://tamawebgame.github.io/blog/',
         ITCH_REVIEW: 'https://samandev.itch.io/tamaweb/rate?source=game',
+        DISCORD: 'https://tamawebgame.github.io/discord',
     },
     async init () {
         // init
@@ -773,30 +774,28 @@ let App = {
             ]);
         })) return;  */
 
-        /* if(addEvent(`discord_server_01_notice`, () => {
-            App.displayConfirm(`<b>We have a Discord server!</b>Join to see the growth chart and decide which features get in the game first!`, [
+
+        if(addEvent(`discord_server_02_notice`, () => {
+            App.displayConfirm(`<b>We have a Discord server!</b><br>Join us for early sneak peeks at upcoming features, interact with our community, and more!`, [
                 {
-                    name: 'next',
+                    link: App.routes.DISCORD,
+                    name: 'join (+$200)',
                     onclick: () => {
-                        App.displayConfirm(`Do you want to join and get updated on all the latest changes and exclusive items?`, [
-                            {
-                                link: 'https://tamawebgame.github.io/discord',
-                                name: 'yes',
-                                onclick: () => {
-                                    return false;
-                                },
-                            }, 
-                            {
-                                name: 'no',
-                                onclick: () => {
-                                    App.displayPopup('You can join the server through <b>Settings > Join Discord</b> if you ever change your mind', 5000)
-                                }
-                            }
-                        ]);
+                        App.pet.stats.gold += 200;
+                        App.sendAnalytics('discord_02_notice_accept');
+                        return false;
                     },
+                }, 
+                {
+                    name: 'cancel',
+                    class: 'back-btn',
+                    onclick: () => {
+                        App.displayPopup('You can join the server through <b>Settings > Join Discord</b> if you ever change your mind', 5000)
+                    }
                 }
             ]);
-        })) return; */
+            App.sendAnalytics('discord_02_notice_shown');
+        })) return;
 
         /* if(App.isSalesDay()){
             if(addEvent(`sales_day_${dayId}_notice`, () => {
@@ -1631,7 +1630,7 @@ let App = {
                     <br>
                     SamanDev
                     <small>
-                        <a href="https://tamawebgame.github.io/discord" target="_blank">discord</a>
+                        <a href="${App.routes.DISCORD}" target="_blank">discord</a>
                         <a href="https://samandev.itch.io" target="_blank">itch</a>
                     </small>
                     `
@@ -2262,7 +2261,7 @@ let App = {
                                 onclick: (data) => {
                                     if(!data) return true;
                                     App.displayPopup(`<b>Suggestion sent!</b><br> thanks for participating!`, 4000);
-                                    App.sendAnalytics('game_feedback', data, true);
+                                    App.sendFeedback(data);
                                 },
                             },
                             {
@@ -2288,7 +2287,7 @@ let App = {
                 },
                 {
                     // _ignore: true,
-                    link: 'https://tamawebgame.github.io/discord',
+                    link: App.routes.DISCORD,
                     name: '<b>join discord</b>',
                     onclick: () => true,
                 },
@@ -4660,9 +4659,18 @@ let App = {
         if(App.isOnItch) type += '_itch';
         else if(App.isOnElectronClient) type += '_electron';
 
-        let user = (App.userName ? App.userName + '-' : '') + App.userId;
-        let url = `https://docs.google.com/forms/d/e/1FAIpQLSfzl5hhhnV3IAdxuA90ieEaeBAhCY9Bh4s151huzTMeByMwiw/formResponse?usp=pp_url&entry.1384465975=${user}&entry.1653037117=${App.petDefinition?.name || ''}&entry.1322693089=${type}&entry.1403809294=${value || ''}`;
+        const user = (App.userName ? App.userName + '-' : '') + App.userId;
+        const url = `https://docs.google.com/forms/d/e/1FAIpQLSfzl5hhhnV3IAdxuA90ieEaeBAhCY9Bh4s151huzTMeByMwiw/formResponse?usp=pp_url&entry.1384465975=${user}&entry.1653037117=${App.petDefinition?.name || ''}&entry.1322693089=${type}&entry.1403809294=${value || ''}`;
 
+        fetch(url).catch(e => {});
+    },
+    sendFeedback: function(text){
+        if(!text) return;
+
+        const sendingText = `[game:${VERSION}-pl:${App.isOnItch ? 'itch' : 'web'}]: ${text}`;
+
+        const user = (App.userName ? App.userName + '-' : '') + App.userId;
+        const url = `https://docs.google.com/forms/d/e/1FAIpQLSenonpIhjHL8BYJbnOHqF2KudJiDciEveJG56BdGsvJ01-rTA/formResponse?usp=pp_url&entry.1753365981=${user}&entry.233513152=${sendingText}`;
         fetch(url).catch(e => {});
     },
     installAsPWA: function() { 
