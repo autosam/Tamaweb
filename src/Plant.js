@@ -3,19 +3,20 @@ class Plant {
     wateredDuration = 1000 * 60;
     isWatered = false;
 
-    #patchObject = false;
-
     constructor(config){
         const {
             name, 
             age = Plant.AGE.seedling, 
             lastGrowthTime = Date.now(),
-            lastWatered = Date.now(),
+            lastWatered = 0,
             health = 100,
         } = config;
         this.age = age;
         this.name = name;
         this.lastGrowthTime = lastGrowthTime;
+
+        const defWateredDuration = this.getDefinition(name)?.wateredDuration;
+        if(defWateredDuration) this.wateredDuration = defWateredDuration * 1000 * 60;
 
         this.health = health;
 
@@ -24,11 +25,11 @@ class Plant {
     checkForProgress(){
         const now = Date.now();
 
-        this.isWatered = now - this.lastWatered < this.wateredDuration;
+        this.isWatered = (now - this.lastWatered) < this.wateredDuration;
 
         if(this.age === Plant.AGE.grown) return;
 
-        console.log((Date.now() - (this.lastGrowthTime + this.growthDelay)) / 60);
+        // console.log((Date.now() - (this.lastGrowthTime + this.growthDelay)) / 60);
         while (this.lastGrowthTime + this.growthDelay < Date.now() && this.age !== Plant.AGE.grown) {
             this.lastGrowthTime += this.growthDelay;
             this.age = clamp(this.age + 1, Plant.AGE.seedling, Plant.AGE.grown);
@@ -42,12 +43,15 @@ class Plant {
 
         if(!plantDefinition) return;
 
+        let nextPatchTick = -1;
         patch.onDraw = (me) => {
-            // todo: fix this bug
-            const target = this.isWatered ? Plant.PATCH_IMG.wet : Plant.PATCH_IMG.normal;
-            // if(me.imageSrc === target) return;
+            if(App.time < nextPatchTick) return;
+            nextPatchTick = App.time + 100;
+            const target = this.isWatered 
+                ? Plant.PATCH_IMG.wet 
+                : Plant.PATCH_IMG.normal;
+            if(me.imageSrc.replace(location.href, '') === target) return;
             me.setImg(target);
-            // console.log(target)
         }
 
         const position = {
@@ -62,6 +66,7 @@ class Plant {
                 cellNumber: plantDefinition.sprite + this.age,
             },
             ...position,
+            z: App.constants.ACTIVE_PET_Z + 0.01,
             onDraw: () => {
                 this.checkForProgress();
                 plant.spritesheet.cellNumber = plantDefinition.sprite + this.age;
@@ -70,8 +75,9 @@ class Plant {
         const statusIndicator = new Object2d({
             parent: plant,
             img: 'resources/img/misc/no_water_01.png',
-            x: position.x,
-            y: position.y - 6,
+            y: position.y + 20,
+            x: position.x - 7,
+            z: App.constants.ACTIVE_PET_Z + 0.02,
             opacity: 0,
             onDraw: (me) => {
                 if(this.isWatered) me.opacity = 0;
@@ -79,10 +85,14 @@ class Plant {
             }
         })
 
+        // this.getObject = () => plant;
+        this.position = position;
+
         return {plant, statusIndicator};
     }
-    getDefinition(){
-        return App.definitions.plant[this.name];
+    getObject(){}
+    getDefinition(name){
+        return App.definitions.plant[name || this.name];
     }
     _reset(){
         this.age = Plant.AGE.seedling;
