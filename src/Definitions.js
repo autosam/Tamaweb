@@ -593,8 +593,53 @@ App.definitions = {
 
     /* GARDENING PLANTS */
     plant: {
-        "red tulip": {
+        // wateredDuration: minutes
+        "cabbage": {
+            sprite: 29,
+        },
+        "tomato": {
+            sprite: 33,
+        },
+        "lettuce": {
+            sprite: 37,
+        },
+        "carrot": {
+            sprite: 41,
+        },
+        "potato": {
+            sprite: 45,
+        },
+        "sweet potato": {
+            sprite: 49,
+        },
+        "watermelon": {
+            sprite: 53,
+        },
+        "peach": {
+            sprite: 57,
+            wateredDuration: 0.5,
+        },
+        // tulips
+        "purple tulip": {
             sprite: 1,
+        },
+        "cyan tulip": {
+            sprite: 5,
+        },
+        "blue tulip": {
+            sprite: 9,
+        },
+        "green tulip": {
+            sprite: 13,
+        },
+        "yellow tulip": {
+            sprite: 17,
+        },
+        "orange tulip": {
+            sprite: 21,
+        },
+        "red tulip": {
+            sprite: 25,
         },
     },
 

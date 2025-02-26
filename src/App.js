@@ -1076,15 +1076,15 @@ let App = {
         }),
         garden_inner: new Scene({
             image: 'resources/img/background/outside/garden_inner_01.png',
-            petY: '95%',
+            petY: '55%',
             shadowOffset: -5,
             onLoad: () => {
                 App.handleGardenPlantsSpawn(true);
-                App.pet.staticShadow = false;
+                App.pet.staticShadow = true;
             },
             onUnload: () => {
                 App.handleGardenPlantsSpawn(false);
-                App.pet.staticShadow = true;
+                App.pet.staticShadow = false;
             }
         }),
     },
@@ -1265,11 +1265,11 @@ let App = {
         }
 
         const getPlantPosition = (i) => {
-            const xOffset = 2;
+            const xOffset = 2, yOffset = 40;
             const maxCols = 4;
             return {
                 x: (i % maxCols === 0) ? xOffset : xOffset + (23 * (i % maxCols)),
-                y: 24 + (Math.floor(i / maxCols) * 20),
+                y: yOffset + (Math.floor(i / maxCols) * 20),
             }                
         }
 
@@ -1279,9 +1279,11 @@ let App = {
 
             const position = getPlantPosition(i);
             const patch = new Object2d({
-                img: 'resources/img/misc/garden_patch_01.png',
+                img: `resources/img/misc/garden_patch_01.png`,
                 x: position.x,
                 y: position.y + 12,
+                // prevent patches from sharing 1 image element
+                noPreload: true,
             })
             currentPlant?.createObject2d(patch);
             this.spawnedPlants.push(patch);
@@ -5196,6 +5198,9 @@ let App = {
     },
     getIcon: function(iconName, noRightMargin){
         return `<i class="fa-solid fa-${iconName}" style="${!noRightMargin ? 'margin-right:10px' : ''}"></i>`
+    },
+    wait: function(ms = 0){
+        return new Promise(resolve => setTimeout(resolve, ms))
     },
     apiService: {
         ENDPOINT: 'https://script.google.com/macros/s/AKfycbxCa6Yo_VdK5t9T7ZCHabxT1EY-xACEC3VUDHgkkwGdduF2U5VMGlp0KXBu9CtE8cWv9Q/exec',

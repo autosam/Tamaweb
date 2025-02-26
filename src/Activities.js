@@ -242,8 +242,23 @@ class Activities {
                 },
                 {
                     name: 'water',
-                    onclick: () => {
-                        App.plants.forEach(p => p.water());
+                    onclick: async () => {
+                        App.closeAllDisplays();
+                        const wateringCan = new Object2d({
+                            img: 'resources/img/misc/watering_can_01.png',
+                        })
+                        // for(plant of App.plants){
+                        // }
+                        for(let i = 0; i < App.plants.length; i++){
+                            const plant = App.plants[i];
+                            if(plant.isWatered) continue;
+                            wateringCan.x = plant.position.x + 8;
+                            wateringCan.y = plant.position.y;
+                            await App.wait(500);
+                            plant.water();
+                        }
+
+                        wateringCan.removeObject();
                     }
                 },
                 {
