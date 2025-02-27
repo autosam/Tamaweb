@@ -55,7 +55,7 @@ class Plant {
         }
 
         const position = {
-            x: patch.x, y: patch.y - 12,
+            x: patch.x, y: patch.y - 10,
         }
         
         const plant = new Object2d({
@@ -75,7 +75,7 @@ class Plant {
         const statusIndicator = new Object2d({
             parent: plant,
             img: 'resources/img/misc/no_water_01.png',
-            y: position.y + 20,
+            y: position.y + 18,
             x: position.x - 7,
             z: App.constants.ACTIVE_PET_Z + 0.02,
             opacity: 0,
