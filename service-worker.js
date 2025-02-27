@@ -98,6 +98,10 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
+  if (event.request.headers.get("range")) {
+    return fetch(event.request);
+  }
+
   if (event.request.url.startsWith(self.location.origin)) {
     event.respondWith(
       caches.match(event.request).then((cachedResponse) => {
@@ -107,9 +111,10 @@ self.addEventListener("fetch", (event) => {
 
         return caches.open(CACHE_NAME).then((cache) => {
           return fetch(event.request).then((response) => {
-            return cache.put(event.request, response.clone()).then(() => {
+            if (!response || response.status !== 200 || response.type !== "basic") {
               return response;
-            });
+            }
+            return cache.put(event.request, response.clone()).then(() => response);
           });
         });
       })
