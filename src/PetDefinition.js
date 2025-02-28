@@ -537,7 +537,11 @@ class PetDefinition {
                 current_want.item = wantedFriendIndex;
                 break;
             case "item": // item is item name
-                const wantedItem = randomFromArray(Object.keys(App.definitions.item));
+                const appropriateItems = Object.keys(App.definitions.item)
+                    .map(itemName => ({name: itemName, ...App.definitions.item[itemName]}))
+                    .filter(item => !item.age || item.age?.includes(App.petDefinition.lifeStage))
+                    .map(item => item.name)
+                const wantedItem = randomFromArray(appropriateItems);
                 current_want.type = App.constants.WANT_TYPES.item;
                 current_want.item = wantedItem;
                 break;
@@ -548,7 +552,7 @@ class PetDefinition {
         }
 
         current_want.appearTime = App.fullTime;
-        current_want.next_refresh_ms = App.fullTime += (1000 * 60 * random(30, 60)); // 30-60 min
+        current_want.next_refresh_ms = App.fullTime += (1000 * 60 * random(20, 60)); // 30-60 min
     }
     clearWant(fulfilled){
         const {current_want} = this.stats;
