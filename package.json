@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "color": "^5.0.0",
+    "colornames": "^1.1.1"
+  },
+  "type": "commonjs"
+}
