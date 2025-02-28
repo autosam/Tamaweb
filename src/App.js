@@ -4740,14 +4740,6 @@ let App = {
             this.audioChannelIsBusy = true;
         } catch(e) {}
     },
-    serializer: function(type){
-        const entries = [
-            'pet',
-            'settings',
-            'last_time',
-            ''
-        ]
-    },
     save: function(noIndicator){
         const setItem = (key, value) => {
             return App.dbStore.setItem(key, value);
