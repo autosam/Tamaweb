@@ -3308,7 +3308,7 @@ let App = {
         open_activity_list: function(){
             return App.displayList([
                 {
-                    name: `mall ${App.getBadge()}`,
+                    name: `mall`,
                     onclick: () => {
                         Activities.goToMall();
                     }
@@ -3354,6 +3354,10 @@ let App = {
                                 _disable: App.petDefinition.lifeStage !== 2,
                                 name: 'Offspring with ...',
                                 onclick: () => {
+                                    const filter = (petDefinition) => (
+                                        !petDefinition.stats.is_player_family
+                                        && petDefinition.lifeStage === App.petDefinition.lifeStage
+                                    )
                                     App.handlers.open_friends_list((friendDef) => {
                                         return App.displayConfirm(`Do you want to see ${friendDef.name} and ${App.petDefinition.name}'s baby <b>offspring</b>?`, [
                                             {
@@ -3370,7 +3374,7 @@ let App = {
                                                 onclick: () => {}
                                             }
                                         ])
-                                    }, true);
+                                    }, filter);
                                     return true;
                                 }
                             }
@@ -3419,9 +3423,9 @@ let App = {
                 // },
             ], null, 'Activities')
         },
-        open_friends_list: function(onClickOverride, excludeFamily, additionalButtons = []){
-            const friends = excludeFamily
-                ? App.petDefinition.friends.filter(p => !p.stats.is_player_family)
+        open_friends_list: function(onClickOverride, customFilter, additionalButtons = []){
+            const friends = customFilter
+                ? App.petDefinition.friends.filter(customFilter)
                 : App.petDefinition.friends;
 
             if(!friends.length && !additionalButtons.length){
@@ -4037,7 +4041,7 @@ let App = {
                     }
                 },
                 {
-                    name: `Buy furniture ${App.getBadge()}`,
+                    name: `Buy furniture`,
                     onclick: () => {
                         App.handlers.open_furniture_list();
                         return true;
