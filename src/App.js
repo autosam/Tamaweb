@@ -2329,6 +2329,7 @@ let App = {
 
                                     App.displayPopup('resetting...', App.INF);
 
+                                    window.localStorage.clear();
                                     await App.dbStore.removeItem('last_time');
                                     await App.dbStore.removeItem('pet');
 
@@ -2358,6 +2359,7 @@ let App = {
                                             onclick: async () => {
                                                 App.save = () => {};
                                                 App.displayPopup('resetting...', App.INF);
+                                                window.localStorage.clear();
                                                 await App.dbStore.clear();
                                                 location.reload();
                                                 return false;
