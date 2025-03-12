@@ -1700,7 +1700,7 @@ let App = {
                     }
                 },
                 {
-                    name: `furniture ${App.getBadge()}`,
+                    name: `furniture`,
                     onclick: () => {
                         if(!App.isRoomFurnishable()){
                             return App.displayConfirm(`Your room came fully furnished.<br><br>Would you like to remove the default furniture set and customize it?`, [
