@@ -1615,7 +1615,7 @@ let App = {
             App.displayList([
                 {
                     _mount: (me) => {
-                        me.innerHTML = `Missions ${getUnclaimedRewardsBadge()}`
+                        me.innerHTML = `<span style="color: #3d00ff"><i class="icon fa-solid fa-bullseye"></i> Missions ${getUnclaimedRewardsBadge()}</span>`
                     },
                     name: '',
                     onclick: () => {
@@ -1625,12 +1625,14 @@ let App = {
                 },
                 {
                     name: `sleep ${App.isSleepHour() ? App.getBadge('<div style="margin-left: auto; padding: 2px"> <i class="fa-solid fa-moon"></i> <small>bedtime!</small> </div>', 'night') : ''}`,
+                    icon: 'bed',
                     onclick: () => {
                         App.handlers.sleep();
                     }
                 },
                 {
                     name: `pet`,
+                    icon: 'hands',
                     onclick: () => {
                         App.displayPopup(`Tap the screen to pet <b>${App.petDefinition.name}</b><br><br>Don't tap for a few seconds to stop petting`, 2800, () => {
                             Activities.pet();
@@ -1640,6 +1642,7 @@ let App = {
                 {
                     _ignore: !App.petDefinition.getParents(),
                     name: `stay with parents`,
+                    icon: 'people-roof',
                     onclick: () => {
                         if((App.hour < App.constants.PARENT_DAYCARE_START || App.hour >= App.constants.PARENT_DAYCARE_END)){
                             return App.displayPopup(`You can only leave ${App.petDefinition.name} at their parents house between <b>${App.formatTo12Hours(App.constants.PARENT_DAYCARE_START)}</b> and <b>${App.formatTo12Hours(App.constants.PARENT_DAYCARE_END)}</b>`, 4000)
@@ -1666,6 +1669,7 @@ let App = {
                 {
                     _ignore: true,
                     name: `backyard ${App.getBadge()}`,
+                    icon: 'leaf',
                     onclick: () => {
                         Activities.goToGarden();
                     }
@@ -1673,6 +1677,7 @@ let App = {
                 {
                     _disable: !App.pet.stats.current_want.type,
                     name: `current want`,
+                    icon: 'heart-circle-plus',
                     onclick: () => {
                         App.closeAllDisplays();
                         App.pet.showCurrentWant();
@@ -1684,6 +1689,7 @@ let App = {
             App.displayList([
                 {
                     name: `items`,
+                    icon: 'box',
                     onclick: () => {
                         App.handlers.open_item_list();
                         return true;
@@ -1691,6 +1697,7 @@ let App = {
                 },
                 {
                     name: `accessories`,
+                    icon: 'shirt',
                     onclick: () => {
                         if(App.petDefinition.lifeStage != 2){
                             return App.displayPopup(`${App.petDefinition.name} is not old enough to wear accessories`);
@@ -1700,7 +1707,8 @@ let App = {
                     }
                 },
                 {
-                    name: `furniture ${App.getBadge()}`,
+                    name: `furniture`,
+                    icon: 'chair',
                     onclick: () => {
                         if(!App.isRoomFurnishable()){
                             return App.displayConfirm(`Your room came fully furnished.<br><br>Would you like to remove the default furniture set and customize it?`, [
@@ -1732,18 +1740,21 @@ let App = {
             App.displayList([
                 {
                     name: 'bathe',
+                    icon: 'bath',
                     onclick: () => { 
                         Activities.bathe();
                     }
                 },
                 {
                     name: 'use toilet',
+                    icon: 'toilet',
                     onclick: () => { 
                         Activities.poop();
                     }
                 },
                 {
                     name: 'clean room',
+                    icon: 'hand-sparkles',
                     onclick: () => {
                         App.handlers.clean();
                     }
@@ -2430,7 +2441,7 @@ let App = {
                 { type: 'separator' },
                 {
                     _disable: true,
-                    name: `Version ${VERSION || '???'}`,
+                    name: `V${VERSION || '???'}`,
                     onclick: () => {
                         return true;
                     },
@@ -2669,6 +2680,7 @@ let App = {
             App.displayList([
                 {
                     name: 'food',
+                    icon: 'bowl-food',
                     onclick: () => {
                         App.handlers.open_food_list(null, null, 'food');
                         return true;
@@ -2676,6 +2688,7 @@ let App = {
                 },
                 {
                     name: 'snacks',
+                    icon: 'cookie-bite',
                     onclick: () => {
                         App.handlers.open_food_list(null, null, 'treat');
                         return true;
@@ -2683,6 +2696,7 @@ let App = {
                 },
                 {
                     name: 'meds',
+                    icon: 'flask',
                     onclick: () => {
                         App.handlers.open_food_list(null, null, 'med');
                         return true;
@@ -2692,6 +2706,7 @@ let App = {
                     // _ignore: !App.isTester(),
                     _disable: App.petDefinition.lifeStage <= 0,
                     name: `cook`,
+                    icon: 'kitchen-set',
                     onclick: () => {
                         return App.displayConfirm(`You take 3 pictures to use as ingredients for your soup! after that, tap to stir until it's mixed!`, [
                             {
@@ -2714,6 +2729,7 @@ let App = {
             App.displayList([
                 {
                     name: 'stats',
+                    icon: 'chart-simple',
                     onclick: () => {
                         App.handlers.open_stats();
                         return true;
@@ -2721,6 +2737,7 @@ let App = {
                 },
                 {
                     name: 'profile',
+                    icon: 'user-circle',
                     onclick: () => {
                         if(!App.userName){
                             App.handlers.show_set_username_dialog();
@@ -2732,6 +2749,7 @@ let App = {
                 },
                 {
                     name: `family tree`,
+                    icon: 'timeline',
                     onclick: () => {
                         App.handlers.open_family_tree();
                         return true;
@@ -2739,6 +2757,7 @@ let App = {
                 },
                 {
                     name: `collection`,
+                    icon: 'list-check',
                     onclick: () => {
                         App.handlers.open_character_collection();
                         return true;
@@ -2746,6 +2765,7 @@ let App = {
                 },
                 {
                     name: `achievements ${hasNewlyUnlockedAchievements ? App.getBadge('Rewards!') : ''}`,
+                    icon: 'star',
                     onclick: () => {
                         App.handlers.open_achievements_list();
                         return true;
@@ -2753,6 +2773,7 @@ let App = {
                 },
                 {
                     name: 'set nickname',
+                    icon: 'pen',
                     onclick: () => {
                         App.displayPrompt(`Enter your pet's name:`, [
                             {
@@ -2773,6 +2794,7 @@ let App = {
                 {
                     _disable: !App.petDefinition.deceasedPredecessors?.length,
                     name: `past generations`,
+                    icon: 'clock-rotate-left',
                     onclick: () => {
                         const generations = 
                             App.petDefinition.deceasedPredecessors
@@ -3309,24 +3331,28 @@ let App = {
             return App.displayList([
                 {
                     name: `mall`,
+                    icon: 'building',
                     onclick: () => {
                         Activities.goToMall();
                     }
                 },
                 {
                     name: `market`,
+                    icon: 'store',
                     onclick: () => {
                         Activities.goToMarket();
                     }
                 },
                 {
                     name: `game center`,
+                    icon: 'gamepad',
                     onclick: () => {
                         Activities.goToArcade();
                     }
                 },
                 {
                     name: `fortune teller ${App.getBadge()}`,
+                    icon: 'wand-magic-sparkles',
                     onclick: () => {
                         return App.displayList([
                             {
@@ -3383,12 +3409,14 @@ let App = {
                 },
                 {
                     name: 'park',
+                    icon: 'tree',
                     onclick: () => { // going to park with random pet
                         Activities.goToPark();
                     }
                 },
                 {
                     name: `visit doctor`,
+                    icon: 'stethoscope',
                     onclick: () => {
                         Activities.goToClinic();
                     }
@@ -3396,6 +3424,7 @@ let App = {
                 {
                     _disable: App.petDefinition.lifeStage < 2,
                     name: `work`,
+                    icon: 'laptop',
                     onclick: () => {
                         App.displayList([
                             {
@@ -3414,13 +3443,6 @@ let App = {
                         return true;
                     }
                 },
-                // {
-                //     name: 'baby sitter',
-                //     onclick: () => {
-                //         App.displayPopup('To be implemented...', 1000);
-                //         return true;
-                //     }
-                // },
             ], null, 'Activities')
         },
         open_friends_list: function(onClickOverride, customFilter, additionalButtons = []){
@@ -3619,6 +3641,7 @@ let App = {
                 },
                 {
                     name: `friends ${App.getBadge()}`,
+                    icon: 'face-smile',
                     onclick: () => {
                         App.handlers.open_friends_list(null, null, [
                             {
@@ -3632,6 +3655,7 @@ let App = {
                 {
                     _ignore: App.petDefinition.lifeStage >= 2,
                     name: 'have birthday',
+                    icon: 'cake-candles',
                     onclick: () => {
                         let nextBirthday = App.petDefinition.getNextBirthdayDate();
                         if(moment().utc().isBefore( nextBirthday )){
@@ -3653,16 +3677,9 @@ let App = {
                     }
                 },
                 {
-                    _ignore: true,
-                    name: 'doctor visit',
-                    onclick: () => {
-                        // App.displayPopup(`${App.pet.stats.current_health}`, 1000);
-                        Activities.inviteDoctorVisit();
-                    }
-                },
-                {
                     _disable: App.petDefinition.lifeStage == 0,
                     name: `social media`,
+                    icon: 'hashtag',
                     onclick: () => {
                         App.handlers.open_social_media();
                         return true;
@@ -3671,6 +3688,7 @@ let App = {
                 {
                     _disable: App.petDefinition.lifeStage == 0,
                     name: `go on vacation`,
+                    icon: 'location-dot',
                     onclick: () => {
                         const price = 250;
                         const { goToVacation } = Activities;
@@ -3699,6 +3717,7 @@ let App = {
                 },
                 {
                     name: `friend codes`,
+                    icon: 'exchange',
                     onclick: () => {
                         App.displayList([
                             {

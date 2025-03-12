@@ -124,13 +124,6 @@ body {
     }
 } */
 
-@keyframes menu-animation {
-    from {
-        opacity: 0;
-        transform: translateX(-4px);
-    }
-}
-
 .generic-list-container {
     position: absolute;
     height: 100%;
@@ -146,6 +139,12 @@ body {
     background: var(--container-background);
 }
 
+@keyframes menu-animation {
+    from {
+        opacity: 0;
+        transform: translateX(-4px);
+    }
+}
 .menu-animation > * {
     animation: menu-animation 0.2s both !important;
 }
@@ -1438,14 +1437,35 @@ a.generic-btn:before {
     flex-wrap: wrap;
 }
 
-.generic-btn:has(> .corner-icon){
+/* .generic-btn:has(> .corner-icon){
     border-top-left-radius: 0;
-}
+} */
 .generic-btn > .corner-icon {
     font-size: x-small;
     position: absolute;
-    top: 0px;
-    left: 0px;
+    right: -8px;
+    bottom: -2px;
+    font-size: x-small;
+    margin-right: 6px;
+    border: 2px solid #ffb362;
+    background-color: #fff4e8;
+    min-width: 16px;
+    min-height: 16px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 100%;
+    animation: corner-icon-animation infinite alternate 1s;
+    animation-delay: calc(var(--child-index) * -0.535s);
+}
+@keyframes corner-icon-animation {
+    0% {
+        transform: rotateZ(-4deg);
+        filter: contrast(1.5);
+    }
+    100% {
+        transform: rotateZ(4deg);
+    }
 }
 
 .generic-btn.stylized:hover {
