@@ -56,7 +56,7 @@ function handleServiceWorker(){
         console.log('Service Worker Registered')
     });
     navigator?.serviceWorker?.addEventListener('controllerchange', () => {
-        if(!shownControllerChangeModal && !isOnItch){
+        if(!shownControllerChangeModal && !isOnItch && App.awayTime){
             shownControllerChangeModal = true;
             document.querySelector('#download-container').style.display = 'none';
             document.querySelector('#download-complete-container').style.display = '';
