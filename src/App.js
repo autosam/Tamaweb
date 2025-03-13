@@ -739,7 +739,7 @@ let App = {
             return;
         }
 
-        if(addEvent(`update_13_notice`, () => {
+        if(addEvent(`update_14_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
@@ -748,7 +748,7 @@ let App = {
                     bold: true,
                 },
                 {
-                    name: `Happy Valentine Day! Check out the new Valentine-themed items, rooms and furniture items!`,
+                    name: `Check out the new fortune teller in town!`,
                     type: 'text',
                 },
                 {
