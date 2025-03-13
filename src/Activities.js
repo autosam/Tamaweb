@@ -61,6 +61,8 @@ class Activities {
 
             });
         });
+
+        App.sendAnalytics('visit_fortune_teller');
     }
     static async useItem(item){
         App.closeAllDisplays();
