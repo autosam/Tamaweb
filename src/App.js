@@ -69,17 +69,29 @@ let App = {
         DISCORD: 'https://tamawebgame.github.io/discord',
     },
     async init () {
-        // init
-        this.initSound();
-        this.drawer = new Drawer(document.querySelector('.graphics-canvas'));
-        Object2d.setDrawer(App.drawer);
+        // window load events
+        this.registerLoadEvents();
 
         // check for platforms
         if(location.host.indexOf('itch') !== -1) App.isOnItch = true;
         if(navigator?.userAgent == 'electron-client') App.isOnElectronClient = true;
 
+        // init
+        this.initSound();
+        App.drawer = new Drawer(document.querySelector('.graphics-canvas'));
+        Object2d.setDrawer(App.drawer);
+
+        // localforage store
+        App.dbStore = localforage.createInstance({
+            name: "tamaweb-store"
+        });
+
         // load data
-        let loadedData = this.load();
+        let loadedData = await this.load();
+        if(!loadedData.lastTime){
+            console.log('legacy: loading from localStorage');
+            loadedData = this.legacy_load();
+        }
         console.log({loadedData});
 
         // shell background
@@ -96,7 +108,7 @@ let App = {
 
         // furniture
         if(loadedData.furniture)
-        this.ownedFurniture = loadedData.furniture;
+            this.ownedFurniture = loadedData.furniture;
 
         // handle preloading
         let forPreload = [
@@ -257,43 +269,6 @@ let App = {
             Activities.seaVacation();
         }
 
-        // entries
-        window.onload = function () {
-            const analyticsData = {
-                session_id: App.sessionId,
-                play_time_mins: (Math.round(App.playTime) / 1000 / 60).toFixed(2),
-                away: (App.awayTime || -1),
-                sprite: App.petDefinition.sprite,
-                is_egg: App.pet.stats.is_egg,
-                gold: App.pet.stats.gold,
-                ver: VERSION
-            }
-            App.sendAnalytics('login', JSON.stringify(analyticsData));
-
-            // update(0);
-            App.targetFps = 60;
-            App.fpsInterval = 1000 / App.targetFps;
-            App.fpsLastTime = Date.now();
-            App.fpsStartTime = App.fpsLastTime;
-            App.onFrameUpdate(0);
-        }
-        window.onbeforeunload = function(){
-            const analyticsData = {
-                session_id: App.sessionId,
-                hunger: Math.round(App.pet.stats.current_hunger),
-                fun: Math.round(App.pet.stats.current_fun),
-                health: Math.round(App.pet.stats.current_health),
-                sleep: Math.round(App.pet.stats.current_sleep),
-                bladder: Math.round(App.pet.stats.current_bladder),
-                is_egg: App.pet.stats.is_egg,
-                has_poop_out: App.pet.stats.has_poop_out,
-                is_sleeping: App.pet.stats.is_sleeping,
-            }
-            App.sendAnalytics('logout', JSON.stringify(analyticsData));
-
-            App.save();
-        }
-
         // touch / mouse pos on canvas
         App.registerInputUpdates();
 
@@ -342,6 +317,9 @@ let App = {
 
         // rudder stack
         this.initRudderStack();
+
+        // session start event
+        App.sendSessionEvent(true);
     },
     initRudderStack: function(){
         rudderanalytics.identify(App.userId, {
@@ -373,6 +351,48 @@ let App = {
     
             App.mouse = { x: x / 2, y: y / 2 };
         })
+    },
+    registerLoadEvents: function(){
+        // entries
+        window.onload = function () {
+            // update(0);
+            App.targetFps = 60;
+            App.fpsInterval = 1000 / App.targetFps;
+            App.fpsLastTime = Date.now();
+            App.fpsStartTime = App.fpsLastTime;
+            App.onFrameUpdate(0);
+        }
+        window.onbeforeunload = function(){
+            App.sendSessionEvent(false);
+            App.save();
+        }
+    },
+    sendSessionEvent: function(login){
+        if(login){
+            const analyticsData = {
+                session_id: App.sessionId,
+                play_time_mins: (Math.round(App.playTime) / 1000 / 60).toFixed(2),
+                away: (App.awayTime || -1),
+                sprite: App.petDefinition.sprite,
+                is_egg: App.pet.stats.is_egg,
+                gold: App.pet.stats.gold,
+                ver: VERSION
+            }
+            App.sendAnalytics('login', JSON.stringify(analyticsData));
+        } else {
+            const analyticsData = {
+                session_id: App.sessionId,
+                hunger: Math.round(App.pet.stats.current_hunger),
+                fun: Math.round(App.pet.stats.current_fun),
+                health: Math.round(App.pet.stats.current_health),
+                sleep: Math.round(App.pet.stats.current_sleep),
+                bladder: Math.round(App.pet.stats.current_bladder),
+                is_egg: App.pet.stats.is_egg,
+                has_poop_out: App.pet.stats.has_poop_out,
+                is_sleeping: App.pet.stats.is_sleeping,
+            }
+            App.sendAnalytics('logout', JSON.stringify(analyticsData));
+        }
     },
     applySettings: function(){
         const graphicsWrapper = document.querySelector('.graphics-wrapper');
@@ -504,8 +524,8 @@ let App = {
 
         if(App.fpsElapsedTime > App.fpsInterval){
             App.fpsLastTime = App.fpsCurrentTime - (App.fpsElapsedTime % App.fpsInterval);
-            App.drawer.draw();
-            if(App.onDraw) App.onDraw();
+            App.drawer?.draw();
+            App.onDraw?.();
             if(App.registeredDrawEvents.length){
                 App.registeredDrawEvents.forEach(fn => fn());
             }
@@ -620,8 +640,7 @@ let App = {
                             if(!json.pet){
                                 throw 'error';
                             }
-                            let petDef = JSON.parse(json.pet);
-                            console.log(json.user_id, App.userId, json.user_id === App.userId);
+                            let petDef = json.pet;
     
                             let def = new PetDefinition().loadStats(petDef);
                             
@@ -637,11 +656,14 @@ let App = {
                                                         {
                                                             name: 'yes',
                                                             onclick: () => {
-                                                                App.loadFromJson(json);
-                                                                App.displayPopup(`${def.name} is now your pet!`, App.INF);
-                                                                setTimeout(() => {
-                                                                    location.reload();  
-                                                                }, 3000);
+                                                                App.displayPopup('Loading...', App.INF);
+
+                                                                App.loadFromJson(json, () => {
+                                                                    App.displayPopup(`${def.name} is now your pet!`, App.INF);
+                                                                    setTimeout(() => {
+                                                                        location.reload();  
+                                                                    }, 3000);
+                                                                });
                                                             }
                                                         },
                                                         {
@@ -701,7 +723,7 @@ let App = {
         }
     },
     handleInGameEvents: function(){
-        if(!App.awayTime || App.awayTime == -1) {
+        if(!App.awayTime || App.awayTime === -1) {
             App.handlers.show_onboarding();
             return;
         }
@@ -991,6 +1013,28 @@ let App = {
         skate_park: new Scene({
             image: 'resources/img/background/outside/skatepark_01.png',
         }),
+        fortune_teller: new Scene({
+            image: 'resources/img/background/house/fortune_teller_01.png',
+            onLoad: () => {
+                const npcDef = new PetDefinition({
+                    sprite: 'resources/img/character/chara_362b.png',
+                    accessories: ['witch hat'],
+                })
+                this.fortuneTellerNpc = new Pet(npcDef);
+                this.fortuneTellerNpc.stopMove();
+                this.fortuneTellerNpc.x = '80%';
+                this.fortuneTellerNpc.triggerScriptedState('idle', App.INF, false, true);
+
+                this.underlay = new Object2d({
+                    img: 'resources/img/background/house/fortune_teller_01_underlay.png',
+                    z: App.constants.BACKGROUND_Z - 1, x: 0, y: 0,
+                })
+            },
+            onUnload: () => {
+                this.fortuneTellerNpc?.removeObject();
+                this.underlay?.removeObject();
+            }
+        }),
     },
     setScene(scene){
         App.currentScene?.onUnload?.(scene);
@@ -1257,9 +1301,10 @@ let App = {
         parentB.stats.is_player_family = true;
 
         // new pet
+        const sprite = PetDefinition.getOffspringSprite(parentA, parentB);
         newPetDefinition = new PetDefinition({
             name: getRandomName(),
-            sprite: randomFromArray(PET_BABY_CHARACTERS),
+            sprite,
         }).setStats({is_egg: true});
 
         newPetDefinition.friends = [
@@ -1339,6 +1384,89 @@ let App = {
         if(Activities.encounter()) return;
     },
     handlers: {
+        open_hubchi_search: function(onAddCallback){
+            const prompt = App.displayPrompt(
+                `
+                Enter your friend's username (or UID): <small>(Case sensitive)</small>
+                <button id="help" style="position: absolute; bottom: 0; right: 0" class="generic-btn stylized"><b>?</b></button>
+                `, 
+                [
+                {
+                    name: '<i class="fa-solid fa-search icon"></i> search',
+                    onclick: (query) => {
+                        if(!query.trim()) return App.displayPopup('Please enter a valid username.');
+                        const searchingPopup = App.displayPopup(`Searching for "${query}"...`, App.INF);
+                        App.apiService.getPetDef(query)
+                            .then(data => {
+                                App.sendAnalytics('username_search', JSON.stringify({
+                                    status: data.status,
+                                    username: query
+                                }));
+                                
+                                if(!data.status) return App.displayPopup(`Username not found <br> <small>(Make sure you are searching for user id, not pet name)</small>`);
+
+                                // if(data.data === hasUploadedPetDef.data) {
+                                if(App.userName.indexOf(query) === 0){
+                                    return App.displayPopup(`Something went wrong!`);
+                                }
+                                
+                                prompt.close();
+                                try {
+                                    const def = new PetDefinition(JSON.parse(data.data));
+                                    App.displayConfirm(`Do you want to add ${def.getCSprite()} ${def.name} to your friends list?`, [
+                                        {
+                                            name: 'yes',
+                                            onclick: () => {
+                                                App.closeAllDisplays();
+                                                const addedFriend = App.petDefinition.addFriend(def, 1);
+                                                if (addedFriend) {
+                                                    App.displayPopup(`${def.getCSprite()} ${def.name} has been added to the friends list!`, 3000);
+                                                    App.apiService.addInteraction(def.ownerId);
+                                                    onAddCallback?.(def);
+                                                } else {
+                                                    App.displayPopup(`You are already friends with ${def.name}`, 3000);
+                                                }
+                                                return false;
+                                            }
+                                        },
+                                        {
+                                            name: 'no',
+                                            class: 'back-btn',
+                                            onclick: () => { }
+                                        },
+                                    ])  
+                                } catch(e) {
+                                    App.displayPopup('Something went wrong!');
+                                }
+                            })
+                            .finally(() => searchingPopup.close())
+                        return true;
+                    }
+                },
+                {
+                    name: 'cancel',
+                    class: 'back-btn',
+                    onclick: () => {}
+                }
+            ])
+            prompt.querySelector('#help').onclick = () => {
+                App.displayConfirm(`
+                        <div> Your friend must have uploaded their character to <b style="color: #ff00c6">Hubchi</b> </div>
+                        <br>
+                        <div> Ensure you search for their <b>UID</b> <small>(located in the profile section)</small> and <b>not their pet name</b> </div>
+                        <br>
+                        <div> UID is <b>case sensitive</b> </div>
+                    `, 
+                    [
+                        {
+                            name: 'ok',
+                            onclick: () => {}
+                        }
+                    ]
+                );
+            }
+            return prompt;
+        },
         show_rating_dialog: function(){
             return App.displayConfirm(`If you're enjoying the game, please consider <b>rating it</b> on Itch. Your feedback makes a huge difference and helps us a lot!`,
                 [
@@ -1572,7 +1700,7 @@ let App = {
                     }
                 },
                 {
-                    name: `furniture ${App.getBadge()}`,
+                    name: `furniture`,
                     onclick: () => {
                         if(!App.isRoomFurnishable()){
                             return App.displayConfirm(`Your room came fully furnished.<br><br>Would you like to remove the default furniture set and customize it?`, [
@@ -2148,9 +2276,13 @@ let App = {
                 { type: 'separator' },
                 {
                     name: 'get save code',
-                    onclick: () => {
+                    onclick: async () => {
                         // let charCode = 'save:' + btoa(JSON.stringify(window.localStorage));
-                        let charCode = `save:${btoa(encodeURIComponent(JSON.stringify(window.localStorage)))}:endsave`;
+                        // let charCode = `save:${btoa(encodeURIComponent(JSON.stringify(window.localStorage)))}:endsave`;
+                        const loadingPopup = App.displayPopup('loading...');
+                        const storage = await App.getDBItems();
+                        loadingPopup.close();
+                        const charCode = `save:${btoa(encodeURIComponent(JSON.stringify(storage)))}:endsave`;
                         App.displayConfirm(`Here you'll be able to copy your unique save code and continue your playthrough on another device`, [
                             {
                                 name: 'ok',
@@ -2191,13 +2323,16 @@ let App = {
                         App.displayConfirm('Are you sure you want to delete your saved pet?', [
                             {
                                 name: 'yes (delete)',
-                                onclick: () => {
+                                onclick: async () => {
                                     App.save();
                                     App.save = () => {};
-                                    // window.localStorage.clear();
-                                    window.localStorage.removeItem('last_time');
-                                    window.localStorage.removeItem('pet');
+
                                     App.displayPopup('resetting...', App.INF);
+
+                                    window.localStorage.clear();
+                                    await App.dbStore.removeItem('last_time');
+                                    await App.dbStore.removeItem('pet');
+
                                     location.reload();
                                     return false;
                                 }
@@ -2221,10 +2356,11 @@ let App = {
                                     App.displayConfirm('Are you sure? There is no way to revert this.', [
                                         {
                                             name: 'yes (delete)',
-                                            onclick: () => {
+                                            onclick: async () => {
                                                 App.save = () => {};
-                                                window.localStorage.clear();
                                                 App.displayPopup('resetting...', App.INF);
+                                                window.localStorage.clear();
+                                                await App.dbStore.clear();
                                                 location.reload();
                                                 return false;
                                             }
@@ -3172,7 +3308,7 @@ let App = {
         open_activity_list: function(){
             return App.displayList([
                 {
-                    name: `mall ${App.getBadge()}`,
+                    name: `mall`,
                     onclick: () => {
                         Activities.goToMall();
                     }
@@ -3186,9 +3322,63 @@ let App = {
                 {
                     name: `game center`,
                     onclick: () => {
-                        // App.handlers.open_game_list();
                         Activities.goToArcade();
-                        // return true;
+                    }
+                },
+                {
+                    name: `fortune teller ${App.getBadge()}`,
+                    onclick: () => {
+                        return App.displayList([
+                            {
+                                _disable: App.petDefinition.lifeStage === 2,
+                                name: 'Next Evolution',
+                                onclick: () => {
+                                    return App.displayConfirm(`Do you want to see ${App.petDefinition.name}'s <b>next possible life stage(s)</b> based on the current <b>care rating</b>?`, [
+                                        {
+                                            name: 'yes ($100)',
+                                            onclick: () => {
+                                                if(!App.pay(100)) return;
+                                                App.closeAllDisplays();
+                                                Activities.goToFortuneTeller();
+                                            }
+                                        },
+                                        {
+                                            name: 'no',
+                                            class: 'back-btn',
+                                            onclick: () => {}
+                                        }
+                                    ])
+                                }
+                            },
+                            {
+                                _disable: App.petDefinition.lifeStage !== 2,
+                                name: 'Offspring with ...',
+                                onclick: () => {
+                                    const filter = (petDefinition) => (
+                                        !petDefinition.stats.is_player_family
+                                        && petDefinition.lifeStage === App.petDefinition.lifeStage
+                                    )
+                                    App.handlers.open_friends_list((friendDef) => {
+                                        return App.displayConfirm(`Do you want to see ${friendDef.name} and ${App.petDefinition.name}'s baby <b>offspring</b>?`, [
+                                            {
+                                                name: 'yes ($100)',
+                                                onclick: () => {
+                                                    if(!App.pay(100)) return;
+                                                    App.closeAllDisplays();
+                                                    Activities.goToFortuneTeller(friendDef);
+                                                }
+                                            },
+                                            {
+                                                name: 'no',
+                                                class: 'back-btn',
+                                                onclick: () => {}
+                                            }
+                                        ])
+                                    }, filter);
+                                    return true;
+                                }
+                            }
+                        ])
                     }
                 },
                 {
@@ -3233,33 +3423,38 @@ let App = {
                 // },
             ], null, 'Activities')
         },
-        open_friends_list: function(onClickOverride){
-            if(!App.petDefinition.friends.length){
+        open_friends_list: function(onClickOverride, customFilter, additionalButtons = []){
+            const friends = customFilter
+                ? App.petDefinition.friends.filter(customFilter)
+                : App.petDefinition.friends;
+
+            if(!friends.length && !additionalButtons.length){
                 App.displayPopup(`${App.petDefinition.name} doesn't have any friends right now<br><br><small>Visit the park to find new friends<small>`, 4000);
                 return;
             }
 
-            const friendsList = App.displayList(App.petDefinition.friends.map((friendDef, index) => {
+            let friendsList;
+            const mappedFriendsList = friends.map((friendDef, index) => {
                 const name = friendDef.name || 'Unknown';
                 const icon = friendDef.getCSprite();
                 return {
                     name: icon + name,
                     onclick: () => {
-                        if(onClickOverride) return onClickOverride(friendDef);
+                        if (onClickOverride) return onClickOverride(friendDef);
                         const friendActivitiesList = App.displayList([
                             {
                                 name: 'info',
                                 onclick: () => {
                                     const list = UI.genericListContainer();
                                     UI.genericListContainerContent(`
-                                    <div class="inner-padding uppercase surface-stylized b-radius-10">
-                                        ${icon} ${friendDef.name}
-                                        <br>
-                                        <b>Friendship:</b> ${App.createProgressbar( friendDef.getFriendship() / 100 * 100 ).node.outerHTML}
-                                        <hr>
-                                        <b>Age:</b> ${friendDef.getLifeStageLabel()}
-                                    </div>
-                                    `, list);
+                                <div class="inner-padding uppercase surface-stylized b-radius-10">
+                                    ${icon} ${friendDef.name}
+                                    <br>
+                                    <b>Friendship:</b> ${App.createProgressbar(friendDef.getFriendship() / 100 * 100).node.outerHTML}
+                                    <hr>
+                                    <b>Age:</b> ${friendDef.getLifeStageLabel()}
+                                </div>
+                                `, list);
 
                                     return true;
                                 }
@@ -3268,7 +3463,7 @@ let App = {
                                 _ignore: App.petDefinition.lifeStage < 2 || friendDef.lifeStage < 2 || friendDef.stats.is_player_family,
                                 name: `go on date`,
                                 onclick: () => {
-                                    if(friendDef.getFriendship() < 60){
+                                    if (friendDef.getFriendship() < 60) {
                                         return App.displayPopup(`${App.petDefinition.name}'s friendship with ${friendDef.name} is too low <br><br> they don't want to go on a date.`, 5000);
                                     }
 
@@ -3282,7 +3477,7 @@ let App = {
                                         {
                                             name: 'cancel',
                                             class: 'back-btn',
-                                            onclick: () => {}
+                                            onclick: () => { }
                                         }
                                     ])
 
@@ -3356,7 +3551,14 @@ let App = {
                         return true;
                     }
                 }
-            }));
+            });
+
+            friendsList = App.displayList(
+                [
+                    ...mappedFriendsList,
+                    ...additionalButtons,
+                ]
+            );
         },
         open_phone: function(){
             App.displayList([
@@ -3416,9 +3618,14 @@ let App = {
                     }
                 },
                 {
-                    name: 'friends',
+                    name: `friends ${App.getBadge()}`,
                     onclick: () => {
-                        App.handlers.open_friends_list();
+                        App.handlers.open_friends_list(null, null, [
+                            {
+                                name: `<i class="fa-solid fa-plus icon"></i> Add Friend ${App.getBadge()}`,
+                                onclick: () => App.handlers.open_hubchi_search(),
+                            }
+                        ]);
                         return true;
                     }
                 },
@@ -3496,8 +3703,11 @@ let App = {
                         App.displayList([
                             {
                                 name: 'get code',
-                                onclick: () => {
-                                    let charCode = 'friend:' + btoa(encodeURIComponent(JSON.stringify(window.localStorage)));
+                                onclick: async () => {
+                                    const loading = App.displayPopup('Loading...', App.INF);
+                                    const pet = await App.dbStore.getItem('pet');
+                                    loading.close();
+                                    let charCode = 'friend:' + btoa(encodeURIComponent(JSON.stringify({ user_id: App.userId, pet })));
                                     navigator.clipboard.writeText(charCode);
                                     console.log(charCode);
                                     App.displayConfirm(`Your friend code has been copied to the clipboard!`, [
@@ -3535,7 +3745,7 @@ let App = {
 
                                                     if(json.user_id === App.userId) return App.displayPopup(`You can't add yourself as a friend!`);
 
-                                                    let petDef = JSON.parse(json.pet);
+                                                    let petDef = json.pet;
 
                                                     let def = new PetDefinition().loadStats(petDef);
                                                     
@@ -3831,7 +4041,7 @@ let App = {
                     }
                 },
                 {
-                    name: `Buy furniture ${App.getBadge()}`,
+                    name: `Buy furniture`,
                     onclick: () => {
                         App.handlers.open_furniture_list();
                         return true;
@@ -4535,30 +4745,33 @@ let App = {
         } catch(e) {}
     },
     save: function(noIndicator){
+        const setItem = (key, value) => {
+            return App.dbStore.setItem(key, value);
+        }
         // setCookie('pet', App.pet.serializeStats(), 365);
-        window.localStorage.setItem('pet', App.pet.serializeStats());
-        window.localStorage.setItem('settings', JSON.stringify(App.settings));
-        window.localStorage.setItem('last_time', Date.now());
-        // window.localStorage.setItem('last_time', Date.now() - 86400 * 1000 * 10);
-        window.localStorage.setItem('user_id', App.userId);
-        window.localStorage.setItem('user_name', App.userName);
-        window.localStorage.setItem('ingame_events_history', JSON.stringify(App.gameEventsHistory));
-        window.localStorage.setItem('play_time', App.playTime);
-        window.localStorage.setItem('shell_background_v2.1', App.shellBackground);
-        window.localStorage.setItem('mods', JSON.stringify(App.mods));
-        window.localStorage.setItem('records', JSON.stringify(App.records));
-        window.localStorage.setItem('room_customization', JSON.stringify({
+        setItem('pet', App.pet.serializeStats());
+        setItem('settings', (App.settings));
+        setItem('last_time', Date.now());
+        // setItem('last_time', Date.now() - 86400 * 1000 * 10);
+        setItem('user_id', App.userId);
+        setItem('user_name', App.userName);
+        setItem('ingame_events_history', (App.gameEventsHistory));
+        setItem('play_time', App.playTime);
+        setItem('shell_background_v2.1', App.shellBackground);
+        setItem('mods', (App.mods));
+        setItem('records', (App.records));
+        setItem('room_customization', ({
             home: {
                 image: App.scene.home.image,
             }
         }))
-        window.localStorage.setItem('missions', JSON.stringify({
+        setItem('missions', ({
             current: Missions.current,
             currentStep: Missions.currentStep,
             currentPts: Missions.currentPts,
             refreshTime: Missions.refreshTime
         }))
-        window.localStorage.setItem('furniture', JSON.stringify(App.ownedFurniture));
+        setItem('furniture', (App.ownedFurniture));
         // -3600000
         if(!noIndicator){
             const saveIcon = document.querySelector('.save-indicator');
@@ -4566,7 +4779,7 @@ let App = {
             setTimeout(() => saveIcon.style.display = 'none', 2000);
         }
     },
-    load: function(){
+    legacy_load: function(){
         let pet = window.localStorage.getItem('pet');
             pet = pet ? JSON.parse(pet) : {};
 
@@ -4622,7 +4835,64 @@ let App = {
 
         return App.loadedData;
     },
-    loadFromJson: function(json){
+    load: async function() {
+        const getItem = async (key, defaultValue) => {
+            const value = await App.dbStore.getItem(key);
+            return value !== null ? value : defaultValue;
+        }
+
+        // await new Promise(resolve => setTimeout(resolve, 5000))
+    
+        const pet = await getItem('pet', {});
+        const settings = await getItem('settings', null);
+        const lastTime = await getItem('last_time', false);
+        const eventsHistory = await getItem('ingame_events_history', null);
+        const roomCustomizations = await getItem('room_customization', null);
+        const mods = await getItem('mods', App.mods);
+        const records = await getItem('records', App.records);
+    
+        const userId = await getItem('user_id', random(100000000000, 999999999999));
+        App.userId = userId;
+    
+        const userName = await getItem('user_name', null);
+        App.userName = userName == 'null' ? null : userName;
+    
+        App.playTime = parseInt(await getItem('play_time', 0), 10);
+    
+        const shellBackground = await getItem('shell_background_v2.1', 
+            App.definitions.shell_background.find(shell => shell.isDefault).image ||
+            App.definitions.shell_background[1].image);
+    
+        const missions = await getItem('missions', {});
+        const furniture = await getItem('furniture', false);
+    
+        App.loadedData = {
+            pet,
+            settings,
+            lastTime,
+            eventsHistory,
+            roomCustomizations,
+            shellBackground,
+            playTime: App.playTime,
+            mods,
+            records,
+            missions,
+            furniture
+        };
+    
+        return App.loadedData;
+    },
+    getDBItems: async function(){
+        const keys = await App.dbStore.keys();
+        const items = {};
+
+        for (const key of keys) {
+            items[key] = await App.dbStore.getItem(key);
+        }
+    
+        return items;
+    },
+    loadFromJson: async function(json, callbackFn){
         const ignoreKeys = [
             'user_name',
             'user_id',
@@ -4634,14 +4904,17 @@ let App = {
         App.save = () => {};
         for(let key of Object.keys(json)){
             if(ignoreKeys.includes(key)) continue;
-            window.localStorage.setItem(key, json[key]);
+            await App.dbStore.setItem(key, json[key]);
         }
         const allowedKeys = [...Object.keys(json), ...ignoreKeys];
-        Object.keys(localStorage).forEach(key => {
+        const currentKeys = await App.dbStore.keys();
+        for(let key of currentKeys){
             if(!allowedKeys.includes(key)){
-                window.localStorage.removeItem(key);
+                await App.dbStore.removeItem(key);
             }
-        })
+        }
+
+        callbackFn?.();
     },
     vibrate: function(dur){
         if(!navigator?.vibrate || !App.settings.vibrate) return;
@@ -4698,6 +4971,14 @@ let App = {
     addNumToObject: function(obj, key, amount){
         if(!obj[key]) obj[key] = amount;
         else obj[key] += amount;
+    },
+    pay: function(amount){
+        if(App.pet.stats.gold < amount){
+            App.displayPopup(`Don't have enough gold!`);
+            return false;
+        }
+        App.pet.stats.gold -= amount;
+        return true;
     },
     useWebcam: function(callback, facingMode, shutterDelay){
         if(!facingMode) facingMode = 'environment';
@@ -4888,7 +5169,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     App.deferredInstallPrompt = e;
 
-    if(App.awayTime !== -1){
+    const showInstallPrompt = () => {
         App.addEvent(`pwa_install_notice_01`, () => {
             App.displayConfirm(`Do you want to install <b>Tamaweb</b> as an app?`, [
                 {
@@ -4907,4 +5188,14 @@ window.addEventListener('beforeinstallprompt', (e) => {
             ])
         })
     }
+
+    let checkTries = 10;
+    const checkForAwayTimeAndInit = () => {
+        if(checkTries-- < 0) return;
+        if(App.awayTime){
+            showInstallPrompt();
+        } else setTimeout(checkForAwayTimeAndInit, 500)
+    }
+
+    checkForAwayTimeAndInit();
 });

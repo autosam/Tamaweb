@@ -662,7 +662,7 @@ App.definitions = {
         "valentine": {
             image: 'resources/img/background/house/cc_04.png',
             price: 350,
-            isNew: true,
+            isNew: false,
         },
     },
 
@@ -674,35 +674,35 @@ App.definitions = {
             image: 'resources/img/furniture/bear_valentine.png',
             id: "bear_valentine",
             price: 200,
-            isNew: true,
+            isNew: false,
         },
         {
             name: 'Valentine Heart',
             image: 'resources/img/furniture/broken_heart_valentine.png',
             id: "broken_heart_valentine",
             price: 160,
-            isNew: true,
+            isNew: false,
         },
         {
             name: 'Valentine Cake',
             image: 'resources/img/furniture/cake_valentine.png',
             id: "cake_valentine",
             price: 120,
-            isNew: true,
+            isNew: false,
         },
         {
             name: 'Valentine Gift',
             image: 'resources/img/furniture/gift_valentine.png',
             id: "gift_valentine",
             price: 120,
-            isNew: true,
+            isNew: false,
         },
         {
             name: 'Valentine Chair',
             image: 'resources/img/furniture/chair_valentine.png',
             id: "chair_valentine",
             price: 150,
-            isNew: true,
+            isNew: false,
         },
 
         // gothic set
@@ -1329,13 +1329,13 @@ App.definitions = {
             image: 'resources/img/accessory/bear_hat_01.png',
             front: true,
             price: 400,
-            isNew: true,
+            isNew: false,
         },
         'bunny balloon': {
             image: 'resources/img/accessory/bunny_balloon_01.png',
             front: true,
             price: 350,
-            isNew: true,
+            isNew: false,
         },
     },
 

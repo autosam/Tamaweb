@@ -1,4 +1,67 @@
 class Activities {
+    static async goToFortuneTeller(otherPetDef = App.getRandomPetDef()){
+        App.toggleGameplayControls(false);
+        App.setScene(App.scene.fortune_teller);
+
+        let evolutions = App.petDefinition.getPossibleEvolutions();
+
+        if(!evolutions){
+            evolutions = [PetDefinition.getOffspringSprite(App.petDefinition, otherPetDef)];
+            
+            App.pet.showThought(App.constants.WANT_TYPES.playdate, otherPetDef);
+        }
+
+        const petsToReveal = evolutions.map((sprite) => {
+            const pet = new Pet(
+                new PetDefinition({
+                    sprite,
+                }),
+                {
+                    x: '50%',
+                    y: '55%',
+                    z: App.constants.BACKGROUND_Z - 1,
+                    opacity: 0,
+                    castShadow: false,
+                }
+            );
+
+            pet.triggerScriptedState('idle', App.INF, 0, true);
+
+            return pet;
+        })
+
+        const fadeInAndOut = (pet) => {
+            let target = 1;
+            setTimeout(() => target = 0, 4000);
+            pet.onDraw = (me) => {
+                me.opacity = lerp(me.opacity, target, 0.0025 * App.nDeltaTime);
+                Object2d.animations.bob(me, 0.005, 0.1);
+            }
+        }
+
+        App.pet.stopMove();
+        App.pet.x = -30;
+        App.pet.targetX = 50;
+        App.pet.triggerScriptedState('moving', 3000, null, true, () => {
+            App.pet.x = '20%';
+            App.pet.inverted = true;
+            App.pet.triggerScriptedState('idle', 2000, null, true, () => {
+                const delayBetweenReveals = 6000;
+                const maxWaitTime = petsToReveal.length * delayBetweenReveals;
+                App.pet.triggerScriptedState('shocked', maxWaitTime, null, true, () => {
+                    App.pet.playCheeringAnimation(() => {
+                        petsToReveal.forEach(p => p?.removeObject());
+                        App.setScene(App.scene.home);
+                        App.toggleGameplayControls(true);
+                    });
+                });
+                petsToReveal.forEach((p, i) => {
+                    setTimeout(() => fadeInAndOut(p), i * delayBetweenReveals);
+                });
+
+            });
+        });
+    }
     static async useItem(item){
         App.closeAllDisplays();
         
@@ -237,8 +300,8 @@ class Activities {
             outgoing: hasUploadedPetDef.interactionOutgoingLikes ?? 0,
             receiving: hasUploadedPetDef.interactionReceivingLikes ?? 0,
         }
-        const addInteraction = (def) => {
-            App.apiService.addInteraction(def.ownerId);
+        const addInteraction = (def, skipApi) => {
+            if(!skipApi) App.apiService.addInteraction(def.ownerId);
             def.interactions = (def.interactions ?? 0) + INTERACTION_LIKES.outgoing;
             hasUploadedPetDef.interactions = (hasUploadedPetDef.interactions ?? 0) + INTERACTION_LIKES.receiving;
         }
@@ -435,66 +498,8 @@ class Activities {
                 },
             ])
         }
-        const handleFriendSearch = () => {
-            const prompt = App.displayPrompt(`Enter your friend's username (or UID): <small>(Case sensitive)</small>`, [
-                {
-                    name: '<i class="fa-solid fa-search icon"></i> search',
-                    onclick: (query) => {
-                        if(!query.trim()) return App.displayPopup('Please enter a valid username.');
-                        const searchingPopup = App.displayPopup(`Searching for "${query}"...`, App.INF);
-                        App.apiService.getPetDef(query)
-                            .then(data => {
-                                App.sendAnalytics('username_search', JSON.stringify({
-                                    status: data.status,
-                                    username: query
-                                }));
-                                
-                                if(!data.status) return App.displayPopup(`Username not found <br> <small>(Make sure you are searching for user id not pet name)</small>`);
-
-                                if(data.data === hasUploadedPetDef.data) {
-                                    return App.displayPopup(`Something went wrong!`);
-                                }
-                                
-                                prompt.close();
-                                try {
-                                    const def = new PetDefinition(JSON.parse(data.data));
-                                    App.displayConfirm(`Do you want to add ${def.getCSprite()} ${def.name} to your friends list?`, [
-                                        {
-                                            name: 'yes',
-                                            onclick: () => {
-                                                App.closeAllDisplays();
-                                                const addedFriend = App.petDefinition.addFriend(def, 1);
-                                                if (addedFriend) {
-                                                    App.displayPopup(`${def.getCSprite()} ${def.name} has been added to the friends list!`, 3000);
-                                                    addInteraction(def);
-                                                } else {
-                                                    App.displayPopup(`You are already friends with ${def.name}`, 3000);
-                                                }
-                                                return false;
-                                            }
-                                        },
-                                        {
-                                            name: 'no',
-                                            class: 'back-btn',
-                                            onclick: () => { }
-                                        },
-                                    ])  
-                                } catch(e) {
-                                    App.displayPopup('Something went wrong!');
-                                }
-                            })
-                            .finally(() => searchingPopup.close())
-                        return true;
-                    }
-                },
-                {
-                    name: 'cancel',
-                    class: 'back-btn',
-                    onclick: () => {}
-                }
-            ])
-            return prompt;
-        }
+        const handleFriendSearch = () => App.handlers.open_hubchi_search((def) => addInteraction(def, true));
+        
         const handleRewardStore = () => {
             const showItem = (image, name, description, unlockLikesReq, unlockKey) => {
                 const isUnlocked = App.getRecord(unlockKey);
@@ -594,13 +599,16 @@ class Activities {
                         `,
                     },
                     {
-                        _ignore: hasUploadedPetDef.status,
                         name: 'Upload character',
                         onclick: handleUploadCharacter
                     },
                     {
                         name: '<i class="icon fa-solid fa-home"></i> return home',
                         onclick: handleReturnHome
+                    },
+                    {
+                        name: `Hubchi is an online hub for players to interact with each other and win rewards!`,
+                        type: 'info'
                     },
                 ])
             }
@@ -1269,7 +1277,7 @@ class Activities {
             });
         });
     }
-    static wedding(otherPetDef){
+    static wedding(otherPetDef = App.getRandomPetDef()){
         App.closeAllDisplays();
         App.setScene(App.scene.wedding);
         App.toggleGameplayControls(false);

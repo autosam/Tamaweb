@@ -299,6 +299,7 @@ class PetDefinition {
             s[serializable] = this[serializable];
         });
 
+        return s;
         if(noStringify) return s;
         return JSON.stringify(s);
     }
@@ -407,31 +408,10 @@ class PetDefinition {
     }
 
     ageUp(isNpc){
-        const careRating = !isNpc ? this.stats.current_care : random(1, 3);
-        let possibleEvolutions = GROWTH_CHART[this.sprite];
-        if(!possibleEvolutions){
-            possibleEvolutions = GROWTH_CHART[randomFromArray(Object.keys(GROWTH_CHART))]
-        }
+        const evolutions = this.getPossibleEvolutions(isNpc);
+        if(!evolutions) return false;
 
-        switch(this.lifeStage){
-            case 0:
-                let targetEvolutions;
-                switch(careRating){
-                    case 1: targetEvolutions = possibleEvolutions.slice(0, 2); break; // low care
-                    case 3: targetEvolutions = possibleEvolutions.slice(5); break; // high care
-                    default: targetEvolutions = possibleEvolutions.slice(2, 5); // default medium care
-                }
-                this.sprite = randomFromArray(targetEvolutions);
-                break;
-            case 1:
-                switch(careRating){
-                    case 1: this.sprite = possibleEvolutions[0]; break; // low care
-                    case 3: this.sprite = possibleEvolutions[2]; break; // high care
-                    default: this.sprite = possibleEvolutions[1]; // default medium care
-                }
-                break;
-            case 2: return;
-        }
+        this.sprite = randomFromArray(evolutions);
 
         this.lastBirthday = new Date();
         this.prepareSprite();
@@ -441,6 +421,31 @@ class PetDefinition {
         })
 
         return true;
+    }
+
+    getPossibleEvolutions(isNpc){
+        const careRating = !isNpc ? this.stats.current_care : random(1, 3);
+        let possibleEvolutions = GROWTH_CHART[this.sprite];
+        if(!possibleEvolutions){
+            possibleEvolutions = GROWTH_CHART[randomFromArray(Object.keys(GROWTH_CHART))]
+        }
+
+        switch(this.lifeStage){
+            case 0:
+                switch(careRating){
+                    case 1: return possibleEvolutions.slice(0, 2); // low care
+                    case 3: return possibleEvolutions.slice(5); // high care
+                    default: return possibleEvolutions.slice(2, 5); // default medium care
+                }
+            case 1:
+                switch(careRating){
+                    case 1: return [possibleEvolutions[0]]; // low care
+                    case 3: return [possibleEvolutions[2]]; // high care
+                    default: return [possibleEvolutions[1]]; // default medium care
+                }
+        }
+
+        return false;
     }
 
     addFriend(friendDef, friendship){
@@ -532,7 +537,11 @@ class PetDefinition {
                 current_want.item = wantedFriendIndex;
                 break;
             case "item": // item is item name
-                const wantedItem = randomFromArray(Object.keys(App.definitions.item));
+                const appropriateItems = Object.keys(App.definitions.item)
+                    .map(itemName => ({name: itemName, ...App.definitions.item[itemName]}))
+                    .filter(item => !item.age || item.age?.includes(App.petDefinition.lifeStage))
+                    .map(item => item.name)
+                const wantedItem = randomFromArray(appropriateItems);
                 current_want.type = App.constants.WANT_TYPES.item;
                 current_want.item = wantedItem;
                 break;
@@ -543,7 +552,7 @@ class PetDefinition {
         }
 
         current_want.appearTime = App.fullTime;
-        current_want.next_refresh_ms = App.fullTime += (1000 * 60 * random(30, 60)); // 30-60 min
+        current_want.next_refresh_ms = App.fullTime += (1000 * 60 * random(20, 60)); // 30-60 min
     }
     clearWant(fulfilled){
         const {current_want} = this.stats;
@@ -571,6 +580,10 @@ class PetDefinition {
         if(add) this.stats.current_care += 1;
         else this.stats.current_care -= 1;
         this.stats.current_care = clamp(this.stats.current_care, 1, this.stats.max_care);
+    }
+    getCharHash(){
+        const sprite = this.sprite.split('/').at(-1) || this.sprite;
+        return hashCode(sprite);
     }
 
     spritesheetDefinitions = {
@@ -619,5 +632,14 @@ class PetDefinition {
 
     static getCharCode(sprite){
         return sprite.replace(/\D+/g, '');
+    }
+
+    static getOffspringSprite(petA, petB, spritesArray = PET_BABY_CHARACTERS){
+        const seed = (petA.getCharHash() + petB.getCharHash());
+        pRandom.save();
+        pRandom.seed = seed;
+        const sprite = pRandomFromArray(spritesArray) || spritesArray[0];
+        pRandom.load();
+        return sprite;
     }
 }

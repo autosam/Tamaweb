@@ -34,20 +34,29 @@ class SpriteElement extends HTMLElement {
     }
 }
 
+/* Object.defineProperty(HTMLElement.prototype, 'safeInnerHTML', {
+    get: function() {
+        return this.innerHTML;
+    },
+    set: function(content) {
+        // const sanitizedContent = DOMPurify.sanitize(content);
+        const sanitizedContent = sanitize(content);
+        this.innerHTML = sanitizedContent;
+    }
+}); */
+
 customElements.define("c-sprite", SpriteElement);
 
 function handleServiceWorker(){
-    if(!navigator?.serviceWorker || App.isOnItch) return;
+    const isOnItch = location.host.indexOf('itch') !== -1;
+    if(!navigator?.serviceWorker || isOnItch) return;
     
     let shownControllerChangeModal = false;
     navigator?.serviceWorker?.register('service-worker.js').then((registration) => {
         console.log('Service Worker Registered')
-        // if(registration.active){
-        //     setTimeout(() => App.checkPetStats(), 500)
-        // }
     });
     navigator?.serviceWorker?.addEventListener('controllerchange', () => {
-        if(!shownControllerChangeModal && !App.isOnItch){
+        if(!shownControllerChangeModal && !isOnItch && App.awayTime){
             shownControllerChangeModal = true;
             document.querySelector('#download-container').style.display = 'none';
             document.querySelector('#download-complete-container').style.display = '';
@@ -58,7 +67,7 @@ function handleServiceWorker(){
     channel.addEventListener('message', event => {
         switch(event.data.type){
             case "install":
-                if(!App.awayTime || App.isOnItch) break;
+                if(!App.awayTime || isOnItch) break;
                 const downloadContainer = document.querySelector('#download-container');
                 downloadContainer.style.display = '';
                 downloadContainer.onclick = () => {
