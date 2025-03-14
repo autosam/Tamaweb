@@ -4749,7 +4749,6 @@ let App = {
         } catch(e) {}
     },
     save: function(noIndicator){
-        return;
         const setItem = (key, value) => {
             return App.dbStore.setItem(key, value);
         }
