@@ -474,7 +474,7 @@ let App = {
         }
     },
     loadMods: function(mods){
-        if(!mods || !mods.length) return;
+        if(typeof mods !== 'object' || !mods || !mods.length) return;
         App.mods = mods;
         App.mods.forEach(mod => {
             if(mod.replaced_resources){
@@ -1074,7 +1074,7 @@ let App = {
 
         if(removeOnly || !App.isRoomFurnishable()) return;
 
-        furnitureData.forEach(furniture => {
+        furnitureData.forEach?.(furniture => {
             if(!furniture.isActive) return;
             const furnitureDef = App.getFurnitureDefFromId(furniture.id);
             if(!furnitureDef) 
@@ -1253,7 +1253,7 @@ let App = {
         }
     },
     applyRoomCustomizations(data){
-        if(!data) return;
+        if(typeof data !== 'object' || !data) return;
 
         if(data.home.image) App.scene.home.image = data.home.image;
 
@@ -4749,6 +4749,7 @@ let App = {
         } catch(e) {}
     },
     save: function(noIndicator){
+        return;
         const setItem = (key, value) => {
             return App.dbStore.setItem(key, value);
         }
