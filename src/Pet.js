@@ -589,7 +589,7 @@ class Pet extends Object2d {
             else if(!isOfflineProgression) {
                 App.queueEvent(() => {
                     Activities.poop(true);
-                })
+                }, 'poop');
             }
         }
         if(stats.current_bladder <= stats.max_bladder / 4){

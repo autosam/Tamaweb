@@ -644,6 +644,7 @@ let App = {
                             if(!json.pet || typeof json.pet !== 'object'){
                                 throw 'error';
                             }
+                            console.log(json)
                             let petDef = json.pet;
     
                             let def = new PetDefinition().loadStats(petDef);
@@ -1346,7 +1347,14 @@ let App = {
             ...props
         });
     },
-    queueEvent: function(payloadFn){
+    _queueEventKeys: {},
+    queueEvent: function(payloadFn, eventKey = App.time + Math.random()){
+        if(this._queueEventKeys[eventKey]){
+            // event already queued
+            return false;
+        }
+        this._queueEventKeys[eventKey] = true;
+
         const checkForDecentTime = () => {
             if(
                 App.pet.isDuringScriptedState() || 
@@ -1360,6 +1368,7 @@ let App = {
 
             App.unregisterOnDrawEvent(checkForDecentTime);
             payloadFn?.();
+            delete this._queueEventKeys[eventKey];
         }
         App.registerOnDrawEvent(checkForDecentTime);
     },
