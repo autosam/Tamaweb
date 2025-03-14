@@ -353,15 +353,19 @@ let App = {
         })
     },
     registerLoadEvents: function(){
-        // entries
-        window.onload = function () {
-            // update(0);
+        const initializeRenderer = () => {
             App.targetFps = 60;
             App.fpsInterval = 1000 / App.targetFps;
             App.fpsLastTime = Date.now();
             App.fpsStartTime = App.fpsLastTime;
             App.onFrameUpdate(0);
         }
+        window.onload = function () {
+            initializeRenderer();
+        }
+        // document.addEventListener('DOMContentLoaded', function(event) {
+        //     initializeRenderer();
+        // });
         window.onbeforeunload = function(){
             App.sendSessionEvent(false);
             App.save();
@@ -637,7 +641,7 @@ let App = {
                             const b64 = decodeURIComponent(atob(commandPayload.replace(':endsave', '')));
                             console.log(b64)
                             let json = JSON.parse(b64);
-                            if(!json.pet){
+                            if(!json.pet || typeof json.pet !== 'object'){
                                 throw 'error';
                             }
                             let petDef = json.pet;
