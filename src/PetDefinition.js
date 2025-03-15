@@ -386,7 +386,7 @@ class PetDefinition {
     }
 
     getNextBirthdayDate(){
-        let m = moment(this.lastBirthday).utc();
+        let m = moment(this.lastBirthday);
         switch(this.lifeStage){
             case 0:
                 return m.add(App.constants.MANUAL_AGE_HOURS_BABY, 'hours');
@@ -397,7 +397,7 @@ class PetDefinition {
     }
 
     getNextAutomaticBirthdayDate(){
-        let m = moment(this.birthday).utc();
+        let m = moment(this.birthday);
         switch(this.lifeStage){
             case 0:
                 return m.add(App.constants.AUTO_AGE_HOURS_BABY, 'hours');

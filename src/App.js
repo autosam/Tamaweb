@@ -208,7 +208,7 @@ let App = {
 
         // check automatic age up
         if(App.settings.automaticAging){
-            while(moment().utc().isAfter( App.petDefinition.getNextAutomaticBirthdayDate() )){
+            while(moment().isAfter( App.petDefinition.getNextAutomaticBirthdayDate() )){
                 App.petDefinition.ageUp()
                 App.sendAnalytics('auto_age_up', App.petDefinition.lifeStage);
             }
@@ -644,6 +644,7 @@ let App = {
                             if(!json.pet || typeof json.pet !== 'object'){
                                 throw 'error';
                             }
+                            console.log(json)
                             let petDef = json.pet;
     
                             let def = new PetDefinition().loadStats(petDef);
@@ -739,7 +740,7 @@ let App = {
             return;
         }
 
-        if(addEvent(`update_13_notice`, () => {
+        if(addEvent(`update_14_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
@@ -748,7 +749,7 @@ let App = {
                     bold: true,
                 },
                 {
-                    name: `Happy Valentine Day! Check out the new Valentine-themed items, rooms and furniture items!`,
+                    name: `Check out the new fortune teller in town!`,
                     type: 'text',
                 },
                 {
@@ -1346,7 +1347,14 @@ let App = {
             ...props
         });
     },
-    queueEvent: function(payloadFn){
+    _queueEventKeys: {},
+    queueEvent: function(payloadFn, eventKey = App.time + Math.random()){
+        if(this._queueEventKeys[eventKey]){
+            // event already queued
+            return false;
+        }
+        this._queueEventKeys[eventKey] = true;
+
         const checkForDecentTime = () => {
             if(
                 App.pet.isDuringScriptedState() || 
@@ -1360,6 +1368,7 @@ let App = {
 
             App.unregisterOnDrawEvent(checkForDecentTime);
             payloadFn?.();
+            delete this._queueEventKeys[eventKey];
         }
         App.registerOnDrawEvent(checkForDecentTime);
     },
@@ -2286,7 +2295,10 @@ let App = {
                         const loadingPopup = App.displayPopup('loading...');
                         const storage = await App.getDBItems();
                         loadingPopup.close();
-                        const charCode = `save:${btoa(encodeURIComponent(JSON.stringify(storage)))}:endsave`;
+                        const serializableStorage = Object.assign({}, storage);
+                        const unserializableAttributes = ['shell_background_v2.1', 'mods'];
+                        unserializableAttributes.forEach(attribute => delete serializableStorage[attribute]);
+                        const charCode = `save:${btoa(encodeURIComponent(JSON.stringify(serializableStorage)))}:endsave`;
                         App.displayConfirm(`Here you'll be able to copy your unique save code and continue your playthrough on another device`, [
                             {
                                 name: 'ok',
@@ -2514,7 +2526,7 @@ let App = {
             }
 
             if(!petDefinition.family.length && !usePastTense){
-                return App.displayPopup(`${petDefinition.name} is the pioneer of the family!<br> comeback when your family has grown!`)
+                return App.displayPopup(`${petDefinition.name} is the pioneer of the family!<br> come back when your family has grown!`)
             }
 
             const list = UI.genericListContainer();
@@ -2540,7 +2552,7 @@ let App = {
                         <br>
                         since
                         <br>
-                        <b>${moment(oldestAncestor.birthday).utc().fromNow()}</b>
+                        <b>${moment(oldestAncestor.birthday).fromNow()}</b>
                     `;
 
             content.innerHTML = `
@@ -2824,7 +2836,7 @@ let App = {
                         <small>${App.petDefinition.getLifeStageLabel()} - gen ${App.petDefinition.family.length + 1}</small>
                     </b>
                     <span>
-                        Born ${moment(App.petDefinition.birthday).utc().fromNow()}
+                        Born ${moment(App.petDefinition.birthday).fromNow()}
                     </span>
                     <div class="pet-trait-icons-container">
                     ${petTraitIcons.map(icon => {
@@ -3638,8 +3650,8 @@ let App = {
                     name: 'have birthday',
                     onclick: () => {
                         let nextBirthday = App.petDefinition.getNextBirthdayDate();
-                        if(moment().utc().isBefore( nextBirthday )){
-                            return App.displayPopup(`${App.petDefinition.name} hasn't grown enough to age up<br><br>come back <b>${(moment(nextBirthday).utc().fromNow())}</b>`, 5000);
+                        if(moment().isBefore( nextBirthday )){
+                            return App.displayPopup(`${App.petDefinition.name} hasn't grown enough to age up<br><br>come back <b>${(moment(nextBirthday).fromNow())}</b>`, 5000);
                         }
                         App.displayConfirm(`This will age up ${App.petDefinition.name}<br>Are you sure?`, [
                             {
