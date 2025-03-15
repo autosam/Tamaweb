@@ -2295,7 +2295,10 @@ let App = {
                         const loadingPopup = App.displayPopup('loading...');
                         const storage = await App.getDBItems();
                         loadingPopup.close();
-                        const charCode = `save:${btoa(encodeURIComponent(JSON.stringify(storage)))}:endsave`;
+                        const serializableStorage = Object.assign({}, storage);
+                        const unserializableAttributes = ['shell_background_v2.1', 'mods'];
+                        unserializableAttributes.forEach(attribute => delete serializableStorage[attribute]);
+                        const charCode = `save:${btoa(encodeURIComponent(JSON.stringify(serializableStorage)))}:endsave`;
                         App.displayConfirm(`Here you'll be able to copy your unique save code and continue your playthrough on another device`, [
                             {
                                 name: 'ok',
