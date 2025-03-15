@@ -208,7 +208,7 @@ let App = {
 
         // check automatic age up
         if(App.settings.automaticAging){
-            while(moment().utc().isAfter( App.petDefinition.getNextAutomaticBirthdayDate() )){
+            while(moment().isAfter( App.petDefinition.getNextAutomaticBirthdayDate() )){
                 App.petDefinition.ageUp()
                 App.sendAnalytics('auto_age_up', App.petDefinition.lifeStage);
             }
@@ -2523,7 +2523,7 @@ let App = {
             }
 
             if(!petDefinition.family.length && !usePastTense){
-                return App.displayPopup(`${petDefinition.name} is the pioneer of the family!<br> comeback when your family has grown!`)
+                return App.displayPopup(`${petDefinition.name} is the pioneer of the family!<br> come back when your family has grown!`)
             }
 
             const list = UI.genericListContainer();
@@ -2549,7 +2549,7 @@ let App = {
                         <br>
                         since
                         <br>
-                        <b>${moment(oldestAncestor.birthday).utc().fromNow()}</b>
+                        <b>${moment(oldestAncestor.birthday).fromNow()}</b>
                     `;
 
             content.innerHTML = `
@@ -2833,7 +2833,7 @@ let App = {
                         <small>${App.petDefinition.getLifeStageLabel()} - gen ${App.petDefinition.family.length + 1}</small>
                     </b>
                     <span>
-                        Born ${moment(App.petDefinition.birthday).utc().fromNow()}
+                        Born ${moment(App.petDefinition.birthday).fromNow()}
                     </span>
                     <div class="pet-trait-icons-container">
                     ${petTraitIcons.map(icon => {
@@ -3647,8 +3647,8 @@ let App = {
                     name: 'have birthday',
                     onclick: () => {
                         let nextBirthday = App.petDefinition.getNextBirthdayDate();
-                        if(moment().utc().isBefore( nextBirthday )){
-                            return App.displayPopup(`${App.petDefinition.name} hasn't grown enough to age up<br><br>come back <b>${(moment(nextBirthday).utc().fromNow())}</b>`, 5000);
+                        if(moment().isBefore( nextBirthday )){
+                            return App.displayPopup(`${App.petDefinition.name} hasn't grown enough to age up<br><br>come back <b>${(moment(nextBirthday).fromNow())}</b>`, 5000);
                         }
                         App.displayConfirm(`This will age up ${App.petDefinition.name}<br>Are you sure?`, [
                             {
