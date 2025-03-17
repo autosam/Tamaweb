@@ -284,17 +284,23 @@ class PetDefinition {
                 }
                 return;
             }
-            if(serializable === 'friends'){
-                s['friends'] = this.friends.map(friendDef => {
-                    return {
-                        ...App.minimalizePetDef(friendDef.serializeStats(true)), 
-                        stats: {
-                            player_friendship: friendDef.stats.player_friendship,
-                            is_player_family: friendDef.stats.is_player_family,
-                        }
-                    };
-                })
-                return;
+
+            switch(serializable){
+                case "friends":
+                    s['friends'] = this.friends.map(friendDef => {
+                        return {
+                            ...App.minimalizePetDef(friendDef.serializeStats(true)), 
+                            stats: {
+                                player_friendship: friendDef.stats.player_friendship,
+                                is_player_family: friendDef.stats.is_player_family,
+                            }
+                        };
+                    })
+                    return;
+                case "birthday":
+                case "lastBirthday":
+                    s[serializable] = new Date(this[serializable]).getTime();
+                    return;
             }
             s[serializable] = this[serializable];
         });

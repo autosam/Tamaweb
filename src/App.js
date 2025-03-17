@@ -624,6 +624,14 @@ let App = {
                     App.pet.stats.current_health = App.pet.stats.max_health;
                 });
                 break;
+            case "TNMRLUI7":
+                if(!addEvent(codeEventId, () => {
+                    App.displayPopup(`Sorry for the inconvenience, here's 250 mission pts and $400!`, 5000, () => {
+                        App.pet.stats.gold += 400;
+                        Missions.currentPts += 250;
+                    });
+                })) return showAlreadyUsed();
+                break;
             default:
                 const showInvalidError = () => {
                     App.displayPopup(`Invalid code`);
@@ -739,6 +747,16 @@ let App = {
             App.handlers.show_set_username_dialog();
             return;
         }
+
+        // if(addEvent(`bugfix_notice_02`, () => {
+        //     App.displayConfirm('<b>Important Update</b><br>The Issue regarding not being able to age up your pet is', [
+        //         {
+        //             name: 'ok',
+        //             class: 'solid primary',
+        //             onclick: () => {}
+        //         },
+        //     ])
+        // })) return;
 
         if(addEvent(`update_14_notice`, () => {
             App.displayList([
