@@ -521,6 +521,7 @@ let App = {
             const accurateDeltaTime = time - App.lastTime;
             App.playTime += accurateDeltaTime;
             App.lastTime = time;
+            App.fpsLastTime = App.fullTime - (fpsElapsedTime % App.fpsInterval);
 
             // simulating offline progression
             if(accurateDeltaTime > 5000){
@@ -530,7 +531,7 @@ let App = {
             // deltaTime
             App.deltaTime = clamp(accurateDeltaTime, 0, 100);
 
-            App.fpsLastTime = App.fullTime - (fpsElapsedTime % App.fpsInterval);
+            // drawing
             App.drawer?.draw();
             App.onDraw?.();
             if(App.registeredDrawEvents.length){
