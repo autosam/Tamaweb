@@ -1066,17 +1066,17 @@ App.definitions = {
                             return;
                         }
 
-                        me.animationFloat += (0.005 * App.nDeltaTime) % App.PI2;
-                        me.bodyAnimationFloat += (0.0025 * App.nDeltaTime) % App.PI2;
-                        me.currentPosition.x = lerp(me.currentPosition.x, me.targetPosition.x, 0.0005 * App.nDeltaTime);
+                        me.animationFloat += (0.005 * App.deltaTime) % App.PI2;
+                        me.bodyAnimationFloat += (0.0025 * App.deltaTime) % App.PI2;
+                        me.currentPosition.x = lerp(me.currentPosition.x, me.targetPosition.x, 0.0005 * App.deltaTime);
                         me.x = me.currentPosition.x;
-                        me.currentPosition.y = lerp(me.currentPosition.y, me.targetPosition.y, 0.0005 * App.nDeltaTime);
+                        me.currentPosition.y = lerp(me.currentPosition.y, me.targetPosition.y, 0.0005 * App.deltaTime);
                         me.y = me.currentPosition.y + Math.sin(me.animationFloat);
 
                         const xDiff = Math.abs(me.currentPosition.x - me.targetPosition.x);
                         const yDiff = Math.abs(me.currentPosition.y - me.targetPosition.y);
                         me.targetMovementMult = Math.max((xDiff + yDiff) * 0.1, 1);
-                        me.movementMult = lerp(me.movementMult, me.targetMovementMult * me.movementMultDirection, 0.01 * App.nDeltaTime);
+                        me.movementMult = lerp(me.movementMult, me.targetMovementMult * me.movementMultDirection, 0.01 * App.deltaTime);
                     }
                 })
 

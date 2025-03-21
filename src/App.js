@@ -510,24 +510,27 @@ let App = {
         App.date = new Date();
         App.hour = App.date.getHours();
         App.fullTime = App.date.getTime();
-        App.time = time;
-        App.deltaTime = time - App.lastTime;
-        App.lastTime = time;
-        App.nDeltaTime = clamp(App.deltaTime || 0, 0, 200) // normal delta time
-
-        App.playTime += App.deltaTime;
-
-        if(App.deltaTime > 5000){ // simulating offline progression
-            App.pet.simulateAwayProgression(App.deltaTime);
-        }
 
         requestAnimationFrame(App.onFrameUpdate);
         
-        App.fpsCurrentTime = App.date.getTime();
-        App.fpsElapsedTime = App.fpsCurrentTime - App.fpsLastTime;
+        const fpsElapsedTime = App.fullTime - App.fpsLastTime;
 
-        if(App.fpsElapsedTime > App.fpsInterval){
-            App.fpsLastTime = App.fpsCurrentTime - (App.fpsElapsedTime % App.fpsInterval);
+        if(fpsElapsedTime > App.fpsInterval){ // everything here capped to targetFps
+            // time and playtime
+            App.time = time;
+            const accurateDeltaTime = time - App.lastTime;
+            App.playTime += accurateDeltaTime;
+            App.lastTime = time;
+
+            // simulating offline progression
+            if(accurateDeltaTime > 5000){
+                App.pet.simulateAwayProgression(accurateDeltaTime);
+            }
+
+            // deltaTime
+            App.deltaTime = clamp(accurateDeltaTime, 0, 100);
+
+            App.fpsLastTime = App.fullTime - (fpsElapsedTime % App.fpsInterval);
             App.drawer?.draw();
             App.onDraw?.();
             if(App.registeredDrawEvents.length){

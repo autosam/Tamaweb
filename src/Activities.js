@@ -34,7 +34,7 @@ class Activities {
             let target = 1;
             setTimeout(() => target = 0, 4000);
             pet.onDraw = (me) => {
-                me.opacity = lerp(me.opacity, target, 0.0025 * App.nDeltaTime);
+                me.opacity = lerp(me.opacity, target, 0.0025 * App.deltaTime);
                 Object2d.animations.bob(me, 0.005, 0.1);
             }
         }
@@ -1939,7 +1939,7 @@ class Activities {
         reset();
 
         App.onDraw = () => {
-            cursorCurrentPos += cursorSpeed * App.nDeltaTime;
+            cursorCurrentPos += cursorSpeed * App.deltaTime;
             if(cursorCurrentPos >= 98 || cursorCurrentPos <= 0){
                 cursorSpeed *= -1;
                 cursorCurrentPos = clamp(cursorCurrentPos, 0, 100);

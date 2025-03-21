@@ -254,10 +254,10 @@ class Pet extends Object2d {
         // this.eggObject.rotation = Math.round(motion / 22.5) * 22.5;
         this.eggObject.x = 40 + (motion * 1.5);
         
-        // this.eggObject.x += this.eggCurrentDirection * App.nDeltaTime;
+        // this.eggObject.x += this.eggCurrentDirection * App.deltaTime;
         // if(this.eggObject.x > 55 - 8 || this.eggObject.x < 45 - 8) this.eggCurrentDirection *= -1;
 
-        // this.eggObject.rotation = lerp(this.eggObject.rotation, 0, 0.01 * App.nDeltaTime);
+        // this.eggObject.rotation = lerp(this.eggObject.rotation, 0, 0.01 * App.deltaTime);
 
         // if(Math.random() < 0.01){
         //     // this.eggObject.setImg('resources/img/misc/egg_02.png');
@@ -1183,7 +1183,7 @@ class Pet extends Object2d {
                     }
 
 
-                    this.animationPosition.x += this.animationSpeed * App.nDeltaTime;
+                    this.animationPosition.x += this.animationSpeed * App.deltaTime;
                     const isRightPast = this.animationPosition.x > App.drawer.bounds.width + 32;
                     const isLeftPast = this.animationPosition.x < -64;
 
