@@ -503,7 +503,7 @@ let App = {
         return this.registeredDrawEvents.push(fn) - 1;
     },
     unregisterOnDrawEvent: function(inp){
-        let index = typeof inp === "function" ? this.registeredDrawEvents.indexOf(inp) : inp;
+        const index = typeof inp === "function" ? this.registeredDrawEvents.indexOf(inp) : inp;
         if(index != -1) this.registeredDrawEvents.splice(index, 1);
     },
     onFrameUpdate: function(time){
