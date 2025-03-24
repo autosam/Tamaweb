@@ -213,10 +213,24 @@ class Activities {
         App.setScene(App.scene.garden_inner);
         App.pet.x = '100%';
         App.pet.targetX = 50;
+
+        const displayPlantsList = ({onPlantClick, filterFn = () => true}) => {
+            const allPlantsList = App.plants
+                .filter(filterFn)
+                .map((currentPlant, currentPlantIndex) => {
+                    return {
+                        name: `<span class="icon">${currentPlant.getCSprite()}</span> ${currentPlant.name}`,
+                        onclick: () => onPlantClick(currentPlant, currentPlantIndex)
+                    }
+                })
+            return App.displayList(allPlantsList)
+        }
+
         App.toggleGameplayControls(false, () => {
             return App.displayList([
                 {
                     name: '<i class="icon fa-solid fa-plus icon"></i> plant',
+                    _disable: App.plants.length === App.constants.MAX_PLANTS,
                     onclick: () => {
                         const allPlantsList = Object.keys(App.definitions.plant)
                             .map(plantName => {
@@ -242,13 +256,13 @@ class Activities {
                 },
                 {
                     name: 'water',
+                    _disable: !App.plants.some(p => !p.isWatered),
                     onclick: async () => {
                         App.closeAllDisplays();
                         const wateringCan = new Object2d({
                             img: 'resources/img/misc/watering_can_01.png',
+                            z: 100,
                         })
-                        // for(plant of App.plants){
-                        // }
                         for(let i = 0; i < App.plants.length; i++){
                             const plant = App.plants[i];
                             if(plant.isWatered) continue;
@@ -257,8 +271,56 @@ class Activities {
                             await App.wait(500);
                             plant.water();
                         }
-
                         wateringCan.removeObject();
+                    }
+                },
+                {
+                    name: 'harvest',
+                    _disable: !App.plants.some(p => p.age === Plant.AGE.grown),
+                    onclick: () => {
+                        const displayHarvestables = () => {
+                            const list = displayPlantsList({
+                                onPlantClick: (plant, plantIndex) => {
+                                    App.plants.splice(plantIndex, 1); // removing plant
+                                    App.handleGardenPlantsSpawn(true);
+
+                                    const amount = random(4, 8);
+                                    App.addNumToObject(App.pet.inventory.harvests, plant.name, amount);
+                                    App.displayConfirm(`
+                                            <div>${plant.getCSprite()}</div>
+                                            <div>${plant.name}</div>
+                                            <div>(x${amount})</div>
+                                        `, [
+                                        {
+                                            name: 'ok',
+                                            onclick: () => {
+                                                list.close();
+                                                displayHarvestables();
+                                            }
+                                        }
+                                    ])
+                                    return true;
+                                },
+                                filterFn: (plant) => plant.age === Plant.AGE.grown
+                            })
+                        }
+                        displayHarvestables();
+                        return true;
+                    }
+                },
+                {
+                    name: 'remove',
+                    _disable: !App.plants.length,
+                    onclick: () => {
+                        displayPlantsList({
+                            onPlantClick: (plant, plantIndex) => {
+                                App.plants.splice(plantIndex, 1); // removing plant
+                                App.handleGardenPlantsSpawn(true);
+                                App.closeAllDisplays();
+                            },
+                            filterFn: (plant) => plant.age !== Plant.AGE.grown
+                        })
+                        return true;
                     }
                 },
                 {

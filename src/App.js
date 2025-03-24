@@ -372,12 +372,12 @@ let App = {
             App.fpsStartTime = App.fpsLastTime;
             App.onFrameUpdate(0);
         }
-        window.onload = function () {
-            initializeRenderer();
-        }
-        // document.addEventListener('DOMContentLoaded', function(event) {
+        // window.onload = function () {
         //     initializeRenderer();
-        // });
+        // }
+        document.addEventListener('DOMContentLoaded', function(event) {
+            initializeRenderer();
+        });
         window.onbeforeunload = function(){
             App.sendSessionEvent(false);
             App.save();
@@ -1331,6 +1331,9 @@ let App = {
                 App.skyWeather.composite = "normal";
                 break;
         }
+    },
+    isWeatherEffectActive(){
+        return !App.skyWeather.hidden;
     },
     applyRoomCustomizations(data){
         if(typeof data !== 'object' || !data) return;

@@ -25,7 +25,7 @@ class Plant {
     checkForProgress(){
         const now = Date.now();
 
-        this.isWatered = (now - this.lastWatered) < this.wateredDuration;
+        this.isWatered = (now - this.lastWatered) < this.wateredDuration || App.isWeatherEffectActive();
 
         if(this.age === Plant.AGE.grown) return;
 
@@ -89,6 +89,13 @@ class Plant {
         this.position = position;
 
         return {plant, statusIndicator};
+    }
+    getCSprite(){
+        return App.getGenericCSprite(
+            this.getDefinition().sprite + this.age, 
+            App.constants.PLANT_SPRITESHEET, 
+            App.constants.PLANT_SPRITESHEET_DIMENSIONS
+        );
     }
     getObject(){}
     getDefinition(name){
