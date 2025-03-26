@@ -2766,12 +2766,11 @@ let App = {
         open_seed_list: function(buyMode, activeIndex, payloadFn){
             let list = [];
             let sliderInstance;
-            const salesDay = !App.isSalesDay();
+            const salesDay = App.isSalesDay();
             const dayId = App.getDayId(true);
             let index = -1;
             for(let plant of Object.keys(App.definitions.plant)){
                 let current = App.definitions.plant[plant];
-                current.price = 123;
 
                 // buy mode and is free
                 if(buyMode && current.price == 0) continue;
@@ -4324,7 +4323,7 @@ let App = {
                     }
                 },
                 {
-                    name: `Shop stock changes daily, so check back often for new food and snacks!`,
+                    name: `Shop stock changes daily, so check back often for new offers!`,
                     type: 'info',
                 },
             ])

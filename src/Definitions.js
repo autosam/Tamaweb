@@ -596,50 +596,65 @@ App.definitions = {
         // wateredDuration: minutes
         "cabbage": {
             sprite: 29,
+            price: 5,
         },
         "tomato": {
             sprite: 33,
+            price: 5,
         },
         "lettuce": {
             sprite: 37,
+            price: 5,
         },
         "carrot": {
             sprite: 41,
+            price: 5,
         },
         "potato": {
             sprite: 45,
+            price: 5,
         },
         "sweet potato": {
             sprite: 49,
+            price: 5,
         },
         "watermelon": {
             sprite: 53,
+            price: 8,
         },
         "peach": {
             sprite: 57,
+            price: 5,
             // wateredDuration: 0.5,
         },
         // tulips
         "purple tulip": {
             sprite: 1,
+            price: 5,
         },
         "cyan tulip": {
             sprite: 5,
+            price: 5,
         },
         "blue tulip": {
             sprite: 9,
+            price: 5,
         },
         "green tulip": {
             sprite: 13,
+            price: 5,
         },
         "yellow tulip": {
             sprite: 17,
+            price: 5,
         },
         "orange tulip": {
             sprite: 21,
+            price: 5,
         },
         "red tulip": {
             sprite: 25,
+            price: 5,
         },
     },
 
