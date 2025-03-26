@@ -325,26 +325,6 @@ class Activities {
                     name: '<i class="icon fa-solid fa-plus icon"></i> plant',
                     _disable: App.plants.length === App.constants.MAX_PLANTS,
                     onclick: () => {
-                        // const allPlantsList = Object.keys(App.definitions.plant)
-                        //     .map(plantName => {
-                        //         const plantDef = App.definitions.plant[plantName];
-                        //         const icon = App.getGenericCSprite(
-                        //             plantDef.sprite + Plant.AGE.grown, 
-                        //             App.constants.PLANT_SPRITESHEET, 
-                        //             App.constants.PLANT_SPRITESHEET_DIMENSIONS
-                        //         );
-                        //         return {
-                        //             name: `<span class="icon">${icon}</span> ${plantName}`,
-                        //             onclick: () => {
-                        //                 if(App.plants.length !== App.constants.MAX_PLANTS){
-                        //                     const plant = new Plant({name: plantName});
-                        //                     App.plants.push(plant);
-                        //                     App.handleGardenPlantsSpawn(true);
-                        //                 }
-                        //             }
-                        //         }
-                        //     })
-                        // App.displayList(allPlantsList)
                         const onSelectSeed = (plantName) => {
                             if (App.plants.length !== App.constants.MAX_PLANTS) {
                                 const plant = new Plant({ name: plantName });
@@ -368,6 +348,7 @@ class Activities {
                             img: 'resources/img/misc/watering_can_01.png',
                             z: 100,
                         })
+                        App.toggleGameplayControls(false);
                         for(let i = 0; i < App.plants.length; i++){
                             const plant = App.plants[i];
                             if(plant.isWatered || plant.isDead) continue;
@@ -378,6 +359,7 @@ class Activities {
                             Missions.done(Missions.TYPES.water_crop);
                         }
                         wateringCan.removeObject();
+                        App.toggleGameplayControls(true);
                     }
                 },
                 {
