@@ -232,31 +232,43 @@ class Activities {
                     name: '<i class="icon fa-solid fa-plus icon"></i> plant',
                     _disable: App.plants.length === App.constants.MAX_PLANTS,
                     onclick: () => {
-                        const allPlantsList = Object.keys(App.definitions.plant)
-                            .map(plantName => {
-                                const plantDef = App.definitions.plant[plantName];
-                                const icon = App.getGenericCSprite(
-                                    plantDef.sprite + Plant.AGE.grown, 
-                                    App.constants.PLANT_SPRITESHEET, 
-                                    App.constants.PLANT_SPRITESHEET_DIMENSIONS
-                                );
-                                return {
-                                    name: `<span class="icon">${icon}</span> ${plantName}`,
-                                    onclick: () => {
-                                        if(App.plants.length !== App.constants.MAX_PLANTS){
-                                            const plant = new Plant({name: plantName});
-                                            App.plants.push(plant);
-                                            App.handleGardenPlantsSpawn(true);
-                                        }
-                                    }
-                                }
-                            })
-                        App.displayList(allPlantsList)
+                        // const allPlantsList = Object.keys(App.definitions.plant)
+                        //     .map(plantName => {
+                        //         const plantDef = App.definitions.plant[plantName];
+                        //         const icon = App.getGenericCSprite(
+                        //             plantDef.sprite + Plant.AGE.grown, 
+                        //             App.constants.PLANT_SPRITESHEET, 
+                        //             App.constants.PLANT_SPRITESHEET_DIMENSIONS
+                        //         );
+                        //         return {
+                        //             name: `<span class="icon">${icon}</span> ${plantName}`,
+                        //             onclick: () => {
+                        //                 if(App.plants.length !== App.constants.MAX_PLANTS){
+                        //                     const plant = new Plant({name: plantName});
+                        //                     App.plants.push(plant);
+                        //                     App.handleGardenPlantsSpawn(true);
+                        //                 }
+                        //             }
+                        //         }
+                        //     })
+                        // App.displayList(allPlantsList)
+                        const onSelectSeed = (plantName) => {
+                            if (App.plants.length !== App.constants.MAX_PLANTS) {
+                                const plant = new Plant({ name: plantName });
+                                App.plants.push(plant);
+                                App.handleGardenPlantsSpawn(true);
+                                Missions.done(Missions.TYPES.plant_in_garden);
+                                return true;
+                            }
+                            return false;
+                        }
+
+                        App.handlers.open_seed_list(false, null, onSelectSeed);
                     }
                 },
                 {
                     name: 'water',
-                    _disable: !App.plants.some(p => !p.isWatered),
+                    _disable: !App.plants.some(p => !p.isWatered && !p.isDead),
                     onclick: async () => {
                         App.closeAllDisplays();
                         const wateringCan = new Object2d({
@@ -265,11 +277,12 @@ class Activities {
                         })
                         for(let i = 0; i < App.plants.length; i++){
                             const plant = App.plants[i];
-                            if(plant.isWatered) continue;
+                            if(plant.isWatered || plant.isDead) continue;
                             wateringCan.x = plant.position.x + 8;
                             wateringCan.y = plant.position.y;
                             await App.wait(500);
                             plant.water();
+                            Missions.done(Missions.TYPES.water_crop);
                         }
                         wateringCan.removeObject();
                     }
@@ -867,7 +880,11 @@ class Activities {
             ])
         });
     }
-    static async cookingGame(){
+    static async cookingGame({
+        stirringSpeed = 0.001,
+        skipCamera, 
+        resultFoodName,
+    }){
         App.closeAllDisplays();
         App.pet.triggerScriptedState('idle', App.INF, 0, false);
         App.sendAnalytics('cooking_game');
@@ -890,7 +907,6 @@ class Activities {
             z: 30.4, x: 0, y: 0, parent: potObject,
         });
 
-        let stirringSpeed = 0.001;
         const starLogicHandler = (me) => {
             if(!me._originX) me._originX = me.config.drawer.getRelativePositionX(50 - 11);
             if(!me._originY) me._originY = me.config.drawer.getRelativePositionY(50 - 11);
@@ -918,9 +934,9 @@ class Activities {
         let failChance = 25;
         let currentTargetImgIndex = 0;
         App.toggleGameplayControls(false, () => {
-            if(currentTargetImgIndex < starObjects.length){
+            if(currentTargetImgIndex < starObjects.length && !skipCamera){
                 App.useWebcam((imgData) => {
-                    if(!imgData || imgData == -1){
+                    if((!imgData || imgData == -1)){
                         // potObject.removeObject();
                         // App.pet.stopScriptedState();
                         // App.toggleGameplayControls(true);
@@ -949,7 +965,7 @@ class Activities {
                                     Object2d.animations.rotateAround(me);
                                 }
                             })
-                            randomFoodName = randomFromArray(Object.keys(App.definitions.food));
+                            randomFoodName = resultFoodName || randomFromArray(Object.keys(App.definitions.food));
                             const randomFood = App.definitions.food[randomFoodName];
                             App.constants.FOOD_SPRITESHEET_DIMENSIONS.cellNumber = randomFood.sprite;
                             if(!failed){

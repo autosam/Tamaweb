@@ -16,6 +16,7 @@ let App = {
         classicMainMenuUI: false,
     },
     constants: {
+        ONE_HOUR: 1000 * 60 * 60,
         FOOD_SPRITESHEET: 'resources/img/item/foods_on.png',
         FOOD_SPRITESHEET_DIMENSIONS: {
             cellNumber: 1,
@@ -2762,6 +2763,69 @@ let App = {
             sliderInstance = App.displaySlider(list, activeIndex, {accept: buyMode ? 'Purchase' : 'Eat'}, buyMode ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}` : null);
             return sliderInstance;
         },
+        open_seed_list: function(buyMode, activeIndex, payloadFn){
+            let list = [];
+            let sliderInstance;
+            const salesDay = !App.isSalesDay();
+            const dayId = App.getDayId(true);
+            let index = -1;
+            for(let plant of Object.keys(App.definitions.plant)){
+                let current = App.definitions.plant[plant];
+                current.price = 123;
+
+                // buy mode and is free
+                if(buyMode && current.price == 0) continue;
+
+                // check if current pet has this seed on its inventory
+                if(current.price && !App.pet.inventory.seeds[plant] && !buyMode){
+                    continue;
+                }
+
+                // some entries become randomly unavailable to buy for the day
+                if(++index && buyMode && !random(0, 1, dayId + (index * 256))){
+                    continue;
+                }
+
+                // 50% off on sales day
+                let price = current.price;
+                if(salesDay) price = Math.round(price / 2);
+
+                list.push({
+                    name: `
+                        ${Plant.getCSprite(plant, Plant.AGE.grown, 'seed-pack')} ${plant.toUpperCase()} seeds (x${App.pet.inventory.seeds[plant] > 0 ? App.pet.inventory.seeds[plant] : (!current.price ? '∞' : 0)}) <b>${buyMode ? `$${price}` : ''}</b>`,
+                    onclick: (btn, list) => {
+                        // buy mode
+                        if(buyMode){
+                            if(App.pet.stats.gold < price){
+                                App.displayPopup(`Don't have enough gold!`);
+                                return true;
+                            }
+                            App.pet.stats.gold -= price;
+                            App.addNumToObject(App.pet.inventory.seeds, plant, 1);
+                            let nList = App.handlers.open_seed_list(true, sliderInstance?.getCurrentIndex());
+                            // Missions.done(Missions.TYPES.buy_food);
+                            return false;
+                        }
+
+                        const shouldRemove = payloadFn?.(plant, current); // passing name / object
+                        if(shouldRemove){
+                            if(App.pet.inventory.seeds[plant] > 0)
+                                App.pet.inventory.seeds[plant] -= 1;
+                        }
+                    }
+                })
+            }
+
+            if(!list.length){
+                App.displayPopup(`You don't have any seeds, purchase some from the market`, 2000);
+                return;
+            }
+
+            if(buyMode) list.push(list.shift());
+
+            sliderInstance = App.displaySlider(list, activeIndex, {accept: buyMode ? 'Purchase' : 'Plant'}, buyMode ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}` : null);
+            return sliderInstance;
+        },
         open_feeding_menu: function(){
             App.displayList([
                 {
@@ -2790,15 +2854,98 @@ let App = {
                     _disable: App.petDefinition.lifeStage <= 0,
                     name: `cook`,
                     onclick: () => {
-                        return App.displayConfirm(`You take 3 pictures to use as ingredients for your soup! after that, tap to stir until it's mixed!`, [
+                        return App.displayList([
                             {
-                                name: 'start',
-                                onclick: () => Activities.cookingGame(),
+                                name: 'camera',
+                                onclick: () => {
+                                    return App.displayConfirm(`You take 3 pictures to use as ingredients for your soup! after that, tap to stir until it's mixed!`, [
+                                        {
+                                            name: 'start',
+                                            onclick: () => Activities.cookingGame(),
+                                        },
+                                        {
+                                            name: 'cancel',
+                                            class: 'back-btn',
+                                            onclick: () => { },
+                                        }
+                                    ])
+                                }
                             },
                             {
-                                name: 'cancel',
-                                class: 'back-btn',
-                                onclick: () => { },
+                                name: 'harvests',
+                                onclick: () => {
+                                    let allPlants = [];
+                                    const getIngredients = (name) => {
+                                        pRandom.save();
+                                        const seed = hashCode(name);
+                                        const results = new Array(3).fill(null).map((_, i) => {
+                                            if(!allPlants.length) allPlants = Object.keys(App.definitions.plant);
+                                            pRandom.seed = Math.abs(seed) + (i * 64);
+                                            const item = pRandomFromArray(allPlants);
+                                            allPlants.splice(allPlants.indexOf(item), 1);
+                                            return item;
+                                        })
+                                        pRandom.load();
+                                        return results;
+                                    }
+
+                                    const getIcons = (plantNameList) => {
+                                        return plantNameList.map(plantName => {
+                                            const hasInInventory = App.pet.inventory.harvests[plantName]
+                                            return Plant.getCSprite(plantName, undefined, hasInInventory ? 'enabled' : '');
+                                        }).join(' + ');
+                                    }
+
+                                    return App.displayList([
+                                        {
+                                            name: `
+                                            <div class="flex-between flex-wrap" style="row-gap: 4px">
+                                                ${Object.keys(App.pet.inventory.harvests)
+                                                    .map(itemName => ({amount: App.pet.inventory.harvests[itemName], name: itemName}) )
+                                                    .filter(item => item.amount)
+                                                    .map(item => `<div class="flex align-center flex-gap-05">${Plant.getCSprite(item.name)} <span><small>x</small>${item.amount}</span></div>`)
+                                                    .join('')}
+                                            </div>
+                                            `,
+                                            type: 'text',
+                                        },
+                                        ...Object.keys(App.definitions.food)
+                                            .map(foodName => ({...App.definitions.food[foodName], name: foodName}))
+                                            .map((food) => {
+                                                const ingredients = getIngredients(food.name);
+                                                const hasAllIngredients = ingredients.every(ingredientName => App.pet.inventory.harvests[ingredientName]);
+                                                return {...food, ingredients, hasAllIngredients}
+                                            })
+                                            .sort((a, b) => b.hasAllIngredients - a.hasAllIngredients)
+                                            .map(food => ({
+                                                _disable: !food.hasAllIngredients,
+                                                class: 'flex-between',
+                                                name: `
+                                                    ${App.getFoodCSprite(food.sprite)} = ${getIcons(food.ingredients)}
+                                                `,
+                                                onclick: () => {
+                                                    App.displayConfirm(`Cook <div>${App.getFoodCSprite(food.sprite)}</div> <b>${food.name}</b>?`, [
+                                                        {
+                                                            name: 'yes',
+                                                            onclick: () => {
+                                                                food.ingredients.forEach(ingredient => {
+                                                                    if(App.pet.inventory.harvests[ingredient] > 0)
+                                                                        App.pet.inventory.harvests[ingredient] -= 1;
+                                                                })
+                                                                Activities.cookingGame({skipCamera: true, resultFoodName: food.name, stirringSpeed: 0.0095});
+                                                            },
+                                                        },
+                                                        {
+                                                            name: 'no',
+                                                            class: 'back-btn',
+                                                            onclick: () => {}
+                                                        }
+                                                    ])
+                                                    return true;
+                                                }
+                                            }))
+                                    ])
+                                }
                             }
                         ])
                         
@@ -4170,6 +4317,13 @@ let App = {
                     }
                 },
                 {
+                    name: 'purchase seeds',
+                    onclick: () => {
+                        App.handlers.open_seed_list(true, null, "med");
+                        return true;
+                    }
+                },
+                {
                     name: `Shop stock changes daily, so check back often for new food and snacks!`,
                     type: 'info',
                 },
@@ -4810,7 +4964,7 @@ let App = {
             ? `<div style="width: 1"><img style="width: 36px; outline: none" src="${image}"></img></div>`
             : `<c-sprite width="64" height="36" index="0" src="${image}"></c-sprite>`;
     },
-    getGenericCSprite: function(index, spritesheet, dimensions){
+    getGenericCSprite: function(index, spritesheet, dimensions, className){
         const size = dimensions.rows * dimensions.cellSize;
         return `<c-sprite 
             naturalWidth="${size}" 
@@ -4818,6 +4972,7 @@ let App = {
             width="${dimensions.cellSize}" 
             height="${dimensions.cellSize}" 
             index="${(index - 1)}" 
+            class="${className}"
             src="${spritesheet}"></c-sprite>`;
     },
     getPersona: function(name, image){

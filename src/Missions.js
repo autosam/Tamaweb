@@ -24,6 +24,8 @@ const Missions = {
         visit_online_hub: 'visit_online_hub',
         visit_mall: 'visit_mall',
         visit_market: 'visit_market',
+        plant_in_garden: 'plant_in_garden',
+        water_crop: 'water_crop',
     },
     TYPE_DESCRIPTIONS: {
         food: 'Eat food',
@@ -45,6 +47,8 @@ const Missions = {
         visit_online_hub: 'Visit Hubchi',
         visit_mall: 'Visit the mall',
         visit_market: 'Visit the market',
+        plant_in_garden: 'Plant something in the garden',
+        water_crop: 'Water your garden plant',
     },
     init: function(data){
         if(data?.current) this.current = data?.current;

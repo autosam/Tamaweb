@@ -599,6 +599,10 @@ button {
     justify-content: space-between;
 }
 
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
 .align-center {
     align-items: center;
 }
@@ -1125,6 +1129,9 @@ input#background-color-picker {
 .width-full {
     width: 100%;
 }
+.width-half {
+    width: 50%;
+}
 .items-center {
     align-items: center;
 }
@@ -1409,7 +1416,7 @@ a.generic-btn:before {
     text-shadow: none !important;
 }
 
-.generic-btn:disabled>* {
+.generic-btn:disabled > *:not(.enabled) {
     opacity: 0.5;
     filter: contrast(0.5);
 }
@@ -2110,4 +2117,14 @@ a {
     display: inline-flex;
     justify-content: center;
     align-items: center;
+}
+
+/* seed package */
+.seed-pack {
+    background-image: url(resources/img/misc/seed_pack_01.png);
+    background-repeat: no-repeat;
+    background-position: center;
+    height: 34px;
+    background-size: contain;
+    image-rendering: pixelated;
 }

@@ -617,7 +617,7 @@ App.definitions = {
         },
         "peach": {
             sprite: 57,
-            wateredDuration: 0.5,
+            // wateredDuration: 0.5,
         },
         // tulips
         "purple tulip": {

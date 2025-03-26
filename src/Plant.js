@@ -1,14 +1,15 @@
 class Plant {
-    growthDelay = 1000 * 60 * 60;
-    wateredDuration = 1000 * 60;
     isWatered = false;
+    growthDelay = App.constants.ONE_HOUR * 8;
+    wateredDuration = App.constants.ONE_HOUR * 2;
+    deathDuration = App.constants.ONE_HOUR * 10;
 
     constructor(config){
         const {
             name, 
             age = Plant.AGE.seedling, 
             lastGrowthTime = Date.now(),
-            lastWatered = 0,
+            lastWatered = Date.now() - this.wateredDuration - 1000,
             health = 100,
         } = config;
         this.age = age;
@@ -27,9 +28,14 @@ class Plant {
 
         this.isWatered = (now - this.lastWatered) < this.wateredDuration || App.isWeatherEffectActive();
 
-        if(this.age === Plant.AGE.grown) return;
-
         // console.log((Date.now() - (this.lastGrowthTime + this.growthDelay)) / 60);
+        if((now - this.lastWatered) > this.deathDuration){
+            this.age = Plant.AGE.dead;
+            return;
+        }
+
+        if([Plant.AGE.grown, Plant.AGE.dead].includes(this.age)) return;
+
         while (this.lastGrowthTime + this.growthDelay < Date.now() && this.age !== Plant.AGE.grown) {
             this.lastGrowthTime += this.growthDelay;
             this.age = clamp(this.age + 1, Plant.AGE.seedling, Plant.AGE.grown);
@@ -37,6 +43,9 @@ class Plant {
     }
     water(){
         this.lastWatered = Date.now();
+    }
+    get isDead(){
+        return this.age === Plant.AGE.dead;
     }
     createObject2d(patch){
         const plantDefinition = this.getDefinition();
@@ -81,11 +90,10 @@ class Plant {
             opacity: 0,
             onDraw: (me) => {
                 if(this.isWatered) me.opacity = 0;
-                me.opacity = lerp(me.opacity, this.isWatered ? 0 : 1, 0.001 * App.deltaTime);
+                me.opacity = lerp(me.opacity, this.isWatered || this.isDead ? 0 : 1, 0.001 * App.deltaTime);
             }
         })
 
-        // this.getObject = () => plant;
         this.position = position;
 
         return {plant, statusIndicator};
@@ -99,11 +107,31 @@ class Plant {
     }
     getObject(){}
     getDefinition(name){
-        return App.definitions.plant[name || this.name];
+        return Plant.getDefinitionByName(name || this.name);
     }
     _reset(){
         this.age = Plant.AGE.seedling;
         this.lastGrowthTime = Date.now();
+    }
+    static getDefinitionByName(name){
+        return App.definitions.plant[name];
+    }
+    static getCSprite(plantName, age = Plant.AGE.grown, className){
+        return App.getGenericCSprite(
+            Plant.getDefinitionByName(plantName)?.sprite + age, 
+            App.constants.PLANT_SPRITESHEET, 
+            App.constants.PLANT_SPRITESHEET_DIMENSIONS,
+            className
+        );
+    }
+    static getPackCSprite(plantName, age, className){
+        const plantSprite = Plant.getCSprite(plantName, Plant.AGE.grown, className);
+        return `
+        <div>
+            <img src="resources/img/misc/seed_pack_01.png"></img>
+            ${plantSprite}
+        </div>
+        `;
     }
     static AGE = {
         seedling: 0,
