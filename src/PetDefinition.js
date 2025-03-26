@@ -216,6 +216,10 @@ class PetDefinition {
         should_care_increase: true,
         used_toilet: 0,
         is_potty_trained: false,
+        current_rabbit_hole: {
+            name: false,
+            endTime: false,
+        }
     }
     friends = [];
     family = [];
@@ -282,6 +286,7 @@ class PetDefinition {
                     should_care_increase: this.stats.should_care_increase,
                     used_toilet: this.stats.used_toilet,
                     is_potty_trained: this.stats.is_potty_trained,
+                    current_rabbit_hole: this.stats.current_rabbit_hole,
                 }
                 return;
             }

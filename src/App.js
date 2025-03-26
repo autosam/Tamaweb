@@ -95,6 +95,9 @@ let App = {
             name: "tamaweb-store"
         });
 
+        // moment settings
+        moment.relativeTimeThreshold('m', 59);
+
         // load data
         let loadedData = await this.load();
         if(!loadedData.lastTime){
@@ -243,6 +246,11 @@ let App = {
         }
         App.setScene(App.scene.home);
         this.applySky()
+
+        // check if in rabbit hole
+        if(App.pet.stats.current_rabbit_hole.name){
+            Activities.goToCurrentRabbitHole(false);
+        }
 
         // simulating offline progression
         if(loadedData.lastTime){
@@ -1820,6 +1828,20 @@ let App = {
                         App.closeAllDisplays();
                         App.handlers.open_active_furniture_list();
                     }
+                },
+                {
+                    name: `craft ${App.getBadge()}`,
+                    onclick: () => {
+                        return App.displayList([
+                            {
+                                name: 'room backgrounds',
+                                onclick: () => {
+                                    App.handlers.open_room_background_list(true, (current) => current.isCraftable);
+                                    return true;
+                                }
+                            }
+                        ])
+                    }
                 }
             ], null, 'Stuff')
         },
@@ -3232,12 +3254,15 @@ let App = {
             return sliderInstance;
             return App.displayList(list);
         },
-        open_room_background_list: function(onlyFurnishables){
+        open_room_background_list: function(onlyFurnishables, filterFn){
             let list = [];
             let sliderInstance;
             let salesDay = App.isSalesDay();
-            for(let room of Object.keys(App.definitions.room_background)){
+            for(let room of Object.keys(App.definitions.room_background)){                
                 const absCurrent = App.definitions.room_background[room];
+
+                if(filterFn && !filterFn(absCurrent)) continue;
+
                 let current = 
                     onlyFurnishables ?
                     {...absCurrent, image: App.getFurnishableBackground(absCurrent.image)} :
@@ -3563,6 +3588,12 @@ let App = {
                     }
                 },
                 {
+                    name: `<span class="ellipsis">Homeworld Getaways</span> ${App.getBadge()}`,
+                    onclick: () => {
+                        return App.handlers.open_rabbitholes_list();
+                    }
+                },
+                {
                     name: `game center`,
                     onclick: () => {
                         Activities.goToArcade();
@@ -3665,6 +3696,46 @@ let App = {
                 //     }
                 // },
             ], null, 'Activities')
+        },
+        open_rabbitholes_list: function(){
+            return App.displayList([
+                ...App.definitions.rabbit_hole_activities
+                    .map(hole => ({
+                        // name: `${hole.name} ${App.getBadge(`<span> <i class="fa-solid fa-clock fa-xs"></i> ${hole.duration / 1000 / 60}</span>`, 'neutral')}`,
+                        name: `
+                            <span class="ellipsis">${hole.name}<span>
+                            ${App.getBadge(`<span> <i class="fa-solid fa-clock fa-xs"></i> ${Math.ceil(hole.duration / 1000 / 60)}</span>`, 'neutral')}
+                        `,
+                        onclick: () => {
+                            const confirmFn = () => {
+                                App.displayConfirm(`Are you sure you want to <b>${hole.name}</b>? <br><br> ${App.petDefinition.name} will go out for <b>${moment(hole.duration + Date.now()).toNow(true)}</b>`, [
+                                    {
+                                        name: 'yes',
+                                        onclick: () => {
+                                            App.pet.stats.current_rabbit_hole = {
+                                                name: hole.name,
+                                                endTime: Date.now() + hole.duration
+                                            }
+                                            Activities.goToCurrentRabbitHole(true);
+                                            App.closeAllDisplays();
+                                        }
+                                    },
+                                    {
+                                        name: 'no',
+                                        class: 'back-btn',
+                                        onclick: () => {}
+                                    },
+                                ])
+                            }
+                            confirmFn();
+                            return true;
+                        }
+                    })),
+                {
+                    type: 'info',
+                    name: `${App.petDefinition.name} will visit their home planet to do one of <i>Homeworld Getaway</i> activities`
+                },
+            ])
         },
         open_friends_list: function(onClickOverride, customFilter, additionalButtons = []){
             const friends = customFilter

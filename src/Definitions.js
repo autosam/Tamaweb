@@ -731,6 +731,14 @@ App.definitions = {
             price: 350,
             isNew: false,
         },
+        // craftables
+        "collage": {
+            image: 'resources/img/background/house/c_01.png',
+            price: 350,
+            isNew: true,
+            isCraftable: true,
+            craftingRecipe: ['red tulip', 'blue tulip', 'green tulip'],
+        },
     },
 
     /* ROOM PLACEABLE FURNITURE */
@@ -1772,5 +1780,103 @@ App.definitions = {
             ['Discovered a secret path in the woods. #MysteryTrail', 7, "resources/img/background/outside/park_02.png"],
             ['Feeling like a cloud. Soft and fluffy. #CloudVibes', 8, "resources/img/background/sky/afternoon.png"]
         ]
-    }
+    },
+
+    /* RABBIT HOLE ACTIVITIES */
+    rabbit_hole_activities: [
+        {
+            name: 'Go to movies',
+            duration: App.constants.ONE_HOUR * 0.75,
+            onEnd: () => {
+                App.pet.stats.current_fun += 100;
+                App.pet.stats.current_hunger += 25;
+                App.petDefinition.adjustCare(true);
+            }
+        },
+        {
+            name: 'Visit library',
+            duration: App.constants.ONE_HOUR * 0.25,
+            withAnother: true,
+            onEnd: () => {
+                App.pet.stats.current_fun += 50;
+            }
+        },
+        {
+            name: 'Go to restaurant',
+            duration: App.constants.ONE_HOUR * 0.75,
+            onEnd: () => {
+                App.pet.stats.current_fun += 25;
+                App.pet.stats.current_hunger += 100;
+                App.pet.stats.current_sleep -= 25;
+            }
+        },
+        {
+            name: 'Go to coffee shop',
+            duration: App.constants.ONE_HOUR * 0.35,
+            onEnd: () => {
+                App.pet.stats.current_fun += 35;
+                App.pet.stats.current_hunger += 30;
+                App.pet.stats.current_sleep -= 40;
+                App.petDefinition.adjustCare(true);
+            }
+        },
+        {
+            name: 'Visit museum',
+            duration: App.constants.ONE_HOUR * 1,
+            onEnd: () => {
+                App.pet.stats.current_fun += 100;
+                App.pet.stats.current_hunger += 30;
+                App.pet.stats.current_sleep -= 10;
+                App.petDefinition.adjustCare(true);
+            }
+        },
+        {
+            name: 'Visit food festival',
+            duration: App.constants.ONE_HOUR * 1,
+            onEnd: () => {
+                App.pet.stats.current_fun += random(-50, 50);
+                App.pet.stats.current_hunger += 70;
+                App.pet.stats.current_sleep -= 25;
+            }
+        },
+        {
+            name: 'Attend concert',
+            duration: App.constants.ONE_HOUR * 1.5,
+            onEnd: () => {
+                App.pet.stats.current_fun += 100;
+                App.pet.stats.current_hunger += 40;
+                App.pet.stats.current_sleep -= 50;
+                App.petDefinition.adjustCare(true);
+            }
+        },
+        {
+            name: 'Visit theme park',
+            duration: App.constants.ONE_HOUR * 2,
+            onEnd: () => {
+                App.pet.stats.current_fun += 100;
+                App.pet.stats.current_hunger += 60;
+                App.pet.stats.current_sleep -= 75;
+                App.petDefinition.adjustCare(true);
+            }
+        },
+        {
+            name: 'Relax in nebula spa',
+            duration: App.constants.ONE_HOUR * 0.5,
+            onEnd: () => {
+                App.pet.stats.current_fun += 35;
+                App.pet.stats.current_hunger += 10;
+                App.pet.stats.current_sleep += 50;
+                App.pet.stats.current_health += 50;
+                App.petDefinition.adjustCare(true);
+            }
+        },
+        {
+            name: 'Explore alien forest',
+            duration: App.constants.ONE_HOUR * 0.32,
+            onEnd: () => {
+                App.pet.stats.current_fun += 30;
+                App.pet.stats.current_health += 20;
+            }
+        },
+    ],
 }

@@ -1,4 +1,97 @@
 class Activities {
+    static async goToCurrentRabbitHole(isStarting) {
+        if(isStarting) { // starting animation
+            App.pet.stopMove();
+            App.pet.x = '50%';
+            App.pet.targetY = -100;
+            App.toggleGameplayControls(false);
+
+            const ufoObject = new Object2d({
+                image: App.preloadedResources['resources/img/misc/ufo_01.png'],
+                y: -120,
+                x: 0,
+                onDraw: (me) => {
+                    me.y = App.pet.y - 70;
+                }
+            });
+
+            await App.pet.triggerScriptedState('shocked', 5000, false, true, 
+                // onEnd
+                () => {
+                    App.pet.y = '100%';
+                    App.pet.x = -999;
+                    ufoObject.removeObject();
+                },
+            )
+        }
+
+        const {current_rabbit_hole: currentRabbitHole} = App.pet.stats;
+
+        const outOverlay = new Object2d({
+            img: 'resources/img/misc/out_overlay_01.png',
+            x: 0, y: 0, z: 10,
+        });
+
+        const onEndFn = (isInterrupted) => {
+            setTimeout(() => {
+                App.pet.x = '50%';
+                App.pet.stopMove();
+            })
+
+            const rabbitHoleDefinition = App.definitions.rabbit_hole_activities.find(activity => activity.name === App.pet.stats.current_rabbit_hole.name);
+
+            if(!isInterrupted){
+                App.displayConfirm(`Homeworld Getaway activity <b>"${App.pet.stats.current_rabbit_hole.name}"</b> has ended and ${App.petDefinition.name} is back home!`, [
+                    {
+                        name: 'ok',
+                        onclick: () => {}
+                    }
+                ])
+                rabbitHoleDefinition?.onEnd?.();
+            }
+
+            App.pet.stats.current_rabbit_hole.name = false;
+            App.toggleGameplayControls(true);
+            outOverlay.removeObject();
+            App.setScene(App.scene.home);
+        }
+
+        const driverFn = () => {
+            const remainingTime = currentRabbitHole.endTime - Date.now();
+            if(remainingTime <= 0){
+                onEndFn();
+                App.pet.stopScriptedState();
+                return true;
+            }
+            App.pet.x = -99;
+        }
+
+        if(!isStarting){
+            const isAlreadyEnded = driverFn();
+            if(isAlreadyEnded) return;
+        }
+
+        App.toggleGameplayControls(false, () => {
+            App.displayConfirm(`${App.petDefinition.name} will be back <b>${moment(currentRabbitHole.endTime).fromNow()}</b><br><br>Do you want to end it early?`, [
+                {
+                    name: 'yes',
+                    onclick: () => {
+                        onEndFn(true);
+                        App.pet.stopScriptedState();
+                    },
+                },
+                {
+                    name: 'no',
+                    class: 'back-btn',
+                    onclick: () => {}
+                }
+            ])
+        });
+
+        App.pet.triggerScriptedState('idle', App.INF, false, true, null, driverFn)
+        App.pet.stopMove();
+        App.pet.targetX = -999;
+    }
     static async goToFortuneTeller(otherPetDef = App.getRandomPetDef()){
         App.toggleGameplayControls(false);
         App.setScene(App.scene.fortune_teller);
