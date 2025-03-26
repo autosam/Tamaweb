@@ -3557,7 +3557,7 @@ let App = {
                     }
                 },
                 {
-                    name: `market`,
+                    name: `market ${App.getBadge()}`,
                     onclick: () => {
                         Activities.goToMarket();
                     }
@@ -3569,7 +3569,7 @@ let App = {
                     }
                 },
                 {
-                    name: `fortune teller ${App.getBadge()}`,
+                    name: `fortune teller`,
                     onclick: () => {
                         return App.displayList([
                             {
@@ -3861,11 +3861,11 @@ let App = {
                     }
                 },
                 {
-                    name: `friends ${App.getBadge()}`,
+                    name: `friends`,
                     onclick: () => {
                         App.handlers.open_friends_list(null, null, [
                             {
-                                name: `<i class="fa-solid fa-plus icon"></i> Add Friend ${App.getBadge()}`,
+                                name: `<i class="fa-solid fa-plus icon"></i> Add Friend`,
                                 onclick: () => App.handlers.open_hubchi_search(),
                             }
                         ]);
@@ -4316,7 +4316,7 @@ let App = {
                     }
                 },
                 {
-                    name: 'purchase seeds',
+                    name: `purchase seeds ${App.getBadge()}`,
                     onclick: () => {
                         App.handlers.open_seed_list(true, null, "med");
                         return true;
