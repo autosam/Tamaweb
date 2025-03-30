@@ -348,6 +348,7 @@ class Activities {
                             img: 'resources/img/misc/watering_can_01.png',
                             z: 100,
                         })
+                        const previousController = App.getGameplayControlsState().onclick;
                         App.toggleGameplayControls(false);
                         for(let i = 0; i < App.plants.length; i++){
                             const plant = App.plants[i];
@@ -359,7 +360,7 @@ class Activities {
                             Missions.done(Missions.TYPES.water_crop);
                         }
                         wateringCan.removeObject();
-                        App.toggleGameplayControls(true);
+                        App.toggleGameplayControls(false, previousController);
                     }
                 },
                 {

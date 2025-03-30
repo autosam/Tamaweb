@@ -1092,6 +1092,13 @@ input#background-color-picker {
 }
 
 /* generic stuff */
+.opacity-half {
+    opacity: 0.5;
+}
+.opacity-third {
+    opacity: 0.325;
+}
+
 .flex-container {
     display: flex;
     /* flex-direction: column; */

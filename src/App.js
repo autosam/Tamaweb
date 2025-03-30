@@ -1832,15 +1832,8 @@ let App = {
                 {
                     name: `craft ${App.getBadge()}`,
                     onclick: () => {
-                        return App.displayList([
-                            {
-                                name: 'room backgrounds',
-                                onclick: () => {
-                                    App.handlers.open_room_background_list(true, (current) => current.isCraftable);
-                                    return true;
-                                }
-                            }
-                        ])
+                        App.handlers.open_craftables_list();
+                        return true;
                     }
                 }
             ], null, 'Stuff')
@@ -2910,13 +2903,6 @@ let App = {
                                         return results;
                                     }
 
-                                    const getIcons = (plantNameList) => {
-                                        return plantNameList.map(plantName => {
-                                            const hasInInventory = App.pet.inventory.harvests[plantName]
-                                            return Plant.getCSprite(plantName, undefined, hasInInventory ? 'enabled' : '');
-                                        }).join(' + ');
-                                    }
-
                                     return App.displayList([
                                         {
                                             name: `
@@ -2942,7 +2928,7 @@ let App = {
                                                 _disable: !food.hasAllIngredients,
                                                 class: 'flex-between',
                                                 name: `
-                                                    ${App.getFoodCSprite(food.sprite)} = ${getIcons(food.ingredients)}
+                                                    ${App.getFoodCSprite(food.sprite)} = ${App.getHarvestIcons(food.ingredients)}
                                                 `,
                                                 onclick: () => {
                                                     App.displayConfirm(`Cook <div>${App.getFoodCSprite(food.sprite)}</div> <b>${food.name}</b>?`, [
@@ -3254,6 +3240,47 @@ let App = {
             return sliderInstance;
             return App.displayList(list);
         },
+        open_craftables_list: function(){
+            let sliderInstance;
+            const {room_background: roomBackgroundDefs} = App.definitions;
+
+            const removeOneHarvestFromInventory = (name) => {
+                if(App.pet.inventory.harvests[name] > 0)
+                    App.pet.inventory.harvests[name] -= 1;
+            }
+
+            // room backgrounds
+            const rooms = Object.keys(roomBackgroundDefs)
+                .map(roomName => ({...roomBackgroundDefs[roomName], image: App.getFurnishableBackground(roomBackgroundDefs[roomName].image), name: roomName}))
+                .filter(room => room.isCraftable)
+                .map(current => ({
+                    isNew: !!current.isNew,
+                    name: `
+                        <img style="min-height: 64px" src="${App.checkResourceOverride(current.image)}"></img> 
+                        ${current.name.toUpperCase()} 
+                        <div class="flex-center flex-dir-row"> ${App.getHarvestIcons(current.craftingRecipe, undefined, 'opacity-third')} </div> 
+                        ${current.isNew ? App.getBadge() : ''}
+                    `,
+                    onclick: () => {
+                        const hasAllIngredients = current.craftingRecipe.every(ingredientName => App.pet.inventory.harvests[ingredientName]);
+                        if(!hasAllIngredients) return App.displayPopup(`You cannot craft this item due to missing ingredients`);
+
+                        current.craftingRecipe.forEach(ingredient => removeOneHarvestFromInventory(ingredient));
+
+                        App.closeAllDisplays();
+                        Activities.redecorRoom();
+                        App.scene.home.image = App.checkResourceOverride(current.image);
+                    }
+                }))
+
+            const list = [
+                ...rooms
+            ].sort((a, b) => b.isNew - a.isNew)
+
+            sliderInstance = App.displaySlider(list, null, {accept: 'Craft'});
+            return sliderInstance;
+
+        },
         open_room_background_list: function(onlyFurnishables, filterFn){
             let list = [];
             let sliderInstance;
@@ -3262,6 +3289,7 @@ let App = {
                 const absCurrent = App.definitions.room_background[room];
 
                 if(filterFn && !filterFn(absCurrent)) continue;
+                else if(!filterFn && absCurrent.isCraftable) continue;
 
                 let current = 
                     onlyFurnishables ?
@@ -4292,11 +4320,12 @@ let App = {
         },
         open_mall_activity_list: function(){
             const hasNewDecor = Object.keys(App.definitions.room_background).some(key => {
+                const room = App.definitions.room_background[key];
                 const isUnlocked = 
-                    App.definitions.room_background[key].unlockKey ? 
-                    App.getRecord(App.definitions.room_background[key].unlockKey) : 
+                    room.unlockKey ? 
+                    App.getRecord(room.unlockKey) : 
                     true;
-                return App.definitions.room_background[key].isNew && isUnlocked;
+                return room.isNew && isUnlocked && !room.isCraftable;
             });
             const hasNewAccessory = Object.keys(App.definitions.accessories).some(key => {
                 const isUnlocked = 
@@ -5050,6 +5079,12 @@ let App = {
             <img style="height: inherit; width: 32px; object-fit: contain; margin-right: 10px" src="${image}"></img>
             <span class="overflow-hidden ellipsis">${name}<span>
         `
+    },
+    getHarvestIcons: function(plantNameList, delimiter = ' + ', disabledClassName = '') {
+        return plantNameList.map(plantName => {
+            const hasInInventory = App.pet.inventory.harvests[plantName]
+            return Plant.getCSprite(plantName, undefined, hasInInventory ? 'enabled' : disabledClassName);
+        }).join(delimiter);
     },
     isCompanionAllowed: function(room){
         if(!room) room = App.currentScene;

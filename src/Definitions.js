@@ -1817,7 +1817,6 @@ App.definitions = {
                 App.pet.stats.current_fun += 35;
                 App.pet.stats.current_hunger += 30;
                 App.pet.stats.current_sleep -= 40;
-                App.petDefinition.adjustCare(true);
             }
         },
         {
