@@ -2893,8 +2893,13 @@ let App = {
                                         pRandom.save();
                                         const seed = hashCode(name);
                                         const results = new Array(3).fill(null).map((_, i) => {
-                                            if(!allPlants.length) allPlants = Object.keys(App.definitions.plant);
-                                            pRandom.seed = Math.abs(seed) + (i * 64);
+                                            if(!allPlants.length) 
+                                                allPlants = Object.keys(App.definitions.plant)
+                                                    .map(name => ({...App.definitions.plant[name], name}))
+                                                    .filter( ({inedible}) => !inedible )
+                                                    .map( ({name}) => name)
+
+                                            pRandom.seed = seed + ((i + 1) * 321 * seed);
                                             const item = pRandomFromArray(allPlants);
                                             allPlants.splice(allPlants.indexOf(item), 1);
                                             return item;
@@ -3249,32 +3254,48 @@ let App = {
                     App.pet.inventory.harvests[name] -= 1;
             }
 
+            const getCraftableUIDef = (current, type) => ({
+                isNew: !!current.isNew,
+                name: `
+                    <img style="min-height: 64px" src="${App.checkResourceOverride(current.image)}"></img> 
+                    ${current.name.toUpperCase()} 
+                    <small>${type}</small>
+                    <div class="flex-center flex-dir-row"> ${App.getHarvestIcons(current.craftingRecipe, undefined, 'opacity-third')} </div> 
+                    ${current.isNew ? App.getBadge() : ''}
+                `,
+                onclick: () => {
+                    const hasAllIngredients = current.craftingRecipe.every(ingredientName => App.pet.inventory.harvests[ingredientName]);
+                    if(!hasAllIngredients) return App.displayPopup(`You cannot craft this ${type} due to missing ingredients`);
+
+                    current.craftingRecipe.forEach(ingredient => removeOneHarvestFromInventory(ingredient));
+
+                    switch(type){
+                        case "room":
+                            App.closeAllDisplays();
+                            Activities.redecorRoom();
+                            App.scene.home.image = App.checkResourceOverride(current.image);
+                            break;
+                        case "furniture":
+                            // todo: implement
+                            break;
+                    }
+                }
+            });
+
             // room backgrounds
             const rooms = Object.keys(roomBackgroundDefs)
                 .map(roomName => ({...roomBackgroundDefs[roomName], image: App.getFurnishableBackground(roomBackgroundDefs[roomName].image), name: roomName}))
                 .filter(room => room.isCraftable)
-                .map(current => ({
-                    isNew: !!current.isNew,
-                    name: `
-                        <img style="min-height: 64px" src="${App.checkResourceOverride(current.image)}"></img> 
-                        ${current.name.toUpperCase()} 
-                        <div class="flex-center flex-dir-row"> ${App.getHarvestIcons(current.craftingRecipe, undefined, 'opacity-third')} </div> 
-                        ${current.isNew ? App.getBadge() : ''}
-                    `,
-                    onclick: () => {
-                        const hasAllIngredients = current.craftingRecipe.every(ingredientName => App.pet.inventory.harvests[ingredientName]);
-                        if(!hasAllIngredients) return App.displayPopup(`You cannot craft this item due to missing ingredients`);
+                .map(current => getCraftableUIDef(current, 'room'))
 
-                        current.craftingRecipe.forEach(ingredient => removeOneHarvestFromInventory(ingredient));
-
-                        App.closeAllDisplays();
-                        Activities.redecorRoom();
-                        App.scene.home.image = App.checkResourceOverride(current.image);
-                    }
-                }))
+            // furniture
+            const furniture = App.definitions.furniture
+                .filter(item => item.isCraftable)
+                .map(current => getCraftableUIDef(current, 'furniture'))
 
             const list = [
-                ...rooms
+                ...rooms,
+                ...furniture,
             ].sort((a, b) => b.isNew - a.isNew)
 
             sliderInstance = App.displaySlider(list, null, {accept: 'Craft'});
@@ -3457,6 +3478,8 @@ let App = {
                 // if(current.unlockKey && !App.getRecord(current.unlockKey)){
                 //     continue;
                 // }
+
+                if(current.isCraftable) return;
 
                 // 50% off on sales day
                 let price = current.price ?? 1;

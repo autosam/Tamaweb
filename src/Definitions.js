@@ -631,30 +631,37 @@ App.definitions = {
         "purple tulip": {
             sprite: 1,
             price: 5,
+            inedible: true,
         },
         "cyan tulip": {
             sprite: 5,
             price: 5,
+            inedible: true,
         },
         "blue tulip": {
             sprite: 9,
             price: 5,
+            inedible: true,
         },
         "green tulip": {
             sprite: 13,
             price: 5,
+            inedible: true,
         },
         "yellow tulip": {
             sprite: 17,
             price: 5,
+            inedible: true,
         },
         "orange tulip": {
             sprite: 21,
             price: 5,
+            inedible: true,
         },
         "red tulip": {
             sprite: 25,
             price: 5,
+            inedible: true,
         },
     },
 
@@ -993,6 +1000,40 @@ App.definitions = {
             image: 'resources/img/furniture/sofa_futura.png',
             id: "sofa_futura",
             price: 120,
+        },
+
+        // craftables
+        {
+            name: 'Bird Stand',
+            image: 'resources/img/furniture/bird_stand.png',
+            id: 'bird_stand',
+            isNew: true,
+            isCraftable: true,
+            craftingRecipe: ['red tulip', 'blue tulip', 'purple tulip'],
+        },
+        {
+            name: 'Collage Bucket',
+            image: 'resources/img/furniture/bucket_collage.png',
+            id: 'bucket_collage',
+            isNew: true,
+            isCraftable: true,
+            craftingRecipe: ['red tulip', 'blue tulip', 'purple tulip'],
+        },
+        {
+            name: 'Sun Lamp',
+            image: 'resources/img/furniture/lamp_sun.png',
+            id: 'lamp_sun',
+            isNew: true,
+            isCraftable: true,
+            craftingRecipe: ['red tulip', 'watermelon', 'purple tulip'],
+        },
+        {
+            name: 'Cloud Sofa',
+            image: 'resources/img/furniture/sofa_cloud.png',
+            id: 'sofa_cloud',
+            isNew: true,
+            isCraftable: true,
+            craftingRecipe: ['red tulip', 'blue tulip', 'purple tulip'],
         },
     ],
 
