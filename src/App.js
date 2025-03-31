@@ -1145,6 +1145,8 @@ let App = {
                 z: furniture.z || App.constants.BACKGROUND_Z + 0.1,
                 def: furniture,
                 onDraw: (me) => {
+                    furnitureDef.onDraw?.(me);
+
                     if(lastY === me.y) return;
                     lastY = me.y;
                     me.z = App.constants.BACKGROUND_Z + 
@@ -2796,7 +2798,7 @@ let App = {
                 }
 
                 // some entries become randomly unavailable to buy for the day
-                if(++index && buyMode && !random(0, 1, dayId + (index * 256))){
+                if(++index && buyMode && !random(0, 1, (dayId * 365) + (index * 25600))){
                     continue;
                 }
 
@@ -3247,27 +3249,39 @@ let App = {
         },
         open_craftables_list: function(){
             let sliderInstance;
-            const {room_background: roomBackgroundDefs} = App.definitions;
+            const {
+                room_background: roomBackgroundDefs, 
+                accessories: accessoryDefs
+            } = App.definitions;
 
             const removeOneHarvestFromInventory = (name) => {
                 if(App.pet.inventory.harvests[name] > 0)
                     App.pet.inventory.harvests[name] -= 1;
             }
 
-            const getCraftableUIDef = (current, type) => ({
+            const getCraftableUIDef = (current, type, owned) => ({
                 isNew: !!current.isNew,
                 name: `
                     <img style="min-height: 64px" src="${App.checkResourceOverride(current.image)}"></img> 
                     ${current.name.toUpperCase()} 
                     <small>${type}</small>
-                    <div class="flex-center flex-dir-row"> ${App.getHarvestIcons(current.craftingRecipe, undefined, 'opacity-third')} </div> 
+                    <b class="flex-center flex-dir-row">
+                    ${
+                        owned ? 'OWNED'
+                            : App.getHarvestIcons(current.craftingRecipe, undefined, 'opacity-third')
+                    }
+                    </b> 
                     ${current.isNew ? App.getBadge() : ''}
                 `,
                 onclick: () => {
+                    if(owned) return App.displayPopup(`You already own the this ${type}!`);
+
                     const hasAllIngredients = current.craftingRecipe.every(ingredientName => App.pet.inventory.harvests[ingredientName]);
                     if(!hasAllIngredients) return App.displayPopup(`You cannot craft this ${type} due to missing ingredients`);
 
                     current.craftingRecipe.forEach(ingredient => removeOneHarvestFromInventory(ingredient));
+
+                    App.displayPopup(`Crafted x1 <b>${current.name}</b>!`);
 
                     switch(type){
                         case "room":
@@ -3276,7 +3290,11 @@ let App = {
                             App.scene.home.image = App.checkResourceOverride(current.image);
                             break;
                         case "furniture":
-                            // todo: implement
+                            App.ownedFurniture.push({
+                                id: current.id,
+                                x: '50%', y: '50%',
+                                isActive: false
+                            })
                             break;
                     }
                 }
@@ -3291,7 +3309,13 @@ let App = {
             // furniture
             const furniture = App.definitions.furniture
                 .filter(item => item.isCraftable)
-                .map(current => getCraftableUIDef(current, 'furniture'))
+                .map(current => getCraftableUIDef(current, 'furniture', !!App.ownedFurniture.find(f => f.id === current.id)))
+
+            // accessories
+            const accessories = Object.keys(accessoryDefs)
+                .map(name => ({...accessoryDefs[name], name}))
+                .filter(current => current.isCraftable)
+                .map(current => getCraftableUIDef(current, 'accessory'))
 
             const list = [
                 ...rooms,
@@ -5086,7 +5110,7 @@ let App = {
             ? `<div style="width: 1"><img style="width: 36px; outline: none" src="${image}"></img></div>`
             : `<c-sprite width="64" height="36" index="0" src="${image}"></c-sprite>`;
     },
-    getGenericCSprite: function(index, spritesheet, dimensions, className){
+    getGenericCSprite: function(index, spritesheet, dimensions, className, additional = ''){
         const size = dimensions.rows * dimensions.cellSize;
         return `<c-sprite 
             naturalWidth="${size}" 
@@ -5095,7 +5119,8 @@ let App = {
             height="${dimensions.cellSize}" 
             index="${(index - 1)}" 
             class="${className}"
-            src="${spritesheet}"></c-sprite>`;
+            src="${spritesheet}"
+            ${additional}></c-sprite>`;
     },
     getPersona: function(name, image){
         return `

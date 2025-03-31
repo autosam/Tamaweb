@@ -102,7 +102,7 @@ class Plant {
         return App.getGenericCSprite(
             this.getDefinition().sprite + this.age, 
             App.constants.PLANT_SPRITESHEET, 
-            App.constants.PLANT_SPRITESHEET_DIMENSIONS
+            App.constants.PLANT_SPRITESHEET_DIMENSIONS,
         );
     }
     getObject(){}
@@ -121,7 +121,8 @@ class Plant {
             Plant.getDefinitionByName(plantName)?.sprite + age, 
             App.constants.PLANT_SPRITESHEET, 
             App.constants.PLANT_SPRITESHEET_DIMENSIONS,
-            className
+            className,
+            `title="${plantName.toUpperCase()}"`
         );
     }
     static getPackCSprite(plantName, age, className){

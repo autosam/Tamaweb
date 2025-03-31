@@ -627,6 +627,12 @@ App.definitions = {
             price: 5,
             // wateredDuration: 0.5,
         },
+        // inedibles
+        "bamboo": {
+            sprite: 77,
+            price: 10,
+            inedible: true,
+        },
         // tulips
         "purple tulip": {
             sprite: 1,
@@ -661,6 +667,27 @@ App.definitions = {
         "red tulip": {
             sprite: 25,
             price: 5,
+            inedible: true,
+        },
+        // rocky ores
+        "tetrocana": {
+            sprite: 61,
+            price: 15,
+            inedible: true,
+        },
+        "lucrios": {
+            sprite: 65,
+            price: 15,
+            inedible: true,
+        },
+        "hephasto": {
+            sprite: 69,
+            price: 15,
+            inedible: true,
+        },
+        "kilmari": {
+            sprite: 73,
+            price: 15,
             inedible: true,
         },
     },
@@ -1009,7 +1036,7 @@ App.definitions = {
             id: 'bird_stand',
             isNew: true,
             isCraftable: true,
-            craftingRecipe: ['red tulip', 'blue tulip', 'purple tulip'],
+            craftingRecipe: ['kilmari', 'blue tulip', 'bamboo'],
         },
         {
             name: 'Collage Bucket',
@@ -1017,7 +1044,7 @@ App.definitions = {
             id: 'bucket_collage',
             isNew: true,
             isCraftable: true,
-            craftingRecipe: ['red tulip', 'blue tulip', 'purple tulip'],
+            craftingRecipe: ['cyan tulip', 'tetrocana', 'hephasto'],
         },
         {
             name: 'Sun Lamp',
@@ -1025,7 +1052,15 @@ App.definitions = {
             id: 'lamp_sun',
             isNew: true,
             isCraftable: true,
-            craftingRecipe: ['red tulip', 'watermelon', 'purple tulip'],
+            craftingRecipe: ['bamboo', 'lucrios', 'yellow tulip'],
+            onDraw: (me) => {
+                if(!App.darkOverlay.hidden){
+                    me.setImg('resources/img/furniture/lamp_sun_off.png')
+                } else {
+                    me.setImg('resources/img/furniture/lamp_sun.png')
+                }
+            }
+            
         },
         {
             name: 'Cloud Sofa',
@@ -1033,7 +1068,7 @@ App.definitions = {
             id: 'sofa_cloud',
             isNew: true,
             isCraftable: true,
-            craftingRecipe: ['red tulip', 'blue tulip', 'purple tulip'],
+            craftingRecipe: ['orange tulip', 'bamboo', 'purple tulip'],
         },
     ],
 
