@@ -3262,7 +3262,10 @@ let App = {
             const getCraftableUIDef = (current, type, owned) => ({
                 isNew: !!current.isNew,
                 name: `
-                    <img style="min-height: 64px" src="${App.checkResourceOverride(current.image)}"></img> 
+                    ${
+                        current.icon ??
+                        `<img style="min-height: 64px" src="${App.checkResourceOverride(current.image)}"></img>`
+                    }
                     ${current.name.toUpperCase()} 
                     <small>${type}</small>
                     <b class="flex-center flex-dir-row">
@@ -3296,6 +3299,9 @@ let App = {
                                 isActive: false
                             })
                             break;
+                        case "accessory":
+                            App.pet.inventory.accessory[current.name] = true;
+                            break;
                     }
                 }
             });
@@ -3315,11 +3321,12 @@ let App = {
             const accessories = Object.keys(accessoryDefs)
                 .map(name => ({...accessoryDefs[name], name}))
                 .filter(current => current.isCraftable)
-                .map(current => getCraftableUIDef(current, 'accessory'))
+                .map(current => getCraftableUIDef( {...current, icon: App.getAccessoryCSprite(current.name)} , 'accessory'))
 
             const list = [
                 ...rooms,
                 ...furniture,
+                ...accessories,
             ].sort((a, b) => b.isNew - a.isNew)
 
             sliderInstance = App.displaySlider(list, null, {accept: 'Craft'});
@@ -3414,6 +3421,9 @@ let App = {
                     continue;
                 }
                 let current = App.definitions.accessories[accessoryName];
+
+                if(buyMode && current.isCraftable) continue;
+
                 // check for unlockables
                 if(current.unlockKey && !App.getRecord(current.unlockKey)){
                     continue;

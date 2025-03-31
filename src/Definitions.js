@@ -1487,6 +1487,28 @@ App.definitions = {
             price: 350,
             isNew: false,
         },
+        // rainbow
+        'rainbow': {
+            image: 'resources/img/accessory/rainbow_01.png',
+            front: false,
+            isNew: true,
+            isCraftable: true,
+            craftingRecipe: ['red tulip', 'cyan tulip', 'yellow tulip'],
+        },
+        'rainbow hat': {
+            image: 'resources/img/accessory/rainbow_hat_01.png',
+            front: true,
+            isNew: true,
+            isCraftable: true,
+            craftingRecipe: ['blue tulip', 'purple tulip', 'green tulip'],
+        },
+        'bouquet': {
+            image: 'resources/img/accessory/bouquet_01.png',
+            front: true,
+            isNew: true,
+            isCraftable: true,
+            craftingRecipe: ['red tulip', 'purple tulip', 'yellow tulip'],
+        },
     },
 
     /* ACHIEVEMENTS */
