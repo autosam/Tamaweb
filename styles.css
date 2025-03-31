@@ -998,6 +998,10 @@ input#background-color-picker {
     pointer-events: none;
 }
 
+.badge.circle {
+    padding: 4px;
+
+}
 .badge.red {
     background: #ED254E;
 }

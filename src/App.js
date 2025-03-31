@@ -1736,6 +1736,12 @@ let App = {
                     }
                 },
                 {
+                    name: `Garden ${App.getBadge()}`,
+                    onclick: () => {
+                        Activities.goToInnerGarden();
+                    }
+                },
+                {
                     name: `pet`,
                     onclick: () => {
                         App.displayPopup(`Tap the screen to pet <b>${App.petDefinition.name}</b><br><br>Don't tap for a few seconds to stop petting`, 2800, () => {
@@ -1771,6 +1777,7 @@ let App = {
                 },
                 {
                     name: `backyard ${App.getBadge()}`,
+                    _ignore: true,
                     onclick: () => {
                         Activities.goToGarden();
                     }
@@ -2914,11 +2921,7 @@ let App = {
                                         {
                                             name: `
                                             <div class="flex-between flex-wrap" style="row-gap: 4px">
-                                                ${Object.keys(App.pet.inventory.harvests)
-                                                    .map(name => ({amount: App.pet.inventory.harvests[name], name, def: Plant.getDefinitionByName(name)}) )
-                                                    .filter(item => item.amount && !item.def.inedible)
-                                                    .map(item => `<div class="flex align-center flex-gap-05">${Plant.getCSprite(item.name)} <span><small>x</small>${item.amount}</span></div>`)
-                                                    .join('')}
+                                                ${App.getHarvestInventory(item => !item.def.inedible)}
                                             </div>
                                             `,
                                             type: 'text',
@@ -5143,6 +5146,16 @@ let App = {
             const hasInInventory = App.pet.inventory.harvests[plantName]
             return Plant.getCSprite(plantName, undefined, hasInInventory ? 'enabled' : disabledClassName);
         }).join(delimiter);
+    },
+    getHarvestInventory: function(filterFn = () => true){
+        return `
+        ${Object.keys(App.pet.inventory.harvests)
+            .map(name => ({amount: App.pet.inventory.harvests[name], name, def: Plant.getDefinitionByName(name)}) )
+            .filter(item => item.amount)
+            .filter(filterFn)
+            .map(item => `<div class="flex align-center flex-gap-05">${Plant.getCSprite(item.name)} <span><small>x</small>${item.amount}</span></div>`)
+            .join('')}
+        `
     },
     isCompanionAllowed: function(room){
         if(!room) room = App.currentScene;

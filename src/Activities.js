@@ -413,7 +413,23 @@ class Activities {
                     }
                 },
                 {
+                    name: 'inventory',
+                    onclick: () => {
+                        return App.displayList([
+                            {
+                                name: `
+                                <div class="flex-between flex-wrap" style="row-gap: 4px">
+                                    ${App.getHarvestInventory()}
+                                </div>
+                                `,
+                                type: 'text',
+                            },
+                        ]);
+                    }
+                },
+                {
                     name: '<i class="icon fa-solid fa-arrow-left icon"></i> backyard',
+                    class: 'back-btn',
                     onclick: () => {
                         Activities.goToGarden();
                     }
