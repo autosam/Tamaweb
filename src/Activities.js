@@ -72,16 +72,22 @@ class Activities {
         }
 
         App.toggleGameplayControls(false, () => {
-            App.displayConfirm(`${App.petDefinition.name} will be back <b>${moment(currentRabbitHole.endTime).fromNow()}</b><br><br>Do you want to end it early?`, [
+            App.displayConfirm(`
+                <div style="font-size: x-small;" class="solid-surface-stylized b-radius-10">
+                    <i  class="fa-solid fa-clock" style="margin-right: 2px;"></i>
+                    <span>${currentRabbitHole.name}</span>
+                </div>
+                ${App.petDefinition.name} will be back <b>${moment(currentRabbitHole.endTime).fromNow()}</b>
+                `, [
                 {
-                    name: 'yes',
+                    name: 'end early',
                     onclick: () => {
                         onEndFn(true);
                         App.pet.stopScriptedState();
                     },
                 },
                 {
-                    name: 'no',
+                    name: 'close',
                     class: 'back-btn',
                     onclick: () => {}
                 }
