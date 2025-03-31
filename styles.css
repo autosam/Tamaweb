@@ -2011,6 +2011,9 @@ hr {
 .collection__char.locked > c-sprite {
     filter: grayscale(1) contrast(0.01);
 }
+.collection__char > c-sprite {
+    pointer-events: none;
+}
 
 /* gold circle */
 .gold-circle {

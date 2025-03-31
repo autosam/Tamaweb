@@ -2608,6 +2608,18 @@ let App = {
                     componentType: 'div',
                     className: `collection__char ${!isUnlocked ? 'locked' : ''}`,
                     innerHTML: PetDefinition.generateFullCSprite(char),
+                    onclick: ({target}) => {
+                        if(!App.isTester()) return;
+                        target.classList.remove('locked');
+                    },
+                    ondblclick: () => {
+                        if(!App.isTester()) return;
+
+                        if(confirm('Set this as main character?')){
+                            App.petDefinition.sprite = char;
+                            window.location.reload();
+                        }
+                    }
                 }
             })
 
@@ -5148,11 +5160,20 @@ let App = {
         }).join(delimiter);
     },
     getHarvestInventory: function(filterFn = () => true){
-        return `
-        ${Object.keys(App.pet.inventory.harvests)
+        const harvestsToShow = Object.keys(App.pet.inventory.harvests)
             .map(name => ({amount: App.pet.inventory.harvests[name], name, def: Plant.getDefinitionByName(name)}) )
             .filter(item => item.amount)
-            .filter(filterFn)
+            .filter(filterFn);
+
+        if(!harvestsToShow.length){
+            return `<small class="flex-center width-full flex-gap-05 opacity-half">
+                <i class="fa-solid fa-ghost"></i>
+                <i>Empty inventory</i>
+            </small>`;
+        }
+
+        return `
+        ${harvestsToShow
             .map(item => `<div class="flex align-center flex-gap-05">${Plant.getCSprite(item.name)} <span><small>x</small>${item.amount}</span></div>`)
             .join('')}
         `
