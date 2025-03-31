@@ -140,6 +140,10 @@ class Plant {
         grown: 2,
         dead: 3,
     }
+    static AGE_LABELS = Object.fromEntries(
+        Object.entries(Plant.AGE).map(([key, value]) => [value, key])
+    );
+    
     static PATCH_IMG = {
         normal: 'resources/img/misc/garden_patch_01.png',
         wet: 'resources/img/misc/garden_patch_01_wet.png',

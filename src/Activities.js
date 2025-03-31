@@ -331,6 +331,7 @@ class Activities {
                                 App.plants.push(plant);
                                 App.handleGardenPlantsSpawn(true);
                                 Missions.done(Missions.TYPES.plant_in_garden);
+                                Activities.task_floatingObjects(10, ['resources/img/misc/add_green_01.png']);
                                 return true;
                             }
                             return false;
@@ -372,6 +373,7 @@ class Activities {
                                 onPlantClick: (plant, plantIndex) => {
                                     App.plants.splice(plantIndex, 1); // removing plant
                                     App.handleGardenPlantsSpawn(true);
+                                    Activities.task_floatingObjects(10, ['resources/img/misc/tick_green_01.png']);
 
                                     const amount = random(4, 8);
                                     App.addNumToObject(App.pet.inventory.harvests, plant.name, amount);
@@ -403,9 +405,22 @@ class Activities {
                     onclick: () => {
                         displayPlantsList({
                             onPlantClick: (plant, plantIndex) => {
-                                App.plants.splice(plantIndex, 1); // removing plant
-                                App.handleGardenPlantsSpawn(true);
-                                App.closeAllDisplays();
+                                return App.displayConfirm(`Are you sure you want to remove <b>${plant.name} (${Plant.AGE_LABELS[plant.age]})</b>?`, [
+                                    {
+                                        name: 'yes',
+                                        onclick: () => {
+                                            App.plants.splice(plantIndex, 1); // removing plant
+                                            App.handleGardenPlantsSpawn(true);
+                                            App.closeAllDisplays();
+                                            Activities.task_floatingObjects(10, ['resources/img/misc/remove_red_01.png']);
+                                        }
+                                    },
+                                    {
+                                        name: 'no',
+                                        class: 'back-btn',
+                                        onclick: () => {}
+                                    },
+                                ])
                             },
                             filterFn: (plant) => plant.age !== Plant.AGE.grown
                         })
@@ -1530,6 +1545,8 @@ class Activities {
             }));
         } catch(e) {}
 
+        const heartParticleSpawner = setInterval(() => Activities.task_floatingHearts(), 500);
+
         const overlay = new Object2d({
             img: 'resources/img/background/house/wedding_overlay.png',
             x: 0,
@@ -1585,6 +1602,8 @@ class Activities {
                 App.setScene(App.scene.home);
 
                 App.pet = App.createActivePet(App.petDefinition);
+
+                clearInterval(heartParticleSpawner);
             }, () => {
                 App.toggleGameplayControls(true);
 
@@ -2604,18 +2623,24 @@ class Activities {
         App.toggleGameplayControls(true);
     }
     static task_floatingHearts(num){
+        Activities.task_floatingObjects(num, [
+            'resources/img/misc/heart_particle_01.png',
+            'resources/img/misc/heart_particle_02.png',
+        ])
+    }
+    static task_floatingObjects(num, textures, yRange = [105, 115]){
         if(!num) num = random(1, 4);
         for(let i = 0; i < num; i++){
             let floatSpeed = random(4, 5) * 0.01, 
                 swayFloat = 0, 
                 swaySpeed = random(2, 20) * 0.001;
-            const heartObject = new Object2d({
-                img: `resources/img/misc/heart_particle_0${random(1, 2)}.png`, 
+            const floatingObject = new Object2d({
+                img: randomFromArray(textures),
                 z: randomFromArray([0, 100]), 
                 x: `${random(0, 100)}%`, 
-                y: `${random(105, 115)}%`
+                y: `${random(yRange[0], yRange[1])}%`
             });
-            heartObject.onDraw = (me) => {
+            floatingObject.onDraw = (me) => {
                 if(isNaN(me.y)) return;
 
                 me.y -= floatSpeed * App.deltaTime;
