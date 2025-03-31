@@ -1054,13 +1054,12 @@ App.definitions = {
             isCraftable: true,
             craftingRecipe: ['bamboo', 'lucrios', 'yellow tulip'],
             onDraw: (me) => {
-                if(!App.darkOverlay.hidden){
-                    me.setImg('resources/img/furniture/lamp_sun_off.png')
-                } else {
-                    me.setImg('resources/img/furniture/lamp_sun.png')
-                }
+                me.setImg(
+                    App.darkOverlay.hidden 
+                    ? 'resources/img/furniture/lamp_sun.png' 
+                    : 'resources/img/furniture/lamp_sun_off.png'
+                );
             }
-            
         },
         {
             name: 'Cloud Sofa',
