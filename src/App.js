@@ -2915,8 +2915,8 @@ let App = {
                                             name: `
                                             <div class="flex-between flex-wrap" style="row-gap: 4px">
                                                 ${Object.keys(App.pet.inventory.harvests)
-                                                    .map(itemName => ({amount: App.pet.inventory.harvests[itemName], name: itemName}) )
-                                                    .filter(item => item.amount)
+                                                    .map(name => ({amount: App.pet.inventory.harvests[name], name, def: Plant.getDefinitionByName(name)}) )
+                                                    .filter(item => item.amount && !item.def.inedible)
                                                     .map(item => `<div class="flex align-center flex-gap-05">${Plant.getCSprite(item.name)} <span><small>x</small>${item.amount}</span></div>`)
                                                     .join('')}
                                             </div>
