@@ -338,6 +338,7 @@ class Activities {
                                 App.handleGardenPlantsSpawn(true);
                                 Missions.done(Missions.TYPES.plant_in_garden);
                                 Activities.task_floatingObjects(10, ['resources/img/misc/add_green_01.png']);
+                                App.sendAnalytics('plant', plantName);
                                 return true;
                             }
                             return false;
@@ -396,6 +397,7 @@ class Activities {
                                             }
                                         }
                                     ])
+                                    App.sendAnalytics('harvest', plant.name);
                                     return true;
                                 },
                                 filterFn: (plant) => plant.age === Plant.AGE.grown
@@ -449,12 +451,23 @@ class Activities {
                     }
                 },
                 {
-                    name: '<i class="icon fa-solid fa-arrow-left icon"></i> backyard',
+                    name: '<i class="icon fa-solid fa-home"></i> go inside',
                     class: 'back-btn',
                     onclick: () => {
-                        Activities.goToGarden();
+                        App.setScene(App.scene.home);
+                        App.toggleGameplayControls(true);
+                        App.pet.stopScriptedState();
+                        App.pet.x = '0%';
+                        App.pet.targetX = 50;
                     }
-                }
+                },
+                // {
+                //     name: '<i class="icon fa-solid fa-arrow-left icon"></i> backyard',
+                //     class: 'back-btn',
+                //     onclick: () => {
+                //         Activities.goToGarden();
+                //     }
+                // }
             ])
         })
     }
@@ -909,6 +922,7 @@ class Activities {
                 },
                 {
                     name: '<i class="icon fa-solid fa-home"></i> return home',
+                    class: 'back-btn',
                     onclick: handleReturnHome
                 },
             ])

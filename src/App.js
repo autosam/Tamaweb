@@ -3318,6 +3318,8 @@ let App = {
                             App.pet.inventory.accessory[current.name] = true;
                             break;
                     }
+
+                    App.sendAnalytics('craft', current.name);
                 }
             });
 
@@ -3818,6 +3820,7 @@ let App = {
                                             }
                                             Activities.goToCurrentRabbitHole(true);
                                             App.closeAllDisplays();
+                                            App.sendAnalytics('rabbit_hole', hole.name);
                                         }
                                     },
                                     {
@@ -5174,7 +5177,7 @@ let App = {
 
         return `
         ${harvestsToShow
-            .map(item => `<div class="flex align-center flex-gap-05">${Plant.getCSprite(item.name)} <span><small>x</small>${item.amount}</span></div>`)
+            .map(item => `<div onclick="App.displayPopup('${item.name} <div><b>x${item.amount}</b></div>')" class="flex align-center flex-gap-05">${Plant.getCSprite(item.name)} <span><small>x</small>${item.amount}</span></div>`)
             .join('')}
         `
     },
