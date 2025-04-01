@@ -3705,6 +3705,7 @@ let App = {
                     }
                 },
                 {
+                    _disable: App.petDefinition.lifeStage == PetDefinition.LIFE_STAGE.baby,
                     name: `<span class="ellipsis">Homeworld Getaways</span> ${App.getBadge()}`,
                     onclick: () => {
                         return App.handlers.open_rabbitholes_list();
