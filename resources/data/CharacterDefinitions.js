@@ -1,6 +1,8 @@
 const PET_ELDER_CHARACTERS = [
     "resources/img/character/chara_379b.png",
     "resources/img/character/chara_380b.png",
+    "resources/img/character/chara_381b.png",
+    "resources/img/character/chara_382b.png",
     "resources/img/character/chara_383b.png",
     "resources/img/character/chara_384b.png",
 ];
@@ -8,9 +10,6 @@ const PET_ELDER_CHARACTERS = [
 const PET_ADULT_CHARACTERS = [
     // "resources/img/character/sonic.png",
     // "resources/img/character/red_sonic.png",
-
-    "resources/img/character/chara_381b.png",
-    "resources/img/character/chara_382b.png",
     "resources/img/character/chara_133b.png",
     "resources/img/character/chara_134b.png",
     "resources/img/character/chara_135b.png",

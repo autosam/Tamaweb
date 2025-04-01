@@ -232,7 +232,7 @@ PET_ADULT_CHARACTERS.forEach(char => {
 let all = [...PET_BABY_CHARACTERS, ...PET_TEEN_CHARACTERS, ...PET_ADULT_CHARACTERS];
 
 console.log('growth chart:');
-console.log(JSON.stringify(growthChart));
+console.log(JSON.stringify(growthChart).replaceAll('resources/img/character/chara_', '%'));
 
 let allContainer = document.createElement('div');
     allContainer.className = 'all-cont';
