@@ -400,9 +400,9 @@ class PetDefinition {
     getNextBirthdayDate(){
         let m = moment(this.lastBirthday);
         switch(this.lifeStage){
-            case 0:
+            case PetDefinition.LIFE_STAGE.baby:
                 return m.add(App.constants.MANUAL_AGE_HOURS_BABY, 'hours');
-            case 1:
+            case PetDefinition.LIFE_STAGE.teen:
                 return m.add(App.constants.MANUAL_AGE_HOURS_TEEN, 'hours');
         }
         return false;
@@ -411,9 +411,9 @@ class PetDefinition {
     getNextAutomaticBirthdayDate(){
         let m = moment(this.birthday);
         switch(this.lifeStage){
-            case 0:
+            case PetDefinition.LIFE_STAGE.baby:
                 return m.add(App.constants.AUTO_AGE_HOURS_BABY, 'hours');
-            case 1:
+            case PetDefinition.LIFE_STAGE.teen:
                 return m.add(App.constants.AUTO_AGE_HOURS_TEEN, 'hours');
         }
         return false;
@@ -443,13 +443,13 @@ class PetDefinition {
         }
 
         switch(this.lifeStage){
-            case 0:
+            case PetDefinition.LIFE_STAGE.baby:
                 switch(careRating){
                     case 1: return possibleEvolutions.slice(0, 2); // low care
                     case 3: return possibleEvolutions.slice(5); // high care
                     default: return possibleEvolutions.slice(2, 5); // default medium care
                 }
-            case 1:
+            case PetDefinition.LIFE_STAGE.teen:
                 switch(careRating){
                     case 1: return [possibleEvolutions[0]]; // low care
                     case 3: return [possibleEvolutions[2]]; // high care
@@ -624,22 +624,22 @@ class PetDefinition {
     static generateCSprite(sprite, noMargin){
         const margin = noMargin ? 0 : 10;
         const lifeStage = PetDefinition._getLifeStage(sprite);
-        if(lifeStage == 0) return `<c-sprite width="16" height="16" index="0" src="${sprite}" pos-x="0" pos-y="0" style="margin-right: ${margin}px;"></c-sprite>`;
-        if(lifeStage == 1) return `<c-sprite width="16" height="16" index="0" src="${sprite}" pos-x="4" pos-y="4" style="margin-right: ${margin}px;"></c-sprite>`;
+        if(lifeStage == PetDefinition.LIFE_STAGE.baby) return `<c-sprite width="16" height="16" index="0" src="${sprite}" pos-x="0" pos-y="0" style="margin-right: ${margin}px;"></c-sprite>`;
+        if(lifeStage == PetDefinition.LIFE_STAGE.teen) return `<c-sprite width="16" height="16" index="0" src="${sprite}" pos-x="4" pos-y="4" style="margin-right: ${margin}px;"></c-sprite>`;
         return `<c-sprite width="20" height="20" index="0" src="${sprite}" pos-x="6" pos-y="4" style="margin-right: ${margin}px;"></c-sprite>`;
     }
 
     static generateFullCSprite(sprite){
         const lifeStage = PetDefinition._getLifeStage(sprite);
-        if(lifeStage == 0) return `<c-sprite width="16" height="16" index="0" src="${sprite}" pos-x="0" pos-y="0"></c-sprite>`;
-        if(lifeStage == 1) return `<c-sprite width="24" height="24" index="0" src="${sprite}" pos-x="0" pos-y="0"></c-sprite>`;
+        if(lifeStage == PetDefinition.LIFE_STAGE.baby) return `<c-sprite width="16" height="16" index="0" src="${sprite}" pos-x="0" pos-y="0"></c-sprite>`;
+        if(lifeStage == PetDefinition.LIFE_STAGE.teen) return `<c-sprite width="24" height="24" index="0" src="${sprite}" pos-x="0" pos-y="0"></c-sprite>`;
         return `<c-sprite width="32" height="32" index="0" src="${sprite}" pos-x="0" pos-y="0"></c-sprite>`;
     }
 
     static _getLifeStage(sprite){
-        if(PET_BABY_CHARACTERS.some(char => char === sprite)) return 0;
-        else if(PET_TEEN_CHARACTERS.some(char => char === sprite)) return 1;
-        return 2;
+        if(PET_BABY_CHARACTERS.some(char => char === sprite)) return PetDefinition.LIFE_STAGE.baby;
+        else if(PET_TEEN_CHARACTERS.some(char => char === sprite)) return PetDefinition.LIFE_STAGE.teen;
+        return PetDefinition.LIFE_STAGE.adult;
     }
 
     static getCharCode(sprite){
@@ -653,5 +653,11 @@ class PetDefinition {
         const sprite = pRandomFromArray(spritesArray) || spritesArray[0];
         pRandom.load();
         return sprite;
+    }
+
+    static LIFE_STAGE = {
+        baby: 0,
+        teen: 1,
+        adult: 2,
     }
 }
