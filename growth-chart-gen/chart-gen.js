@@ -130,6 +130,18 @@ function generateTree(char, lifeStage, parent){
         }
     }
 
+    if(lifeStage == 2){
+        for(let i = 0; i < 1; i++){
+            let tries = 10000;
+            let char = pRandomFromArray(PET_ELDER_CHARACTERS);
+            while(evolvedChars.indexOf(char) !== -1 && tries--){
+                char = pRandomFromArray(PET_ELDER_CHARACTERS);
+            }
+            possibleChars.push(char);
+            evolvedChars.push(char);
+        }
+    }
+
     growthChart[char] = possibleChars;
 
     let container = document.createElement('div');
@@ -154,7 +166,7 @@ function generateTree(char, lifeStage, parent){
         })
     } */
 
-    if(lifeStage <= 1){
+    if(lifeStage <= 2){
         possibleChars.forEach((c, i) => {
             var cls = 'high-care';
             if(i == 0) cls = 'low-care';
@@ -211,6 +223,10 @@ PET_CHILD_CHARACTERS.forEach(char => {
 
 PET_TEEN_CHARACTERS.forEach(char => {
     generateTree(char, 1, document.querySelector('.teens'));
+})
+
+PET_ADULT_CHARACTERS.forEach(char => {
+    generateTree(char, 2, document.querySelector('.elders'));
 })
 
 let all = [...PET_BABY_CHARACTERS, ...PET_TEEN_CHARACTERS, ...PET_ADULT_CHARACTERS];

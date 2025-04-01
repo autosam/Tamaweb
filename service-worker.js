@@ -63,8 +63,10 @@ const ASSETS = [
   "resources/data/SpriteDefinitions.js",
   "resources/data/GrowthChart.js",
   ...SPRITES,
+  ...PET_ELDER_CHARACTERS,
   ...PET_ADULT_CHARACTERS,
   ...PET_TEEN_CHARACTERS,
+  ...PET_CHILD_CHARACTERS,
   ...PET_BABY_CHARACTERS,
   ...NPC_CHARACTERS,
 ];

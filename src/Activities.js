@@ -678,7 +678,7 @@ class Activities {
                                 onclick: () => handleHangout(def)
                             },
                             {
-                                _disable: App.petDefinition.lifeStage !== PetDefinition.LIFE_STAGE.adult || def.lifeStage !== PetDefinition.LIFE_STAGE.adult,
+                                _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult || def.lifeStage < PetDefinition.LIFE_STAGE.adult,
                                 name: `go on date`,
                                 onclick: () => handleDate(def)
                             },
@@ -1529,7 +1529,7 @@ class Activities {
 
         App.pet.needsToiletOverlay.hidden = false;
         App.pet.stats.current_bladder = App.pet.stats.max_bladder;
-        if(App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby && !force) {
+        if(App.petDefinition.lifeStage === PetDefinition.LIFE_STAGE.baby && !force) {
             // make pet potty trained if used toilet more than 2 to 4 times and is baby
             if(++App.pet.stats.used_toilet > random(2, 4)){
                 App.pet.stats.is_potty_trained = true;
@@ -1660,7 +1660,7 @@ class Activities {
                             .sort((a, b) => a.sort - b.sort)
                             .map(({ value }) => value); // shuffling friends array
         for(let i = 0; i < 3; i++){
-            otherPetDefs.push(App.getRandomPetDef());
+            otherPetDefs.push(App.getRandomPetDef(App.petDefinition.lifeStage));
         }
 
         const otherPets = otherPetDefs.slice(0, 3).map(def => new Pet(def));
@@ -1688,7 +1688,7 @@ class Activities {
                     pet.targetY = 65;
                     break;
                 case 1:
-                    pet.targetX = 15;
+                    pet.targetX = 12;
                     pet.targetY = 70;
                     pet.z = App.constants.ACTIVE_PET_Z - 0.05;
                     break;
