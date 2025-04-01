@@ -1366,10 +1366,10 @@ let App = {
 
         let sprite;
         switch(age){
-            case 0:
+            case PetDefinition.LIFE_STAGE.baby:
                 sprite = rndArrayFn(PET_BABY_CHARACTERS);
                 break;
-            case 1:
+            case PetDefinition.LIFE_STAGE.teen:
                 sprite = rndArrayFn(PET_TEEN_CHARACTERS);
                 break;
             default:
