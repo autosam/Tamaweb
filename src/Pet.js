@@ -510,8 +510,8 @@ class Pet extends Object2d {
         }
 
         switch(this.petDefinition.lifeStage){
-            case 0: depletion_mult *= 1.65; break;
-            case 1: depletion_mult *= 1.3; break;
+            case PetDefinition.LIFE_STAGE.baby: depletion_mult *= 1.65; break;
+            case PetDefinition.LIFE_STAGE.teen: depletion_mult *= 1.3; break;
         }
 
         if(this.stats.is_at_parents){
@@ -534,8 +534,8 @@ class Pet extends Object2d {
         let cleanliness_depletion_rate = stats.cleanliness_depletion_rate * depletion_mult;
         let max_death_tick = stats.max_death_tick;
         switch(this.petDefinition.lifeStage){
-            case 0: max_death_tick = stats.baby_max_death_tick; break;
-            case 1: max_death_tick = stats.teen_max_death_tick; break;
+            case PetDefinition.LIFE_STAGE.baby: max_death_tick = stats.baby_max_death_tick; break;
+            case PetDefinition.LIFE_STAGE.teen: max_death_tick = stats.teen_max_death_tick; break;
         }
 
         if(isOfflineProgression){
