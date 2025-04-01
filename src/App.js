@@ -2716,8 +2716,8 @@ let App = {
             let list = [];
             let sliderInstance;
             const salesDay = App.isSalesDay();
-            const dayId = App.getDayId(true);
             let index = -1;
+            pRandom.seed = App.getDayId(true);;
             for(let food of Object.keys(App.definitions.food)){
                 let current = App.definitions.food[food];
                 const currentType = current.type || 'food';
@@ -2737,16 +2737,24 @@ let App = {
                 }
 
                 // some entries become randomly unavailable to buy for the day
-                if(++index && buyMode && !random(0, 1, dayId + (index * 256)) && currentType !== 'med'){
-                    continue;
-                }
+                const isOutOfStock = ++index && buyMode && pRandom.getPercent(40) && currentType !== 'med';
 
                 // 50% off on sales day
                 let price = current.price;
                 if(salesDay) price = Math.round(price / 2);
 
                 list.push({
-                    name: `${App.getFoodCSprite(current.sprite)} ${food.toUpperCase()} (x${App.pet.inventory.food[food] > 0 ? App.pet.inventory.food[food] : (!current.price ? '∞' : 0)}) <b>${buyMode ? `$${price}` : ''}</b>`,
+                    disabled: isOutOfStock,
+                    name: `
+                        ${App.getFoodCSprite(current.sprite)} 
+                        ${food.toUpperCase()} 
+                        (x${App.pet.inventory.food[food] > 0 ? App.pet.inventory.food[food] : (!current.price ? '∞' : 0)})
+                        ${
+                            isOutOfStock 
+                            ? `<b class="red-label">OUT OF STOCK</b>`
+                            : `<b>${buyMode ? `$${price}` : ''}</b>`
+                        }
+                    `,
                     onclick: (btn, list) => {
                         // buy mode
                         if(buyMode){
@@ -2803,8 +2811,8 @@ let App = {
             let list = [];
             let sliderInstance;
             const salesDay = App.isSalesDay();
-            const dayId = App.getDayId(true);
             let index = -1;
+            pRandom.seed = App.getDayId(true);
             for(let plant of Object.keys(App.definitions.plant)){
                 let current = App.definitions.plant[plant];
 
@@ -2817,17 +2825,24 @@ let App = {
                 }
 
                 // some entries become randomly unavailable to buy for the day
-                if(++index && buyMode && !random(0, 1, (dayId * 365) + (index * 25600))){
-                    continue;
-                }
+                const isOutOfStock = ++index && buyMode && pRandom.getPercent(25);
 
                 // 50% off on sales day
                 let price = current.price;
                 if(salesDay) price = Math.round(price / 2);
 
                 list.push({
+                    disabled: isOutOfStock,
                     name: `
-                        ${Plant.getCSprite(plant, Plant.AGE.grown, 'seed-pack')} ${plant.toUpperCase()} seeds (x${App.pet.inventory.seeds[plant] > 0 ? App.pet.inventory.seeds[plant] : (!current.price ? '∞' : 0)}) <b>${buyMode ? `$${price}` : ''}</b>`,
+                        ${Plant.getCSprite(plant, Plant.AGE.grown, 'seed-pack')} 
+                        ${plant.toUpperCase()} seeds 
+                        (x${App.pet.inventory.seeds[plant] > 0 ? App.pet.inventory.seeds[plant] : (!current.price ? '∞' : 0)}) 
+                        ${
+                            isOutOfStock 
+                            ? `<b class="red-label">OUT OF STOCK</b>`
+                            : `<b>${buyMode ? `$${price}` : ''}</b>`
+                        }
+                    `,
                     onclick: (btn, list) => {
                         // buy mode
                         if(buyMode){
@@ -4826,6 +4841,7 @@ let App = {
 
         cancelBtn.innerHTML = options?.cancel || /* '<i class="fa-solid fa-arrow-left"></i>' || */ '<i class="fa-solid fa-arrow-left"></i>';
         acceptBtn.innerHTML = options?.accept || 'Accept';
+        const defaultAcceptButtonLabel = acceptBtn.innerHTML;
 
         list.getCurrentIndex = () => currentIndex;
 
@@ -4844,6 +4860,8 @@ let App = {
                 button.className = 'slider-item' + (item.class ? item.class : '');
                 button.innerHTML = item.name;
                 button.setAttribute('data-index', currentIndex);
+                acceptBtn.innerHTML = item.acceptLabel || defaultAcceptButtonLabel;
+                acceptBtn.disabled = item.disabled;
                 acceptBtn.onclick = () => {
                     let result = item.onclick(button, list);
                     if(!result){

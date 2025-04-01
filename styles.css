@@ -2142,3 +2142,17 @@ a {
     background-size: contain;
     image-rendering: pixelated;
 }
+
+.red-label {
+    color: #fd2f2f;
+    background: #fd2f2f2e;
+    border-radius: 10px;
+    text-shadow: none;
+    text-wrap-mode: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: x-small;
+    margin-top: 6px;
+    border: 1px solid;
+    word-spacing: -2px;
+}
