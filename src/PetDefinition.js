@@ -535,8 +535,10 @@ class PetDefinition {
         switch(currentCategory){
             case "food": // item is food name
                 const wantedFood = randomFromArray(Object.keys(App.definitions.food));
+                const wantedFoodDef = App.definitions.food[wantedFood];
                 if(
-                    !App.definitions.food[wantedFood].age.includes(this.lifeStage) 
+                    'age' in wantedFoodDef 
+                    && !App.definitions.food[wantedFood].age.includes(this.lifeStage) 
                     || ['med', 'treat'].includes(App.definitions.food[wantedFood].type)
                 ) return this.refreshWant(++currentTry, currentCategory);
                 current_want.type = App.constants.WANT_TYPES.food;
@@ -544,8 +546,10 @@ class PetDefinition {
                 break;
             case "snack": // item is food name
                 const wantedSnack = randomFromArray(Object.keys(App.definitions.food));
+                const wantedSnackDef = App.definitions.food[wantedSnack];
                 if(
-                    !App.definitions.food[wantedSnack].age.includes(this.lifeStage) 
+                    'age' in wantedSnackDef 
+                    && !wantedSnackDef.age.includes(this.lifeStage) 
                     || !['treat'].includes(App.definitions.food[wantedSnack].type)
                 ) return this.refreshWant(++currentTry, currentCategory);
                 current_want.type = App.constants.WANT_TYPES.food;
