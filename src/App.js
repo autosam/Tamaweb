@@ -1804,7 +1804,7 @@ let App = {
                 {
                     name: `accessories`,
                     onclick: () => {
-                        if(App.petDefinition.lifeStage != 2){
+                        if(App.petDefinition.lifeStage != PetDefinition.LIFE_STAGE.adult){
                             return App.displayPopup(`${App.petDefinition.name} is not old enough to wear accessories`);
                         }
                         App.handlers.open_accessory_list();
@@ -2901,7 +2901,7 @@ let App = {
                 },
                 {
                     // _ignore: !App.isTester(),
-                    _disable: App.petDefinition.lifeStage <= 0,
+                    _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby,
                     name: `cook`,
                     onclick: () => {
                         return App.displayList([
@@ -3721,7 +3721,7 @@ let App = {
                     onclick: () => {
                         return App.displayList([
                             {
-                                _disable: App.petDefinition.lifeStage === 2,
+                                _disable: App.petDefinition.lifeStage === PetDefinition.LIFE_STAGE.adult,
                                 name: 'Next Evolution',
                                 onclick: () => {
                                     return App.displayConfirm(`Do you want to see ${App.petDefinition.name}'s <b>next possible life stage(s)</b> based on the current <b>care rating</b>?`, [
@@ -3742,7 +3742,7 @@ let App = {
                                 }
                             },
                             {
-                                _disable: App.petDefinition.lifeStage !== 2,
+                                _disable: App.petDefinition.lifeStage !== PetDefinition.LIFE_STAGE.adult,
                                 name: 'Offspring with ...',
                                 onclick: () => {
                                     const filter = (petDefinition) => (
@@ -3785,7 +3785,7 @@ let App = {
                     }
                 },
                 {
-                    _disable: App.petDefinition.lifeStage < 2,
+                    _disable: App.petDefinition.lifeStage !== PetDefinition.LIFE_STAGE.adult,
                     name: `work`,
                     onclick: () => {
                         App.displayList([
@@ -3892,7 +3892,7 @@ let App = {
                                 }
                             },
                             {
-                                _ignore: App.petDefinition.lifeStage < 2 || friendDef.lifeStage < 2 || friendDef.stats.is_player_family,
+                                _ignore: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult || friendDef.lifeStage < PetDefinition.LIFE_STAGE.adult || friendDef.stats.is_player_family,
                                 name: `go on date`,
                                 onclick: () => {
                                     if (friendDef.getFriendship() < 60) {
@@ -3924,7 +3924,7 @@ let App = {
                                 }
                             },
                             {
-                                _disable: App.petDefinition.lifeStage <= 0,
+                                _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby,
                                 name: 'park',
                                 onclick: () => {
                                     App.closeAllDisplays();
@@ -3932,7 +3932,7 @@ let App = {
                                 }
                             },
                             {
-                                _disable: App.petDefinition.lifeStage <= 0,
+                                _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby,
                                 name: 'gift',
                                 onclick: () => {
                                     App.displayConfirm(`Are you sure you want to give gift to ${icon} ${name}?`, [
@@ -3995,10 +3995,10 @@ let App = {
         open_phone: function(){
             App.displayList([
                 {
-                    _disable: App.petDefinition.lifeStage <= 0,
+                    _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby,
                     name: `<span style="color: #ff00c6"><i class="icon fa-solid fa-globe"></i> hubchi</span>`,
                     onclick: () => {
-                        if(App.petDefinition.lifeStage <= 0){
+                        if(App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby){
                             return App.displayPopup(`${App.petDefinition.name} is not old enough to go to hubchi!`);
                         }
 
@@ -4062,7 +4062,7 @@ let App = {
                     }
                 },
                 {
-                    _ignore: App.petDefinition.lifeStage >= 2,
+                    _ignore: App.petDefinition.lifeStage >= PetDefinition.LIFE_STAGE.adult,
                     name: 'have birthday',
                     onclick: () => {
                         let nextBirthday = App.petDefinition.getNextBirthdayDate();
@@ -4093,7 +4093,7 @@ let App = {
                     }
                 },
                 {
-                    _disable: App.petDefinition.lifeStage == 0,
+                    _disable: App.petDefinition.lifeStage === PetDefinition.LIFE_STAGE.baby,
                     name: `social media`,
                     onclick: () => {
                         App.handlers.open_social_media();
@@ -4101,7 +4101,7 @@ let App = {
                     }
                 },
                 {
-                    _disable: App.petDefinition.lifeStage == 0,
+                    _disable: App.petDefinition.lifeStage === PetDefinition.LIFE_STAGE.baby,
                     name: `go on vacation`,
                     onclick: () => {
                         const price = 250;
@@ -4448,7 +4448,7 @@ let App = {
                     name: `buy accessories ${hasNewAccessory ? App.getBadge() : ''}`,
                     onclick: () => {
                         App.handlers.open_accessory_list(true);
-                        if(App.petDefinition.lifeStage != 2){
+                        if(App.petDefinition.lifeStage != PetDefinition.LIFE_STAGE.adult){
                             App.displayPopup(`${App.petDefinition.name} is not old enough to wear accessories yet, but you can buy some for later`);
                         }
                         return true;
