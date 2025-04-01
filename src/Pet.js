@@ -929,7 +929,8 @@ class Pet extends Object2d {
             let date = new Date(startTime - elapsedTime);
             let hour = date.getHours();
 
-            // supplying hour because from 22:00 to 9:00 the starts will drop much slower and pet will get sleep
+            // supplying hour because from 22:00 to 9:00 the starts will 
+            // drop much slower and pet will get sleep
             if(this.stats.is_egg){
                 this.handleEgg();
                 continue;
