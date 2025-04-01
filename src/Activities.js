@@ -1660,27 +1660,22 @@ class Activities {
                             .sort((a, b) => a.sort - b.sort)
                             .map(({ value }) => value); // shuffling friends array
         for(let i = 0; i < 3; i++){
-            let def = new PetDefinition({
-                sprite: randomFromArray(PET_TEEN_CHARACTERS),
-            });
-            otherPetDefs.push(def);
+            otherPetDefs.push(App.getRandomPetDef());
         }
 
-        let otherPets = [];
-        otherPetDefs.slice(0, 3).forEach(def => {
-            let pet = new Pet(def);
-            otherPets.push(pet);
-        });
+        const otherPets = otherPetDefs.slice(0, 3).map(def => new Pet(def));
         
         const table = new Object2d({
             img: 'resources/img/misc/table_01.png',
             x: 28,
             y: 68,
+            z: App.constants.ACTIVE_PET_Z - 0.1
         });
         const cake = new Object2d({
             img: 'resources/img/misc/cake_01.png',
             x: 39,
             y: 58,
+            z: App.constants.ACTIVE_PET_Z - 0.1
         });
 
         otherPets.forEach((pet, i) => {
@@ -1689,16 +1684,18 @@ class Activities {
             pet.x = -10 * i;
             switch(i){
                 case 0:
-                    pet.targetX = 30;
+                    pet.targetX = 45;
                     pet.targetY = 65;
                     break;
                 case 1:
                     pet.targetX = 15;
-                    pet.targetY = 75;
+                    pet.targetY = 70;
+                    pet.z = App.constants.ACTIVE_PET_Z - 0.05;
                     break;
                 case 2:
                     pet.targetX = 5;
                     pet.targetY = 85;
+                    pet.z = App.constants.ACTIVE_PET_Z - 0.05;
                     break;
             }
             pet.triggerScriptedState('moving', App.INF, 0, true, null, (pet) => {
