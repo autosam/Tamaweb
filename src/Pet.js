@@ -511,6 +511,7 @@ class Pet extends Object2d {
 
         switch(this.petDefinition.lifeStage){
             case PetDefinition.LIFE_STAGE.baby: depletion_mult *= 1.65; break;
+            case PetDefinition.LIFE_STAGE.child: depletion_mult *= 1.46; break;
             case PetDefinition.LIFE_STAGE.teen: depletion_mult *= 1.3; break;
         }
 
@@ -535,6 +536,7 @@ class Pet extends Object2d {
         let max_death_tick = stats.max_death_tick;
         switch(this.petDefinition.lifeStage){
             case PetDefinition.LIFE_STAGE.baby: max_death_tick = stats.baby_max_death_tick; break;
+            case PetDefinition.LIFE_STAGE.child: max_death_tick = stats.child_max_death_tick; break;
             case PetDefinition.LIFE_STAGE.teen: max_death_tick = stats.teen_max_death_tick; break;
         }
 
