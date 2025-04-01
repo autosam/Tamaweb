@@ -95,7 +95,19 @@ let growthChart = {};
 function generateTree(char, lifeStage, parent){
     let possibleChars = [];
     if(lifeStage == 0){
-        for(let i = 0; i < 8; i++){
+        for(let i = 0; i < 3; i++){
+            let tries = 10000;
+            let char = pRandomFromArray(PET_CHILD_CHARACTERS);
+            while(evolvedChars.indexOf(char) !== -1 && tries--){
+                char = pRandomFromArray(PET_CHILD_CHARACTERS);
+            }
+            possibleChars.push(char);
+            evolvedChars.push(char);
+        }
+    }
+
+    if(lifeStage == 0.5){
+        for(let i = 0; i < 3; i++){
             let tries = 10000;
             let char = pRandomFromArray(PET_TEEN_CHARACTERS);
             while(evolvedChars.indexOf(char) !== -1 && tries--){
@@ -124,11 +136,25 @@ function generateTree(char, lifeStage, parent){
         container.className = 'char-container';
     container.innerHTML = `${getCSprite(char)} ⤳`;
 
-    if(lifeStage == 0){
+   /*  if(lifeStage == 0){
+        possibleChars.forEach((c, i) => {
+            container.innerHTML += getCSprite(c, i >= 4 ? 'high-care' : 'low-care');
+        })
+    } else if(lifeStage == 0.5){
         possibleChars.forEach((c, i) => {
             container.innerHTML += getCSprite(c, i >= 4 ? 'high-care' : 'low-care');
         })
     } else if(lifeStage == 1){
+        possibleChars.forEach((c, i) => {
+            var cls = 'high-care';
+            if(i == 0) cls = 'low-care';
+            else if(i == 1) cls = 'med-care';
+
+            container.innerHTML += getCSprite(c, cls);
+        })
+    } */
+
+    if(lifeStage <= 1){
         possibleChars.forEach((c, i) => {
             var cls = 'high-care';
             if(i == 0) cls = 'low-care';
@@ -179,12 +205,17 @@ PET_BABY_CHARACTERS.forEach((char, i) => {
     let cont = generateTree(char, 0, document.querySelector('.babies'));
 })
 
+PET_CHILD_CHARACTERS.forEach(char => {
+    generateTree(char, 0.5, document.querySelector('.children'));
+})
+
 PET_TEEN_CHARACTERS.forEach(char => {
     generateTree(char, 1, document.querySelector('.teens'));
 })
 
 let all = [...PET_BABY_CHARACTERS, ...PET_TEEN_CHARACTERS, ...PET_ADULT_CHARACTERS];
 
+console.log('growth chart:');
 console.log(JSON.stringify(growthChart));
 
 let allContainer = document.createElement('div');
