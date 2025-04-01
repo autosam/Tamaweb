@@ -2737,7 +2737,7 @@ let App = {
                 const currentType = current.type || 'food';
 
                 // lifestage check
-                if(!current.age.includes(App.petDefinition.lifeStage)) continue;
+                if('age' in current && !current.age.includes(App.petDefinition.lifeStage)) continue;
 
                 // buy mode and is free
                 if(buyMode && current.price == 0) continue;
