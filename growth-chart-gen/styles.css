@@ -8,6 +8,7 @@
 
 body {
     background-color: navajowhite;
+    font-family: monospace;
 }
 
 .all-cont {
@@ -32,16 +33,16 @@ body {
 }
 
 .teens,
+.container,
 .babies {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     column-gap: 100px;
     justify-content: flex-start;
-}
-
-.babies {
-    margin-bottom: 30px;
+    /* margin: 10px 0; */
+    border-top: 1px solid;
+    padding: 10px 0;
 }
 
 .active {
