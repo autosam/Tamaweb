@@ -678,7 +678,7 @@ class Activities {
                                 onclick: () => handleHangout(def)
                             },
                             {
-                                _disable: App.petDefinition.lifeStage !== 2 || def.lifeStage !== 2,
+                                _disable: App.petDefinition.lifeStage !== PetDefinition.LIFE_STAGE.adult || def.lifeStage !== PetDefinition.LIFE_STAGE.adult,
                                 name: `go on date`,
                                 onclick: () => handleDate(def)
                             },
@@ -1529,7 +1529,7 @@ class Activities {
 
         App.pet.needsToiletOverlay.hidden = false;
         App.pet.stats.current_bladder = App.pet.stats.max_bladder;
-        if(App.petDefinition.lifeStage <= 0 && !force) {
+        if(App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby && !force) {
             // make pet potty trained if used toilet more than 2 to 4 times and is baby
             if(++App.pet.stats.used_toilet > random(2, 4)){
                 App.pet.stats.is_potty_trained = true;
