@@ -202,7 +202,9 @@ function getCSprite(char, cls){
     if(n >= 17) size = 24;
     if(n >= 133) size = 32;
 
-    return `<c-sprite title="${char}" onclick="toggleCSpriteVisibility('${char}')" width="${size}" height="${size}" src="/${char}" class="${cls}"></c-sprite>`
+    const nChar = `../${char}`;
+
+    return `<c-sprite title="${nChar}" onclick="toggleCSpriteVisibility('${nChar}')" width="${size}" height="${size}" src="/${nChar}" class="${cls}"></c-sprite>`
 }
 
 // PET_BABY_CHARACTERS.forEach(char => {
