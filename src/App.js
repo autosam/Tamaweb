@@ -2603,6 +2603,37 @@ let App = {
             `;
             list.appendChild(content);
         },
+        open_food_stats: function(foodName){
+            const food = App.definitions.food[foodName];
+
+            if(!food) return false;
+
+            /* bugs out with negative values */
+
+            const list = UI.genericListContainer(null, foodName);
+            const content = UI.empty();
+            content.innerHTML = `
+            <div class="inner-padding b-radius-10 m surface-stylized">
+                <div style="margin-bottom: 16px">
+                    <small>Replenish rates for different stats:</small>    
+                </div>
+                <div>
+                    <b>HUNGER:</b> ${App.createProgressbar( food.hunger_replenish || 0 / App.pet.stats.max_hunger * 100 ).node.outerHTML}
+                </div>
+                <div>
+                    <b>SLEEP:</b> ${App.createProgressbar( food.sleep_replenish || 0 / App.pet.stats.max_sleep * 100 ).node.outerHTML}
+                </div>
+                <div>
+                    <b>FUN:</b> ${App.createProgressbar( food.fun_replenish || 0 / App.pet.stats.max_fun * 100 ).node.outerHTML}
+                </div>
+                <div>
+                    <b>HEALTH:</b> ${App.createProgressbar( food.health_replenish || 0 / App.pet.stats.max_health * 100 ).node.outerHTML}
+                </div>
+            </div>
+            `;
+            list.appendChild(content);
+            list.style.zIndex = 5;
+        },
         open_character_collection: function(){
             App.addEvent(`${App.constants.CHAR_UNLOCK_PREFIX}_${PetDefinition.getCharCode(App.petDefinition.sprite)}`)
 
@@ -2740,7 +2771,7 @@ let App = {
                 if('age' in current && !current.age.includes(App.petDefinition.lifeStage)) continue;
 
                 // buy mode and is free
-                if(buyMode && current.price == 0) continue;
+                if(buyMode && (current.price === 0 || current.cookableOnly)) continue;
 
                 // filter check
                 if(filterType && currentType != filterType) continue;
@@ -2969,20 +3000,26 @@ let App = {
                                         },
                                         ...Object.keys(App.definitions.food)
                                             .map(foodName => ({...App.definitions.food[foodName], name: foodName}))
+                                            .filter(food => !food.nonCraftable)
                                             .map((food) => {
                                                 const ingredients = getIngredients(food.name);
                                                 const hasAllIngredients = ingredients.every(ingredientName => App.pet.inventory.harvests[ingredientName]);
                                                 return {...food, ingredients, hasAllIngredients}
                                             })
+                                            .sort((a, b) => (b.cookableOnly || false) - (a.cookableOnly || false))
                                             .sort((a, b) => b.hasAllIngredients - a.hasAllIngredients)
                                             .map(food => ({
                                                 _disable: !food.hasAllIngredients,
                                                 class: 'flex-between',
                                                 name: `
                                                     ${App.getFoodCSprite(food.sprite)} = ${App.getHarvestIcons(food.ingredients)}
+                                                    ${food.cookableOnly ? App.getBadge('★', 'gold') : ''}
                                                 `,
                                                 onclick: () => {
-                                                    App.displayConfirm(`Cook <div>${App.getFoodCSprite(food.sprite)}</div> <b>${food.name}</b>?`, [
+                                                    const confirm = App.displayConfirm(`
+                                                        Cook <div>${App.getFoodCSprite(food.sprite)}</div> <b>${food.cookableOnly ? '★ ' : ''}${food.name}</b>?
+                                                        <button id="effects" style="display: none; position: absolute; bottom: 0; right: 0" class="generic-btn stylized"><b>effects</b></button>
+                                                    `, [
                                                         {
                                                             name: 'yes',
                                                             onclick: () => {
@@ -2999,9 +3036,19 @@ let App = {
                                                             onclick: () => {}
                                                         }
                                                     ])
+                                                    
+                                                    const effectsBtn = confirm.querySelector('#effects');
+                                                    if(effectsBtn){
+                                                        effectsBtn.onclick = () => App.handlers.open_food_stats(food.name)
+                                                    }
+                                                    
                                                     return true;
                                                 }
-                                            }))
+                                            })),
+                                        {
+                                            name: `★ Symbol indicates the item is only obtainable from cooking and has special effect(s)`,
+                                            type: 'info',
+                                        },
                                     ])
                                 }
                             }
