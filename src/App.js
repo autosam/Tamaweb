@@ -2731,7 +2731,7 @@ let App = {
             let sliderInstance;
             const salesDay = App.isSalesDay();
             let index = -1;
-            pRandom.seed = App.getDayId(true);;
+            pRandom.seed = App.getDayId(true);
             for(let food of Object.keys(App.definitions.food)){
                 let current = App.definitions.food[food];
                 const currentType = current.type || 'food';
@@ -3739,7 +3739,7 @@ let App = {
                                 _disable: App.petDefinition.lifeStage === PetDefinition.LIFE_STAGE.elder,
                                 name: 'Next Evolution',
                                 onclick: () => {
-                                    return App.displayConfirm(`Do you want to see ${App.petDefinition.name}'s <b>next possible life stage(s)</b> based on the current <b>care rating</b>?`, [
+                                    return App.displayConfirm(`Do you want to see ${App.petDefinition.name}'s <b>next possible evolution(s)</b> based on different <b>care ratings</b>?`, [
                                         {
                                             name: 'yes ($100)',
                                             onclick: () => {

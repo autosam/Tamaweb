@@ -447,12 +447,14 @@ class PetDefinition {
         return true;
     }
 
-    getPossibleEvolutions(isNpc){
+    getPossibleEvolutions(isNpc, all){
         const careRating = !isNpc ? this.stats.current_care : random(1, 3);
         let possibleEvolutions = GROWTH_CHART[this.sprite];
         if(!possibleEvolutions){
             possibleEvolutions = GROWTH_CHART[randomFromArray(Object.keys(GROWTH_CHART))]
         }
+
+        if(all) return possibleEvolutions;
 
         switch(this.lifeStage){
             case PetDefinition.LIFE_STAGE.adult:

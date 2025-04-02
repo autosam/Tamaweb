@@ -98,19 +98,18 @@ class Activities {
         App.pet.stopMove();
         App.pet.targetX = -999;
     }
-    static async goToFortuneTeller(otherPetDef = App.getRandomPetDef()){
+    static async goToFortuneTeller(otherPetDef){
         App.toggleGameplayControls(false);
         App.setScene(App.scene.fortune_teller);
 
-        let evolutions = App.petDefinition.getPossibleEvolutions();
+        let evolutions = App.petDefinition.getPossibleEvolutions(false, true);
 
-        if(!evolutions){
+        if(otherPetDef){
             evolutions = [PetDefinition.getOffspringSprite(App.petDefinition, otherPetDef)];
-            
             App.pet.showThought(App.constants.WANT_TYPES.playdate, otherPetDef);
         }
 
-        const petsToReveal = evolutions.map((sprite) => {
+        const petsToReveal = evolutions?.map((sprite, index) => {
             const pet = new Pet(
                 new PetDefinition({
                     sprite,
@@ -123,6 +122,21 @@ class Activities {
                     castShadow: false,
                 }
             );
+            for(let i = 0; i < 3; i++){
+                new Object2d({
+                    img: 'resources/img/misc/star_01.png',
+                    x: `${40 + (i * 10)}%`,
+                    y: `6%`,
+                    opacity: 1,
+                    scale: 0.4,
+                    parent: pet,
+                    rating: index,
+                    onDraw: (me) => {
+                        const fullOpacity = i <= index;
+                        me.opacity = fullOpacity ? me.parent.opacity : me.parent.opacity * 0.25;
+                    }
+                });
+            }
 
             pet.triggerScriptedState('idle', App.INF, 0, true);
 
@@ -149,12 +163,12 @@ class Activities {
                 const maxWaitTime = petsToReveal.length * delayBetweenReveals;
                 App.pet.triggerScriptedState('shocked', maxWaitTime, null, true, () => {
                     App.pet.playCheeringAnimation(() => {
-                        petsToReveal.forEach(p => p?.removeObject());
+                        petsToReveal?.forEach(p => p?.removeObject());
                         App.setScene(App.scene.home);
                         App.toggleGameplayControls(true);
                     });
                 });
-                petsToReveal.forEach((p, i) => {
+                petsToReveal?.forEach((p, i) => {
                     setTimeout(() => fadeInAndOut(p), i * delayBetweenReveals);
                 });
 

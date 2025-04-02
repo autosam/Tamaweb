@@ -473,8 +473,9 @@ App.definitions = (() => {
                 sprite: 1036,
                 hunger_replenish: 50,
                 fun_replenish: 10,
-                price: 0,
+                price: 0, // makes it always available
                 age: [_ls.baby],
+                nonCraftable: true,
             },
             "sleep replacement": {
                 sprite: 1050,
