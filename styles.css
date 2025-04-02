@@ -1008,6 +1008,11 @@ input#background-color-picker {
 .badge.night {
     background: #180067;
 }
+.badge.gold {
+    background: linear-gradient(45deg, #ffd700, #ffc800);
+    color: #ff7800;
+    outline: 1px solid;
+}
 
 /* .dom-shell > * {
     position: absolute;

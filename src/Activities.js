@@ -1028,7 +1028,7 @@ class Activities {
     }){
         App.closeAllDisplays();
         App.pet.triggerScriptedState('idle', App.INF, 0, false);
-        App.sendAnalytics('cooking_game');
+        App.sendAnalytics('cooking_game', resultFoodName || '');
         Missions.done(Missions.TYPES.cook);
         // App.setScene(App.scene.kitchen);
 
@@ -1698,13 +1698,13 @@ class Activities {
             pet.x = -10 * i;
             switch(i){
                 case 0:
-                    pet.targetX = 45;
+                    pet.targetX = 50;
                     pet.targetY = 65;
                     break;
                 case 1:
                     pet.targetX = 12;
-                    pet.targetY = 70;
-                    pet.z = App.constants.ACTIVE_PET_Z - 0.05;
+                    pet.targetY = 65;
+                    // pet.z = App.constants.ACTIVE_PET_Z - 0.05;
                     break;
                 case 2:
                     pet.targetX = 5;
