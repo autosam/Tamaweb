@@ -2757,7 +2757,7 @@ let App = {
             list.appendChild(content);
             App.sendAnalytics('opened_family_tree');
         },
-        open_food_list: function(buyMode, activeIndex, filterType){
+        open_food_list: function(buyMode, activeIndex, filterType, sellMode){
             let list = [];
             let sliderInstance;
             const salesDay = App.isSalesDay();
@@ -2786,33 +2786,50 @@ let App = {
 
                 // 50% off on sales day
                 let price = current.price;
+                if(sellMode) price = current.cookableOnly 
+                    ? Math.floor(price * 1.5) 
+                    : Math.floor(price * 0.75);
                 if(salesDay) price = Math.round(price / 2);
 
                 list.push({
                     disabled: isOutOfStock,
                     name: `
                         ${App.getFoodCSprite(current.sprite)} 
+                        ${current.cookableOnly ? '★ ' : ''}
                         ${food.toUpperCase()} 
                         (x${App.pet.inventory.food[food] > 0 ? App.pet.inventory.food[food] : (!current.price ? '∞' : 0)})
                         ${
                             isOutOfStock 
                             ? `<b class="red-label">OUT OF STOCK</b>`
-                            : `<b>${buyMode ? `$${price}` : ''}</b>`
+                            : `<b>
+                                ${(buyMode || sellMode) ? `
+                                    ${sellMode ? `<span class="opacity-half">$${current.price} <i class="fa-solid fa-angle-right"></i> </span>` : ''}
+                                    <span class="${sellMode ? `seller-analysis ${current.cookableOnly ? 'positive' : 'negative'}` : ''}">
+                                        $${price}
+                                    </span>
+                                ` : ''}
+                            </b>`
                         }
                     `,
                     onclick: (btn, list) => {
                         // buy mode
-                        if(buyMode){
-                            if(App.pet.stats.gold < price){
-                                App.displayPopup(`Don't have enough gold!`);
-                                return true;
+                        if(buyMode || sellMode){                            
+                            if(sellMode){ // sell mode
+                                App.pet.stats.gold += price;
+                                App.addNumToObject(App.pet.inventory.food, food, -1);
+                            } else { // buying
+                                if(App.pet.stats.gold < price){
+                                    App.displayPopup(`Don't have enough gold!`);
+                                    return true;
+                                }
+                                App.pet.stats.gold -= price;
+                                App.addNumToObject(App.pet.inventory.food, food, 1);
+                                Missions.done(Missions.TYPES.buy_food);
                             }
-                            App.pet.stats.gold -= price;
-                            App.addNumToObject(App.pet.inventory.food, food, 1);
+
                             // console.log(list.scrollTop);
-                            let nList = App.handlers.open_food_list(true, sliderInstance?.getCurrentIndex(), filterType);
+                            let nList = App.handlers.open_food_list(buyMode, sliderInstance?.getCurrentIndex(), filterType, sellMode);
                                 // nList.scrollTop = list.scrollTop;
-                            Missions.done(Missions.TYPES.buy_food);
                             return false;
                         }
 
@@ -2849,7 +2866,14 @@ let App = {
 
             if(buyMode) list.push(list.shift());
 
-            sliderInstance = App.displaySlider(list, activeIndex, {accept: buyMode ? 'Purchase' : 'Eat'}, buyMode ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}` : null);
+            let acceptLabel = 'Eat';
+            if(buyMode) acceptLabel = 'Purchase';
+            else if(sellMode) acceptLabel = 'Sell';
+            sliderInstance = App.displaySlider(
+                list, 
+                activeIndex, 
+                {accept: acceptLabel}, 
+                (buyMode || sellMode) ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}` : null);
             return sliderInstance;
         },
         open_seed_list: function(buyMode, activeIndex, payloadFn){
@@ -4577,13 +4601,32 @@ let App = {
                     }
                 },
                 {
+                    name: `sell ${App.getBadge()}`,
+                    onclick: () => {
+                        App.handlers.open_sell_list();
+                        return true;
+                    }
+                },
+                {
                     name: `Shop stock changes daily, so check back often for new offers!`,
                     type: 'info',
                 },
             ])
         },
         open_sell_list: function(){
-            
+            App.displayList([
+                {
+                    name: 'food',
+                    onclick: () => {
+                        App.handlers.open_food_list(false, false, false, true);
+                        return true;
+                    }
+                },
+                {
+                    name: 'You can sell special items (★) for more than the market price',
+                    type: 'info',
+                }
+            ])
         },
         open_game_list: function(){
             const tutorialDisplayTime = 2000;

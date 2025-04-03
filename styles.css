@@ -2161,3 +2161,28 @@ a {
     border: 1px solid;
     word-spacing: -2px;
 }
+
+
+.seller-analysis {
+    text-shadow: 0;
+    position: relative;
+}
+.seller-analysis:after {
+    font-family: "Font Awesome 6 Free";
+    font-size: x-small;
+    position: absolute;
+    top: 25%;
+    margin-left: 2px;
+}
+.seller-analysis.negative {
+    color: red;
+}
+.seller-analysis.negative:after {
+    content: "\f0d7";
+}
+.seller-analysis.positive {
+    color: green;
+}
+.seller-analysis.positive:after {
+    content: "\f0d8";
+}
