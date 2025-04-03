@@ -2947,7 +2947,7 @@ let App = {
                 {
                     // _ignore: !App.isTester(),
                     _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child,
-                    name: `cook`,
+                    name: `cook ${App.getBadge()}`,
                     onclick: () => {
                         return App.displayList([
                             {
@@ -2967,7 +2967,7 @@ let App = {
                                 }
                             },
                             {
-                                name: 'harvests',
+                                name: `harvests ${App.getBadge()}`,
                                 onclick: () => {
                                     let allPlants = [];
                                     const getIngredients = (name) => {
@@ -3403,7 +3403,7 @@ let App = {
             const rooms = Object.keys(roomBackgroundDefs)
                 .map(roomName => ({...roomBackgroundDefs[roomName], image: App.getFurnishableBackground(roomBackgroundDefs[roomName].image), name: roomName}))
                 .filter(room => room.isCraftable)
-                .map(current => getCraftableUIDef(current, 'room'))
+                .map(current => getCraftableUIDef(current, 'room', current.image === App.scene.home.image))
 
             // furniture
             const furniture = App.definitions.furniture
@@ -3719,6 +3719,7 @@ let App = {
                     name: '<div class="width-full flex-center"> + </div>',
                     onclick: () => { // add furniture
                         const list = App.ownedFurniture?.filter(f => !f.isActive)
+                        .toReversed()
                         .map(furniture => {
                             const def = App.getFurnitureDefFromId(furniture.id);
                             return {
@@ -4580,6 +4581,9 @@ let App = {
                     type: 'info',
                 },
             ])
+        },
+        open_sell_list: function(){
+            
         },
         open_game_list: function(){
             const tutorialDisplayTime = 2000;

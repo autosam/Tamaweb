@@ -122,20 +122,22 @@ class Activities {
                     castShadow: false,
                 }
             );
-            for(let i = 0; i < 3; i++){
-                new Object2d({
-                    img: 'resources/img/misc/star_01.png',
-                    x: `${40 + (i * 10)}%`,
-                    y: `6%`,
-                    opacity: 1,
-                    scale: 0.4,
-                    parent: pet,
-                    rating: index,
-                    onDraw: (me) => {
-                        const fullOpacity = i <= index;
-                        me.opacity = fullOpacity ? me.parent.opacity : me.parent.opacity * 0.25;
-                    }
-                });
+            if(evolutions.length > 1){
+                for(let i = 0; i < 3; i++){
+                    new Object2d({
+                        img: 'resources/img/misc/star_01.png',
+                        x: `${40 + (i * 10)}%`,
+                        y: `6%`,
+                        opacity: 1,
+                        scale: 0.4,
+                        parent: pet,
+                        rating: index,
+                        onDraw: (me) => {
+                            const fullOpacity = i <= index;
+                            me.opacity = fullOpacity ? me.parent.opacity : me.parent.opacity * 0.25;
+                        }
+                    });
+                }
             }
 
             pet.triggerScriptedState('idle', App.INF, 0, true);
