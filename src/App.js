@@ -4506,11 +4506,12 @@ let App = {
                 return room.isNew && isUnlocked && !room.isCraftable;
             });
             const hasNewAccessory = Object.keys(App.definitions.accessories).some(key => {
+                const accessory = App.definitions.accessories[key];
                 const isUnlocked = 
-                    App.definitions.accessories[key].unlockKey ? 
-                    App.getRecord(App.definitions.accessories[key].unlockKey) : 
+                    accessory.unlockKey ? 
+                    App.getRecord(accessory.unlockKey) : 
                     true;
-                return App.definitions.accessories[key].isNew && isUnlocked;
+                return accessory.isNew && isUnlocked && !accessory.isCraftable;
             });
             const hasNewItem = Object.keys(App.definitions.item).some(key => {
                 const isUnlocked = 
