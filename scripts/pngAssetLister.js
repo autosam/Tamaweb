@@ -36,7 +36,8 @@ try {
             .replaceAll('resources/img/', '');
 
         const output = template.replace('$', transformed);
-        fs.writeFileSync(path.join(__dirname, 'output.js'), output);
+        // fs.writeFileSync(path.join(__dirname, 'output.js'), output);
+        fs.writeFileSync("resources/data/SpriteDefinitions.js", output);
     })()
 } catch (error) {
     console.error(error.message);

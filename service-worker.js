@@ -27,6 +27,7 @@ const ASSETS = [
   "src/Definitions.js",
   "src/Utils.js",
   "src/Missions.js",
+  "src/Plant.js",
   // libs
   "src/libs/jquery-3.7.1.min.js",
   "src/libs/moment.js",

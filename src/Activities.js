@@ -3,25 +3,38 @@ class Activities {
         if(isStarting) { // starting animation
             App.pet.stopMove();
             App.pet.x = '50%';
-            App.pet.targetY = -100;
             App.toggleGameplayControls(false);
 
+
             const ufoObject = new Object2d({
+                image: App.preloadedResources['resources/img/misc/ufo_02.png'],
+                x: 0, y: 0, z: App.constants.ACTIVE_PET_Z + 1,
+                onDraw: (me) => {
+                    if(App.pet.y > 50) return;
+                    me.y = lerp(me.y, -50, 0.0005 * App.deltaTime)
+                }
+            });
+            const ufoBeamObject = new Object2d({
                 image: App.preloadedResources['resources/img/misc/ufo_01.png'],
                 y: -120,
                 x: 0,
+                parent: ufoObject,
                 onDraw: (me) => {
-                    me.y = App.pet.y - 70;
+                    me.y = (App.pet.y) - 70;
                 }
             });
 
-            await App.pet.triggerScriptedState('shocked', 5000, false, true, 
+            await App.pet.triggerScriptedState('shocked', 2000, false, true, 
                 // onEnd
                 () => {
                     App.pet.y = '100%';
                     App.pet.x = -999;
                     ufoObject.removeObject();
                 },
+                // driver
+                () => {
+                    App.pet.y = lerp(App.pet.y, -100, 0.0005 * App.deltaTime);
+                }
             )
         }
 
