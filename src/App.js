@@ -546,7 +546,7 @@ let App = {
 
             // simulating offline progression
             if(accurateDeltaTime > 5000){
-                App.pet.simulateAwayProgression(accurateDeltaTime);
+                App.pet?.simulateAwayProgression?.(accurateDeltaTime);
             }
 
             // deltaTime
