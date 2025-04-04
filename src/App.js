@@ -477,6 +477,36 @@ const App = {
                 App.isStoragePersistent = persistent;
             });
         }
+
+        const dbg = document.querySelector('#debug');
+        // const acl = new Accelerometer({ frequency: 60 });
+        // acl.addEventListener("reading", () => {
+        //     console.log(`Acceleration along the X-axis ${acl.x}`);
+        //     console.log(`Acceleration along the Y-axis ${acl.y}`);
+        //     console.log(`Acceleration along the Z-axis ${acl.z}`);
+        //     dbg.innerHTML = `
+        //         Accel
+        //         <br>
+        //         Acceleration along the X-axis ${acl.x}
+        //         <br>
+        //         Acceleration along the Y-axis ${acl.y}
+        //         <br>
+        //         Acceleration along the Z-axis ${acl.z}
+        //     `
+        // });
+
+        // acl.start();
+        dbg.innerHTML = `
+                has: ${!!window.DeviceOrientationEvent}
+            `
+
+        window.addEventListener('devicemotion', function (event) {
+            dbg.innerHTML = `
+                Accel
+                <br>
+                x: ${event.acceleration.x} | y: ${event.acceleration.y}
+            `
+        }, true);
     },
     sendSessionEvent: function(login){
         if(login){
@@ -1264,6 +1294,14 @@ const App = {
                 App.handleGardenPlantsSpawn(false);
                 App.handleAnimalsSpawn(false);
                 App.pet.staticShadow = false;
+            }
+        }),
+        forest: new Scene({
+            image: 'resources/img/background/outside/transparent.png',
+            petY: '94%',
+            onLoad: () => {
+            },
+            onUnload: () => {
             }
         }),
         reviverDen: new Scene({
