@@ -71,7 +71,7 @@ body {
     position: fixed;
     bottom: 25%;
     color: white;
-    text-shadow: 0 0 2px black;
+    /* text-shadow: 0 0 2px black; */
 }
 
 .graphics-wrapper {
