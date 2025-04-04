@@ -75,6 +75,7 @@ let App = {
         ACTIVE_ITEM_Z: 4.595,
         CHRISTMAS_TREE_Z: 4.58,
         BACKGROUND_Z: -10,
+        INPUT_BASE_64: '0xffbx64',
     },
     routes: {
         BLOG: 'https://tamawebgame.github.io/blog/',
@@ -617,11 +618,15 @@ let App = {
         return this.records[name];
     },
     handleInputCode: function(rawCode){
-        const addEvent = App.addEvent;
+        const {addEvent} = App;
 
         function showAlreadyUsed(){
             App.displayPopup(`You can only use this code once`);
             return false;
+        }
+
+        if(rawCode.indexOf(App.constants.INPUT_BASE_64) === 0){
+            rawCode = atob(rawCode.replace(App.constants.INPUT_BASE_64, ''));
         }
         
         let code = rawCode.toString().toUpperCase();
@@ -748,7 +753,8 @@ let App = {
                         break;
                     
                     case 'setchar':
-                        App.displayConfirm(`Are you sure you want to change your pet's sprite?`, [
+                        const sprite = PetDefinition.generateFullCSprite(commandPayload);
+                        App.displayConfirm(`Are you sure you want to change your pet's sprite to ${sprite}?`, [
                             {
                                 name: 'yes',
                                 onclick: () => {
