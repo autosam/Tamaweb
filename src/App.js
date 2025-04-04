@@ -789,7 +789,7 @@ let App = {
         //     ])
         // })) return;
 
-        if(addEvent(`update_14_notice`, () => {
+        if(addEvent(`update_15_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
@@ -798,7 +798,7 @@ let App = {
                     bold: true,
                 },
                 {
-                    name: `Check out the new fortune teller in town!`,
+                    name: `Check out the new Gardening, Child and Elder life stages, Cooking and crafting, Homeworld Getaways and more!`,
                     type: 'text',
                 },
                 {
@@ -810,7 +810,7 @@ let App = {
                     }
                 },
             ])
-        })) return;
+        }, false)) return;
 
         if(addEvent('itch_rating_dialog', () => {
             App.handlers.show_rating_dialog();

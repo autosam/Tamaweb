@@ -1087,7 +1087,7 @@ class Activities {
             starObjects.push(img);
         }
 
-        let failChance = 25;
+        let failChance = resultFoodName ? 3 : 25;
         let currentTargetImgIndex = 0;
         App.toggleGameplayControls(false, () => {
             if(currentTargetImgIndex < starObjects.length && !skipCamera){
@@ -1154,7 +1154,7 @@ class Activities {
                                     App.pet.x = '50%';
                                 }
                                 if(!failed){
-                                    const amount = 1;
+                                    const amount = resultFoodName ? random(1, 3) : 1;
                                     App.displayPopup(`${App.petDefinition.name} <br>made x${amount}<br> <b>${randomFoodName}</b>!`, 3000, () => {
                                         end();
                                         App.pet.playCheeringAnimation();
