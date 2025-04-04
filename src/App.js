@@ -1,7 +1,7 @@
 let App = {
     PI2: Math.PI * 2, INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', userName: null, ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
     gameEventsHistory: {}, deferredInstallPrompt: null, shellBackground: '', isOnItch: false, isOnElectronClient: false, hour: 12,
-    misc: {}, mods: [], records: {}, temp: {}, ownedFurniture: [],
+    misc: {}, mods: [], records: {}, temp: {}, ownedFurniture: [], plants: [],
     settings: {
         screenSize: 1,
         playSound: true,
@@ -16,6 +16,7 @@ let App = {
         classicMainMenuUI: false,
     },
     constants: {
+        ONE_HOUR: 1000 * 60 * 60,
         FOOD_SPRITESHEET: 'resources/img/item/foods_on.png',
         FOOD_SPRITESHEET_DIMENSIONS: {
             cellNumber: 1,
@@ -30,6 +31,14 @@ let App = {
             rows: 10,
             columns: 10,
         },
+        PLANT_SPRITESHEET: 'resources/img/item/plants.png',
+        PLANT_SPRITESHEET_DIMENSIONS: {
+            cellNumber: 1,
+            cellSize: 24,
+            rows: 28,
+            columns: 28,
+        },
+        MAX_PLANTS: 8,
         SLEEP_START: 21,
         SLEEP_END: 8,
         PARENT_DAYCARE_START: 8,
@@ -44,9 +53,13 @@ let App = {
             absDay: '12-25',
         },
         MANUAL_AGE_HOURS_BABY: 6,
+        MANUAL_AGE_HOURS_CHILD: 9,
         MANUAL_AGE_HOURS_TEEN: 12,
+        MANUAL_AGE_HOURS_ADULT: 48,
         AUTO_AGE_HOURS_BABY: 24,
+        AUTO_AGE_HOURS_CHILD: 36,
         AUTO_AGE_HOURS_TEEN: 48,
+        AUTO_AGE_HOURS_ADULT: 168, // a week
         WANT_TYPES: {
             food: 'food',
             playdate: 'playdate',
@@ -86,6 +99,9 @@ let App = {
             name: "tamaweb-store"
         });
 
+        // moment settings
+        moment.relativeTimeThreshold('m', 59);
+
         // load data
         let loadedData = await this.load();
         if(!loadedData.lastTime){
@@ -110,11 +126,17 @@ let App = {
         if(loadedData.furniture)
             this.ownedFurniture = loadedData.furniture;
 
+        // plants
+        if(loadedData.plants)
+            this.plants = loadedData.plants.map(p => new Plant(p));
+
         // handle preloading
         let forPreload = [
             ...SPRITES,
+            ...PET_ELDER_CHARACTERS,
             ...PET_ADULT_CHARACTERS,
             ...PET_TEEN_CHARACTERS,
+            ...PET_CHILD_CHARACTERS,
             ...PET_BABY_CHARACTERS,
             ...NPC_CHARACTERS,
         ];
@@ -230,6 +252,11 @@ let App = {
         }
         App.setScene(App.scene.home);
         this.applySky()
+
+        // check if in rabbit hole
+        if(App.pet.stats.current_rabbit_hole.name){
+            Activities.goToCurrentRabbitHole(false);
+        }
 
         // simulating offline progression
         if(loadedData.lastTime){
@@ -360,12 +387,12 @@ let App = {
             App.fpsStartTime = App.fpsLastTime;
             App.onFrameUpdate(0);
         }
-        window.onload = function () {
-            initializeRenderer();
-        }
-        // document.addEventListener('DOMContentLoaded', function(event) {
+        // window.onload = function () {
         //     initializeRenderer();
-        // });
+        // }
+        document.addEventListener('DOMContentLoaded', function(event) {
+            initializeRenderer();
+        });
         window.onbeforeunload = function(){
             App.sendSessionEvent(false);
             App.save();
@@ -525,7 +552,7 @@ let App = {
 
             // simulating offline progression
             if(accurateDeltaTime > 5000){
-                App.pet.simulateAwayProgression(accurateDeltaTime);
+                App.pet?.simulateAwayProgression?.(accurateDeltaTime);
             }
 
             // deltaTime
@@ -762,7 +789,7 @@ let App = {
         //     ])
         // })) return;
 
-        if(addEvent(`update_14_notice`, () => {
+        if(addEvent(`update_15_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
@@ -771,7 +798,7 @@ let App = {
                     bold: true,
                 },
                 {
-                    name: `Check out the new fortune teller in town!`,
+                    name: `Check out the new Gardening, Child and Elder life stages, Cooking and crafting, Homeworld Getaways and more!`,
                     type: 'text',
                 },
                 {
@@ -783,7 +810,7 @@ let App = {
                     }
                 },
             ])
-        })) return;
+        }, false)) return;
 
         if(addEvent('itch_rating_dialog', () => {
             App.handlers.show_rating_dialog();
@@ -1062,6 +1089,19 @@ let App = {
                 this.underlay?.removeObject();
             }
         }),
+        garden_inner: new Scene({
+            image: 'resources/img/background/outside/garden_inner_01.png',
+            petY: '55%',
+            shadowOffset: -5,
+            onLoad: () => {
+                App.handleGardenPlantsSpawn(true);
+                App.pet.staticShadow = true;
+            },
+            onUnload: () => {
+                App.handleGardenPlantsSpawn(false);
+                App.pet.staticShadow = false;
+            }
+        }),
     },
     setScene(scene){
         App.currentScene?.onUnload?.(scene);
@@ -1111,6 +1151,8 @@ let App = {
                 z: furniture.z || App.constants.BACKGROUND_Z + 0.1,
                 def: furniture,
                 onDraw: (me) => {
+                    furnitureDef.onDraw?.(me);
+
                     if(lastY === me.y) return;
                     lastY = me.y;
                     me.z = App.constants.BACKGROUND_Z + 
@@ -1232,10 +1274,42 @@ let App = {
         App.sendAnalytics('edit_furniture');
         return true;
     },
+    handleGardenPlantsSpawn(shouldSpawn){
+        this.spawnedPlants?.forEach(o => o.removeObject());
+
+        if(!shouldSpawn){
+            return false;
+        }
+
+        const getPlantPosition = (i) => {
+            const xOffset = 2, yOffset = 40;
+            const maxCols = 4;
+            return {
+                x: (i % maxCols === 0) ? xOffset : xOffset + (23 * (i % maxCols)),
+                y: yOffset + (Math.floor(i / maxCols) * 20),
+            }                
+        }
+
+        this.spawnedPlants = [];
+        for(let i = 0; i < App.constants.MAX_PLANTS; i++){
+            let currentPlant = App.plants?.at(i);
+
+            const position = getPlantPosition(i);
+            const patch = new Object2d({
+                img: `resources/img/misc/garden_patch_01.png`,
+                x: position.x,
+                y: position.y + 12,
+                // prevent patches from sharing 1 image element
+                noPreload: true,
+            })
+            currentPlant?.createObject2d(patch);
+            this.spawnedPlants.push(patch);
+        }
+    },
     applySky() {
         const { AFTERNOON_TIME, EVENING_TIME, NIGHT_TIME } = App.constants;
         const date = new Date();
-        const h = new Date().getHours();
+        const h = App.clampWithin24HourFormat(new Date().getHours() + App.settings.sleepingHoursOffset);
         // const h = 20;
 
         const isOutside = App.background.imageSrc?.indexOf('outside/') != -1;
@@ -1275,6 +1349,9 @@ let App = {
                 break;
         }
     },
+    isWeatherEffectActive(){
+        return !App.skyWeather.hidden;
+    },
     applyRoomCustomizations(data){
         if(typeof data !== 'object' || !data) return;
 
@@ -1295,11 +1372,17 @@ let App = {
 
         let sprite;
         switch(age){
-            case 0:
+            case PetDefinition.LIFE_STAGE.baby:
                 sprite = rndArrayFn(PET_BABY_CHARACTERS);
                 break;
-            case 1:
+            case PetDefinition.LIFE_STAGE.child:
+                sprite = rndArrayFn(PET_CHILD_CHARACTERS);
+                break;
+            case PetDefinition.LIFE_STAGE.teen:
                 sprite = rndArrayFn(PET_TEEN_CHARACTERS);
+                break;
+            case PetDefinition.LIFE_STAGE.elder:
+                sprite = rndArrayFn(PET_ELDER_CHARACTERS);
                 break;
             default:
                 sprite = rndArrayFn(PET_ADULT_CHARACTERS);
@@ -1665,6 +1748,12 @@ let App = {
                     }
                 },
                 {
+                    name: `Garden ${App.getBadge()}`,
+                    onclick: () => {
+                        Activities.goToInnerGarden();
+                    }
+                },
+                {
                     name: `pet`,
                     onclick: () => {
                         App.displayPopup(`Tap the screen to pet <b>${App.petDefinition.name}</b><br><br>Don't tap for a few seconds to stop petting`, 2800, () => {
@@ -1699,8 +1788,8 @@ let App = {
                     }
                 },
                 {
-                    _ignore: true,
                     name: `backyard ${App.getBadge()}`,
+                    _ignore: true,
                     onclick: () => {
                         Activities.goToGarden();
                     }
@@ -1727,7 +1816,7 @@ let App = {
                 {
                     name: `accessories`,
                     onclick: () => {
-                        if(App.petDefinition.lifeStage != 2){
+                        if(App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult){
                             return App.displayPopup(`${App.petDefinition.name} is not old enough to wear accessories`);
                         }
                         App.handlers.open_accessory_list();
@@ -1759,6 +1848,13 @@ let App = {
                         }
                         App.closeAllDisplays();
                         App.handlers.open_active_furniture_list();
+                    }
+                },
+                {
+                    name: `craft ${App.getBadge()}`,
+                    onclick: () => {
+                        App.handlers.open_craftables_list();
+                        return true;
                     }
                 }
             ], null, 'Stuff')
@@ -2096,6 +2192,7 @@ let App = {
                                             24
                                         );
                                         updateUI();
+                                        App.applySky();
                                     }
                                     content.querySelector('#add').onclick = () => updateOffset(1);
                                     content.querySelector('#subtract').onclick = () => updateOffset(-1);
@@ -2105,7 +2202,6 @@ let App = {
                                     return true;
                                 }
                             },
-
                         ])
                     }
                 },
@@ -2507,14 +2603,47 @@ let App = {
             `;
             list.appendChild(content);
         },
+        open_food_stats: function(foodName){
+            const food = App.definitions.food[foodName];
+
+            if(!food) return false;
+
+            /* bugs out with negative values */
+
+            const list = UI.genericListContainer(null, foodName);
+            const content = UI.empty();
+            content.innerHTML = `
+            <div class="inner-padding b-radius-10 m surface-stylized">
+                <div style="margin-bottom: 16px">
+                    <small>Replenish rates for different stats:</small>    
+                </div>
+                <div>
+                    <b>HUNGER:</b> ${App.createProgressbar( food.hunger_replenish || 0 / App.pet.stats.max_hunger * 100 ).node.outerHTML}
+                </div>
+                <div>
+                    <b>SLEEP:</b> ${App.createProgressbar( food.sleep_replenish || 0 / App.pet.stats.max_sleep * 100 ).node.outerHTML}
+                </div>
+                <div>
+                    <b>FUN:</b> ${App.createProgressbar( food.fun_replenish || 0 / App.pet.stats.max_fun * 100 ).node.outerHTML}
+                </div>
+                <div>
+                    <b>HEALTH:</b> ${App.createProgressbar( food.health_replenish || 0 / App.pet.stats.max_health * 100 ).node.outerHTML}
+                </div>
+            </div>
+            `;
+            list.appendChild(content);
+            list.style.zIndex = 5;
+        },
         open_character_collection: function(){
             App.addEvent(`${App.constants.CHAR_UNLOCK_PREFIX}_${PetDefinition.getCharCode(App.petDefinition.sprite)}`)
 
             let unlockedCount = 0;
             const allCharacters = [
                 ...PET_BABY_CHARACTERS,
+                ...PET_CHILD_CHARACTERS,
                 ...PET_TEEN_CHARACTERS,
                 ...PET_ADULT_CHARACTERS,
+                ...PET_ELDER_CHARACTERS,
             ];
             const charactersDef = allCharacters.map(char => {
                 const charCode = PetDefinition.getCharCode(char);
@@ -2524,6 +2653,18 @@ let App = {
                     componentType: 'div',
                     className: `collection__char ${!isUnlocked ? 'locked' : ''}`,
                     innerHTML: PetDefinition.generateFullCSprite(char),
+                    onclick: ({target}) => {
+                        if(!App.isTester()) return;
+                        target.classList.remove('locked');
+                    },
+                    ondblclick: () => {
+                        if(!App.isTester()) return;
+
+                        if(confirm('Set this as main character?')){
+                            App.petDefinition.sprite = char;
+                            window.location.reload();
+                        }
+                    }
                 }
             })
 
@@ -2616,21 +2757,21 @@ let App = {
             list.appendChild(content);
             App.sendAnalytics('opened_family_tree');
         },
-        open_food_list: function(buyMode, activeIndex, filterType){
+        open_food_list: function(buyMode, activeIndex, filterType, sellMode){
             let list = [];
             let sliderInstance;
             const salesDay = App.isSalesDay();
-            const dayId = App.getDayId(true);
             let index = -1;
+            pRandom.seed = App.getDayId(true);
             for(let food of Object.keys(App.definitions.food)){
                 let current = App.definitions.food[food];
                 const currentType = current.type || 'food';
 
                 // lifestage check
-                if(!current.age.includes(App.petDefinition.lifeStage)) continue;
+                if('age' in current && !current.age.includes(App.petDefinition.lifeStage)) continue;
 
                 // buy mode and is free
-                if(buyMode && current.price == 0) continue;
+                if(buyMode && (current.price === 0 || current.cookableOnly)) continue;
 
                 // filter check
                 if(filterType && currentType != filterType) continue;
@@ -2641,29 +2782,54 @@ let App = {
                 }
 
                 // some entries become randomly unavailable to buy for the day
-                if(++index && buyMode && !random(0, 1, dayId + (index * 256)) && currentType !== 'med'){
-                    continue;
-                }
+                const isOutOfStock = ++index && buyMode && pRandom.getPercent(40) && currentType !== 'med';
 
                 // 50% off on sales day
                 let price = current.price;
+                if(sellMode) price = current.cookableOnly 
+                    ? Math.floor(price * 1.5) 
+                    : Math.floor(price * 0.75);
                 if(salesDay) price = Math.round(price / 2);
 
                 list.push({
-                    name: `${App.getFoodCSprite(current.sprite)} ${food.toUpperCase()} (x${App.pet.inventory.food[food] > 0 ? App.pet.inventory.food[food] : (!current.price ? '∞' : 0)}) <b>${buyMode ? `$${price}` : ''}</b>`,
+                    disabled: isOutOfStock,
+                    name: `
+                        ${App.getFoodCSprite(current.sprite)} 
+                        ${current.cookableOnly ? '★ ' : ''}
+                        ${food.toUpperCase()} 
+                        (x${App.pet.inventory.food[food] > 0 ? App.pet.inventory.food[food] : (!current.price ? '∞' : 0)})
+                        ${
+                            isOutOfStock 
+                            ? `<b class="red-label">OUT OF STOCK</b>`
+                            : `<b>
+                                ${(buyMode || sellMode) ? `
+                                    ${sellMode ? `<span class="opacity-half">$${current.price} <i class="fa-solid fa-angle-right"></i> </span>` : ''}
+                                    <span class="${sellMode ? `seller-analysis ${current.cookableOnly ? 'positive' : 'negative'}` : ''}">
+                                        $${price}
+                                    </span>
+                                ` : ''}
+                            </b>`
+                        }
+                    `,
                     onclick: (btn, list) => {
                         // buy mode
-                        if(buyMode){
-                            if(App.pet.stats.gold < price){
-                                App.displayPopup(`Don't have enough gold!`);
-                                return true;
+                        if(buyMode || sellMode){                            
+                            if(sellMode){ // sell mode
+                                App.pet.stats.gold += price;
+                                App.addNumToObject(App.pet.inventory.food, food, -1);
+                            } else { // buying
+                                if(App.pet.stats.gold < price){
+                                    App.displayPopup(`Don't have enough gold!`);
+                                    return true;
+                                }
+                                App.pet.stats.gold -= price;
+                                App.addNumToObject(App.pet.inventory.food, food, 1);
+                                Missions.done(Missions.TYPES.buy_food);
                             }
-                            App.pet.stats.gold -= price;
-                            App.addNumToObject(App.pet.inventory.food, food, 1);
+
                             // console.log(list.scrollTop);
-                            let nList = App.handlers.open_food_list(true, sliderInstance?.getCurrentIndex(), filterType);
+                            let nList = App.handlers.open_food_list(buyMode, sliderInstance?.getCurrentIndex(), filterType, sellMode);
                                 // nList.scrollTop = list.scrollTop;
-                            Missions.done(Missions.TYPES.buy_food);
                             return false;
                         }
 
@@ -2700,7 +2866,83 @@ let App = {
 
             if(buyMode) list.push(list.shift());
 
-            sliderInstance = App.displaySlider(list, activeIndex, {accept: buyMode ? 'Purchase' : 'Eat'}, buyMode ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}` : null);
+            let acceptLabel = 'Eat';
+            if(buyMode) acceptLabel = 'Purchase';
+            else if(sellMode) acceptLabel = 'Sell';
+            sliderInstance = App.displaySlider(
+                list, 
+                activeIndex, 
+                {accept: acceptLabel}, 
+                (buyMode || sellMode) ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}` : null);
+            return sliderInstance;
+        },
+        open_seed_list: function(buyMode, activeIndex, payloadFn){
+            let list = [];
+            let sliderInstance;
+            const salesDay = App.isSalesDay();
+            let index = -1;
+            pRandom.seed = App.getDayId(true);
+            for(let plant of Object.keys(App.definitions.plant)){
+                let current = App.definitions.plant[plant];
+
+                // buy mode and is free
+                if(buyMode && current.price == 0) continue;
+
+                // check if current pet has this seed on its inventory
+                if(current.price && !App.pet.inventory.seeds[plant] && !buyMode){
+                    continue;
+                }
+
+                // some entries become randomly unavailable to buy for the day
+                const isOutOfStock = ++index && buyMode && pRandom.getPercent(25);
+
+                // 50% off on sales day
+                let price = current.price;
+                if(salesDay) price = Math.round(price / 2);
+
+                list.push({
+                    disabled: isOutOfStock,
+                    name: `
+                        ${Plant.getCSprite(plant, Plant.AGE.grown, 'seed-pack')} 
+                        ${plant.toUpperCase()} seeds 
+                        (x${App.pet.inventory.seeds[plant] > 0 ? App.pet.inventory.seeds[plant] : (!current.price ? '∞' : 0)}) 
+                        ${
+                            isOutOfStock 
+                            ? `<b class="red-label">OUT OF STOCK</b>`
+                            : `<b>${buyMode ? `$${price}` : ''}</b>`
+                        }
+                    `,
+                    onclick: (btn, list) => {
+                        // buy mode
+                        if(buyMode){
+                            if(App.pet.stats.gold < price){
+                                App.displayPopup(`Don't have enough gold!`);
+                                return true;
+                            }
+                            App.pet.stats.gold -= price;
+                            App.addNumToObject(App.pet.inventory.seeds, plant, 1);
+                            let nList = App.handlers.open_seed_list(true, sliderInstance?.getCurrentIndex());
+                            // Missions.done(Missions.TYPES.buy_food);
+                            return false;
+                        }
+
+                        const shouldRemove = payloadFn?.(plant, current); // passing name / object
+                        if(shouldRemove){
+                            if(App.pet.inventory.seeds[plant] > 0)
+                                App.pet.inventory.seeds[plant] -= 1;
+                        }
+                    }
+                })
+            }
+
+            if(!list.length){
+                App.displayPopup(`You don't have any seeds, purchase some from the market`, 2000);
+                return;
+            }
+
+            if(buyMode) list.push(list.shift());
+
+            sliderInstance = App.displaySlider(list, activeIndex, {accept: buyMode ? 'Purchase' : 'Plant'}, buyMode ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}` : null);
             return sliderInstance;
         },
         open_feeding_menu: function(){
@@ -2728,18 +2970,111 @@ let App = {
                 },
                 {
                     // _ignore: !App.isTester(),
-                    _disable: App.petDefinition.lifeStage <= 0,
-                    name: `cook`,
+                    _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child,
+                    name: `cook ${App.getBadge()}`,
                     onclick: () => {
-                        return App.displayConfirm(`You take 3 pictures to use as ingredients for your soup! after that, tap to stir until it's mixed!`, [
+                        return App.displayList([
                             {
-                                name: 'start',
-                                onclick: () => Activities.cookingGame(),
+                                name: 'camera',
+                                onclick: () => {
+                                    return App.displayConfirm(`You take 3 pictures to use as ingredients for your soup! after that, tap to stir until it's mixed!`, [
+                                        {
+                                            name: 'start',
+                                            onclick: () => Activities.cookingGame(),
+                                        },
+                                        {
+                                            name: 'cancel',
+                                            class: 'back-btn',
+                                            onclick: () => { },
+                                        }
+                                    ])
+                                }
                             },
                             {
-                                name: 'cancel',
-                                class: 'back-btn',
-                                onclick: () => { },
+                                name: `harvests ${App.getBadge()}`,
+                                onclick: () => {
+                                    let allPlants = [];
+                                    const getIngredients = (name) => {
+                                        pRandom.save();
+                                        const seed = hashCode(name);
+                                        const results = new Array(3).fill(null).map((_, i) => {
+                                            if(!allPlants.length) 
+                                                allPlants = Object.keys(App.definitions.plant)
+                                                    .map(name => ({...App.definitions.plant[name], name}))
+                                                    .filter( ({inedible}) => !inedible )
+                                                    .map( ({name}) => name)
+
+                                            pRandom.seed = seed + ((i + 1) * 321 * seed);
+                                            const item = pRandomFromArray(allPlants);
+                                            allPlants.splice(allPlants.indexOf(item), 1);
+                                            return item;
+                                        })
+                                        pRandom.load();
+                                        return results;
+                                    }
+
+                                    return App.displayList([
+                                        {
+                                            name: `
+                                            <div class="flex-between flex-wrap" style="row-gap: 4px">
+                                                ${App.getHarvestInventory(item => !item.def.inedible)}
+                                            </div>
+                                            `,
+                                            type: 'text',
+                                        },
+                                        ...Object.keys(App.definitions.food)
+                                            .map(foodName => ({...App.definitions.food[foodName], name: foodName}))
+                                            .filter(food => !food.nonCraftable)
+                                            .map((food) => {
+                                                const ingredients = getIngredients(food.name);
+                                                const hasAllIngredients = ingredients.every(ingredientName => App.pet.inventory.harvests[ingredientName]);
+                                                return {...food, ingredients, hasAllIngredients}
+                                            })
+                                            .sort((a, b) => (b.cookableOnly || false) - (a.cookableOnly || false))
+                                            .sort((a, b) => b.hasAllIngredients - a.hasAllIngredients)
+                                            .map(food => ({
+                                                _disable: !food.hasAllIngredients,
+                                                class: 'flex-between',
+                                                name: `
+                                                    ${App.getFoodCSprite(food.sprite)} = ${App.getHarvestIcons(food.ingredients)}
+                                                    ${food.cookableOnly ? App.getBadge('★', 'gold') : ''}
+                                                `,
+                                                onclick: () => {
+                                                    const confirm = App.displayConfirm(`
+                                                        Cook <div>${App.getFoodCSprite(food.sprite)}</div> <b>${food.cookableOnly ? '★ ' : ''}${food.name}</b>?
+                                                        <button id="effects" style="display: none; position: absolute; bottom: 0; right: 0" class="generic-btn stylized"><b>effects</b></button>
+                                                    `, [
+                                                        {
+                                                            name: 'yes',
+                                                            onclick: () => {
+                                                                food.ingredients.forEach(ingredient => {
+                                                                    if(App.pet.inventory.harvests[ingredient] > 0)
+                                                                        App.pet.inventory.harvests[ingredient] -= 1;
+                                                                })
+                                                                Activities.cookingGame({skipCamera: true, resultFoodName: food.name, stirringSpeed: 0.0095});
+                                                            },
+                                                        },
+                                                        {
+                                                            name: 'no',
+                                                            class: 'back-btn',
+                                                            onclick: () => {}
+                                                        }
+                                                    ])
+                                                    
+                                                    const effectsBtn = confirm.querySelector('#effects');
+                                                    if(effectsBtn){
+                                                        effectsBtn.onclick = () => App.handlers.open_food_stats(food.name)
+                                                    }
+                                                    
+                                                    return true;
+                                                }
+                                            })),
+                                        {
+                                            name: `★ Symbol indicates the item is only obtainable from cooking and has special effect(s)`,
+                                            type: 'info',
+                                        },
+                                    ])
+                                }
                             }
                         ])
                         
@@ -3027,12 +3362,104 @@ let App = {
             return sliderInstance;
             return App.displayList(list);
         },
-        open_room_background_list: function(onlyFurnishables){
+        open_craftables_list: function(){
+            let sliderInstance;
+            const {
+                room_background: roomBackgroundDefs, 
+                accessories: accessoryDefs
+            } = App.definitions;
+
+            const removeOneHarvestFromInventory = (name) => {
+                if(App.pet.inventory.harvests[name] > 0)
+                    App.pet.inventory.harvests[name] -= 1;
+            }
+
+            const getCraftableUIDef = (current, type, owned) => ({
+                isNew: !!current.isNew,
+                name: `
+                    ${
+                        current.icon ??
+                        `<img style="min-height: 64px" src="${App.checkResourceOverride(current.image)}"></img>`
+                    }
+                    ${current.name.toUpperCase()} 
+                    <small>${type}</small>
+                    <b class="flex-center flex-dir-row">
+                    ${
+                        owned ? 'OWNED'
+                            : App.getHarvestIcons(current.craftingRecipe, undefined, 'opacity-third')
+                    }
+                    </b> 
+                    ${current.isNew ? App.getBadge() : ''}
+                `,
+                onclick: () => {
+                    if(owned) return App.displayPopup(`You already own the this ${type}!`);
+
+                    const hasAllIngredients = current.craftingRecipe.every(ingredientName => App.pet.inventory.harvests[ingredientName]);
+                    if(!hasAllIngredients) return App.displayPopup(`You cannot craft this ${type} due to missing ingredients`);
+
+                    current.craftingRecipe.forEach(ingredient => removeOneHarvestFromInventory(ingredient));
+
+                    App.displayPopup(`Crafted x1 <b>${current.name}</b>!`);
+
+                    switch(type){
+                        case "room":
+                            App.closeAllDisplays();
+                            Activities.redecorRoom();
+                            App.scene.home.image = App.checkResourceOverride(current.image);
+                            break;
+                        case "furniture":
+                            App.ownedFurniture.push({
+                                id: current.id,
+                                x: '50%', y: '50%',
+                                isActive: false
+                            })
+                            break;
+                        case "accessory":
+                            App.pet.inventory.accessory[current.name] = true;
+                            break;
+                    }
+
+                    App.sendAnalytics('craft', current.name);
+                }
+            });
+
+            // room backgrounds
+            const rooms = Object.keys(roomBackgroundDefs)
+                .map(roomName => ({...roomBackgroundDefs[roomName], image: App.getFurnishableBackground(roomBackgroundDefs[roomName].image), name: roomName}))
+                .filter(room => room.isCraftable)
+                .map(current => getCraftableUIDef(current, 'room', current.image === App.scene.home.image))
+
+            // furniture
+            const furniture = App.definitions.furniture
+                .filter(item => item.isCraftable)
+                .map(current => getCraftableUIDef(current, 'furniture', !!App.ownedFurniture.find(f => f.id === current.id)))
+
+            // accessories
+            const accessories = Object.keys(accessoryDefs)
+                .map(name => ({...accessoryDefs[name], name}))
+                .filter(current => current.isCraftable)
+                .map(current => getCraftableUIDef( {...current, icon: App.getAccessoryCSprite(current.name)} , 'accessory'))
+
+            const list = [
+                ...rooms,
+                ...furniture,
+                ...accessories,
+            ].sort((a, b) => b.isNew - a.isNew)
+
+            sliderInstance = App.displaySlider(list, null, {accept: 'Craft'});
+            return sliderInstance;
+
+        },
+        open_room_background_list: function(onlyFurnishables, filterFn){
             let list = [];
             let sliderInstance;
             let salesDay = App.isSalesDay();
-            for(let room of Object.keys(App.definitions.room_background)){
+            for(let room of Object.keys(App.definitions.room_background)){                
                 const absCurrent = App.definitions.room_background[room];
+
+                if(filterFn && !filterFn(absCurrent)) continue;
+                else if(!filterFn && absCurrent.isCraftable) continue;
+
                 let current = 
                     onlyFurnishables ?
                     {...absCurrent, image: App.getFurnishableBackground(absCurrent.image)} :
@@ -3111,6 +3538,9 @@ let App = {
                     continue;
                 }
                 let current = App.definitions.accessories[accessoryName];
+
+                if(buyMode && current.isCraftable) continue;
+
                 // check for unlockables
                 if(current.unlockKey && !App.getRecord(current.unlockKey)){
                     continue;
@@ -3199,6 +3629,8 @@ let App = {
                 // if(current.unlockKey && !App.getRecord(current.unlockKey)){
                 //     continue;
                 // }
+
+                if(current.isCraftable) return;
 
                 // 50% off on sales day
                 let price = current.price ?? 1;
@@ -3311,6 +3743,7 @@ let App = {
                     name: '<div class="width-full flex-center"> + </div>',
                     onclick: () => { // add furniture
                         const list = App.ownedFurniture?.filter(f => !f.isActive)
+                        .toReversed()
                         .map(furniture => {
                             const def = App.getFurnitureDefFromId(furniture.id);
                             return {
@@ -3352,7 +3785,7 @@ let App = {
                     }
                 },
                 {
-                    name: `market`,
+                    name: `market ${App.getBadge()}`,
                     onclick: () => {
                         Activities.goToMarket();
                     }
@@ -3364,14 +3797,21 @@ let App = {
                     }
                 },
                 {
-                    name: `fortune teller ${App.getBadge()}`,
+                    _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child,
+                    name: `<span class="ellipsis">Homeworld Getaways</span> ${App.getBadge()}`,
+                    onclick: () => {
+                        return App.handlers.open_rabbitholes_list();
+                    }
+                },
+                {
+                    name: `fortune teller`,
                     onclick: () => {
                         return App.displayList([
                             {
-                                _disable: App.petDefinition.lifeStage === 2,
+                                _disable: App.petDefinition.lifeStage === PetDefinition.LIFE_STAGE.elder,
                                 name: 'Next Evolution',
                                 onclick: () => {
-                                    return App.displayConfirm(`Do you want to see ${App.petDefinition.name}'s <b>next possible life stage(s)</b> based on the current <b>care rating</b>?`, [
+                                    return App.displayConfirm(`Do you want to see ${App.petDefinition.name}'s <b>next possible evolution(s)</b> based on different <b>care ratings</b>?`, [
                                         {
                                             name: 'yes ($100)',
                                             onclick: () => {
@@ -3389,12 +3829,13 @@ let App = {
                                 }
                             },
                             {
-                                _disable: App.petDefinition.lifeStage !== 2,
+                                _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult,
                                 name: 'Offspring with ...',
                                 onclick: () => {
                                     const filter = (petDefinition) => (
                                         !petDefinition.stats.is_player_family
-                                        && petDefinition.lifeStage === App.petDefinition.lifeStage
+                                        && petDefinition.lifeStage >= PetDefinition.LIFE_STAGE.adult
+                                        && App.petDefinition.lifeStage >= PetDefinition.LIFE_STAGE.adult
                                     )
                                     App.handlers.open_friends_list((friendDef) => {
                                         return App.displayConfirm(`Do you want to see ${friendDef.name} and ${App.petDefinition.name}'s baby <b>offspring</b>?`, [
@@ -3432,7 +3873,7 @@ let App = {
                     }
                 },
                 {
-                    _disable: App.petDefinition.lifeStage < 2,
+                    _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult,
                     name: `work`,
                     onclick: () => {
                         App.displayList([
@@ -3460,6 +3901,47 @@ let App = {
                 //     }
                 // },
             ], null, 'Activities')
+        },
+        open_rabbitholes_list: function(){
+            return App.displayList([
+                ...App.definitions.rabbit_hole_activities
+                    .map(hole => ({
+                        // name: `${hole.name} ${App.getBadge(`<span> <i class="fa-solid fa-clock fa-xs"></i> ${hole.duration / 1000 / 60}</span>`, 'neutral')}`,
+                        name: `
+                            <span class="ellipsis">${hole.name}<span>
+                            ${App.getBadge(`<span> <i class="fa-solid fa-clock fa-xs"></i> ${Math.ceil(hole.duration / 1000 / 60)}</span>`, 'neutral')}
+                        `,
+                        onclick: () => {
+                            const confirmFn = () => {
+                                App.displayConfirm(`Are you sure you want to <b>${hole.name}</b>? <br><br> ${App.petDefinition.name} will go out for <b>${moment(hole.duration + Date.now()).toNow(true)}</b>`, [
+                                    {
+                                        name: 'yes',
+                                        onclick: () => {
+                                            App.pet.stats.current_rabbit_hole = {
+                                                name: hole.name,
+                                                endTime: Date.now() + hole.duration
+                                            }
+                                            Activities.goToCurrentRabbitHole(true);
+                                            App.closeAllDisplays();
+                                            App.sendAnalytics('rabbit_hole', hole.name);
+                                        }
+                                    },
+                                    {
+                                        name: 'no',
+                                        class: 'back-btn',
+                                        onclick: () => {}
+                                    },
+                                ])
+                            }
+                            confirmFn();
+                            return true;
+                        }
+                    })),
+                {
+                    type: 'info',
+                    name: `${App.petDefinition.name} will visit their home planet to do one of <i>Homeworld Getaway</i> activities`
+                },
+            ])
         },
         open_friends_list: function(onClickOverride, customFilter, additionalButtons = []){
             const friends = customFilter
@@ -3498,7 +3980,7 @@ let App = {
                                 }
                             },
                             {
-                                _ignore: App.petDefinition.lifeStage < 2 || friendDef.lifeStage < 2 || friendDef.stats.is_player_family,
+                                _ignore: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult || friendDef.lifeStage < PetDefinition.LIFE_STAGE.adult || friendDef.stats.is_player_family,
                                 name: `go on date`,
                                 onclick: () => {
                                     if (friendDef.getFriendship() < 60) {
@@ -3530,7 +4012,7 @@ let App = {
                                 }
                             },
                             {
-                                _disable: App.petDefinition.lifeStage <= 0,
+                                _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby,
                                 name: 'park',
                                 onclick: () => {
                                     App.closeAllDisplays();
@@ -3538,7 +4020,7 @@ let App = {
                                 }
                             },
                             {
-                                _disable: App.petDefinition.lifeStage <= 0,
+                                _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child,
                                 name: 'gift',
                                 onclick: () => {
                                     App.displayConfirm(`Are you sure you want to give gift to ${icon} ${name}?`, [
@@ -3601,10 +4083,10 @@ let App = {
         open_phone: function(){
             App.displayList([
                 {
-                    _disable: App.petDefinition.lifeStage <= 0,
+                    _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby,
                     name: `<span style="color: #ff00c6"><i class="icon fa-solid fa-globe"></i> hubchi</span>`,
                     onclick: () => {
-                        if(App.petDefinition.lifeStage <= 0){
+                        if(App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby){
                             return App.displayPopup(`${App.petDefinition.name} is not old enough to go to hubchi!`);
                         }
 
@@ -3656,11 +4138,11 @@ let App = {
                     }
                 },
                 {
-                    name: `friends ${App.getBadge()}`,
+                    name: `friends`,
                     onclick: () => {
                         App.handlers.open_friends_list(null, null, [
                             {
-                                name: `<i class="fa-solid fa-plus icon"></i> Add Friend ${App.getBadge()}`,
+                                name: `<i class="fa-solid fa-plus icon"></i> Add Friend`,
                                 onclick: () => App.handlers.open_hubchi_search(),
                             }
                         ]);
@@ -3668,7 +4150,7 @@ let App = {
                     }
                 },
                 {
-                    _ignore: App.petDefinition.lifeStage >= 2,
+                    _ignore: App.petDefinition.lifeStage >= PetDefinition.LIFE_STAGE.elder,
                     name: 'have birthday',
                     onclick: () => {
                         let nextBirthday = App.petDefinition.getNextBirthdayDate();
@@ -3699,7 +4181,7 @@ let App = {
                     }
                 },
                 {
-                    _disable: App.petDefinition.lifeStage == 0,
+                    _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child,
                     name: `social media`,
                     onclick: () => {
                         App.handlers.open_social_media();
@@ -3707,7 +4189,7 @@ let App = {
                     }
                 },
                 {
-                    _disable: App.petDefinition.lifeStage == 0,
+                    _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby,
                     name: `go on vacation`,
                     onclick: () => {
                         const price = 250;
@@ -4016,18 +4498,20 @@ let App = {
         },
         open_mall_activity_list: function(){
             const hasNewDecor = Object.keys(App.definitions.room_background).some(key => {
+                const room = App.definitions.room_background[key];
                 const isUnlocked = 
-                    App.definitions.room_background[key].unlockKey ? 
-                    App.getRecord(App.definitions.room_background[key].unlockKey) : 
+                    room.unlockKey ? 
+                    App.getRecord(room.unlockKey) : 
                     true;
-                return App.definitions.room_background[key].isNew && isUnlocked;
+                return room.isNew && isUnlocked && !room.isCraftable;
             });
             const hasNewAccessory = Object.keys(App.definitions.accessories).some(key => {
+                const accessory = App.definitions.accessories[key];
                 const isUnlocked = 
-                    App.definitions.accessories[key].unlockKey ? 
-                    App.getRecord(App.definitions.accessories[key].unlockKey) : 
+                    accessory.unlockKey ? 
+                    App.getRecord(accessory.unlockKey) : 
                     true;
-                return App.definitions.accessories[key].isNew && isUnlocked;
+                return accessory.isNew && isUnlocked && !accessory.isCraftable;
             });
             const hasNewItem = Object.keys(App.definitions.item).some(key => {
                 const isUnlocked = 
@@ -4053,7 +4537,7 @@ let App = {
                     name: `buy accessories ${hasNewAccessory ? App.getBadge() : ''}`,
                     onclick: () => {
                         App.handlers.open_accessory_list(true);
-                        if(App.petDefinition.lifeStage != 2){
+                        if(App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult){
                             App.displayPopup(`${App.petDefinition.name} is not old enough to wear accessories yet, but you can buy some for later`);
                         }
                         return true;
@@ -4111,9 +4595,38 @@ let App = {
                     }
                 },
                 {
-                    name: `Shop stock changes daily, so check back often for new food and snacks!`,
+                    name: `purchase seeds ${App.getBadge()}`,
+                    onclick: () => {
+                        App.handlers.open_seed_list(true, null, "med");
+                        return true;
+                    }
+                },
+                {
+                    name: `sell ${App.getBadge()}`,
+                    onclick: () => {
+                        App.handlers.open_sell_list();
+                        return true;
+                    }
+                },
+                {
+                    name: `Shop stock changes daily, so check back often for new offers!`,
                     type: 'info',
                 },
+            ])
+        },
+        open_sell_list: function(){
+            App.displayList([
+                {
+                    name: 'food',
+                    onclick: () => {
+                        App.handlers.open_food_list(false, false, false, true);
+                        return true;
+                    }
+                },
+                {
+                    name: 'You can sell special items (★) for more than the market price',
+                    type: 'info',
+                }
             ])
         },
         open_game_list: function(){
@@ -4439,6 +4952,7 @@ let App = {
 
         cancelBtn.innerHTML = options?.cancel || /* '<i class="fa-solid fa-arrow-left"></i>' || */ '<i class="fa-solid fa-arrow-left"></i>';
         acceptBtn.innerHTML = options?.accept || 'Accept';
+        const defaultAcceptButtonLabel = acceptBtn.innerHTML;
 
         list.getCurrentIndex = () => currentIndex;
 
@@ -4457,6 +4971,8 @@ let App = {
                 button.className = 'slider-item' + (item.class ? item.class : '');
                 button.innerHTML = item.name;
                 button.setAttribute('data-index', currentIndex);
+                acceptBtn.innerHTML = item.acceptLabel || defaultAcceptButtonLabel;
+                acceptBtn.disabled = item.disabled;
                 acceptBtn.onclick = () => {
                     let result = item.onclick(button, list);
                     if(!result){
@@ -4739,8 +5255,8 @@ let App = {
         return `<c-sprite 
             naturalWidth="${size}" 
             naturalHeight="${size}" 
-            width="22" 
-            height="22" 
+            width="${ITEM_SPRITESHEET_DIMENSIONS.cellSize}" 
+            height="${ITEM_SPRITESHEET_DIMENSIONS.cellSize}" 
             index="${(index - 1)}" 
             src="${ITEM_SPRITESHEET}"></c-sprite>`
     },
@@ -4751,10 +5267,47 @@ let App = {
             ? `<div style="width: 1"><img style="width: 36px; outline: none" src="${image}"></img></div>`
             : `<c-sprite width="64" height="36" index="0" src="${image}"></c-sprite>`;
     },
+    getGenericCSprite: function(index, spritesheet, dimensions, className, additional = ''){
+        const size = dimensions.rows * dimensions.cellSize;
+        return `<c-sprite 
+            naturalWidth="${size}" 
+            naturalHeight="${size}" 
+            width="${dimensions.cellSize}" 
+            height="${dimensions.cellSize}" 
+            index="${(index - 1)}" 
+            class="${className}"
+            src="${spritesheet}"
+            ${additional}></c-sprite>`;
+    },
     getPersona: function(name, image){
         return `
             <img style="height: inherit; width: 32px; object-fit: contain; margin-right: 10px" src="${image}"></img>
             <span class="overflow-hidden ellipsis">${name}<span>
+        `
+    },
+    getHarvestIcons: function(plantNameList, delimiter = ' + ', disabledClassName = '') {
+        return plantNameList.map(plantName => {
+            const hasInInventory = App.pet.inventory.harvests[plantName]
+            return Plant.getCSprite(plantName, undefined, hasInInventory ? 'enabled' : disabledClassName);
+        }).join(delimiter);
+    },
+    getHarvestInventory: function(filterFn = () => true){
+        const harvestsToShow = Object.keys(App.pet.inventory.harvests)
+            .map(name => ({amount: App.pet.inventory.harvests[name], name, def: Plant.getDefinitionByName(name)}) )
+            .filter(item => item.amount)
+            .filter(filterFn);
+
+        if(!harvestsToShow.length){
+            return `<small class="flex-center width-full flex-gap-05 opacity-half">
+                <i class="fa-solid fa-ghost"></i>
+                <i>Empty inventory</i>
+            </small>`;
+        }
+
+        return `
+        ${harvestsToShow
+            .map(item => `<div onclick="App.displayPopup('${item.name} <div><b>x${item.amount}</b></div>')" class="flex align-center flex-gap-05">${Plant.getCSprite(item.name)} <span><small>x</small>${item.amount}</span></div>`)
+            .join('')}
         `
     },
     isCompanionAllowed: function(room){
@@ -4810,12 +5363,73 @@ let App = {
             refreshTime: Missions.refreshTime
         }))
         setItem('furniture', (App.ownedFurniture));
+        setItem('plants', App.plants);
+
         // -3600000
         if(!noIndicator){
             const saveIcon = document.querySelector('.save-indicator');
             saveIcon.style.display = '';
             setTimeout(() => saveIcon.style.display = 'none', 2000);
         }
+    },
+    load: async function() {
+        const getItem = async (key, defaultValue) => {
+            const value = await App.dbStore.getItem(key);
+            return value !== null ? value : defaultValue;
+        }
+
+        // await new Promise(resolve => setTimeout(resolve, 5000))
+    
+        const pet = await getItem('pet', {});
+        const settings = await getItem('settings', null);
+        const lastTime = await getItem('last_time', false);
+        const eventsHistory = await getItem('ingame_events_history', null);
+        const roomCustomizations = await getItem('room_customization', null);
+        const mods = await getItem('mods', App.mods);
+        const records = await getItem('records', App.records);
+    
+        const userId = await getItem('user_id', random(100000000000, 999999999999));
+        App.userId = userId;
+    
+        const userName = await getItem('user_name', null);
+        App.userName = userName == 'null' ? null : userName;
+    
+        App.playTime = parseInt(await getItem('play_time', 0), 10);
+    
+        const shellBackground = await getItem('shell_background_v2.1', 
+            App.definitions.shell_background.find(shell => shell.isDefault).image ||
+            App.definitions.shell_background[1].image);
+    
+        const missions = await getItem('missions', {});
+        const furniture = await getItem('furniture', false);
+        const plants = await getItem('plants', App.plants);
+
+        App.loadedData = {
+            pet,
+            settings,
+            lastTime,
+            eventsHistory,
+            roomCustomizations,
+            shellBackground,
+            playTime: App.playTime,
+            mods,
+            records,
+            missions,
+            furniture,
+            plants
+        };
+    
+        return App.loadedData;
+    },
+    getDBItems: async function(){
+        const keys = await App.dbStore.keys();
+        const items = {};
+
+        for (const key of keys) {
+            items[key] = await App.dbStore.getItem(key);
+        }
+    
+        return items;
     },
     legacy_load: function(){
         let pet = window.localStorage.getItem('pet');
@@ -4858,6 +5472,7 @@ let App = {
         furniture = furniture ? JSON.parse(furniture) : false;
 
         App.loadedData = {
+            ...(App.loadedData || {}),
             pet, 
             settings, 
             lastTime, 
@@ -4872,63 +5487,6 @@ let App = {
         };
 
         return App.loadedData;
-    },
-    load: async function() {
-        const getItem = async (key, defaultValue) => {
-            const value = await App.dbStore.getItem(key);
-            return value !== null ? value : defaultValue;
-        }
-
-        // await new Promise(resolve => setTimeout(resolve, 5000))
-    
-        const pet = await getItem('pet', {});
-        const settings = await getItem('settings', null);
-        const lastTime = await getItem('last_time', false);
-        const eventsHistory = await getItem('ingame_events_history', null);
-        const roomCustomizations = await getItem('room_customization', null);
-        const mods = await getItem('mods', App.mods);
-        const records = await getItem('records', App.records);
-    
-        const userId = await getItem('user_id', random(100000000000, 999999999999));
-        App.userId = userId;
-    
-        const userName = await getItem('user_name', null);
-        App.userName = userName == 'null' ? null : userName;
-    
-        App.playTime = parseInt(await getItem('play_time', 0), 10);
-    
-        const shellBackground = await getItem('shell_background_v2.1', 
-            App.definitions.shell_background.find(shell => shell.isDefault).image ||
-            App.definitions.shell_background[1].image);
-    
-        const missions = await getItem('missions', {});
-        const furniture = await getItem('furniture', false);
-    
-        App.loadedData = {
-            pet,
-            settings,
-            lastTime,
-            eventsHistory,
-            roomCustomizations,
-            shellBackground,
-            playTime: App.playTime,
-            mods,
-            records,
-            missions,
-            furniture
-        };
-    
-        return App.loadedData;
-    },
-    getDBItems: async function(){
-        const keys = await App.dbStore.keys();
-        const items = {};
-
-        for (const key of keys) {
-            items[key] = await App.dbStore.getItem(key);
-        }
-    
-        return items;
     },
     loadFromJson: async function(json, callbackFn){
         const ignoreKeys = [
@@ -5127,6 +5685,9 @@ let App = {
     },
     getIcon: function(iconName, noRightMargin){
         return `<i class="fa-solid fa-${iconName}" style="${!noRightMargin ? 'margin-right:10px' : ''}"></i>`
+    },
+    wait: function(ms = 0){
+        return new Promise(resolve => setTimeout(resolve, ms))
     },
     apiService: {
         ENDPOINT: 'https://script.google.com/macros/s/AKfycbxCa6Yo_VdK5t9T7ZCHabxT1EY-xACEC3VUDHgkkwGdduF2U5VMGlp0KXBu9CtE8cWv9Q/exec',

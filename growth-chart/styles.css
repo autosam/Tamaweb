@@ -8,6 +8,8 @@
 
 body {
     background-color: navajowhite;
+    background: repeating-linear-gradient(-45deg, #ffddb8 0 15px, #ffe5ca 15px 30px);
+    font-family: monospace;
 }
 
 .all-cont {
@@ -18,38 +20,45 @@ body {
 
 .high-care {
     background: #22ff0045;
-    padding: 5px 0px;
 }
 
 .med-care {
     background: #ffd90045;
-    padding: 5px 0px;
 }
 
 .low-care {
     background: #ff000045;
-    padding: 5px 0px;
 }
 
-.teens,
-.babies {
+
+.container {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    column-gap: 100px;
+    column-gap: 50px;
+    row-gap: 4px;
+    /* margin: 10px 0; */
+    /* border-top: 1px solid; */
+    /* padding: 10px 0; */
     justify-content: flex-start;
 }
 
-.babies {
-    margin-bottom: 30px;
-}
-
 .active {
-    transform: scale(2) !important;
+    transform: scale(1.25) !important;
     /* background-color: rgba(137, 43, 226, 0.515) !important; */
-    outline: 10px solid rgb(0, 0, 0);
+    outline: 5px solid rgb(0, 38, 255);
     border-radius: 10px;
 }
 c-sprite {
     cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.content {
+    max-width: 1716px;
+    margin: auto;
 }

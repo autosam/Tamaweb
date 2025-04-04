@@ -62,6 +62,8 @@ class Object2d {
     setImg(img){ // this one gets image url
         if(!img) return;
 
+        if(this.imageSrc === img) return;
+
         const preloaded = App.preloadedResources[img];
         if(preloaded && !this.noPreload){
             return this.setImage(preloaded);
