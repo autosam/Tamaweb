@@ -3791,16 +3791,16 @@ let App = {
                     }
                 },
                 {
+                    name: `game center`,
+                    onclick: () => {
+                        Activities.goToArcade();
+                    }
+                },
+                {
                     _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child,
                     name: `<span class="ellipsis">Homeworld Getaways</span> ${App.getBadge()}`,
                     onclick: () => {
                         return App.handlers.open_rabbitholes_list();
-                    }
-                },
-                {
-                    name: `game center`,
-                    onclick: () => {
-                        Activities.goToArcade();
                     }
                 },
                 {
