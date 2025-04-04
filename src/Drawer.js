@@ -197,7 +197,7 @@ class Drawer {
             }
 
             if (object.onLateDraw !== undefined)
-                object.onLateDraw();
+                object.onLateDraw(object);
         })
         return this;
     }
