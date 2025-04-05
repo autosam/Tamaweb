@@ -1,17 +1,128 @@
 class Activities {
-    static async goToFortuneTeller(otherPetDef = App.getRandomPetDef()){
+    static async goToCurrentRabbitHole(isStarting) {
+        if(isStarting) { // starting animation
+            App.pet.stopMove();
+            App.pet.x = '50%';
+            App.toggleGameplayControls(false);
+
+
+            const ufoObject = new Object2d({
+                image: App.preloadedResources['resources/img/misc/ufo_02.png'],
+                x: 0, y: 0, z: App.constants.ACTIVE_PET_Z + 1,
+                onDraw: (me) => {
+                    if(App.pet.y > 50) return;
+                    me.y = lerp(me.y, -50, 0.0005 * App.deltaTime)
+                }
+            });
+            const ufoBeamObject = new Object2d({
+                image: App.preloadedResources['resources/img/misc/ufo_01.png'],
+                y: -120,
+                x: 0,
+                parent: ufoObject,
+                onDraw: (me) => {
+                    me.y = (App.pet.y) - 70;
+                }
+            });
+
+            await App.pet.triggerScriptedState('shocked', 2000, false, true, 
+                // onEnd
+                () => {
+                    App.pet.y = '100%';
+                    App.pet.x = -999;
+                    ufoObject.removeObject();
+                },
+                // driver
+                () => {
+                    App.pet.y = lerp(App.pet.y, -100, 0.0005 * App.deltaTime);
+                }
+            )
+        }
+
+        const {current_rabbit_hole: currentRabbitHole} = App.pet.stats;
+
+        const outOverlay = new Object2d({
+            img: 'resources/img/misc/out_overlay_01.png',
+            x: 0, y: 0, z: 10,
+        });
+
+        const onEndFn = (isInterrupted) => {
+            setTimeout(() => {
+                App.pet.x = '50%';
+                App.pet.stopMove();
+            })
+
+            const rabbitHoleDefinition = App.definitions.rabbit_hole_activities.find(activity => activity.name === App.pet.stats.current_rabbit_hole.name);
+
+            if(!isInterrupted){
+                App.displayConfirm(`Homeworld Getaway activity <b>"${App.pet.stats.current_rabbit_hole.name}"</b> has ended and ${App.petDefinition.name} is back home!`, [
+                    {
+                        name: 'ok',
+                        onclick: () => {}
+                    }
+                ])
+                rabbitHoleDefinition?.onEnd?.();
+            }
+
+            App.pet.stats.current_rabbit_hole.name = false;
+            App.toggleGameplayControls(true);
+            outOverlay.removeObject();
+            App.setScene(App.scene.home);
+        }
+
+        const driverFn = () => {
+            const remainingTime = currentRabbitHole.endTime - Date.now();
+            if(remainingTime <= 0){
+                onEndFn();
+                App.pet.stopScriptedState();
+                return true;
+            }
+            App.pet.x = -99;
+        }
+
+        if(!isStarting){
+            const isAlreadyEnded = driverFn();
+            if(isAlreadyEnded) return;
+        }
+
+        App.toggleGameplayControls(false, () => {
+            App.displayConfirm(`
+                <div style="font-size: x-small;" class="solid-surface-stylized b-radius-10">
+                    <i  class="fa-solid fa-clock" style="margin-right: 2px;"></i>
+                    <span>${currentRabbitHole.name}</span>
+                </div>
+                ${App.petDefinition.name} will be back <b>${moment(currentRabbitHole.endTime).fromNow()}</b>
+                `, [
+                {
+                    name: 'end early',
+                    onclick: () => {
+                        onEndFn(true);
+                        App.pet.stopScriptedState();
+                    },
+                },
+                {
+                    name: 'close',
+                    class: 'back-btn',
+                    onclick: () => {}
+                }
+            ])
+        });
+
+        App.pet.triggerScriptedState('idle', App.INF, false, true, null, driverFn)
+        App.pet.stopMove();
+        App.pet.targetX = -999;
+    }
+    static async goToFortuneTeller(otherPetDef){
         App.toggleGameplayControls(false);
         App.setScene(App.scene.fortune_teller);
 
-        let evolutions = App.petDefinition.getPossibleEvolutions();
+        let evolutions = App.petDefinition.getPossibleEvolutions(false, true);
 
-        if(!evolutions){
+        if(otherPetDef){
             evolutions = [PetDefinition.getOffspringSprite(App.petDefinition, otherPetDef)];
-            
             App.pet.showThought(App.constants.WANT_TYPES.playdate, otherPetDef);
         }
 
-        const petsToReveal = evolutions.map((sprite) => {
+        const petsToReveal = evolutions?.map((sprite, index) => {
             const pet = new Pet(
                 new PetDefinition({
                     sprite,
@@ -24,6 +135,23 @@ class Activities {
                     castShadow: false,
                 }
             );
+            if(evolutions.length > 1){
+                for(let i = 0; i < 3; i++){
+                    new Object2d({
+                        img: 'resources/img/misc/star_01.png',
+                        x: `${40 + (i * 10)}%`,
+                        y: `6%`,
+                        opacity: 1,
+                        scale: 0.4,
+                        parent: pet,
+                        rating: index,
+                        onDraw: (me) => {
+                            const fullOpacity = i <= index;
+                            me.opacity = fullOpacity ? me.parent.opacity : me.parent.opacity * 0.25;
+                        }
+                    });
+                }
+            }
 
             pet.triggerScriptedState('idle', App.INF, 0, true);
 
@@ -34,7 +162,7 @@ class Activities {
             let target = 1;
             setTimeout(() => target = 0, 4000);
             pet.onDraw = (me) => {
-                me.opacity = lerp(me.opacity, target, 0.0025 * App.nDeltaTime);
+                me.opacity = lerp(me.opacity, target, 0.0025 * App.deltaTime);
                 Object2d.animations.bob(me, 0.005, 0.1);
             }
         }
@@ -50,12 +178,12 @@ class Activities {
                 const maxWaitTime = petsToReveal.length * delayBetweenReveals;
                 App.pet.triggerScriptedState('shocked', maxWaitTime, null, true, () => {
                     App.pet.playCheeringAnimation(() => {
-                        petsToReveal.forEach(p => p?.removeObject());
+                        petsToReveal?.forEach(p => p?.removeObject());
                         App.setScene(App.scene.home);
                         App.toggleGameplayControls(true);
                     });
                 });
-                petsToReveal.forEach((p, i) => {
+                petsToReveal?.forEach((p, i) => {
                     setTimeout(() => fadeInAndOut(p), i * delayBetweenReveals);
                 });
 
@@ -208,6 +336,170 @@ class Activities {
             ])
         }, 3000);
     }
+    static goToInnerGarden(){
+        App.pet.stopScriptedState();
+        App.setScene(App.scene.garden_inner);
+        App.pet.x = '100%';
+        App.pet.targetX = 50;
+
+        const displayPlantsList = ({onPlantClick, filterFn = () => true}) => {
+            const allPlantsList = App.plants
+                .filter(filterFn)
+                .map((currentPlant, currentPlantIndex) => {
+                    return {
+                        name: `<span class="icon">${currentPlant.getCSprite()}</span> ${currentPlant.name}`,
+                        onclick: () => onPlantClick(currentPlant, currentPlantIndex)
+                    }
+                })
+            return App.displayList(allPlantsList)
+        }
+
+        App.toggleGameplayControls(false, () => {
+            return App.displayList([
+                {
+                    name: '<i class="icon fa-solid fa-plus icon"></i> plant',
+                    _disable: App.plants.length === App.constants.MAX_PLANTS,
+                    onclick: () => {
+                        const onSelectSeed = (plantName) => {
+                            if (App.plants.length !== App.constants.MAX_PLANTS) {
+                                const plant = new Plant({ name: plantName });
+                                App.plants.push(plant);
+                                App.handleGardenPlantsSpawn(true);
+                                Missions.done(Missions.TYPES.plant_in_garden);
+                                Activities.task_floatingObjects(10, ['resources/img/misc/add_green_01.png']);
+                                App.sendAnalytics('plant', plantName);
+                                return true;
+                            }
+                            return false;
+                        }
+
+                        App.handlers.open_seed_list(false, null, onSelectSeed);
+                    }
+                },
+                {
+                    name: 'water',
+                    _disable: !App.plants.some(p => !p.isWatered && !p.isDead),
+                    onclick: async () => {
+                        App.closeAllDisplays();
+                        const wateringCan = new Object2d({
+                            img: 'resources/img/misc/watering_can_01.png',
+                            z: 100,
+                        })
+                        const previousController = App.getGameplayControlsState().onclick;
+                        App.toggleGameplayControls(false);
+                        for(let i = 0; i < App.plants.length; i++){
+                            const plant = App.plants[i];
+                            if(plant.isWatered || plant.isDead) continue;
+                            wateringCan.x = plant.position.x + 8;
+                            wateringCan.y = plant.position.y;
+                            await App.wait(500);
+                            plant.water();
+                            Missions.done(Missions.TYPES.water_crop);
+                        }
+                        wateringCan.removeObject();
+                        App.toggleGameplayControls(false, previousController);
+                    }
+                },
+                {
+                    name: 'harvest',
+                    _disable: !App.plants.some(p => p.age === Plant.AGE.grown),
+                    onclick: () => {
+                        const displayHarvestables = () => {
+                            const list = displayPlantsList({
+                                onPlantClick: (plant, plantIndex) => {
+                                    App.plants.splice(plantIndex, 1); // removing plant
+                                    App.handleGardenPlantsSpawn(true);
+                                    Activities.task_floatingObjects(10, ['resources/img/misc/tick_green_01.png']);
+
+                                    const amount = random(4, 8);
+                                    App.addNumToObject(App.pet.inventory.harvests, plant.name, amount);
+                                    App.displayConfirm(`
+                                            <div>${plant.getCSprite()}</div>
+                                            <div>${plant.name}</div>
+                                            <div>(x${amount})</div>
+                                        `, [
+                                        {
+                                            name: 'ok',
+                                            onclick: () => {
+                                                list.close();
+                                                displayHarvestables();
+                                            }
+                                        }
+                                    ])
+                                    App.sendAnalytics('harvest', plant.name);
+                                    return true;
+                                },
+                                filterFn: (plant) => plant.age === Plant.AGE.grown
+                            })
+                        }
+                        displayHarvestables();
+                        return true;
+                    }
+                },
+                {
+                    name: 'remove',
+                    _disable: !App.plants.length,
+                    onclick: () => {
+                        displayPlantsList({
+                            onPlantClick: (plant, plantIndex) => {
+                                return App.displayConfirm(`Are you sure you want to remove <b>${plant.name} (${Plant.AGE_LABELS[plant.age]})</b>?`, [
+                                    {
+                                        name: 'yes',
+                                        onclick: () => {
+                                            App.plants.splice(plantIndex, 1); // removing plant
+                                            App.handleGardenPlantsSpawn(true);
+                                            App.closeAllDisplays();
+                                            Activities.task_floatingObjects(10, ['resources/img/misc/remove_red_01.png']);
+                                        }
+                                    },
+                                    {
+                                        name: 'no',
+                                        class: 'back-btn',
+                                        onclick: () => {}
+                                    },
+                                ])
+                            },
+                            filterFn: (plant) => plant.age !== Plant.AGE.grown
+                        })
+                        return true;
+                    }
+                },
+                {
+                    name: 'inventory',
+                    onclick: () => {
+                        return App.displayList([
+                            {
+                                name: `
+                                <div class="flex-between flex-wrap" style="row-gap: 4px">
+                                    ${App.getHarvestInventory()}
+                                </div>
+                                `,
+                                type: 'text',
+                            },
+                        ]);
+                    }
+                },
+                {
+                    name: '<i class="icon fa-solid fa-home"></i> go inside',
+                    class: 'back-btn',
+                    onclick: () => {
+                        App.setScene(App.scene.home);
+                        App.toggleGameplayControls(true);
+                        App.pet.stopScriptedState();
+                        App.pet.x = '0%';
+                        App.pet.targetX = 50;
+                    }
+                },
+                // {
+                //     name: '<i class="icon fa-solid fa-arrow-left icon"></i> backyard',
+                //     class: 'back-btn',
+                //     onclick: () => {
+                //         Activities.goToGarden();
+                //     }
+                // }
+            ])
+        })
+    }
     static goToGarden(){
         App.pet.stopScriptedState();
         App.setScene(App.scene.garden);
@@ -216,8 +508,10 @@ class Activities {
         App.toggleGameplayControls(false, () => {
             return App.displayList([
                 {
-                    name: '<small> coming soon... </small>',
-                    type: 'text',
+                    name: 'Garden',
+                    onclick: () => {
+                        Activities.goToInnerGarden();
+                    }
                 },
                 {
                     name: '<i class="icon fa-solid fa-home"></i> go inside',
@@ -413,7 +707,7 @@ class Activities {
                                 onclick: () => handleHangout(def)
                             },
                             {
-                                _disable: App.petDefinition.lifeStage !== 2 || def.lifeStage !== 2,
+                                _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult || def.lifeStage < PetDefinition.LIFE_STAGE.adult,
                                 name: `go on date`,
                                 onclick: () => handleDate(def)
                             },
@@ -657,6 +951,7 @@ class Activities {
                 },
                 {
                     name: '<i class="icon fa-solid fa-home"></i> return home',
+                    class: 'back-btn',
                     onclick: handleReturnHome
                 },
             ])
@@ -741,10 +1036,14 @@ class Activities {
             ])
         });
     }
-    static async cookingGame(){
+    static async cookingGame({
+        stirringSpeed = 0.001,
+        skipCamera, 
+        resultFoodName,
+    }){
         App.closeAllDisplays();
         App.pet.triggerScriptedState('idle', App.INF, 0, false);
-        App.sendAnalytics('cooking_game');
+        App.sendAnalytics('cooking_game', resultFoodName || '');
         Missions.done(Missions.TYPES.cook);
         // App.setScene(App.scene.kitchen);
 
@@ -764,7 +1063,6 @@ class Activities {
             z: 30.4, x: 0, y: 0, parent: potObject,
         });
 
-        let stirringSpeed = 0.001;
         const starLogicHandler = (me) => {
             if(!me._originX) me._originX = me.config.drawer.getRelativePositionX(50 - 11);
             if(!me._originY) me._originY = me.config.drawer.getRelativePositionY(50 - 11);
@@ -789,12 +1087,12 @@ class Activities {
             starObjects.push(img);
         }
 
-        let failChance = 25;
+        let failChance = resultFoodName ? 3 : 25;
         let currentTargetImgIndex = 0;
         App.toggleGameplayControls(false, () => {
-            if(currentTargetImgIndex < starObjects.length){
+            if(currentTargetImgIndex < starObjects.length && !skipCamera){
                 App.useWebcam((imgData) => {
-                    if(!imgData || imgData == -1){
+                    if((!imgData || imgData == -1)){
                         // potObject.removeObject();
                         // App.pet.stopScriptedState();
                         // App.toggleGameplayControls(true);
@@ -823,7 +1121,7 @@ class Activities {
                                     Object2d.animations.rotateAround(me);
                                 }
                             })
-                            randomFoodName = randomFromArray(Object.keys(App.definitions.food));
+                            randomFoodName = resultFoodName || randomFromArray(Object.keys(App.definitions.food));
                             const randomFood = App.definitions.food[randomFoodName];
                             App.constants.FOOD_SPRITESHEET_DIMENSIONS.cellNumber = randomFood.sprite;
                             if(!failed){
@@ -856,7 +1154,7 @@ class Activities {
                                     App.pet.x = '50%';
                                 }
                                 if(!failed){
-                                    const amount = 1;
+                                    const amount = resultFoodName ? random(1, 3) : 1;
                                     App.displayPopup(`${App.petDefinition.name} <br>made x${amount}<br> <b>${randomFoodName}</b>!`, 3000, () => {
                                         end();
                                         App.pet.playCheeringAnimation();
@@ -1260,7 +1558,7 @@ class Activities {
 
         App.pet.needsToiletOverlay.hidden = false;
         App.pet.stats.current_bladder = App.pet.stats.max_bladder;
-        if(App.petDefinition.lifeStage <= 0 && !force) {
+        if(App.petDefinition.lifeStage === PetDefinition.LIFE_STAGE.baby && !force) {
             // make pet potty trained if used toilet more than 2 to 4 times and is baby
             if(++App.pet.stats.used_toilet > random(2, 4)){
                 App.pet.stats.is_potty_trained = true;
@@ -1295,6 +1593,8 @@ class Activities {
                 b: otherPetDef.sprite
             }));
         } catch(e) {}
+
+        const heartParticleSpawner = setInterval(() => Activities.task_floatingHearts(), 500);
 
         const overlay = new Object2d({
             img: 'resources/img/background/house/wedding_overlay.png',
@@ -1351,6 +1651,8 @@ class Activities {
                 App.setScene(App.scene.home);
 
                 App.pet = App.createActivePet(App.petDefinition);
+
+                clearInterval(heartParticleSpawner);
             }, () => {
                 App.toggleGameplayControls(true);
 
@@ -1387,27 +1689,22 @@ class Activities {
                             .sort((a, b) => a.sort - b.sort)
                             .map(({ value }) => value); // shuffling friends array
         for(let i = 0; i < 3; i++){
-            let def = new PetDefinition({
-                sprite: randomFromArray(PET_TEEN_CHARACTERS),
-            });
-            otherPetDefs.push(def);
+            otherPetDefs.push(App.getRandomPetDef(App.petDefinition.lifeStage));
         }
 
-        let otherPets = [];
-        otherPetDefs.slice(0, 3).forEach(def => {
-            let pet = new Pet(def);
-            otherPets.push(pet);
-        });
+        const otherPets = otherPetDefs.slice(0, 3).map(def => new Pet(def));
         
         const table = new Object2d({
             img: 'resources/img/misc/table_01.png',
             x: 28,
             y: 68,
+            z: App.constants.ACTIVE_PET_Z - 0.1
         });
         const cake = new Object2d({
             img: 'resources/img/misc/cake_01.png',
             x: 39,
             y: 58,
+            z: App.constants.ACTIVE_PET_Z - 0.1
         });
 
         otherPets.forEach((pet, i) => {
@@ -1416,16 +1713,18 @@ class Activities {
             pet.x = -10 * i;
             switch(i){
                 case 0:
-                    pet.targetX = 30;
+                    pet.targetX = 50;
                     pet.targetY = 65;
                     break;
                 case 1:
-                    pet.targetX = 15;
-                    pet.targetY = 75;
+                    pet.targetX = 12;
+                    pet.targetY = 65;
+                    // pet.z = App.constants.ACTIVE_PET_Z - 0.05;
                     break;
                 case 2:
                     pet.targetX = 5;
                     pet.targetY = 85;
+                    pet.z = App.constants.ACTIVE_PET_Z - 0.05;
                     break;
             }
             pet.triggerScriptedState('moving', App.INF, 0, true, null, (pet) => {
@@ -1939,7 +2238,7 @@ class Activities {
         reset();
 
         App.onDraw = () => {
-            cursorCurrentPos += cursorSpeed * App.nDeltaTime;
+            cursorCurrentPos += cursorSpeed * App.deltaTime;
             if(cursorCurrentPos >= 98 || cursorCurrentPos <= 0){
                 cursorSpeed *= -1;
                 cursorCurrentPos = clamp(cursorCurrentPos, 0, 100);
@@ -2370,18 +2669,24 @@ class Activities {
         App.toggleGameplayControls(true);
     }
     static task_floatingHearts(num){
+        Activities.task_floatingObjects(num, [
+            'resources/img/misc/heart_particle_01.png',
+            'resources/img/misc/heart_particle_02.png',
+        ])
+    }
+    static task_floatingObjects(num, textures, yRange = [105, 115]){
         if(!num) num = random(1, 4);
         for(let i = 0; i < num; i++){
             let floatSpeed = random(4, 5) * 0.01, 
                 swayFloat = 0, 
                 swaySpeed = random(2, 20) * 0.001;
-            const heartObject = new Object2d({
-                img: `resources/img/misc/heart_particle_0${random(1, 2)}.png`, 
+            const floatingObject = new Object2d({
+                img: randomFromArray(textures),
                 z: randomFromArray([0, 100]), 
                 x: `${random(0, 100)}%`, 
-                y: `${random(105, 115)}%`
+                y: `${random(yRange[0], yRange[1])}%`
             });
-            heartObject.onDraw = (me) => {
+            floatingObject.onDraw = (me) => {
                 if(isNaN(me.y)) return;
 
                 me.y -= floatSpeed * App.deltaTime;

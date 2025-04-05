@@ -177,6 +177,7 @@ class PetDefinition {
         // death ticker
         max_death_tick: 100, // ~ 54 hours
         baby_max_death_tick: 44, // ~ 24 hours
+        child_max_death_tick: 60, // ~ ?? hours
         teen_max_death_tick: 74, // ~ 40 hours
         death_tick_rate: 0.000289,
         // care
@@ -216,6 +217,10 @@ class PetDefinition {
         should_care_increase: true,
         used_toilet: 0,
         is_potty_trained: false,
+        current_rabbit_hole: {
+            name: false,
+            endTime: false,
+        }
     }
     friends = [];
     family = [];
@@ -226,7 +231,8 @@ class PetDefinition {
             'slice of pizza': 3,
         },
         item: { 'rattle': 1 },
-        accessory: { },
+        accessory: {},
+        harvests: {}, seeds: {},
     }
     accessories = [];
 
@@ -281,6 +287,7 @@ class PetDefinition {
                     should_care_increase: this.stats.should_care_increase,
                     used_toilet: this.stats.used_toilet,
                     is_potty_trained: this.stats.is_potty_trained,
+                    current_rabbit_hole: this.stats.current_rabbit_hole,
                 }
                 return;
             }
@@ -378,10 +385,13 @@ class PetDefinition {
     }
 
     getLifeStageLabel(){
-        let age = 'baby';
+        let age;
         switch(this.getLifeStage()){
-            case 1: age = 'teen'; break;
-            case 2: age = 'adult'; break;
+            case PetDefinition.LIFE_STAGE.baby: age = 'baby'; break;
+            case PetDefinition.LIFE_STAGE.child: age = 'child'; break;
+            case PetDefinition.LIFE_STAGE.teen: age = 'teen'; break;
+            case PetDefinition.LIFE_STAGE.elder: age = 'elder'; break;
+            default: age = 'adult';
         }
         return age;
     }
@@ -394,10 +404,14 @@ class PetDefinition {
     getNextBirthdayDate(){
         let m = moment(this.lastBirthday);
         switch(this.lifeStage){
-            case 0:
+            case PetDefinition.LIFE_STAGE.baby:
                 return m.add(App.constants.MANUAL_AGE_HOURS_BABY, 'hours');
-            case 1:
+            case PetDefinition.LIFE_STAGE.child:
+                return m.add(App.constants.MANUAL_AGE_HOURS_CHILD, 'hours');
+            case PetDefinition.LIFE_STAGE.teen:
                 return m.add(App.constants.MANUAL_AGE_HOURS_TEEN, 'hours');
+            case PetDefinition.LIFE_STAGE.adult:
+                return m.add(App.constants.MANUAL_AGE_HOURS_ADULT, 'hours');
         }
         return false;
     }
@@ -405,10 +419,14 @@ class PetDefinition {
     getNextAutomaticBirthdayDate(){
         let m = moment(this.birthday);
         switch(this.lifeStage){
-            case 0:
+            case PetDefinition.LIFE_STAGE.baby:
                 return m.add(App.constants.AUTO_AGE_HOURS_BABY, 'hours');
-            case 1:
+            case PetDefinition.LIFE_STAGE.child:
+                return m.add(App.constants.AUTO_AGE_HOURS_CHILD, 'hours');
+            case PetDefinition.LIFE_STAGE.teen:
                 return m.add(App.constants.AUTO_AGE_HOURS_TEEN, 'hours');
+            case PetDefinition.LIFE_STAGE.adult:
+                return m.add(App.constants.AUTO_AGE_HOURS_ADULT, 'hours');
         }
         return false;
     }
@@ -429,29 +447,28 @@ class PetDefinition {
         return true;
     }
 
-    getPossibleEvolutions(isNpc){
+    getPossibleEvolutions(isNpc, all){
         const careRating = !isNpc ? this.stats.current_care : random(1, 3);
         let possibleEvolutions = GROWTH_CHART[this.sprite];
         if(!possibleEvolutions){
             possibleEvolutions = GROWTH_CHART[randomFromArray(Object.keys(GROWTH_CHART))]
         }
 
+        if(all) return possibleEvolutions;
+
         switch(this.lifeStage){
-            case 0:
-                switch(careRating){
-                    case 1: return possibleEvolutions.slice(0, 2); // low care
-                    case 3: return possibleEvolutions.slice(5); // high care
-                    default: return possibleEvolutions.slice(2, 5); // default medium care
-                }
-            case 1:
+            case PetDefinition.LIFE_STAGE.adult:
+                return [possibleEvolutions[0]];
+            case PetDefinition.LIFE_STAGE.baby:
+            case PetDefinition.LIFE_STAGE.child:
+            case PetDefinition.LIFE_STAGE.teen:
                 switch(careRating){
                     case 1: return [possibleEvolutions[0]]; // low care
                     case 3: return [possibleEvolutions[2]]; // high care
                     default: return [possibleEvolutions[1]]; // default medium care
                 }
+            default: return false;
         }
-
-        return false;
     }
 
     addFriend(friendDef, friendship){
@@ -520,8 +537,10 @@ class PetDefinition {
         switch(currentCategory){
             case "food": // item is food name
                 const wantedFood = randomFromArray(Object.keys(App.definitions.food));
+                const wantedFoodDef = App.definitions.food[wantedFood];
                 if(
-                    !App.definitions.food[wantedFood].age.includes(this.lifeStage) 
+                    'age' in wantedFoodDef 
+                    && !App.definitions.food[wantedFood].age.includes(this.lifeStage) 
                     || ['med', 'treat'].includes(App.definitions.food[wantedFood].type)
                 ) return this.refreshWant(++currentTry, currentCategory);
                 current_want.type = App.constants.WANT_TYPES.food;
@@ -529,8 +548,10 @@ class PetDefinition {
                 break;
             case "snack": // item is food name
                 const wantedSnack = randomFromArray(Object.keys(App.definitions.food));
+                const wantedSnackDef = App.definitions.food[wantedSnack];
                 if(
-                    !App.definitions.food[wantedSnack].age.includes(this.lifeStage) 
+                    'age' in wantedSnackDef 
+                    && !wantedSnackDef.age.includes(this.lifeStage) 
                     || !['treat'].includes(App.definitions.food[wantedSnack].type)
                 ) return this.refreshWant(++currentTry, currentCategory);
                 current_want.type = App.constants.WANT_TYPES.food;
@@ -593,47 +614,77 @@ class PetDefinition {
     }
 
     spritesheetDefinitions = {
-        '0': { // baby
+        [PetDefinition.LIFE_STAGE.baby]: { // baby
             cellNumber: 1,
             cellSize: 16,
             rows: 4,
             columns: 4,
             offsetY: 8,
         },
-        '1': { // teen
+        [PetDefinition.LIFE_STAGE.child]: { // child
             cellNumber: 1,
             cellSize: 24,
             rows: 4,
             columns: 4,
-            offsetY: 4,    
+            offsetY: 4,
         },
-        '2': { // adult
+        [PetDefinition.LIFE_STAGE.teen]: { // teen
+            cellNumber: 1,
+            cellSize: 24,
+            rows: 4,
+            columns: 4,
+            offsetY: 4,
+        },
+        [PetDefinition.LIFE_STAGE.adult]: { // adult
             cellNumber: 1,
             cellSize: 32,
             rows: 4,
             columns: 4,
+            offsetY: 0,
+        },
+        [PetDefinition.LIFE_STAGE.elder]: { // elder
+            cellNumber: 1,
+            cellSize: 32,
+            rows: 4,
+            columns: 4,
+            offsetY: 0,
         }
     }
 
     static generateCSprite(sprite, noMargin){
         const margin = noMargin ? 0 : 10;
         const lifeStage = PetDefinition._getLifeStage(sprite);
-        if(lifeStage == 0) return `<c-sprite width="16" height="16" index="0" src="${sprite}" pos-x="0" pos-y="0" style="margin-right: ${margin}px;"></c-sprite>`;
-        if(lifeStage == 1) return `<c-sprite width="16" height="16" index="0" src="${sprite}" pos-x="4" pos-y="4" style="margin-right: ${margin}px;"></c-sprite>`;
-        return `<c-sprite width="20" height="20" index="0" src="${sprite}" pos-x="6" pos-y="4" style="margin-right: ${margin}px;"></c-sprite>`;
+        switch(lifeStage){
+            case PetDefinition.LIFE_STAGE.baby:
+                return `<c-sprite width="16" height="16" index="0" src="${sprite}" pos-x="0" pos-y="0" style="margin-right: ${margin}px;"></c-sprite>`;
+            case PetDefinition.LIFE_STAGE.child:
+            case PetDefinition.LIFE_STAGE.teen:
+                return `<c-sprite width="16" height="16" index="0" src="${sprite}" pos-x="4" pos-y="4" style="margin-right: ${margin}px;"></c-sprite>`;
+            default:
+                return `<c-sprite width="20" height="20" index="0" src="${sprite}" pos-x="6" pos-y="4" style="margin-right: ${margin}px;"></c-sprite>`;
+        }
     }
 
     static generateFullCSprite(sprite){
         const lifeStage = PetDefinition._getLifeStage(sprite);
-        if(lifeStage == 0) return `<c-sprite width="16" height="16" index="0" src="${sprite}" pos-x="0" pos-y="0"></c-sprite>`;
-        if(lifeStage == 1) return `<c-sprite width="24" height="24" index="0" src="${sprite}" pos-x="0" pos-y="0"></c-sprite>`;
-        return `<c-sprite width="32" height="32" index="0" src="${sprite}" pos-x="0" pos-y="0"></c-sprite>`;
+
+        switch(lifeStage){
+            case PetDefinition.LIFE_STAGE.baby:
+                return `<c-sprite width="16" height="16" index="0" src="${sprite}" pos-x="0" pos-y="0"></c-sprite>`;
+            case PetDefinition.LIFE_STAGE.child:
+            case PetDefinition.LIFE_STAGE.teen:
+                return `<c-sprite width="24" height="24" index="0" src="${sprite}" pos-x="0" pos-y="0"></c-sprite>`;
+            default:
+                return `<c-sprite width="32" height="32" index="0" src="${sprite}" pos-x="0" pos-y="0"></c-sprite>`;
+        }
     }
 
     static _getLifeStage(sprite){
-        if(PET_BABY_CHARACTERS.some(char => char === sprite)) return 0;
-        else if(PET_TEEN_CHARACTERS.some(char => char === sprite)) return 1;
-        return 2;
+        if(PET_BABY_CHARACTERS.some(char => char === sprite)) return PetDefinition.LIFE_STAGE.baby;
+        else if(PET_TEEN_CHARACTERS.some(char => char === sprite)) return PetDefinition.LIFE_STAGE.teen;
+        else if(PET_CHILD_CHARACTERS.some(char => char === sprite)) return PetDefinition.LIFE_STAGE.child;
+        else if(PET_ELDER_CHARACTERS.some(char => char === sprite)) return PetDefinition.LIFE_STAGE.elder;
+        return PetDefinition.LIFE_STAGE.adult;
     }
 
     static getCharCode(sprite){
@@ -647,5 +698,13 @@ class PetDefinition {
         const sprite = pRandomFromArray(spritesArray) || spritesArray[0];
         pRandom.load();
         return sprite;
+    }
+
+    static LIFE_STAGE = {
+        baby: 0,
+        child: 0.5,
+        teen: 1,
+        adult: 2,
+        elder: 3,
     }
 }

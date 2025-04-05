@@ -7,14 +7,36 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
-    <div style="margin-bottom: 15px;width: 100%;font-family: monospace;">
-        <b>Tamaweb Growth Chart</b> | 
-        Green: High Care | Yellow: Medium Care | Red: Low Care
+    <div class="content">
+        <div style="margin-bottom: 15px;width: 100%;font-family: monospace;display: flex;align-items: center;justify-content: space-between;">
+            <h2>Tamaweb Growth Chart</h2>
+            <div>
+                <span class="high-care">Green: High Care</span>
+                |
+                <span class="med-care">Yellow: Medium Care</span>
+                |
+                <span class="low-care">Red: Low Care</span>
+            </div>
+        </div>
+        <div>
+            <h3>
+                <span>Baby ⤳ Child</span>
+            </h3>
+            <div class="container babies"></div>
+        </div>
+        <div>
+            <h3>Child ⤳ Teen</h3>
+            <div class="container children"></div>
+        </div>
+        <div>
+            <h3>Teen ⤳ Adult</h3>
+            <div class="container teens"></div>
+        </div>
+        <div>
+            <h3>Adult ⤳ Elder</h3>
+            <div class="container elders"></div>
+        </div>
     </div>
-
-    <div class="babies"></div>
-    <div class="teens"></div>
 
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="../src/Utils.js"></script>

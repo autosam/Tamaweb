@@ -95,7 +95,19 @@ let growthChart = {};
 function generateTree(char, lifeStage, parent){
     let possibleChars = [];
     if(lifeStage == 0){
-        for(let i = 0; i < 8; i++){
+        for(let i = 0; i < 3; i++){
+            let tries = 10000;
+            let char = pRandomFromArray(PET_CHILD_CHARACTERS);
+            while(evolvedChars.indexOf(char) !== -1 && tries--){
+                char = pRandomFromArray(PET_CHILD_CHARACTERS);
+            }
+            possibleChars.push(char);
+            evolvedChars.push(char);
+        }
+    }
+
+    if(lifeStage == 0.5){
+        for(let i = 0; i < 3; i++){
             let tries = 10000;
             let char = pRandomFromArray(PET_TEEN_CHARACTERS);
             while(evolvedChars.indexOf(char) !== -1 && tries--){
@@ -118,17 +130,43 @@ function generateTree(char, lifeStage, parent){
         }
     }
 
+    if(lifeStage == 2){
+        for(let i = 0; i < 1; i++){
+            let tries = 10000;
+            let char = pRandomFromArray(PET_ELDER_CHARACTERS);
+            while(evolvedChars.indexOf(char) !== -1 && tries--){
+                char = pRandomFromArray(PET_ELDER_CHARACTERS);
+            }
+            possibleChars.push(char);
+            evolvedChars.push(char);
+        }
+    }
+
     growthChart[char] = possibleChars;
 
     let container = document.createElement('div');
         container.className = 'char-container';
     container.innerHTML = `${getCSprite(char)} ⤳`;
 
-    if(lifeStage == 0){
+   /*  if(lifeStage == 0){
+        possibleChars.forEach((c, i) => {
+            container.innerHTML += getCSprite(c, i >= 4 ? 'high-care' : 'low-care');
+        })
+    } else if(lifeStage == 0.5){
         possibleChars.forEach((c, i) => {
             container.innerHTML += getCSprite(c, i >= 4 ? 'high-care' : 'low-care');
         })
     } else if(lifeStage == 1){
+        possibleChars.forEach((c, i) => {
+            var cls = 'high-care';
+            if(i == 0) cls = 'low-care';
+            else if(i == 1) cls = 'med-care';
+
+            container.innerHTML += getCSprite(c, cls);
+        })
+    } */
+
+    if(lifeStage <= 2){
         possibleChars.forEach((c, i) => {
             var cls = 'high-care';
             if(i == 0) cls = 'low-care';
@@ -164,7 +202,9 @@ function getCSprite(char, cls){
     if(n >= 17) size = 24;
     if(n >= 133) size = 32;
 
-    return `<c-sprite title="${char}" onclick="toggleCSpriteVisibility('${char}')" width="${size}" height="${size}" src="/${char}" class="${cls}"></c-sprite>`
+    const nChar = `../${char}`;
+
+    return `<c-sprite title="${nChar}" onclick="toggleCSpriteVisibility('${nChar}')" width="${size}" height="${size}" src="/${nChar}" class="${cls}"></c-sprite>`
 }
 
 // PET_BABY_CHARACTERS.forEach(char => {
@@ -179,13 +219,22 @@ PET_BABY_CHARACTERS.forEach((char, i) => {
     let cont = generateTree(char, 0, document.querySelector('.babies'));
 })
 
+PET_CHILD_CHARACTERS.forEach(char => {
+    generateTree(char, 0.5, document.querySelector('.children'));
+})
+
 PET_TEEN_CHARACTERS.forEach(char => {
     generateTree(char, 1, document.querySelector('.teens'));
 })
 
+PET_ADULT_CHARACTERS.forEach(char => {
+    generateTree(char, 2, document.querySelector('.elders'));
+})
+
 let all = [...PET_BABY_CHARACTERS, ...PET_TEEN_CHARACTERS, ...PET_ADULT_CHARACTERS];
 
-console.log(JSON.stringify(growthChart));
+console.log('growth chart:');
+console.log(JSON.stringify(growthChart).replaceAll('resources/img/character/chara_', '%'));
 
 let allContainer = document.createElement('div');
     allContainer.className = 'all-cont';
