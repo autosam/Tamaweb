@@ -2816,9 +2816,12 @@ let App = {
 
                 // 50% off on sales day
                 let price = current.price;
-                if(sellMode) price = current.cookableOnly 
+                if(sellMode) {
+                    if(current.price === 0) continue;
+                    price = current.cookableOnly 
                     ? Math.floor(price * 1.5) 
                     : Math.floor(price * 0.75);
+                }
                 if(salesDay) price = Math.round(price / 2);
 
                 list.push({
