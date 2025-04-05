@@ -2412,49 +2412,73 @@ let App = {
                 },
                 { type: 'separator' },
                 {
-                    name: 'get save code',
-                    onclick: async () => {
-                        // let charCode = 'save:' + btoa(JSON.stringify(window.localStorage));
-                        // let charCode = `save:${btoa(encodeURIComponent(JSON.stringify(window.localStorage)))}:endsave`;
-                        const loadingPopup = App.displayPopup('loading...');
-                        const storage = await App.getDBItems();
-                        loadingPopup.close();
-                        const serializableStorage = Object.assign({}, storage);
-                        const unserializableAttributes = ['shell_background_v2.1', 'mods'];
-                        unserializableAttributes.forEach(attribute => delete serializableStorage[attribute]);
-                        const charCode = `save:${btoa(encodeURIComponent(JSON.stringify(serializableStorage)))}:endsave`;
-                        App.displayConfirm(`Here you'll be able to copy your unique save code and continue your playthrough on another device`, [
+                    name: `save code ${App.getBadge()}`,
+                    onclick: () => {
+                        return App.displayList([
                             {
-                                name: 'ok',
+                                name: `<i class="fa-solid fa-download icon"></i> <label class="custom-file-upload"><input id="save-file" type="file"></input>Import</label> ${App.getBadge()}`,
+                                _mount: (element) => {
+                                    const input = element.querySelector('#save-file');
+                                    App.handleFileLoad(input, 'readAsText', (data) => {
+                                        App.handleInputCode(data);
+                                        input.files = new DataTransfer().files;
+                                        return true;
+                                    })
+                                },
                                 onclick: () => {
-                                    App.displayConfirm(`After copying the code, open Tamaweb on another device and paste the code in <b>settings > input code</b>`, [
+                                    return true;
+                                }
+                            },
+                            {
+                                name: `<i class="fa-solid fa-upload icon"></i> Export ${App.getBadge()}`,
+                                onclick: async () => {
+                                    const loadingPopup = App.displayPopup('loading...');
+                                    const code = await App.getSaveCode();
+                                    loadingPopup.close();
+                                    downloadTextFile(`${App.petDefinition.name}_${generateTimestamp()}.tws`, code);
+                                }
+                            },
+                            {
+                                name: `<i class="fa-solid fa-copy icon"></i> copy`,
+                                onclick: async () => {
+                                    const loadingPopup = App.displayPopup('loading...');
+                                    const charCode = await App.getSaveCode();
+                                    loadingPopup.close();
+                                    App.displayConfirm(`Here you'll be able to copy your unique save code and continue your playthrough on another device`, [
                                         {
                                             name: 'ok',
                                             onclick: () => {
-                                                try {
-                                                    if(App.isOnItch) throw 'itch_clipboard';
-                                                    navigator.clipboard.writeText(charCode);
-                                                    console.log('save code copied', charCode);
-                                                    App.displayPopup('Save code copied!', 1000);
-                                                } catch(e) {
-                                                    const prompt = App.displayPrompt(`Copy your save code from the box below:<br><small><i class="fa-solid fa-info-circle"></i> starts with <b>save:</b> and ends with <b>:endsave</b></small>`, [
-                                                        {
-                                                            name: 'Ok, I copied',
-                                                            class: 'back-btn',
-                                                            onclick: () => {}
+                                                App.displayConfirm(`After copying the code, open Tamaweb on another device and paste the code in <b>settings > input code</b>`, [
+                                                    {
+                                                        name: 'ok',
+                                                        onclick: () => {
+                                                            try {
+                                                                if(App.isOnItch) throw 'itch_clipboard';
+                                                                navigator.clipboard.writeText(charCode);
+                                                                console.log('save code copied', charCode);
+                                                                App.displayPopup('Save code copied!', 1000);
+                                                            } catch(e) {
+                                                                const prompt = App.displayPrompt(`Copy your save code from the box below:<br><small><i class="fa-solid fa-info-circle"></i> starts with <b>save:</b> and ends with <b>:endsave</b></small>`, [
+                                                                    {
+                                                                        name: 'Ok, I copied',
+                                                                        class: 'back-btn',
+                                                                        onclick: () => {}
+                                                                    }
+                                                                ], charCode);
+                                                                const input = prompt.querySelector('input');
+                                                                input.focus();
+                                                                input.select();
+                                                            }
                                                         }
-                                                    ], charCode);
-                                                    const input = prompt.querySelector('input');
-                                                    input.focus();
-                                                    input.select();
-                                                }
+                                                    },
+                                                ]);
                                             }
                                         },
                                     ]);
+                                    return true;
                                 }
                             },
-                        ]);
-                        return true;
+                        ])
                     }
                 },
                 {
@@ -5517,6 +5541,16 @@ let App = {
         }
 
         callbackFn?.();
+    },
+    getSaveCode: async function(){
+        // let charCode = 'save:' + btoa(JSON.stringify(window.localStorage));
+        // let charCode = `save:${btoa(encodeURIComponent(JSON.stringify(window.localStorage)))}:endsave`;
+        const storage = await App.getDBItems();
+        const serializableStorage = Object.assign({}, storage);
+        const unserializableAttributes = ['shell_background_v2.1', 'mods'];
+        unserializableAttributes.forEach(attribute => delete serializableStorage[attribute]);
+        const charCode = `save:${btoa(encodeURIComponent(JSON.stringify(serializableStorage)))}:endsave`;
+        return charCode;
     },
     vibrate: function(dur){
         if(!navigator?.vibrate || !App.settings.vibrate) return;
