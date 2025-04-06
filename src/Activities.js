@@ -1040,7 +1040,7 @@ class Activities {
         stirringSpeed = 0.001,
         skipCamera, 
         resultFoodName,
-    }){
+    } = {}){
         App.closeAllDisplays();
         App.pet.triggerScriptedState('idle', App.INF, 0, false);
         App.sendAnalytics('cooking_game', resultFoodName || '');
