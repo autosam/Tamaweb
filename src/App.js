@@ -5726,6 +5726,10 @@ let App = {
             App.checkPetStats()
         }, 10000)
     },
+    getEncodedInputCode: (code) => {
+        const encoded = `${App.constants.INPUT_BASE_64}${btoa(code)}`;
+        return encoded;
+    },
     getIcon: function(iconName, noRightMargin){
         return `<i class="fa-solid fa-${iconName}" style="${!noRightMargin ? 'margin-right:10px' : ''}"></i>`
     },
