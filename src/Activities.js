@@ -342,7 +342,11 @@ class Activities {
         App.pet.x = '100%';
         App.pet.targetX = 50;
 
-        const displayPlantsList = ({onPlantClick, filterFn = () => true}) => {
+        const displayPlantsList = ({
+            onPlantClick, 
+            filterFn = () => true, 
+            additionalStartOptions = [],
+        }) => {
             const allPlantsList = App.plants
                 .filter(filterFn)
                 .map((currentPlant, currentPlantIndex) => {
@@ -351,7 +355,7 @@ class Activities {
                         onclick: () => onPlantClick(currentPlant, currentPlantIndex)
                     }
                 })
-            return App.displayList(allPlantsList)
+            return App.displayList([...additionalStartOptions, ...allPlantsList]);
         }
 
         App.toggleGameplayControls(false, () => {
@@ -441,6 +445,34 @@ class Activities {
                     _disable: !App.plants.length,
                     onclick: () => {
                         displayPlantsList({
+                            additionalStartOptions: App.plants.some(p => p.isDead) ? [
+                                {
+                                    name: '<span style="color: red;"><i class="icon fa-solid fa-skull icon"></i> Dead ones</span>',
+                                    onclick: () => {
+                                        return App.displayConfirm(`Are you sure you want to remove all dead plants?`, [
+                                            {
+                                                name: 'yes',
+                                                onclick: () => {
+                                                    while(true){
+                                                        const deadPlantIndex = App.plants.findIndex(p => p.isDead);
+                                                        if(deadPlantIndex === -1) break;
+                                                        App.plants.splice(deadPlantIndex, 1);
+                                                    }
+                                                    App.handleGardenPlantsSpawn(true);
+                                                    App.closeAllDisplays();
+                                                    Activities.task_floatingObjects(10, ['resources/img/misc/remove_red_01.png']);
+                                                }
+                                            },
+                                            {
+                                                name: 'no',
+                                                class: 'back-btn',
+                                                onclick: () => {}
+                                            },
+                                        ])
+                                    }
+                                },
+                                // {type: 'separator',}
+                            ] : [],
                             onPlantClick: (plant, plantIndex) => {
                                 return App.displayConfirm(`Are you sure you want to remove <b>${plant.name} (${Plant.AGE_LABELS[plant.age]})</b>?`, [
                                     {

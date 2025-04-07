@@ -26,9 +26,10 @@ class Plant {
     checkForProgress(){
         const now = Date.now();
 
-        this.isWatered = (now - this.lastWatered) < this.wateredDuration || App.isWeatherEffectActive();
+        if(App.isWeatherEffectActive()) this.water(now);
 
-        // console.log((Date.now() - (this.lastGrowthTime + this.growthDelay)) / 60);
+        this.isWatered = (now - this.lastWatered) < this.wateredDuration;
+
         if((now - this.lastWatered) > this.deathDuration){
             this.age = Plant.AGE.dead;
             return;
@@ -41,8 +42,8 @@ class Plant {
             this.age = clamp(this.age + 1, Plant.AGE.seedling, Plant.AGE.grown);
         }
     }
-    water(){
-        this.lastWatered = Date.now();
+    water(now = Date.now()){
+        this.lastWatered = now;
     }
     get isDead(){
         return this.age === Plant.AGE.dead;
@@ -112,6 +113,7 @@ class Plant {
     _reset(){
         this.age = Plant.AGE.seedling;
         this.lastGrowthTime = Date.now();
+        this.lastWatered = Date.now() - this.wateredDuration;
     }
     static getDefinitionByName(name){
         return App.definitions.plant[name];
