@@ -458,6 +458,10 @@ class PetDefinition {
 
         switch(this.lifeStage){
             case PetDefinition.LIFE_STAGE.adult:
+                if(
+                    isNpc && 
+                    App.petDefinition?.getLifeStage() !== PetDefinition.LIFE_STAGE.elder
+                ) return false;
                 return [possibleEvolutions[0]];
             case PetDefinition.LIFE_STAGE.baby:
             case PetDefinition.LIFE_STAGE.child:

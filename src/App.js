@@ -55,11 +55,11 @@ let App = {
         MANUAL_AGE_HOURS_BABY: 6,
         MANUAL_AGE_HOURS_CHILD: 9,
         MANUAL_AGE_HOURS_TEEN: 12,
-        MANUAL_AGE_HOURS_ADULT: 48,
+        MANUAL_AGE_HOURS_ADULT: 72,
         AUTO_AGE_HOURS_BABY: 24,
         AUTO_AGE_HOURS_CHILD: 36,
         AUTO_AGE_HOURS_TEEN: 48,
-        AUTO_AGE_HOURS_ADULT: 168, // a week
+        AUTO_AGE_HOURS_ADULT: 336, // 14 days
         WANT_TYPES: {
             food: 'food',
             playdate: 'playdate',

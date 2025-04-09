@@ -30,14 +30,14 @@ class Plant {
 
         this.isWatered = (now - this.lastWatered) < this.wateredDuration;
 
-        if((now - this.lastWatered) > this.deathDuration){
+        if (now > this.lastWatered + this.wateredDuration + this.deathDuration) {
             this.age = Plant.AGE.dead;
             return;
         }
 
         if([Plant.AGE.grown, Plant.AGE.dead].includes(this.age)) return;
 
-        while (this.lastGrowthTime + this.growthDelay < Date.now() && this.age !== Plant.AGE.grown) {
+        while (this.lastGrowthTime + this.growthDelay < now && this.age !== Plant.AGE.grown) {
             this.lastGrowthTime += this.growthDelay;
             this.age = clamp(this.age + 1, Plant.AGE.seedling, Plant.AGE.grown);
         }
