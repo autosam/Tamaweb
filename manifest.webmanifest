@@ -4,6 +4,7 @@
   "id": "tamaweb",
   "description": "Virtual Pet Game",
   "start_url": "index.html",
+  "scope": "/",
   "display": "standalone",
   "display_override": ["standalone", "fullscreen", "window-controls-overlay"],
   "dir": "auto",
