@@ -202,7 +202,7 @@ function getCSprite(char, cls){
     if(n >= 17) size = 24;
     if(n >= 133) size = 32;
 
-    const nChar = `../${char}`;
+    const nChar = `./${char}`;
 
     return `<c-sprite title="${nChar}" onclick="toggleCSpriteVisibility('${nChar}')" width="${size}" height="${size}" src="/${nChar}" class="${cls}"></c-sprite>`
 }
