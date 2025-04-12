@@ -2,6 +2,7 @@ let App = {
     PI2: Math.PI * 2, INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', userName: null, ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
     gameEventsHistory: {}, deferredInstallPrompt: null, shellBackground: '', isOnItch: false, isOnElectronClient: false, hour: 12,
     misc: {}, mods: [], records: {}, temp: {}, ownedFurniture: [], plants: [],
+    searchParams: new URLSearchParams(location.search),
     settings: {
         screenSize: 1,
         playSound: true,
@@ -86,6 +87,8 @@ let App = {
         // window load events
         this.registerLoadEvents();
 
+        App.isViewOnlyMode = App.searchParams.has('view_mode');
+
         // check for platforms
         if(location.host.indexOf('itch') !== -1) App.isOnItch = true;
         if(navigator?.userAgent == 'electron-client') App.isOnElectronClient = true;
@@ -110,6 +113,9 @@ let App = {
             loadedData = this.legacy_load();
         }
         console.log({loadedData});
+        if(App.isViewOnlyMode){
+            App.applyViewMode(loadedData);
+        }
 
         // shell background
         this.setShellBackground(loadedData.shellBackground);
@@ -430,7 +436,7 @@ let App = {
         const graphicsWrapper = document.querySelector('.graphics-wrapper');
 
         // fullscreen param
-        const isFullscreen = new URLSearchParams(location.search).has('fullscreen');
+        const isFullscreen = App.searchParams.has('fullscreen');
         if(isFullscreen) graphicsWrapper.classList.add('fullscreen');
 
         // background
@@ -773,6 +779,8 @@ let App = {
         }
     },
     handleInGameEvents: function(){
+        if(App.isViewOnlyMode) return;
+
         if(!App.awayTime || App.awayTime === -1) {
             App.handlers.show_onboarding();
             return;
@@ -1447,6 +1455,34 @@ let App = {
             lastBirthday: petDef.lastBirthday,
         }
     },
+    getViewMode: function(){
+        const data = {
+            name: App.petDefinition.name,
+            sprite: App.petDefinition.sprite,
+            accessories: App.petDefinition.accessories,
+            room: App.scene.home.image,
+            furniture: App.ownedFurniture
+        }
+        return `${location.origin}/?fullscreen&view_mode=${JSON.stringify(data)}`;
+    },
+    applyViewMode: function(loadedData){
+        const data = JSON.parse(App.searchParams.get('view_mode'));
+        loadedData.pet = {
+            name: data.name,
+            sprite: data.sprite,
+            accessories: data.accessories,
+            stats: {
+                is_egg: false
+            },
+        }
+        loadedData.roomCustomizations = {
+            home: {image: data.room},
+        }
+        loadedData.furniture = data.furniture;
+        const keepHappyInterval = setInterval(() => {
+            App.petDefinition?.maxStats?.();
+        }, 500);
+    },
     createActivePet: function(petDef, props = {}){
         if(petDef.sprite){
             App.addEvent(`${App.constants.CHAR_UNLOCK_PREFIX}_${PetDefinition.getCharCode(petDef.sprite)}`)
@@ -1484,6 +1520,8 @@ let App = {
         App.registerOnDrawEvent(checkForDecentTime);
     },
     runRandomEncounters: function(){
+        if(App.isViewOnlyMode) return;
+
         if(
             App.pet.stats.is_egg ||
             App.pet.stats.is_at_parents ||
@@ -1708,6 +1746,8 @@ let App = {
             [...container.querySelectorAll('.news-close')].forEach(btn => btn.onclick = container.close);
         },
         open_main_menu: function(){
+            if(App.isViewOnlyMode) return;
+
             const runControlOverwrite = () => {
                 if(!App.gameplayControlsOverwrite) return;
                 App.playSound(`resources/sounds/ui_click_01.ogg`, true);
@@ -5369,6 +5409,8 @@ let App = {
         } catch(e) {}
     },
     save: function(noIndicator){
+        if(App.isViewOnlyMode) return;
+
         const setItem = (key, value) => {
             return App.dbStore.setItem(key, value);
         }
@@ -5408,6 +5450,7 @@ let App = {
     load: async function() {
         const getItem = async (key, defaultValue) => {
             const value = await App.dbStore.getItem(key);
+            if(App.isViewOnlyMode && key !== 'last_time') return defaultValue;
             return value !== null ? value : defaultValue;
         }
 
@@ -5810,6 +5853,7 @@ let App = {
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     App.deferredInstallPrompt = e;
+    if(App.isViewOnlyMode) return;
 
     const showInstallPrompt = () => {
         App.addEvent(`pwa_install_notice_01`, () => {
