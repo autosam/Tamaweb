@@ -3215,6 +3215,8 @@ let App = {
 
             const UID = App.userName ? `${(App.userName ?? '') + '-' + App.userId?.toString().slice(0, 5)}` : '';
 
+            const playTimeDuration = moment.duration(App.playTime);
+
             const list = UI.genericListContainer();
             const content = UI.empty('flex flex-dir-col flex-1');
             content.innerHTML = `
@@ -3234,6 +3236,12 @@ let App = {
                             <img src="${icon.img}"></img>
                         </div>`
                     }).join('')}
+                    </div>
+                </div>
+                <div class="user-id surface-stylized inner-padding text-transform-none">
+                    <div class="flex flex-dir-col">
+                        <small>play time:</small>
+                        <span>${Math.floor(playTimeDuration.asHours())} hours and ${playTimeDuration.minutes()} minutes</span>
                     </div>
                 </div>
                 <div class="user-id surface-stylized inner-padding text-transform-none">
