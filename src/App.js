@@ -440,6 +440,7 @@ let App = {
         document.querySelector('.loading-text').style.background = this.settings.backgroundColor;
 
         // screen size
+        this.settings.screenSize = clamp(this.settings.screenSize, 0.6, 5);
         graphicsWrapper.style.transform = `scale(${this.settings.screenSize})`;
         document.querySelector('.dom-shell').style.transform = `scale(${this.settings.screenSize})`;
         
