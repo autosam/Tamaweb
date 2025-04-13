@@ -439,6 +439,8 @@ let App = {
         const isFullscreen = App.searchParams.has('fullscreen');
         if(isFullscreen) graphicsWrapper.classList.add('fullscreen');
 
+        if(App.isViewOnlyMode) return;
+
         // background
         document.body.style.backgroundColor = this.settings.backgroundColor;
         const metaThemeColor = document.querySelector('meta[name="theme-color"]');
@@ -1745,8 +1747,14 @@ let App = {
 
             [...container.querySelectorAll('.news-close')].forEach(btn => btn.onclick = container.close);
         },
+        open_view_mode_info: function(){
+            App.displayPopup(`Tamaweb is a virtual pet game for Web, PC and mobile.<br>Start raising your own pet here: <a href="#"></a>`)
+        },
         open_main_menu: function(){
-            if(App.isViewOnlyMode) return;
+            if(App.isViewOnlyMode) {
+                Activities.task_floatingHearts();
+                return;
+            }
 
             const runControlOverwrite = () => {
                 if(!App.gameplayControlsOverwrite) return;

@@ -2186,3 +2186,13 @@ a {
 .seller-analysis.positive:after {
     content: "\f0d8";
 }
+
+/* view mode */
+.view-mode-overlay {
+    position: absolute;
+    cursor: pointer;
+    border-bottom-right-radius: 10px;
+}
+.view-mode-overlay:hover {
+    background-color: rgba(0, 0, 0, 0.2);
+}
