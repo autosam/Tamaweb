@@ -66,11 +66,17 @@ export function ResourceRow({ onDelete, index, rowData }) {
                         { label: 'Babies', disabled: true },
                         ...PET_BABY_CHARACTERS,
 
+                        { label: 'Children', disabled: true },
+                        ...PET_CHILD_CHARACTERS,
+
                         { label: 'Teens', disabled: true },
                         ...PET_TEEN_CHARACTERS,
 
                         { label: 'Adults', disabled: true },
                         ...PET_ADULT_CHARACTERS,
+
+                        { label: 'Elders', disabled: true },
+                        ...PET_ELDER_CHARACTERS,
                     ]}
                     getOptionDisabled={(option) => option.disabled}
                     sx={{ width: 400 }}
