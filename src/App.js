@@ -1,7 +1,11 @@
-let App = {
-    PI2: Math.PI * 2, INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', userName: null, ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
-    gameEventsHistory: {}, deferredInstallPrompt: null, shellBackground: '', isOnItch: false, isOnElectronClient: false, hour: 12,
-    misc: {}, mods: [], records: {}, temp: {}, ownedFurniture: [], plants: [],
+const App = {
+    PI2: Math.PI * 2, INF: 999999999,
+    deltaTime: 0, lastTime: 0, playTime: 0, hour: 12,
+    mouse: { x: 0, y: 0 },
+    userId: '_', userName: null, sessionId: Math.round(Math.random() * 9999999999),
+    ENV: location.port == 5500 ? 'dev' : 'prod', isOnItch: false, isOnElectronClient: false,
+    shellBackground: '', deferredInstallPrompt: null,
+    gameEventsHistory: {}, misc: {}, mods: [], records: {}, temp: {}, ownedFurniture: [], plants: [],
     settings: {
         screenSize: 1,
         playSound: true,
@@ -3216,6 +3220,8 @@ let App = {
 
             const UID = App.userName ? `${(App.userName ?? '') + '-' + App.userId?.toString().slice(0, 5)}` : '';
 
+            const playTimeDuration = moment.duration(App.playTime);
+
             const list = UI.genericListContainer();
             const content = UI.empty('flex flex-dir-col flex-1');
             content.innerHTML = `
@@ -3235,6 +3241,12 @@ let App = {
                             <img src="${icon.img}"></img>
                         </div>`
                     }).join('')}
+                    </div>
+                </div>
+                <div class="user-id surface-stylized inner-padding text-transform-none">
+                    <div class="flex flex-dir-col">
+                        <small>play time:</small>
+                        <span>${Math.floor(playTimeDuration.asHours())} hours and ${playTimeDuration.minutes()} minutes</span>
                     </div>
                 </div>
                 <div class="user-id surface-stylized inner-padding text-transform-none">
@@ -5726,6 +5738,10 @@ let App = {
         setTimeout(() => {
             App.checkPetStats()
         }, 10000)
+    },
+    getEncodedInputCode: (code) => {
+        const encoded = `${App.constants.INPUT_BASE_64}${btoa(code)}`;
+        return encoded;
     },
     getIcon: function(iconName, noRightMargin){
         return `<i class="fa-solid fa-${iconName}" style="${!noRightMargin ? 'margin-right:10px' : ''}"></i>`
