@@ -1,7 +1,11 @@
 const App = {
-    PI2: Math.PI * 2, INF: 999999999, deltaTime: 0, lastTime: 0, mouse: {x: 0, y: 0}, userId: '_', userName: null, ENV: location.port == 5500 ? 'dev' : 'prod', sessionId: Math.round(Math.random() * 9999999999), playTime: 0,
-    gameEventsHistory: {}, deferredInstallPrompt: null, shellBackground: '', isOnItch: false, isOnElectronClient: false, hour: 12,
-    misc: {}, mods: [], records: {}, temp: {}, ownedFurniture: [], plants: [],
+    PI2: Math.PI * 2, INF: 999999999,
+    deltaTime: 0, lastTime: 0, playTime: 0, hour: 12,
+    mouse: { x: 0, y: 0 },
+    userId: '_', userName: null, sessionId: Math.round(Math.random() * 9999999999),
+    ENV: location.port == 5500 ? 'dev' : 'prod', isOnItch: false, isOnElectronClient: false,
+    shellBackground: '', deferredInstallPrompt: null,
+    gameEventsHistory: {}, misc: {}, mods: [], records: {}, temp: {}, ownedFurniture: [], plants: [],
     settings: {
         screenSize: 1,
         playSound: true,
