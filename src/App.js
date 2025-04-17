@@ -18,6 +18,7 @@ const App = {
         automaticAging: false,
         sleepingHoursOffset: 0,
         classicMainMenuUI: false,
+        isTester: false,
     },
     constants: {
         ONE_HOUR: 1000 * 60 * 60,
@@ -597,6 +598,8 @@ const App = {
         return this.resourceOverrides[res.replace(location.href, '')] || res;
     },
     isTester: function(){
+        if(App.settings.isTester) return true;
+        return false;
         const testers = [
             'Saman', 'samandev',
         ]
@@ -772,6 +775,10 @@ const App = {
                                 onclick: () => {}
                             }
                         ])
+                        break;
+                    case 'settester':
+                        App.settings.isTester = commandPayload === '1';
+                        App.displayPopup(`Set tester: ${App.settings.isTester}`, 1000, () => window.location.reload());
                         break;
                     default: showInvalidError();
                 }
@@ -1945,7 +1952,7 @@ const App = {
             const settings = App.displayList([
                 {
                     _ignore: !App.isTester(),
-                    name: `devtools ${App.getBadge('debug', 'neutral')}`,
+                    name: `<span style="color:red;">devtools</span> ${App.getBadge('debug', 'neutral')}`,
                     onclick: () => {
                         return App.displayList([
                             {
@@ -1981,6 +1988,16 @@ const App = {
                                     ui.appendChild(content);
                                     content.innerHTML = [...total, `total = ${totalText}`].join('<br>');
 
+                                    return true;
+                                }
+                            },
+                            {
+                                name: 'user',
+                                onclick: () => {
+                                    const ui = UI.genericListContainer();
+                                    const content = UI.empty()
+                                    ui.appendChild(content);
+                                    content.innerHTML = `${navigator.userAgent}`;
                                     return true;
                                 }
                             },
