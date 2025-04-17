@@ -382,7 +382,7 @@ class Activities {
                 },
                 {
                     name: 'water',
-                    _disable: !App.plants.some(p => !p.isWatered && !p.isDead),
+                    _disable: !App.plants.some(p => !p.isDead),
                     onclick: async () => {
                         App.closeAllDisplays();
                         const wateringCan = new Object2d({
@@ -393,7 +393,9 @@ class Activities {
                         App.toggleGameplayControls(false);
                         for(let i = 0; i < App.plants.length; i++){
                             const plant = App.plants[i];
-                            if(plant.isWatered || plant.isDead) continue;
+                            // if(plant.isWatered || plant.isDead) continue;
+                            if(plant.isDead) continue;
+
                             wateringCan.x = plant.position.x + 8;
                             wateringCan.y = plant.position.y;
                             await App.wait(500);
