@@ -970,6 +970,7 @@ class Activities {
                     onclick: handleInteract
                 },
                 {
+                    _ignore: true,
                     name: 'sync character',
                     onclick: handleSyncCharacter,
                 },
