@@ -1759,7 +1759,7 @@ const App = {
                     }
                 },
                 {
-                    name: `Garden ${App.getBadge()}`,
+                    name: `Garden`,
                     onclick: () => {
                         Activities.goToInnerGarden();
                     }
@@ -1799,7 +1799,7 @@ const App = {
                     }
                 },
                 {
-                    name: `backyard ${App.getBadge()}`,
+                    name: `backyard`,
                     _ignore: true,
                     onclick: () => {
                         Activities.goToGarden();
@@ -1862,7 +1862,7 @@ const App = {
                     }
                 },
                 {
-                    name: `craft ${App.getBadge()}`,
+                    name: `craft`,
                     onclick: () => {
                         App.handlers.open_craftables_list();
                         return true;
@@ -2348,7 +2348,7 @@ const App = {
                                         return entry.isNew && isUnlocked;
                                     });
                                     console.log({hasNew})
-                                    e.innerHTML = `change shell ${hasNew ? App.getBadge() : ''}`
+                                    e.innerHTML = `change shell ${hasNew ? App.getBadge('new!') : ''}`
                                 },
                                 onclick: () => {
                                     App.handlers.open_shell_background_list();
@@ -2417,11 +2417,11 @@ const App = {
                 },
                 { type: 'separator' },
                 {
-                    name: `save code ${App.getBadge()}`,
+                    name: `save code`,
                     onclick: () => {
                         return App.displayList([
                             {
-                                name: `<i class="fa-solid fa-download icon"></i> <label class="custom-file-upload"><input id="save-file" type="file"></input>Import</label> ${App.getBadge()}`,
+                                name: `<i class="fa-solid fa-download icon"></i> <label class="custom-file-upload"><input id="save-file" type="file"></input>Import</label>`,
                                 _mount: (element) => {
                                     const input = element.querySelector('#save-file');
                                     App.handleFileLoad(input, 'readAsText', (data) => {
@@ -2435,7 +2435,7 @@ const App = {
                                 }
                             },
                             {
-                                name: `<i class="fa-solid fa-upload icon"></i> Export ${App.getBadge()}`,
+                                name: `<i class="fa-solid fa-upload icon"></i> Export`,
                                 onclick: async () => {
                                     const loadingPopup = App.displayPopup('loading...');
                                     const code = await App.getSaveCode();
@@ -2578,7 +2578,7 @@ const App = {
                     }
                 },
                 {
-                    name: `<b>rate us!</b> ${App.getBadge()}`,
+                    name: `<b>rate us!</b>`,
                     onclick: () => App.handlers.show_rating_dialog()
                 },
                 {
@@ -2593,7 +2593,7 @@ const App = {
                 {
                     // _ignore: true,
                     link: App.routes.DISCORD,
-                    name: '<b>join discord</b>',
+                    name: '<b>join <span style="color:#7289da;text-shadow:none;">discord</span></b>',
                     onclick: () => true,
                 },
                 { type: 'separator' },
@@ -3009,7 +3009,7 @@ const App = {
                 {
                     // _ignore: !App.isTester(),
                     _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child,
-                    name: `cook ${App.getBadge()}`,
+                    name: `cook`,
                     onclick: () => {
                         return App.displayList([
                             {
@@ -3029,7 +3029,7 @@ const App = {
                                 }
                             },
                             {
-                                name: `harvests ${App.getBadge()}`,
+                                name: `harvests ${App.getBadge('new!')}`,
                                 onclick: () => {
                                     let allPlants = [];
                                     const getIngredients = (name) => {
@@ -3361,7 +3361,7 @@ const App = {
 
                 list.push({
                     isNew: !!current.isNew,
-                    name: `${iconElement} ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>${buyMode ? `$${price}` : ''}</b> ${current.isNew ? App.getBadge() : ''}`,
+                    name: `${iconElement} ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>${buyMode ? `$${price}` : ''}</b> ${current.isNew ? App.getBadge('new!') : ''}`,
                     onclick: (btn, list) => {
                         if(buyMode){
                             if(App.pet.stats.gold < price){
@@ -3435,7 +3435,7 @@ const App = {
                             : App.getHarvestIcons(current.craftingRecipe, undefined, 'opacity-third')
                     }
                     </b> 
-                    ${current.isNew ? App.getBadge() : ''}
+                    ${current.isNew ? App.getBadge('new!') : ''}
                 `,
                 onclick: () => {
                     if(owned) return App.displayPopup(`You already own the this ${type}!`);
@@ -3528,7 +3528,7 @@ const App = {
                 list.push({
                     // name: `<c-sprite width="22" height="22" index="${(current.sprite - 1)}" src="resources/img/item/items.png"></c-sprite> ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>$${buyMode ? `${price}` : ''}</b>`,
                     isNew: !!current.isNew,
-                    name: `<img style="min-height: 64px" src="${image}"></img> ${room.toUpperCase()} <b>$${price}</b> ${current.isNew ? App.getBadge() : ''}`,
+                    name: `<img style="min-height: 64px" src="${image}"></img> ${room.toUpperCase()} <b>$${price}</b> ${current.isNew ? App.getBadge('new!') : ''}`,
                     onclick: (btn, list) => {
                         if(image === App.scene.home.image){
                             App.displayPopup('You already own this room');
@@ -3563,7 +3563,7 @@ const App = {
             .sort((a, b) => b.isNew - a.isNew)
             .map(current => {
                 return {
-                    name: `<img src="${current.image}"></img>${current.isNew ? App.getBadge() : ''}`,
+                    name: `<img src="${current.image}"></img>${current.isNew ? App.getBadge('new!') : ''}`,
                     onclick: (btn, list) => {
                         App.setShellBackground(current.image);
                         return true;
@@ -3619,7 +3619,7 @@ const App = {
                         </b> 
                         ${
                             current.isNew 
-                            ? App.getBadge() 
+                            ? App.getBadge('new!') 
                             : ''
                         }
                     `,
@@ -3697,7 +3697,7 @@ const App = {
                     owned ? 'OWNED' : `$${price}`
                 }
                 </b> 
-                ${current.isNew ? App.getBadge() : ''}
+                ${current.isNew ? App.getBadge('new!') : ''}
                 `
 
 
@@ -3831,7 +3831,7 @@ const App = {
                     }
                 },
                 {
-                    name: `market ${App.getBadge()}`,
+                    name: `market`,
                     onclick: () => {
                         Activities.goToMarket();
                     }
@@ -3844,7 +3844,7 @@ const App = {
                 },
                 {
                     _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child,
-                    name: `<span class="ellipsis">Homeworld Getaways</span> ${App.getBadge()}`,
+                    name: `<span class="ellipsis">Homeworld Getaways</span>`,
                     onclick: () => {
                         return App.handlers.open_rabbitholes_list();
                     }
@@ -4573,14 +4573,14 @@ const App = {
 
             App.displayList([
                 {
-                    name: `buy items ${hasNewItem ? App.getBadge() : ''}`,
+                    name: `buy items ${hasNewItem ? App.getBadge('new!') : ''}`,
                     onclick: () => {
                         App.handlers.open_item_list(true);
                         return true;
                     }
                 },
                 {
-                    name: `buy accessories ${hasNewAccessory ? App.getBadge() : ''}`,
+                    name: `buy accessories ${hasNewAccessory ? App.getBadge('new!') : ''}`,
                     onclick: () => {
                         App.handlers.open_accessory_list(true);
                         if(App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult){
@@ -4590,7 +4590,7 @@ const App = {
                     }
                 },
                 {
-                    name: `redécor room ${hasNewDecor ? App.getBadge() : ''}`,
+                    name: `redécor room ${hasNewDecor ? App.getBadge('new!') : ''}`,
                     onclick: () => {
                         return App.displayList([
                             {
@@ -4641,14 +4641,14 @@ const App = {
                     }
                 },
                 {
-                    name: `purchase seeds ${App.getBadge()}`,
+                    name: `purchase seeds`,
                     onclick: () => {
                         App.handlers.open_seed_list(true, null, "med");
                         return true;
                     }
                 },
                 {
-                    name: `sell ${App.getBadge()}`,
+                    name: `sell`,
                     onclick: () => {
                         App.handlers.open_sell_list();
                         return true;
