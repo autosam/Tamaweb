@@ -3985,6 +3985,7 @@ const App = {
                                                 endTime: Date.now() + hole.duration
                                             }
                                             Activities.goToCurrentRabbitHole(true);
+                                            App.save();
                                             App.closeAllDisplays();
                                             App.sendAnalytics('rabbit_hole', hole.name);
                                         }
