@@ -165,46 +165,64 @@ class Pet extends Object2d {
         }
     }
     handleDead(){
+        const me = this;
         this.x = -600;
 
         App.toggleGameplayControls(false, () => {
-            // App.displayPopup('dead');
-            App.displayConfirm(`Do you want to receive a new egg?`, [
-                {
-                    name: 'yes',
-                    onclick: () => {
-                        const lastPet = App.petDefinition;
-                        App.pet.removeObject();
-                        App.petDefinition = new PetDefinition({
-                            name: getRandomName(),
-                            sprite: randomFromArray(PET_BABY_CHARACTERS),
-                        }).setStats({is_egg: true});
+            const handleReceiveEgg = () => {
+                const lastPet = App.petDefinition;
+                App.pet.removeObject();
+                App.petDefinition = new PetDefinition({
+                    name: getRandomName(),
+                    sprite: randomFromArray(PET_BABY_CHARACTERS),
+                }).setStats({is_egg: true});
 
-                        App.petDefinition.inventory = lastPet.inventory;
-                        App.petDefinition.stats.gold = lastPet.stats.gold;
-                        App.petDefinition.deceasedPredecessors = [...lastPet.deceasedPredecessors, 
-                            {
-                                birthday: lastPet.birthday,
-                                family: lastPet.family,
-                                sprite: lastPet.sprite,
-                                name: lastPet.name,
-                            }
-                        ];
-
-                        App.pet = App.createActivePet(App.petDefinition);
-                        setTimeout(() => {
-                            Activities.playEggUfoAnimation(() => App.handlers.show_set_pet_name_dialog());
-                        }, 100);
-                        App.setScene(App.scene.home);
-                        App.toggleGameplayControls(true);
+                App.petDefinition.inventory = lastPet.inventory;
+                App.petDefinition.stats.gold = lastPet.stats.gold;
+                App.petDefinition.deceasedPredecessors = [...lastPet.deceasedPredecessors, 
+                    {
+                        birthday: lastPet.birthday,
+                        family: lastPet.family,
+                        sprite: lastPet.sprite,
+                        name: lastPet.name,
                     }
-                },
-                {
-                    name: 'no',
-                    class: 'back-btn',
-                    onclick: () => { }
-                },
-            ], false);
+                ];
+
+                App.pet = App.createActivePet(App.petDefinition);
+                setTimeout(() => {
+                    Activities.playEggUfoAnimation(() => App.handlers.show_set_pet_name_dialog());
+                }, 100);
+                App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
+            }
+
+            if(App.pet.stats.is_revived_once){
+                App.displayConfirm(`Do you want to receive a new egg?`, [
+                    {
+                        name: 'yes',
+                        onclick: handleReceiveEgg
+                    },
+                    {
+                        name: 'no',
+                        class: 'back-btn',
+                        onclick: () => { }
+                    },
+                ], false);
+            } else {
+                App.displayConfirm(`<b>${App.petDefinition.name}</b> is dead but you can choose to revive them only <b>once</b>, do you want to revive them?`, [
+                    {
+                        name: 'revive',
+                        onclick: () => {
+                            Activities.revive()
+                        }
+                    },
+                    {
+                        name: 'get a new egg',
+                        onclick: handleReceiveEgg
+                    }
+                ])
+            }
+
         })
 
         if(!this.ghostObject){
@@ -212,11 +230,14 @@ class Pet extends Object2d {
                 img: 'resources/img/misc/ghost_01.png',
                 x: 0, 
                 y: -5,
-                onDraw: (me) => {
-                    Object2d.animations.bob(me, 0.001, 0.1);
-                    Object2d.animations.flip(me, 1500);
+                onDraw: (ghostObject) => {
+                    Object2d.animations.bob(ghostObject, 0.001, 0.1);
+                    Object2d.animations.flip(ghostObject, 1500);
 
-                    if(!App.pet.stats.is_dead) me.removeObject();
+                    if(!App.pet.stats.is_dead) {
+                        ghostObject.removeObject();
+                        delete me.ghostObject;
+                    }
                 }
             });
 
