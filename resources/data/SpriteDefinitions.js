@@ -181,6 +181,7 @@ const SPRITES = [
 "misc/remove_red_01.png",
 "misc/seed_pack_01.png",
 "misc/shadow_01.png",
+"misc/sickness_overlay_01.png",
 "misc/stand_01_booth.png",
 "misc/star_01.png",
 "misc/stinky_01.png",
