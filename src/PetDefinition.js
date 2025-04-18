@@ -220,7 +220,8 @@ class PetDefinition {
         current_rabbit_hole: {
             name: false,
             endTime: false,
-        }
+        },
+        is_revived_once: false,
     }
     friends = [];
     family = [];

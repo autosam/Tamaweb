@@ -1,4 +1,32 @@
 class Activities {
+    static async revive(){
+        App.pet.stopMove();
+        App.pet.x = '50%';
+        App.pet.stats.is_dead = false;
+        App.setScene(App.scene.home);
+        App.pet.y = 0;
+        App.pet.opacity = 0.5;
+        App.pet.stats.current_health = 50;
+        App.pet.stats.current_death_tick = 100;
+        App.pet.stats.is_revived_once = true;
+        App.pet.triggerScriptedState('shocked', 2000, false, true, 
+            () => {
+                App.pet.y = '100%';
+                App.pet.opacity = 1;
+                App.pet.playUncomfortableAnimation(() => {
+                    App.displayConfirm(`<b>${App.petDefinition.name} has been revived!</b> <br><br> please take better care of them from now on since you won't be able to revive them again!`, [
+                        {
+                            name: 'ok',
+                            onclick:() => {}
+                        }
+                    ])
+                });
+            },
+            () => {
+                App.pet.y = lerp(App.pet.y, 96, 0.0008 * App.deltaTime);
+            }
+        )
+    }
     static async goToCurrentRabbitHole(isStarting) {
         if(isStarting) { // starting animation
             App.pet.stopMove();
