@@ -3024,7 +3024,7 @@ const App = {
                 },
                 {
                     // _ignore: !App.isTester(),
-                    _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child,
+                    _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby,
                     name: `cook`,
                     onclick: () => {
                         return App.displayList([
