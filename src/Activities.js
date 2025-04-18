@@ -1,5 +1,6 @@
 class Activities {
     static async revive(){
+        App.toggleGameplayControls(false);
         App.pet.stopMove();
         App.pet.x = '50%';
         App.pet.stats.is_dead = false;
@@ -14,6 +15,7 @@ class Activities {
                 App.pet.y = '100%';
                 App.pet.opacity = 1;
                 App.pet.playUncomfortableAnimation(() => {
+                    App.toggleGameplayControls(true);
                     App.displayConfirm(`<b>${App.petDefinition.name} has been revived!</b> <br><br> please take better care of them from now on since you won't be able to revive them again!`, [
                         {
                             name: 'ok',

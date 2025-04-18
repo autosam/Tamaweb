@@ -209,16 +209,26 @@ class Pet extends Object2d {
                     },
                 ], false);
             } else {
+                const revivalPrice = clamp(Math.floor(App.pet.stats.gold / 2), 0, 500);
                 App.displayConfirm(`<b>${App.petDefinition.name}</b> is dead but you can choose to revive them only <b>once</b>, do you want to revive them?`, [
                     {
-                        name: 'revive',
+                        name: `revive ($${revivalPrice})`,
                         onclick: () => {
-                            Activities.revive()
+                            if(App.pay(revivalPrice)){
+                                Activities.revive()
+                                return false;
+                            }
+                            return true;
                         }
                     },
                     {
                         name: 'get a new egg',
                         onclick: handleReceiveEgg
+                    },
+                    {
+                        name: 'back',
+                        class: 'back-btn',
+                        onclick: () => {}
                     }
                 ])
             }
