@@ -3233,6 +3233,11 @@ const App = {
                     img: 'resources/img/misc/poop.png',
                     condition: App.pet.stats.is_potty_trained
                 },
+                {
+                    title: 'Revived',
+                    img: 'resources/img/misc/ghost_02.png',
+                    condition: App.pet.stats.is_revived_once
+                }
             ]
 
             const UID = App.userName ? `${(App.userName ?? '') + '-' + App.userId?.toString().slice(0, 5)}` : '';
