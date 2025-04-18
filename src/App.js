@@ -3833,7 +3833,7 @@ const App = {
                         })
 
                         if(!App.ownedFurniture?.length || !list.length){
-                            return App.displayPopup('You down own any furniture, purchase some from the mall')
+                            return App.displayPopup("You don't own any furniture, purchase some from the mall")
                         }
 
                         return App.displayList(list, null, 'Add furniture');
