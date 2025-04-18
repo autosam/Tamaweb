@@ -100,6 +100,18 @@ class Pet extends Object2d {
                 overlay.scale = 1 - ((distanceToCaster + 4) * 0.01);
             }
         })
+
+        this.sicknessOverlay = new Object2d({
+            parent: this,
+            img: 'resources/img/misc/sickness_overlay_01.png',
+            x: 0,
+            y: 0,
+            hidden: true,
+            z: App.constants.ACTIVE_PET_Z + 0.1,
+            onDraw: (overlay) => {
+                Object2d.animations.flip(overlay, 750);
+            }
+        });
     }
     createAccessories(){
         // removing old accessories
@@ -625,16 +637,8 @@ class Pet extends Object2d {
                 }, 'poop');
             }
         }
-        if(stats.current_bladder <= stats.max_bladder / 4){
-            this.needsToiletOverlay.hidden = false;
-        } else {
-            this.needsToiletOverlay.hidden = true;
-        }
-        if(this.stats.has_poop_out){
-            App.poop.hidden = false;
-        } else {
-            App.poop.hidden = true;
-        }
+        this.needsToiletOverlay.hidden = stats.current_bladder > stats.max_bladder / 4;
+        App.poop.hidden = !this.stats.has_poop_out;
         stats.current_cleanliness -= cleanliness_depletion_rate;
         if(stats.current_cleanliness <= 0){
             stats.current_cleanliness = 0;
@@ -665,6 +669,7 @@ class Pet extends Object2d {
         if(stats.current_death_tick <= 0){
             App.pet.stats.is_dead = true;
         }
+        this.sicknessOverlay.hidden = stats.current_death_tick >= max_death_tick;
 
         // care rating check
         const careAffectingStats = [
