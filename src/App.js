@@ -5,7 +5,16 @@ const App = {
     userId: '_', userName: null, sessionId: Math.round(Math.random() * 9999999999),
     ENV: location.port == 5500 ? 'dev' : 'prod', isOnItch: false, isOnElectronClient: false,
     shellBackground: '', deferredInstallPrompt: null,
-    gameEventsHistory: {}, misc: {}, mods: [], records: {}, temp: {}, ownedFurniture: [], plants: [],
+
+    gameEventsHistory: {}, 
+    misc: {}, 
+    mods: [], 
+    records: {}, 
+    temp: {}, 
+    ownedFurniture: [], 
+    plants: [],
+    animals: { treat: null, list: [] },
+
     settings: {
         screenSize: 1,
         playSound: true,
@@ -135,6 +144,10 @@ const App = {
         // plants
         if(loadedData.plants)
             this.plants = loadedData.plants.map(p => new Plant(p));
+
+        // animals
+        if(loadedData.animals)
+            this.animals = loadedData.animals;
 
         // handle preloading
         let forPreload = [
@@ -492,7 +505,7 @@ const App = {
             }
         }
         if(App.currentScene){
-            App.setScene(App.currentScene);
+            App.reloadScene();
         }
 
         // screenshot
@@ -1079,9 +1092,31 @@ const App = {
             shadowOffset: -5,
             onLoad: () => {
                 App.pet.staticShadow = false;
+    
+                App.temp.petBowlObject = new Object2d({
+                    img: 'resources/img/misc/pet_bowl_01.png',
+                    x: '20%',
+                    y: '80%',
+                    width: 22, height: 22,
+                })
+        
+                if(App.animals.treat){
+                    App.temp.animalTreatObject = new Object2d({
+                        img: App.constants.FOOD_SPRITESHEET,
+                        spritesheet: {
+                            ...App.constants.FOOD_SPRITESHEET_DIMENSIONS,
+                            cellNumber: App.animals.treat,
+                        },
+                        x: App.temp.petBowlObject.x,
+                        y: '76%',
+                    })
+                }
             },
             onUnload: () => {
                 App.pet.staticShadow = true;
+
+                App.temp.petBowlObject?.removeObject?.();
+                App.temp.animalTreatObject?.removeObject?.();
             }
         }),
         beach: new Scene({
@@ -1126,12 +1161,14 @@ const App = {
             }
         }),
     },
-    setScene(scene){
+    setScene(scene, noPositionChange){
         App.currentScene?.onUnload?.(scene);
 
         App.currentScene = scene;
-        App.pet.x = scene.petX || '50%';
-        App.pet.y = scene.petY || '100%';
+        if(!noPositionChange){
+            App.pet.x = scene.petX || '50%';
+            App.pet.y = scene.petY || '100%';
+        }
         if(scene.foodsX) App.foods.x = scene.foodsX;
         if(scene.foodsY) App.foods.y = scene.foodsY;
         App.background.setImg(scene.image);
@@ -1141,6 +1178,9 @@ const App = {
         }
 
         this.applySky();
+    },
+    reloadScene(noPositionChange){
+        App.setScene(App.currentScene, noPositionChange);
     },
     isRoomFurnishable(){
         return App.scene.home.image?.includes('furnishable/');
@@ -1380,7 +1420,7 @@ const App = {
 
         if(data.home.image) App.scene.home.image = data.home.image;
 
-        App.setScene(App.currentScene);
+        App.reloadScene();
     },
     getRandomPetDef: function(age, seed){
         pRandom.save();
@@ -2814,7 +2854,7 @@ const App = {
             list.appendChild(content);
             App.sendAnalytics('opened_family_tree');
         },
-        open_food_list: function(buyMode, activeIndex, filterType, sellMode){
+        open_food_list: function(buyMode, activeIndex, filterType, sellMode, useMode){
             let list = [];
             let sliderInstance;
             const salesDay = App.isSalesDay();
@@ -2888,9 +2928,20 @@ const App = {
                             }
 
                             // console.log(list.scrollTop);
-                            let nList = App.handlers.open_food_list(buyMode, sliderInstance?.getCurrentIndex(), filterType, sellMode);
+                            let nList = App.handlers.open_food_list(buyMode, sliderInstance?.getCurrentIndex(), filterType, sellMode, useMode);
                                 // nList.scrollTop = list.scrollTop;
                             return false;
+                        }
+
+                        const removeOneFoodFromInventory = () => {
+                            if(App.pet.inventory.food[food] > 0)
+                                App.pet.inventory.food[food] -= 1;
+                        }
+
+                        if(useMode){
+                            const useResult = useMode(current);
+                            if(useResult) removeOneFoodFromInventory();
+                            return;
                         }
 
                         // eat mode
@@ -2905,8 +2956,7 @@ const App = {
                         App.closeAllDisplays();
                         let ateFood = App.pet.feed(current.sprite, current.hunger_replenish, currentType, null, reopenFn);
                         if(ateFood) {
-                            if(App.pet.inventory.food[food] > 0)
-                                App.pet.inventory.food[food] -= 1;
+                            removeOneFoodFromInventory();
 
                             App.pet.stats.current_fun += current.fun_replenish ?? 0;
                             App.pet.stats.current_sleep += current.sleep_replenish ?? 0;
@@ -2929,6 +2979,7 @@ const App = {
             let acceptLabel = 'Eat';
             if(buyMode) acceptLabel = 'Purchase';
             else if(sellMode) acceptLabel = 'Sell';
+            else if(useMode) acceptLabel = 'Use';
             sliderInstance = App.displaySlider(
                 list, 
                 activeIndex, 
@@ -5437,8 +5488,9 @@ const App = {
             currentPts: Missions.currentPts,
             refreshTime: Missions.refreshTime
         }))
-        setItem('furniture', (App.ownedFurniture));
+        setItem('furniture', App.ownedFurniture);
         setItem('plants', App.plants);
+        setItem('animals', App.animals);
 
         // -3600000
         if(!noIndicator){
@@ -5478,6 +5530,7 @@ const App = {
         const missions = await getItem('missions', {});
         const furniture = await getItem('furniture', false);
         const plants = await getItem('plants', App.plants);
+        const animals = await getItem('animals', App.animals);
 
         App.loadedData = {
             pet,
@@ -5491,7 +5544,8 @@ const App = {
             records,
             missions,
             furniture,
-            plants
+            plants,
+            animals,
         };
     
         return App.loadedData;

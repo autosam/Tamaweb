@@ -263,7 +263,7 @@ class Activities {
 
             App.pet.playCheeringAnimation();
 
-            App.setScene(App.currentScene); // to reset pet pos
+            App.reloadScene(); // to reset pet pos
             
             App.toggleGameplayControls(true);
 
@@ -569,12 +569,26 @@ class Activities {
         App.setScene(App.scene.garden);
         App.pet.x = '100%';
         App.pet.targetX = 50;
+
         App.toggleGameplayControls(false, () => {
             return App.displayList([
                 {
                     name: 'Garden',
                     onclick: () => {
                         Activities.goToInnerGarden();
+                    }
+                },
+                {
+                    // _disable: App.animals.treat,
+                    name: 'Place food',
+                    onclick: () => {
+                        const onUseFn = (selectedFood) => {
+                            App.closeAllDisplays();
+                            App.animals.treat = selectedFood.sprite;
+                            App.reloadScene(true);
+                            return false;
+                        }
+                        return App.handlers.open_food_list(false, false, false, false, onUseFn);
                     }
                 },
                 {
@@ -1301,7 +1315,7 @@ class Activities {
         await App.pet.triggerScriptedState('idle', App.INF, null, true, () => {
             // App.pet.y = y;
             // App.pet.x = '50%';
-            App.setScene(App.currentScene);
+            App.reloadScene();
             App.toggleGameplayControls(true);
             App.pet.shadowOffset = 0;
             App.pet.scale = 1;
