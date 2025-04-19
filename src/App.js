@@ -910,6 +910,9 @@ const App = {
             onLoad: () => {
                 App.poop.absHidden = false;
                 App.pet.staticShadow = false;
+                if(App.pet.sicknessOverlay){
+                    App.pet.sicknessOverlay.absHidden = false;
+                }
 
                 if(random(0, 10) == 0){
                     App.pet.showCurrentWant();
@@ -927,6 +930,9 @@ const App = {
             onUnload: () => {
                 App.poop.absHidden = true;
                 App.pet.staticShadow = true;
+                if(App.pet.sicknessOverlay){
+                    App.pet.sicknessOverlay.absHidden = true;
+                }
                 this.christmasTree?.removeObject();
                 App.handleFurnitureSpawn(null, true);
             }
