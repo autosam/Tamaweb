@@ -406,4 +406,10 @@ const NPC_CHARACTERS = [
 
 const ANIMAL_CHARACTERS = [
     "resources/img/animal/cat_01.png",
+    "resources/img/animal/cat_02.png",
+    "resources/img/animal/cat_03.png",
+    "resources/img/animal/dog_01.png",
+    "resources/img/animal/dog_02.png",
+    "resources/img/animal/dog_03.png",
+    "resources/img/animal/other_01.png",
 ];

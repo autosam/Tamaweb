@@ -915,14 +915,14 @@ class Pet extends Object2d {
             this.nextRandomTargetSelect = 0;
         }
     }
-    jump(strength = 0.28){
+    jump(strength = 0.28, silent){
         if(this.isJumping !== undefined) return false;
 
         this.isJumping = true;
         const gravity = 0.001;
         const startY = this.y;
         let velocity = strength;
-        App.playSound('resources/sounds/jump.ogg', true);
+        if(!silent) App.playSound('resources/sounds/jump.ogg', true);
 
         this.triggerScriptedState('jumping', App.INF, 0, true, 
         () => { // on end
@@ -1184,6 +1184,11 @@ class Pet extends Object2d {
             if(this.pet.x == this.pet.targetX){
                 if(this.pet.targetX == 0) this.pet.targetX = 100 - this.pet.spritesheet.cellSize;
                 else this.pet.targetX = 0;
+            }
+        },
+        moveCheck: function(){
+            if(this.pet.x === this.pet.targetX || this.pet.targetX === undefined) {
+                this.pet.stopScriptedState();
             }
         },
         movingOut: function(start){

@@ -565,6 +565,18 @@ class Activities {
         })
     }
     static goToGarden(){
+        // handle new animal arriving
+        // todo
+        if(App.animals.treat){
+                App.animals.treat = false;
+                const newAnimal = new AnimalDefinition({
+                    name: getRandomName(),
+                    sprite: randomFromArray(ANIMAL_CHARACTERS)
+                });
+                App.animals.list.push(newAnimal);
+        }
+
+
         App.pet.stopScriptedState();
         App.setScene(App.scene.garden);
         App.pet.x = '100%';
@@ -576,6 +588,17 @@ class Activities {
                     name: 'Garden',
                     onclick: () => {
                         Activities.goToInnerGarden();
+                    }
+                },
+                {
+                    name: 'Animals',
+                    onclick: () => {
+                        return App.displayList([
+                            ...App.animals.list.map(animalDef => ({
+                                name: `${animalDef.getFullCSprite()}${animalDef.name}`,
+                                onclick: () => {}
+                            }))
+                        ])
                     }
                 },
                 {

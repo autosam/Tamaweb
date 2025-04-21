@@ -146,8 +146,12 @@ const App = {
             this.plants = loadedData.plants.map(p => new Plant(p));
 
         // animals
-        if(loadedData.animals)
-            this.animals = loadedData.animals;
+        if(loadedData.animals){
+            this.animals = {
+                ...loadedData.animals,
+                list: loadedData.animals.list.map(a => new AnimalDefinition(a))
+            };
+        }
 
         // handle preloading
         const forPreload = [
@@ -277,12 +281,6 @@ const App = {
         if(App.pet.stats.current_rabbit_hole.name){
             Activities.goToCurrentRabbitHole(false);
         }
-
-        // animals
-        this.debugAnimal = new Animal(new AnimalDefinition({
-            name: getRandomName(),
-            sprite: randomFromArray(ANIMAL_CHARACTERS)
-        }))
 
         // simulating offline progression
         if(loadedData.lastTime){
@@ -1118,12 +1116,16 @@ const App = {
                         y: '76%',
                     })
                 }
+
+                App.handleAnimalsSpawn(true);
             },
             onUnload: () => {
                 App.pet.staticShadow = true;
 
                 App.temp.petBowlObject?.removeObject?.();
                 App.temp.animalTreatObject?.removeObject?.();
+
+                App.handleAnimalsSpawn(false);
             }
         }),
         beach: new Scene({
@@ -1375,6 +1377,19 @@ const App = {
             currentPlant?.createObject2d(patch);
             this.spawnedPlants.push(patch);
         }
+    },
+    handleAnimalsSpawn(shouldSpawn){
+        this.spawnedAnimals?.forEach?.(o => o?.removeObject?.());
+
+        if(!shouldSpawn) {
+            return false;
+        }
+
+        this.spawnedAnimals = App.animals.list?.map(animalDef => (
+            new Animal(animalDef, {
+                x: random(0, App.drawer.bounds.width),
+            })
+        ))
     },
     applySky() {
         const { AFTERNOON_TIME, EVENING_TIME, NIGHT_TIME } = App.constants;
@@ -5497,7 +5512,12 @@ const App = {
         }))
         setItem('furniture', App.ownedFurniture);
         setItem('plants', App.plants);
-        setItem('animals', App.animals);
+        setItem('animals', {
+            ...App.animals,
+            list: [
+                ...App.animals.list.map(a => a.serialize())
+            ]
+        });
 
         // -3600000
         if(!noIndicator){

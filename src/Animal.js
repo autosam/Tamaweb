@@ -4,17 +4,56 @@ class AnimalDefinition extends PetDefinition {
         this.stats = {
             ...this.stats,
             wander_min: 0.1,
-            wander_max: 0.2
+            wander_max: 0.2,
+            speed: 0.02 + (Math.random() * 0.01),
+            this_works: true,
         };
     }
     getLifeStage(){
         return PetDefinition.LIFE_STAGE.baby;
+    }
+    serialize(){
+        return {
+            ...App.minimalizePetDef(this.serializeStats(true)), 
+            stats: {
+                player_friendship: this.stats.player_friendship,
+                serialized_as_animal: true,
+            }
+        };
+    }
+    getFullCSprite(noMargin){
+        const margin = noMargin ? 0 : 10;
+        return `<c-sprite width="16" height="16" index="0" src="${this.sprite}" pos-x="0" pos-y="0" style="margin-right: ${margin}px;"></c-sprite>`;
     }
 }
 class Animal extends Pet {
     constructor(definition, additionalProps){
         super(definition, additionalProps);
         this.z = App.constants.ACTIVE_PET_Z + 0.1;
+    }
+    async interactWith(other, interactionConfig = {
+        animation: randomFromArray(['cheering', 'shocked', 'blush', 'sitting', 'angry', 'kissing']),
+        length: random(2000, 5000),
+    }){
+        other.stopMove();
+        other.triggerScriptedState('idle', 10000, false, true);
+
+        this.stopMove();
+        if(other.inverted) this.targetX = other.x + this.spritesheet.cellSize;
+        else this.targetX = other.x - this.spritesheet.cellSize;
+        await this.triggerScriptedState('moving', 20000, false, true, false, Pet.scriptedEventDrivers.moveCheck.bind({pet: this}));
+        this.inverted = !other.inverted;
+
+        other.triggerScriptedState(interactionConfig.animation, interactionConfig.length, false, true);
+        this.triggerScriptedState(interactionConfig.animation, interactionConfig.length, false, true);
+    }
+    getInteractionTarget(){
+        const animalTarget = randomFromArray(
+            App.spawnedAnimals
+                .filter(a => a !== this)
+                .filter(a => !a.isDuringScriptedState())
+        );
+        return randomFromArray([App.pet, animalTarget]);
     }
     wander() {
         if(this.isMoving){
@@ -26,11 +65,75 @@ class Animal extends Pet {
         }
 
         if (App.lastTime > this.nextRandomTargetSelect) {
+            if(this.handleAutomaticInteractions()) return;
+
             this.targetX = random(this.drawer.getRelativePositionX(0), this.drawer.getRelativePositionX(100) - this.spritesheet.cellSize);
             if(!random(0, 4)) this.targetX = App.pet.x - this.spritesheet.cellSize;
             this.nextRandomTargetSelect = 0;
         }
     }
+    handleAutomaticInteractions(){
+        if(App.haveAnyDisplays()) return false;
+        if(App.lastTime > (this.nextInteractionTime || 0)){
+            const interactionTarget = this.getInteractionTarget();
+            if(interactionTarget){
+                this.nextInteractionTime = App.lastTime + random(10000, 30000);
+                interactionTarget.nextInteractionTime = App.lastTime + random(10000, 30000);
+                this.interactWith(interactionTarget);
+                return true;
+            }
+        }
+        return false;
+    }
+    handleRandomGestures(){
+        // bad animations
+        if(random(0, 100) < 10){
+            if(this.hasMoodlet('sleepy')){
+                this.triggerScriptedState('angry', 4000, random(20000, 30000));
+                this.stopMove();
+                return;
+            }
+            if(this.hasMoodlet('hungry') || this.hasMoodlet('bored')){
+                this.triggerScriptedState('uncomfortable', 4000, random(20000, 30000));
+                this.stopMove();
+                return;
+            }
+        }
+
+        // const hasGoodMoodlets = ['amused', 'rested', 'full', 'healthy'].map(moodName => this.hasMoodlet(moodName)).some(moodlet => moodlet);
+        const hasBadMoodlets = ['bored', 'sleepy', 'hungry', 'sick'].map(moodName => this.hasMoodlet(moodName)).some(moodlet => moodlet);
+
+        // good animations
+        if(!hasBadMoodlets){
+            if(random(0, 100) < 10){
+                const commonAnimations = [
+                    {name: 'sitting', length: random(2000, 4000)}, 
+                    {name: 'blush', length: random(550, 1000)}, 
+                    {name: 'cheering', length: random(550, 1000)}, 
+                    {name: 'shocked', length: random(450, 800)},
+                ];
+                const rareAnimation = [
+                    {name: 'sleeping', length: random(10000, 30000)},
+                ];
+                const animation = randomFromArray([
+                    ...commonAnimations,
+                    ...commonAnimations,
+                    ...commonAnimations,
+                    ...commonAnimations,
+                    ...commonAnimations,
+                    ...commonAnimations,
+                    ...commonAnimations,
+                    ...commonAnimations,
+                    ...rareAnimation,
+                ]);
+                this.triggerScriptedState(animation.name, animation.length, random(10000, 20000));
+                this.stopMove();
+            } else if(random(0, 105) < 3){
+                this.jump(0.28, true);
+            }
+        }
+    }
     statsManager(){}
     handleWants(){}
+    sleep(){}
 }
