@@ -150,7 +150,7 @@ const App = {
             this.animals = loadedData.animals;
 
         // handle preloading
-        let forPreload = [
+        const forPreload = [
             ...SPRITES,
             ...PET_ELDER_CHARACTERS,
             ...PET_ADULT_CHARACTERS,
@@ -158,6 +158,7 @@ const App = {
             ...PET_CHILD_CHARACTERS,
             ...PET_BABY_CHARACTERS,
             ...NPC_CHARACTERS,
+            ...ANIMAL_CHARACTERS,
         ];
         this.preloadedResources = {};
         const preloadedResources = await this.preloadImages(forPreload);
@@ -276,6 +277,12 @@ const App = {
         if(App.pet.stats.current_rabbit_hole.name){
             Activities.goToCurrentRabbitHole(false);
         }
+
+        // animals
+        this.debugAnimal = new Animal(new AnimalDefinition({
+            name: getRandomName(),
+            sprite: randomFromArray(ANIMAL_CHARACTERS)
+        }))
 
         // simulating offline progression
         if(loadedData.lastTime){

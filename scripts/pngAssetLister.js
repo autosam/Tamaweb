@@ -20,7 +20,8 @@ function findPngFiles(dir, fileList = []) {
 }
 
 const excludedPaths = [
-    'character\\'
+    'character\\',
+    'animal\\',
 ]
 
 try {
@@ -29,7 +30,7 @@ try {
         const template = await fs.readFileSync(path.join(__dirname, 'template.js'), {encoding: 'utf8', flag: 'r'})
         const transformed = 
             pngFiles
-            .filter(str => !excludedPaths.every(path => str.includes(path)))
+            .filter(str => !excludedPaths.some(path => str.includes(path)))
             .map(line => `"${line}",`)
             .join('\n')
             .replaceAll('\\', '/')

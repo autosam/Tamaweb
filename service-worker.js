@@ -70,6 +70,7 @@ const ASSETS = [
   ...PET_CHILD_CHARACTERS,
   ...PET_BABY_CHARACTERS,
   ...NPC_CHARACTERS,
+  ...ANIMAL_CHARACTERS,
 ];
 
 self.addEventListener("install", (e) => {
