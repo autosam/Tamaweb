@@ -1041,6 +1041,9 @@ class Pet extends Object2d {
             }
         })
 
+        this.activeBubble?.removeObject?.();
+        this.activeBubble = bubble;
+
         // shows type icon if exists
         if([
             App.constants.WANT_TYPES.food,
