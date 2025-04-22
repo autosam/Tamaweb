@@ -617,7 +617,7 @@ class Pet extends Object2d {
         stats.current_sleep -= sleep_depletion_rate;
         if(stats.current_sleep <= 0){
             stats.current_sleep = 0;
-            if(App.currentScene == App.scene.home){
+            if(App.currentScene === App.scene.home){
                 this.stats.is_sleeping = true;
             }
         }
@@ -1172,6 +1172,16 @@ class Pet extends Object2d {
             setTimeout(() => bubble.removeObject(), 1000);
         }, 5000);
     }
+    setLocalZBasedOnSelf(otherObject){
+        const currentBoundingBox = this.getBoundingBox();
+        const otherBoundingBox = otherObject.getBoundingBox();
+        
+        const localZ = (otherBoundingBox.y + otherBoundingBox.height) - (currentBoundingBox.y + currentBoundingBox.height);
+
+        otherObject.z = this.z;
+        otherObject.localZ = localZ;
+    }
+
     static scriptedEventDrivers = {
         playing: function(start){
             this.pet.setState('moving');

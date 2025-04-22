@@ -1159,13 +1159,16 @@ const App = {
         garden_inner: new Scene({
             image: 'resources/img/background/outside/garden_inner_01.png',
             petY: '55%',
+            animalMinY: 55,
             shadowOffset: -5,
             onLoad: () => {
                 App.handleGardenPlantsSpawn(true);
+                App.handleAnimalsSpawn(true);
                 App.pet.staticShadow = true;
             },
             onUnload: () => {
                 App.handleGardenPlantsSpawn(false);
+                App.handleAnimalsSpawn(false);
                 App.pet.staticShadow = false;
             }
         }),

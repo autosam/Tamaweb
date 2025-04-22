@@ -101,22 +101,26 @@ class Object2d {
         this.targetY = undefined;
     }
     moveToTarget(speed = 0.01) {
-        if (this.targetX !== undefined && this.targetX != this.x) {
+        const shouldMoveX = this.targetX !== undefined && this.targetX != this.x;
+        const shouldMoveY = this.targetY !== undefined && this.targetY != this.y;
+        let currentSpeed = shouldMoveX && shouldMoveY ? speed / 2 : speed;
+
+        if (shouldMoveX) {
             this.isMoving = true;
             if (this.x > this.targetX)
-                this.moveLeft(this.targetX, speed);
+                this.moveLeft(this.targetX, currentSpeed);
             else if(this.x < this.targetX)
-                this.moveRight(this.targetX, speed);
+                this.moveRight(this.targetX, currentSpeed);
         } else {
             this.isMoving = false;
         }
 
-        if (this.targetY !== undefined && this.targetY != this.y) {
+        if (shouldMoveY) {
             // this.y = lerp(this.y, this.targetY, this.stats.speed * App.deltaTime * 0.1);
             if (this.y > this.targetY)
-                this.moveUp(this.targetY, speed);
+                this.moveUp(this.targetY, currentSpeed);
             else if(this.y < this.targetY)
-                this.moveDown(this.targetY, speed);
+                this.moveDown(this.targetY, currentSpeed);
         }
     }
     moveRight(maxX, speed) {
@@ -136,6 +140,44 @@ class Object2d {
     moveDown(maxY, speed) {
         const velocity = this.y + speed * 2 * App.deltaTime;
         this.y = velocity > maxY ? maxY : velocity;
+    }
+    showBoundingBox(){
+        const parent = this;
+        if(!this.boundingBoxElement){
+            this.boundingBoxElement = new Object2d({
+                img: 'resources/img/misc/red_pixel.png',
+                opacity: 0.25,
+                onDraw: (me) => {
+                    const bb = parent.getBoundingBox();
+
+                    me.x = bb.x;
+                    me.y = bb.y;
+                    me.width = bb.width;
+                    me.height = bb.height;
+                }
+            })
+            const zLineIndicator = new Object2d({
+                img: 'resources/img/misc/red_pixel.png',
+                x: 0, y: 0, z: 999,
+                parent: this.boundingBoxElement,
+                onDraw: (me) => {
+                    me.x = me.parent.x;
+                    me.y = me.parent.y + (me.parent.height);
+                    me.width = me.parent.width;
+                }
+            })
+        }
+    }
+    hideBoundingBox(){
+        this.boundingBoxElement?.removeObject?.();
+        this.boundingBoxElement = null;
+    }
+    getBoundingBox(){
+        const y = this.y + (this.additionalY || 0);
+        const x = this.x + (this.additionalX || 0);
+        const width = this.spritesheet?.cellSize || this.width || this.image.width;
+        const height = this.spritesheet?.cellSize || this.height || this.image.height;
+        return { x, y, width, height };
     }
     static setDrawer(drawer) {
         Object2d.defaultDrawer = drawer;

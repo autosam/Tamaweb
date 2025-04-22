@@ -76,10 +76,11 @@ class Plant {
                 cellNumber: plantDefinition.sprite + this.age,
             },
             ...position,
-            z: App.constants.ACTIVE_PET_Z + 0.01,
-            onDraw: () => {
+            onDraw: (me) => {
                 this.checkForProgress();
                 plant.spritesheet.cellNumber = plantDefinition.sprite + this.age;
+                App.pet.setLocalZBasedOnSelf(plant);
+                // console.log(plantDefinition.sprite, me.z, me.localZ)
             }
         })
         const statusIndicator = new Object2d({

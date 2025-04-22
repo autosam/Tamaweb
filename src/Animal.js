@@ -29,7 +29,7 @@ class AnimalDefinition extends PetDefinition {
 class Animal extends Pet {
     constructor(definition, additionalProps){
         super(definition, additionalProps);
-        this.z = App.constants.ACTIVE_PET_Z + 0.1;
+        this.z = App.constants.ACTIVE_PET_Z;
     }
     async interactWith(other, interactionConfig = {
         animation: randomFromArray(['cheering', 'shocked', 'blush', 'sitting', 'angry', 'kissing']),
@@ -41,6 +41,7 @@ class Animal extends Pet {
         this.stopMove();
         if(other.inverted) this.targetX = other.x + this.spritesheet.cellSize;
         else this.targetX = other.x - this.spritesheet.cellSize;
+        this.targetY = other.y;
         await this.triggerScriptedState('moving', 20000, false, true, false, Pet.scriptedEventDrivers.moveCheck.bind({pet: this}));
         this.inverted = !other.inverted;
 
@@ -55,6 +56,9 @@ class Animal extends Pet {
         );
         return randomFromArray([App.pet, animalTarget]);
     }
+    onDraw(){
+        App.pet.setLocalZBasedOnSelf(this);
+    }
     wander() {
         if(this.isMoving){
             this.nextRandomTargetSelect = 0;
@@ -68,7 +72,13 @@ class Animal extends Pet {
             if(this.handleAutomaticInteractions()) return;
 
             this.targetX = random(this.drawer.getRelativePositionX(0), this.drawer.getRelativePositionX(100) - this.spritesheet.cellSize);
-            if(!random(0, 4)) this.targetX = App.pet.x - this.spritesheet.cellSize;
+            if(!random(0, 4)) {
+                this.targetX = App.pet.x - this.spritesheet.cellSize;
+            }
+
+            const sceneMinY = App.currentScene.animalMinY || 88;
+            this.targetY = random(this.drawer.getRelativePositionX(100) - (this.spritesheet.cellSize / 2), this.drawer.getRelativePositionX(sceneMinY) - this.spritesheet.cellSize);
+
             this.nextRandomTargetSelect = 0;
         }
     }
