@@ -596,7 +596,33 @@ class Activities {
                         return App.displayList([
                             ...App.animals.list.map(animalDef => ({
                                 name: `${animalDef.getFullCSprite()}${animalDef.name}`,
-                                onclick: () => {}
+                                onclick: () => {
+                                    return App.displayList([
+                                        {
+                                            name: `
+                                                Happiness:
+                                                ${App.createProgressbar(animalDef.stats.current_happiness).node.outerHTML}
+                                            `,
+                                            type: 'text',
+                                        },
+                                        {
+                                            name: 'shoo',
+                                            onclick: () => {
+                                                return App.displayConfirm(`Are you sure you want shoo ${animalDef.name} away?`, [
+                                                    {
+                                                        name: 'yes',
+                                                        onclick: () => {}
+                                                    },
+                                                    {
+                                                        name: 'no',
+                                                        class: 'back-btn',
+                                                        onclick: () => {}
+                                                    }
+                                                ])
+                                            }
+                                        }
+                                    ])
+                                }
                             }))
                         ])
                     }
@@ -616,6 +642,7 @@ class Activities {
                 },
                 {
                     name: '<i class="icon fa-solid fa-home"></i> go inside',
+                    class: 'back-btn',
                     onclick: () => {
                         App.setScene(App.scene.home);
                         App.toggleGameplayControls(true);

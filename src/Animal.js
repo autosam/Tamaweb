@@ -1,26 +1,53 @@
 class AnimalDefinition extends PetDefinition {
-    constructor(...rest){
-        super(...rest);
+    constructor(config){
+        super(config);
         this.stats = {
             ...this.stats,
             wander_min: 0.1,
             wander_max: 0.2,
             speed: 0.02 + (Math.random() * 0.01),
-            this_works: true,
+            current_happiness: config.stats.current_happiness || random(50, 100),
         };
+        this.lastStatsUpdate = config.lastStatsUpdate || Date.now();
     }
     getLifeStage(){
         return PetDefinition.LIFE_STAGE.baby;
     }
     serialize(){
         return {
-            ...App.minimalizePetDef(this.serializeStats(true)), 
+            ...App.minimalizePetDef(this.serializeStats(true)),
+            lastStatsUpdate: this.lastStatsUpdate,
             stats: {
-                player_friendship: this.stats.player_friendship,
-                serialized_as_animal: true,
+                current_happiness: this.stats.current_happiness,
             }
         };
     }
+    handleStatsUpdate(){
+        const now = Date.now();
+        const happiness_decrease_rate = 0.000925; // 30 hours
+
+        const delta = now - this.lastStatsUpdate;
+        this.lastStatsUpdate = now;
+
+        const ticks = delta / 1000;
+        const happinessDecrease = happiness_decrease_rate * ticks;
+        this.stats.current_happiness -= Math.abs(happinessDecrease);
+
+        this.stats.current_happiness = clamp(this.stats.current_happiness, 0, 100);
+    }
+
+
+    static calculateTimeToZero(decreaseRate) {
+        const maxStat = 100;
+        const timeToZeroMilliseconds = (maxStat / decreaseRate) * 1000;
+        const duration = moment.duration(timeToZeroMilliseconds);
+      
+        const hours = Math.floor(duration.asHours());
+        const minutes = duration.minutes();
+      
+        console.log(`${hours}:${minutes}`);
+    }      
+    
     getFullCSprite(noMargin){
         const margin = noMargin ? 0 : 10;
         return `<c-sprite width="16" height="16" index="0" src="${this.sprite}" pos-x="0" pos-y="0" style="margin-right: ${margin}px;"></c-sprite>`;
@@ -30,6 +57,7 @@ class Animal extends Pet {
     constructor(definition, additionalProps){
         super(definition, additionalProps);
         this.z = App.constants.ACTIVE_PET_Z;
+        this.animalDefinition = this.petDefinition;
     }
     async interactWith(other, interactionConfig = {
         animation: randomFromArray(['cheering', 'shocked', 'blush', 'sitting', 'angry', 'kissing']),
@@ -143,7 +171,9 @@ class Animal extends Pet {
             }
         }
     }
-    statsManager(){}
+    statsManager(){
+        this.animalDefinition.handleStatsUpdate();
+    }
     handleWants(){}
     sleep(){}
 }
