@@ -38,8 +38,7 @@ class Drawer {
         objects.forEach(object => {
             if(!object || object.hidden || object.absHidden) return;
 
-            if (object.onDraw !== undefined)
-                object.onDraw(object);
+            object.onDraw?.(object);
 
             if (object.x.toString().indexOf('%') >= 0) {
                 let width = object.spritesheet ? object.spritesheet.cellSize : object.width || object.image.width;
@@ -203,8 +202,7 @@ class Drawer {
                 this.context.fillText(object.text, x, y);
             }
 
-            if (object.onLateDraw !== undefined)
-                object.onLateDraw();
+            object.onLateDraw?.(object);
         })
         return this;
     }

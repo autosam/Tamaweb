@@ -567,14 +567,14 @@ class Activities {
     static goToGarden(){
         // handle new animal arriving
         // todo
-        if(App.animals.treat){
+        /* if(App.animals.treat){
                 App.animals.treat = false;
                 const newAnimal = new AnimalDefinition({
                     name: getRandomName(),
                     sprite: randomFromArray(ANIMAL_CHARACTERS)
                 });
                 App.animals.list.push(newAnimal);
-        }
+        } */
 
 
         App.pet.stopScriptedState();

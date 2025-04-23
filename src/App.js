@@ -1101,8 +1101,11 @@ const App = {
                 App.temp.petBowlObject = new Object2d({
                     img: 'resources/img/misc/pet_bowl_01.png',
                     x: '20%',
-                    y: '80%',
+                    y: '67%',
                     width: 22, height: 22,
+                    onLateDraw: (me) => {
+                        App.pet.setLocalZBasedOnSelf(me);
+                    }
                 })
         
                 if(App.animals.treat){
@@ -1113,7 +1116,11 @@ const App = {
                             cellNumber: App.animals.treat,
                         },
                         x: App.temp.petBowlObject.x,
-                        y: '76%',
+                        y: '63%',
+                        onLateDraw: (me) => {
+                            me.z = App.temp.petBowlObject.z;
+                            me.localZ = App.temp.petBowlObject.localZ + 0.001;
+                        }
                     })
                 }
 
