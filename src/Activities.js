@@ -669,6 +669,7 @@ class Activities {
             x: '0%',
             y: App.scene.garden.petY,
             targetX: 50,
+            onDraw: (me) => App.pet.setLocalZBasedOnSelf(me),
         });
         const payload = () => {
             mailMan.removeObject();
