@@ -388,8 +388,8 @@ class Activities {
             return App.displayList([...additionalStartOptions, ...allPlantsList]);
         }
 
-        App.toggleGameplayControls(false, () => {
-            return App.displayList([
+        const displayMainList = () => {
+            const mainList =  App.displayList([
                 {
                     name: '<i class="icon fa-solid fa-plus icon"></i> plant',
                     _disable: App.plants.length === App.constants.MAX_PLANTS,
@@ -441,6 +441,8 @@ class Activities {
                     _disable: !App.plants.some(p => p.age === Plant.AGE.grown),
                     onclick: () => {
                         const displayHarvestables = () => {
+                            if(!App.plants.some(p => p.age === Plant.AGE.grown)) return;
+
                             const list = displayPlantsList({
                                 onPlantClick: (plant, plantIndex) => {
                                     App.plants.splice(plantIndex, 1); // removing plant
@@ -459,7 +461,10 @@ class Activities {
                                         {
                                             name: 'ok',
                                             onclick: () => {
+                                                UI.clearLastClicked();
+                                                mainList.close();
                                                 list.close();
+                                                displayMainList();
                                                 displayHarvestables();
                                             }
                                         }
@@ -476,7 +481,7 @@ class Activities {
                 },
                 {
                     name: 'remove',
-                    _disable: !App.plants.length,
+                    _disable: !App.plants.length || App.plants.every(p => p.age === Plant.AGE.grown),
                     onclick: () => {
                         displayPlantsList({
                             additionalStartOptions: App.plants.some(p => p.isDead) ? [
@@ -583,8 +588,12 @@ class Activities {
                 //         Activities.goToGarden();
                 //     }
                 // }
-            ])
-        })
+            ]);
+
+            return mainList;
+        }
+
+        App.toggleGameplayControls(false, displayMainList)
     }
     static goToGarden(){
         const getNextAttractMs = () => {
