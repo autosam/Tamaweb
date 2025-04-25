@@ -596,6 +596,24 @@ class Activities {
         App.toggleGameplayControls(false, displayMainList)
     }
     static goToGarden(){
+        const openChooseNameDialog = (animalDef) => {
+            return App.displayPrompt(`Choose a name for ${animalDef.getFullCSprite()}:`, [
+                {
+                    name: 'set',
+                    onclick: (text) => {
+                        animalDef.name = text;
+                        App.closeAllDisplays();
+                        App.displayPopup(`Name set to ${animalDef.name}!`);
+                    }
+                },
+                {
+                    name: 'cancel',
+                    class: 'back-btn',
+                    onclick: () => {}
+                }
+            ], animalDef.name)
+        }
+
         const getNextAttractMs = () => {
             return (App.animals.nextAttractMs || Date.now()) + App.constants.ONE_HOUR * random(2, 8);
         }
@@ -606,11 +624,9 @@ class Activities {
         const checkForArrivedAnimal = () => {
             if(!App.animals.treat) return;
 
-            if(App.animals.nextAttractMs < Date.now()){
+            if(App.animals.nextAttractMs < Date.now() || true){
                 App.animals.treatBiteCount ++;
                 App.animals.nextAttractMs = getNextAttractMs();
-
-                if(App.animals.treatBiteCount > 2) resetTreat();
 
                 if(!random(0, 2)){
                     resetTreat();
@@ -619,6 +635,15 @@ class Activities {
                         sprite: randomFromArray(ANIMAL_CHARACTERS)
                     });
                     App.animals.list.push(newAnimal);
+                    App.displayPopup(`A new animal ${newAnimal.getFullCSprite()} has chosen your backyard as their new home. Take good care of them!`, 3000, () => openChooseNameDialog(newAnimal));
+                } else if(App.animals.treatBiteCount > 2) {
+                    resetTreat();
+                    App.displayConfirm(`The treat you placed earlier is gone.<br><br>Unfortunately, its visitor chose not to stay this time, maybe you'll meet them next time!`, [
+                        {
+                            name: 'ok',
+                            onclick: () => {}
+                        }
+                    ]);
                 }
             }
         }
@@ -627,7 +652,7 @@ class Activities {
         if(App.animals.treat){
             const timeDelta = Date.now() - App.animals.nextAttractMs;
             const repeatTimes = Math.ceil(timeDelta / (App.constants.ONE_HOUR * 8));
-            for(let i = 0; i < clamp(repeatTimes, 0, 10); i++){
+            for(let i = 0; i < clamp(repeatTimes, 1, 10); i++){
                 checkForArrivedAnimal();
             }
         }
@@ -747,23 +772,7 @@ class Activities {
                                         },
                                         {
                                             name: 'rename',
-                                            onclick: () => {
-                                                return App.displayPrompt(`Choose a name:`, [
-                                                    {
-                                                        name: 'set',
-                                                        onclick: (text) => {
-                                                            animalDef.name = text;
-                                                            App.closeAllDisplays();
-                                                            App.displayPopup(`Name set to ${animalDef.name}!`);
-                                                        }
-                                                    },
-                                                    {
-                                                        name: 'cancel',
-                                                        class: 'back-btn',
-                                                        onclick: () => {}
-                                                    }
-                                                ], animalDef.name)
-                                            }
+                                            onclick: () => openChooseNameDialog(animalDef)
                                         },
                                         {
                                             name: `<span style="color: red;">Release</span>`,

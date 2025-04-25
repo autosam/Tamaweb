@@ -340,7 +340,7 @@ class Pet extends Object2d {
         }
     }
     sleep(){
-        if(this.stats.is_sleeping) return;
+        if(this.stats.is_sleeping || App.currentScene !== App.scene.home) return;
         this.stopMove();
         this.x = '50%';
         if(this.hasMoodlet('rested') && !App.isSleepHour()){
