@@ -3349,6 +3349,8 @@ const App = {
             ], null, 'Information')
         },
         open_active_buffs: (type) => {
+            if(typeof type !== 'string') type = null;
+            
             const activeBuffs = Object.values(App.definitions.gameplay_buffs)
                 .filter(buff => type ? buff.type === type : true)
                 .filter(buff => App.isGameplayBuffActive(buff.key))
