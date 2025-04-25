@@ -631,7 +631,7 @@ class Activities {
                 if(!random(0, 2)){
                     resetTreat();
                     const newAnimal = new AnimalDefinition({
-                        name: getRandomName(),
+                        name: getRandomName(false, true),
                         sprite: randomFromArray(ANIMAL_CHARACTERS)
                     });
                     App.animals.list.push(newAnimal);
