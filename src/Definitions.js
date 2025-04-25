@@ -2104,5 +2104,34 @@ App.definitions = (() => {
                 }
             },
         ],
+
+        /* GAMEPLAY BUFFS */
+        gameplay_buffs: {
+            // garden buffs
+            doubleHarvest: {
+                key: 'doubleHarvest',
+                name: '+ Harvests',
+                description: 'Increases the amount of harvests in the garden.',
+                type: 'garden',
+            },
+            increasedWateredDuration: {
+                key: 'increasedWateredDuration',
+                name: '+ Wet Duration',
+                description: 'Increases the amount the plants stay wet.',
+                type: 'garden',
+            },
+            longerDeathDuration: {
+                key: 'longerDeathDuration',
+                name: '+ Health Duration',
+                description: 'Increases the time before the plants start dying without water.',
+                type: 'garden',
+            },
+            shorterGrowthDelay: {
+                key: 'shorterGrowthDelay',
+                name: '+ Growth',
+                description: 'Makes plants grow faster.',
+                type: 'garden',
+            },
+        }
     }
 })()

@@ -51,8 +51,8 @@ class AnimalDefinition extends PetDefinition {
         return `<c-sprite width="16" height="16" index="0" src="${this.sprite}" pos-x="0" pos-y="0" style="margin-right: ${margin}px;"></c-sprite>`;
     }
     getBuff(){
-        const { GAMEPLAY_BUFFS } = App.constants;
-        return App.getGameplayBuffDefinitionFromKey(this.stats.buff) || GAMEPLAY_BUFFS.increasedWateredDuration;
+        return App.getGameplayBuffDefinitionFromKey(this.stats.buff) || 
+            App.definitions.gameplay_buffs.increasedWateredDuration;
     }
 
     static calculateTimeToZero(decreaseRate) {
