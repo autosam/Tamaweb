@@ -13,7 +13,7 @@ const App = {
     temp: {}, 
     ownedFurniture: [], 
     plants: [],
-    animals: { treat: null, list: [] },
+    animals: { treat: null, list: [], nextAttractMs: 0, treatBiteCount: 0 },
 
     settings: {
         screenSize: 1,
@@ -52,6 +52,7 @@ const App = {
             rows: 28,
             columns: 28,
         },
+        MAX_ANIMALS: 8,
         MAX_PLANTS: 8,
         SLEEP_START: 21,
         SLEEP_END: 8,
@@ -90,6 +91,29 @@ const App = {
         CHRISTMAS_TREE_Z: 4.58,
         BACKGROUND_Z: -10,
         INPUT_BASE_64: '0xffbx64',
+
+        GAMEPLAY_BUFFS: {
+            doubleHarvest: {
+                key: 'doubleHarvest',
+                name: '+ Harvests',
+                description: 'Increases the amount of harvests in the garden.'
+            },
+            increasedWateredDuration: {
+                key: 'increasedWateredDuration',
+                name: '+ Wet Duration',
+                description: 'Increases the amount the plants stay wet.'
+            },
+            longerDeathDuration: {
+                key: 'longerDeathDuration',
+                name: '+ Health Duration',
+                description: 'Increases the time before the plants start dying without water.'
+            },
+            shorterGrowthDelay: {
+                key: 'shorterGrowthDelay',
+                name: '+ Growth',
+                description: 'Makes plants grow faster.'
+            },
+        }
     },
     routes: {
         BLOG: 'https://tamawebgame.github.io/blog/',
@@ -1113,7 +1137,7 @@ const App = {
                         img: App.constants.FOOD_SPRITESHEET,
                         spritesheet: {
                             ...App.constants.FOOD_SPRITESHEET_DIMENSIONS,
-                            cellNumber: App.animals.treat,
+                            cellNumber: App.animals.treat + App.animals.treatBiteCount,
                         },
                         x: App.temp.petBowlObject.x,
                         y: '63%',
@@ -1843,6 +1867,12 @@ const App = {
                     }
                 },
                 {
+                    name: `Backyard ${App.getBadge()}`,
+                    onclick: () => {
+                        Activities.goToGarden();
+                    }
+                },
+                {
                     name: `Garden`,
                     onclick: () => {
                         Activities.goToInnerGarden();
@@ -1880,13 +1910,6 @@ const App = {
                         ])
                         
                         return true;
-                    }
-                },
-                {
-                    name: `backyard`,
-                    _ignore: true,
-                    onclick: () => {
-                        Activities.goToGarden();
                     }
                 },
                 {
@@ -5480,6 +5503,28 @@ const App = {
         ];
 
         return allowedScenes.includes(room);
+    },
+    getRandomGameplayBuff () {
+        return randomFromArray(Object.keys(App.constants.GAMEPLAY_BUFFS));
+    },
+    isGameplayBuffActive: (buffKey) => {
+        // currently only check for animals
+        // but we can reuse the same method for other buff sources
+        const hasBuff = App.animals.list.some(a => a.stats.buff === buffKey);
+        return hasBuff;
+    },
+    getGameplayBuffDefinitionFromKey: (buffKey) => {
+        return App.constants.GAMEPLAY_BUFFS[buffKey];
+    },
+    getGameplayBuffUI: (buff) => {
+        if(typeof buff === 'string') buff = App.getGameplayBuffDefinitionFromKey(buff);
+        return `
+            <div class="font-small gameplay-buff-container">
+                <div style="opacity: 0.75;"><i class="fa-solid fa-arrow-circle-up icon"></i> Active Buff</div>
+                <b style="color: #3d00ff"> ${buff.name}</b>
+                <i>${buff.description}</i>
+            </div>
+        `;
     },
     playSound: function(path, force){
         if(!App.settings.playSound) return;

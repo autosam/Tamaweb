@@ -565,16 +565,67 @@ class Activities {
         })
     }
     static goToGarden(){
+        const getNextAttractMs = () => {
+            return (App.animals.nextAttractMs || Date.now()) + App.constants.ONE_HOUR * random(2, 8);
+        }
+        const resetTreat = () => {
+            App.animals.treat = null;
+            App.animals.treatBiteCount = 0;
+        }
+        const checkForArrivedAnimal = () => {
+            if(!App.animals.treat) return;
+
+            if(App.animals.nextAttractMs < Date.now()){
+                App.animals.treatBiteCount ++;
+                App.animals.nextAttractMs = getNextAttractMs();
+
+                if(App.animals.treatBiteCount > 2) resetTreat();
+
+                if(!random(0, 2)){
+                    resetTreat();
+                    const newAnimal = new AnimalDefinition({
+                        name: getRandomName(),
+                        sprite: randomFromArray(ANIMAL_CHARACTERS)
+                    });
+                    App.animals.list.push(newAnimal);
+                }
+            }
+        }
+
         // handle new animal arriving
-        // todo
-        /* if(App.animals.treat){
-                App.animals.treat = false;
-                const newAnimal = new AnimalDefinition({
-                    name: getRandomName(),
-                    sprite: randomFromArray(ANIMAL_CHARACTERS)
-                });
-                App.animals.list.push(newAnimal);
-        } */
+        if(App.animals.treat){
+            const timeDelta = Date.now() - App.animals.nextAttractMs;
+            const repeatTimes = Math.ceil(timeDelta / (App.constants.ONE_HOUR * 8));
+            for(let i = 0; i < clamp(repeatTimes, 0, 10); i++){
+                checkForArrivedAnimal();
+            }
+        }
+
+        // handle animals leaving
+        const leavingAnimals = App.animals.list.filter(a => a.stats.current_happiness <= 0);
+        if(leavingAnimals.length){
+            App.displayList([
+                {
+                    name: `
+                        these animals left because they were neglected:
+                        <br><br>
+                        ${leavingAnimals.map(animalDef => (`
+                            <span style="color: red;">
+                                ${animalDef.getFullCSprite()}${animalDef.name}    
+                            </span>
+                        `)).join('<br>')}
+                    `,
+                    type: 'text',
+                },
+                {
+                    name: "When animals lose all happiness, they leave. Take better care of them!",
+                    type: 'info',
+                }
+            ], null, 'neglect!');
+            leavingAnimals.forEach(a => {
+                App.animals.list.splice(App.animals.list.indexOf(a), 1);
+            })
+        }
 
 
         App.pet.stopScriptedState();
@@ -599,19 +650,121 @@ class Activities {
                                 onclick: () => {
                                     return App.displayList([
                                         {
+                                            type: 'text',
                                             name: `
                                                 Happiness:
                                                 ${App.createProgressbar(animalDef.stats.current_happiness).node.outerHTML}
                                             `,
-                                            type: 'text',
                                         },
                                         {
-                                            name: 'shoo',
+                                            name: 'feed',
                                             onclick: () => {
-                                                return App.displayConfirm(`Are you sure you want shoo ${animalDef.name} away?`, [
+                                                const onUseFn = (selectedFood) => {
+                                                    App.closeAllDisplays();
+                                                    animalDef.feed(selectedFood.hunger_replenish * 3);
+
+                                                    const startTime = App.time;
+                                                    const spawnedAnimal = App.spawnedAnimals.find(a => a.animalDefinition === animalDef);
+                                                    const foodObject = new Object2d({
+                                                        parent: spawnedAnimal,
+                                                        image: App.preloadedResources[App.constants.FOOD_SPRITESHEET],
+                                                        spritesheet: {
+                                                            ...App.constants.FOOD_SPRITESHEET_DIMENSIONS,
+                                                            cellNumber: selectedFood.sprite
+                                                        },
+                                                        scale: 1,
+                                                        x: spawnedAnimal.x + spawnedAnimal.spritesheet.cellSize,
+                                                        y: spawnedAnimal.y - spawnedAnimal.spritesheet.cellSize,
+                                                        onDraw: (me) => {
+                                                            App.pet.setLocalZBasedOnSelf(me);
+                                                        },
+                                                    })
+                                                    spawnedAnimal.stopMove();
+                                                    spawnedAnimal.inverted = true;
+                                                    spawnedAnimal.triggerScriptedState('eating', App.INF, false, true, 
+                                                        () => {
+                                                            foodObject.removeObject();
+                                                            spawnedAnimal.playCheeringAnimation(null, true);
+                                                        },
+                                                        () => {
+                                                            const elapsedTime = App.time - startTime;
+                                                            const spriteOffset = Math.floor(elapsedTime / 1500);
+                                                            foodObject.spritesheet.cellNumber = selectedFood.sprite + clamp(spriteOffset, 0, 2);
+                                                            // foodObject.scale = 1 - (spriteOffset * 0.2);
+                                                            if(spriteOffset > 2) spawnedAnimal.stopScriptedState();
+                                                        }
+                                                    );
+                                                    return false;
+                                                }
+                                                return App.handlers.open_food_list(false, false, false, false, onUseFn);
+                                            }
+                                        },
+                                        {
+                                            name: 'play',
+                                            onclick: () => {
+                                                App.closeAllDisplays();
+                                                animalDef.increaseHappiness(random(2, 5));
+                                                const spawnedAnimal = App.spawnedAnimals.find(a => a.animalDefinition === animalDef);
+                                                App.pet.stopScriptedState();
+                                                spawnedAnimal.stopScriptedState();
+                                                spawnedAnimal.interactWith(App.pet, {animation: 'cheering', length: 5000});
+                                            }
+                                        },
+                                        {
+                                            type: 'text',
+                                            name: App.getGameplayBuffUI(animalDef.getBuff()),
+                                        },
+                                        {
+                                            name: 'rename',
+                                            onclick: () => {
+                                                return App.displayPrompt(`Choose a name:`, [
+                                                    {
+                                                        name: 'set',
+                                                        onclick: (text) => {
+                                                            animalDef.name = text;
+                                                            App.closeAllDisplays();
+                                                            App.displayPopup(`Name set to ${animalDef.name}!`);
+                                                        }
+                                                    },
+                                                    {
+                                                        name: 'cancel',
+                                                        class: 'back-btn',
+                                                        onclick: () => {}
+                                                    }
+                                                ], animalDef.name)
+                                            }
+                                        },
+                                        {
+                                            name: `<span style="color: red;">Release</span>`,
+                                            onclick: () => {
+                                                return App.displayConfirm(`Are you sure you want release ${animalDef.name} back into the wild?`, [
                                                     {
                                                         name: 'yes',
-                                                        onclick: () => {}
+                                                        onclick: async () => {
+                                                            App.closeAllDisplays();
+
+                                                            const previousController = App.getGameplayControlsState().onclick;
+                                                            App.toggleGameplayControls(false);
+                                                            App.pet.stopMove();
+                                                            App.pet.inverted = false;
+                                                            App.pet.x = '75%';
+                                                            App.pet.triggerScriptedState('uncomfortable', App.INF, false, true);
+                                                            const spawnedAnimal = App.spawnedAnimals.find(a => a.animalDefinition === animalDef);
+                                                            spawnedAnimal.stopMove();
+                                                            spawnedAnimal.x = '50%';
+                                                            spawnedAnimal.y = '100%';
+                                                            spawnedAnimal.targetX = -100;
+                                                            await spawnedAnimal.triggerScriptedState('moving', 5000, false, true);
+                                                            App.toggleGameplayControls(false, previousController);
+                                                            App.pet.stopScriptedState();
+
+                                                            App.displayPopup(`${animalDef.name} has been released back into the wild.`, 4000);
+                                                            App.animals.list.splice(
+                                                                App.animals.list.indexOf(animalDef),
+                                                                1
+                                                            );
+                                                            App.reloadScene(true);
+                                                        }
                                                     },
                                                     {
                                                         name: 'no',
@@ -623,21 +776,34 @@ class Activities {
                                         }
                                     ])
                                 }
-                            }))
+                            })),
+                            {
+                                _disable: App.animals.list.length >= App.constants.MAX_ANIMALS,
+                                name: '<i class="fa-solid fa-plus icon"></i> Attract Animal',
+                                onclick: () => {
+                                    return App.displayList([
+                                        {
+                                            name: App.animals.treat ? 'Replace food' : 'Place food',
+                                            onclick: () => {
+                                                const onUseFn = (selectedFood) => {
+                                                    App.closeAllDisplays();
+                                                    App.animals.treat = selectedFood.sprite;
+                                                    App.animals.treatBiteCount = 0;
+                                                    App.animals.nextAttractMs = getNextAttractMs();
+                                                    App.reloadScene(true);
+                                                    return false;
+                                                }
+                                                return App.handlers.open_food_list(false, false, false, false, onUseFn);
+                                            }
+                                        },
+                                        {
+                                            type: 'info',
+                                            name: `Placing food out may attract new animals!`
+                                        }
+                                    ])
+                                }
+                            },
                         ])
-                    }
-                },
-                {
-                    // _disable: App.animals.treat,
-                    name: 'Place food',
-                    onclick: () => {
-                        const onUseFn = (selectedFood) => {
-                            App.closeAllDisplays();
-                            App.animals.treat = selectedFood.sprite;
-                            App.reloadScene(true);
-                            return false;
-                        }
-                        return App.handlers.open_food_list(false, false, false, false, onUseFn);
                     }
                 },
                 {

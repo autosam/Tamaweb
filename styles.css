@@ -1120,6 +1120,10 @@ input#background-color-picker {
     height: 100%;
 }
 
+.font-small {
+    font-size: small;
+}
+
 .flex-dir-col {
     flex-direction: column;
 }

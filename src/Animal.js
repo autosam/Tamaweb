@@ -1,17 +1,27 @@
 class AnimalDefinition extends PetDefinition {
     constructor(config){
         super(config);
+
         this.stats = {
             ...this.stats,
             wander_min: 0.1,
             wander_max: 0.2,
             speed: 0.02 + (Math.random() * 0.01),
-            current_happiness: config.stats.current_happiness || random(50, 100),
+
+            // serialized stats
+            current_happiness: config.stats?.current_happiness ?? random(50, 100),
+            buff: config.stats?.buff || App.getRandomGameplayBuff(),
         };
         this.lastStatsUpdate = config.lastStatsUpdate || Date.now();
     }
     getLifeStage(){
         return PetDefinition.LIFE_STAGE.baby;
+    }
+    feed(amt){
+        this.stats.current_happiness += amt;
+    }
+    increaseHappiness(amt){
+        return this.feed(amt);
     }
     serialize(){
         return {
@@ -19,6 +29,7 @@ class AnimalDefinition extends PetDefinition {
             lastStatsUpdate: this.lastStatsUpdate,
             stats: {
                 current_happiness: this.stats.current_happiness,
+                buff: this.stats.buff,
             }
         };
     }
@@ -34,8 +45,15 @@ class AnimalDefinition extends PetDefinition {
         this.stats.current_happiness -= Math.abs(happinessDecrease);
 
         this.stats.current_happiness = clamp(this.stats.current_happiness, 0, 100);
+    }    
+    getFullCSprite(noMargin){
+        const margin = noMargin ? 0 : 10;
+        return `<c-sprite width="16" height="16" index="0" src="${this.sprite}" pos-x="0" pos-y="0" style="margin-right: ${margin}px;"></c-sprite>`;
     }
-
+    getBuff(){
+        const { GAMEPLAY_BUFFS } = App.constants;
+        return App.getGameplayBuffDefinitionFromKey(this.stats.buff) || GAMEPLAY_BUFFS.increasedWateredDuration;
+    }
 
     static calculateTimeToZero(decreaseRate) {
         const maxStat = 100;
@@ -46,13 +64,11 @@ class AnimalDefinition extends PetDefinition {
         const minutes = duration.minutes();
       
         console.log(`${hours}:${minutes}`);
-    }      
-    
-    getFullCSprite(noMargin){
-        const margin = noMargin ? 0 : 10;
-        return `<c-sprite width="16" height="16" index="0" src="${this.sprite}" pos-x="0" pos-y="0" style="margin-right: ${margin}px;"></c-sprite>`;
     }
 }
+
+
+
 class Animal extends Pet {
     constructor(definition, additionalProps){
         super(definition, additionalProps);
@@ -77,12 +93,12 @@ class Animal extends Pet {
         this.triggerScriptedState(interactionConfig.animation, interactionConfig.length, false, true);
     }
     getInteractionTarget(){
-        const animalTarget = randomFromArray(
-            App.spawnedAnimals
+        const target = randomFromArray(
+            [...App.spawnedAnimals, App.pet]
                 .filter(a => a !== this)
                 .filter(a => !a.isDuringScriptedState())
         );
-        return randomFromArray([App.pet, animalTarget]);
+        return target;
     }
     onDraw(){
         App.pet.setLocalZBasedOnSelf(this);
