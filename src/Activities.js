@@ -750,7 +750,7 @@ class Activities {
                                                             if(spriteOffset > 2) spawnedAnimal.stopScriptedState();
                                                         }
                                                     );
-                                                    return false;
+                                                    return true;
                                                 }
                                                 return App.handlers.open_food_list(false, false, false, false, onUseFn);
                                             }
@@ -831,7 +831,7 @@ class Activities {
                                                     App.animals.treatBiteCount = 0;
                                                     App.animals.nextAttractMs = getNextAttractMs();
                                                     App.reloadScene(true);
-                                                    return false;
+                                                    return true;
                                                 }
                                                 return App.handlers.open_food_list(false, false, false, false, onUseFn);
                                             }
