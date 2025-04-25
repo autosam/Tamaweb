@@ -447,7 +447,9 @@ class Activities {
                                     App.handleGardenPlantsSpawn(true);
                                     Activities.task_floatingObjects(10, ['resources/img/misc/tick_green_01.png']);
 
-                                    const amount = random(4, 8);
+                                    let amount = random(3, 5);
+                                    if(App.isGameplayBuffActive('doubleHarvest')) amount += random(3, 5);
+                                    
                                     App.addNumToObject(App.pet.inventory.harvests, plant.name, amount);
                                     App.displayConfirm(`
                                             <div>${plant.getCSprite()}</div>

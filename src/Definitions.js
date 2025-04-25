@@ -2126,6 +2126,12 @@ App.definitions = (() => {
                 description: 'Increases the time before the plants start dying without water.',
                 type: 'garden',
             },
+            // alwaysWatered: {
+            //     key: 'alwaysWatered',
+            //     name: '∞ Infinite Water',
+            //     description: 'Plants stay watered infinitely.',
+            //     type: 'garden',
+            // },
             shorterGrowthDelay: {
                 key: 'shorterGrowthDelay',
                 name: '+ Growth',
