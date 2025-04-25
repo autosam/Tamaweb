@@ -1396,11 +1396,13 @@ const App = {
             return false;
         }
 
-        this.spawnedAnimals = App.animals.list?.map(animalDef => (
-            new Animal(animalDef, {
+        this.spawnedAnimals = App.animals.list?.map(animalDef => {
+            const animal = new Animal(animalDef, {
                 x: random(0, App.drawer.bounds.width),
             })
-        ))
+            animal.y = animal.getValidRandomYPosition();
+            return animal;
+        })
     },
     applySky() {
         const { AFTERNOON_TIME, EVENING_TIME, NIGHT_TIME } = App.constants;

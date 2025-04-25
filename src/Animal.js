@@ -120,11 +120,17 @@ class Animal extends Pet {
                 this.targetX = App.pet.x - this.spritesheet.cellSize;
             }
 
-            const sceneMinY = App.currentScene.animalMinY || 88;
-            this.targetY = random(this.drawer.getRelativePositionX(100) - (this.spritesheet.cellSize / 2), this.drawer.getRelativePositionX(sceneMinY) - this.spritesheet.cellSize);
+            this.targetY = this.getValidRandomYPosition();
 
             this.nextRandomTargetSelect = 0;
         }
+    }
+    getValidRandomYPosition(minY){
+        const sceneMinY = minY || App.currentScene.animalMinY || 88;
+        return random(
+            this.drawer.getRelativePositionX(100) - (this.spritesheet.cellSize / 2), 
+            this.drawer.getRelativePositionX(sceneMinY) - this.spritesheet.cellSize
+        );
     }
     handleAutomaticInteractions(){
         if(App.haveAnyDisplays()) return false;

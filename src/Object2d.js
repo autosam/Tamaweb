@@ -145,6 +145,7 @@ class Object2d {
         const parent = this;
         if(!this.boundingBoxElement){
             this.boundingBoxElement = new Object2d({
+                parent,
                 img: 'resources/img/misc/red_pixel.png',
                 opacity: 0.25,
                 onDraw: (me) => {
