@@ -552,23 +552,7 @@ class Activities {
                 },
                 {
                     name: `active buffs ${App.getBadge()}`,
-                    onclick: () => {
-                        const activeBuffs = Object.values(App.definitions.gameplay_buffs)
-                            .filter(buff => App.isGameplayBuffActive(buff.key))
-                        const buffsUI = activeBuffs
-                            .map(buff => App.getGameplayBuffUI(buff))
-                            .join('<hr>')
-                        return App.displayList([
-                            {
-                                name: activeBuffs.length ? buffsUI : App.getEmptyStateUI('No active buffs'),
-                                type: 'text',
-                            },
-                            {
-                                name: 'You can get garden buffs by adopting animals in the backyard!',
-                                type: 'info',
-                            }
-                        ])
-                    }
+                    onclick: () => App.handlers.open_active_buffs('garden'),
                 },
                 {
                     name: '<i class="icon fa-solid fa-home"></i> go inside',
@@ -692,6 +676,7 @@ class Activities {
         App.toggleGameplayControls(false, () => {
             return App.displayList([
                 {
+                    _ignore: true,
                     name: 'Garden',
                     onclick: () => {
                         Activities.goToInnerGarden();
@@ -845,6 +830,10 @@ class Activities {
                             },
                         ])
                     }
+                },
+                {
+                    name: `active buffs`,
+                    onclick: App.handlers.open_active_buffs,
                 },
                 {
                     name: '<i class="icon fa-solid fa-home"></i> go inside',

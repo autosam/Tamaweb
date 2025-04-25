@@ -1455,6 +1455,38 @@ const App = {
 
         App.reloadScene();
     },
+    getRandomAnimalDef: function(type){
+        const animalGroups = {};
+        animalGroups.cat = ANIMAL_CHARACTERS.filter(char => char.includes('cat'));
+        animalGroups.dog = ANIMAL_CHARACTERS.filter(char => char.includes('dog'));
+        animalGroups.other = ANIMAL_CHARACTERS.filter(char => !animalGroups.cat.includes(char) && !animalGroups.dog.includes(char));
+
+        if(type && !(type in animalGroups)) {
+            console.error('Invalid Animal Group type: ', type);
+            type = null;
+        }
+
+        const typesArray = type ? 
+            [animalGroups[type]] : 
+            [
+                // increases the chance of dogs and cats
+                animalGroups.cat, animalGroups.dog,
+                animalGroups.cat, animalGroups.dog,
+                animalGroups.cat, animalGroups.dog,
+                animalGroups.other  
+            ];
+
+        const sprite = randomFromArray(
+            randomFromArray(typesArray)
+        );
+
+        const animal = new AnimalDefinition({
+            name: getRandomName(false, true),
+            sprite
+        });
+
+        return animal;
+    },
     getRandomPetDef: function(age, seed){
         pRandom.save();
         let rndArrayFn = randomFromArray;
@@ -3313,6 +3345,24 @@ const App = {
                     }
                 },
             ], null, 'Information')
+        },
+        open_active_buffs: (type) => {
+            const activeBuffs = Object.values(App.definitions.gameplay_buffs)
+                .filter(buff => type ? buff.type === type : true)
+                .filter(buff => App.isGameplayBuffActive(buff.key))
+            const buffsUI = activeBuffs
+                .map(buff => App.getGameplayBuffUI(buff))
+                .join('<hr>')
+            return App.displayList([
+                {
+                    name: activeBuffs.length ? buffsUI : App.getEmptyStateUI(`No ${type ?? 'active'} buffs`),
+                    type: 'text',
+                },
+                {
+                    name: 'You can get buffs by adopting animals in the backyard!',
+                    type: 'info',
+                }
+            ])
         },
         open_profile: function(){
             const petTraitIcons = [
