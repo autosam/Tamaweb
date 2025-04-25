@@ -449,7 +449,7 @@ class Activities {
 
                                     let amount = random(3, 5);
                                     if(App.isGameplayBuffActive('doubleHarvest')) amount += random(3, 5);
-                                    
+
                                     App.addNumToObject(App.pet.inventory.harvests, plant.name, amount);
                                     App.displayConfirm(`
                                             <div>${plant.getCSprite()}</div>
@@ -537,12 +537,32 @@ class Activities {
                             {
                                 name: `
                                 <div class="flex-between flex-wrap" style="row-gap: 4px">
-                                    ${App.getHarvestInventory()}
+                                    ${App.getHarvestInventoryUI()}
                                 </div>
                                 `,
                                 type: 'text',
                             },
                         ]);
+                    }
+                },
+                {
+                    name: `active buffs ${App.getBadge()}`,
+                    onclick: () => {
+                        const activeBuffs = Object.values(App.definitions.gameplay_buffs)
+                            .filter(buff => App.isGameplayBuffActive(buff.key))
+                        const buffsUI = activeBuffs
+                            .map(buff => App.getGameplayBuffUI(buff))
+                            .join('<hr>')
+                        return App.displayList([
+                            {
+                                name: activeBuffs.length ? buffsUI : App.getEmptyStateUI('No active buffs'),
+                                type: 'text',
+                            },
+                            {
+                                name: 'You can get garden buffs by adopting animals in the backyard!',
+                                type: 'info',
+                            }
+                        ])
                     }
                 },
                 {

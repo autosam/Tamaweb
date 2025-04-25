@@ -3160,7 +3160,7 @@ const App = {
                                         {
                                             name: `
                                             <div class="flex-between flex-wrap" style="row-gap: 4px">
-                                                ${App.getHarvestInventory(item => !item.def.inedible)}
+                                                ${App.getHarvestInventoryUI(item => !item.def.inedible)}
                                             </div>
                                             `,
                                             type: 'text',
@@ -5449,17 +5449,14 @@ const App = {
             return Plant.getCSprite(plantName, undefined, hasInInventory ? 'enabled' : disabledClassName);
         }).join(delimiter);
     },
-    getHarvestInventory: function(filterFn = () => true){
+    getHarvestInventoryUI: function(filterFn = () => true){
         const harvestsToShow = Object.keys(App.pet.inventory.harvests)
             .map(name => ({amount: App.pet.inventory.harvests[name], name, def: Plant.getDefinitionByName(name)}) )
             .filter(item => item.amount)
             .filter(filterFn);
 
         if(!harvestsToShow.length){
-            return `<small class="flex-center width-full flex-gap-05 opacity-half">
-                <i class="fa-solid fa-ghost"></i>
-                <i>Empty inventory</i>
-            </small>`;
+            return App.getEmptyStateUI('Empty inventory');
         }
 
         return `
@@ -5467,6 +5464,12 @@ const App = {
             .map(item => `<div onclick="App.displayPopup('${item.name} <div><b>x${item.amount}</b></div>')" class="flex align-center flex-gap-05">${Plant.getCSprite(item.name)} <span><small>x</small>${item.amount}</span></div>`)
             .join('')}
         `
+    },
+    getEmptyStateUI: function(text, icon = 'fa-ghost'){
+        return `<small class="flex-center width-full flex-gap-05 opacity-half">
+            <i class="fa-solid ${icon}"></i>
+            <i>${text}</i>
+        </small>`;
     },
     isCompanionAllowed: function(room){
         if(!room) room = App.currentScene;
@@ -5495,9 +5498,18 @@ const App = {
     },
     getGameplayBuffUI: (buff) => {
         if(typeof buff === 'string') buff = App.getGameplayBuffDefinitionFromKey(buff);
+
+        const getTypeUI = () => {
+            let color = '';
+            switch(buff.type){
+                case 'garden': color = 'green'; break;
+            }
+            return `<span style="color: ${color}"> <i class="fa-solid fa-arrow-circle-up icon"></i> ${buff.type}</span> Buff`;
+        }
+
         return `
-            <div class="font-small gameplay-buff-container">
-                <div style="opacity: 0.75;"><i class="fa-solid fa-arrow-circle-up icon"></i> Active Buff</div>
+            <div class="font-small flex flex-dir-col gameplay-buff-container">
+                <div style="opacity: 0.75;"> ${getTypeUI()} </div>
                 <b style="color: #3d00ff"> ${buff.name}</b>
                 <i>${buff.description}</i>
             </div>
