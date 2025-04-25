@@ -9,7 +9,7 @@ class AnimalDefinition extends PetDefinition {
             speed: 0.02 + (Math.random() * 0.01),
 
             // serialized stats
-            current_happiness: config.stats?.current_happiness ?? random(50, 100),
+            current_happiness: config.stats?.current_happiness ?? random(15, 50),
             buff: config.stats?.buff || App.getRandomGameplayBuff(),
         };
         this.lastStatsUpdate = config.lastStatsUpdate || Date.now();

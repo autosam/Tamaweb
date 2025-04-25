@@ -624,7 +624,7 @@ class Activities {
         const checkForArrivedAnimal = () => {
             if(!App.animals.treat) return;
 
-            if(App.animals.nextAttractMs < Date.now() || true){
+            if(App.animals.nextAttractMs < Date.now()){
                 App.animals.treatBiteCount ++;
                 App.animals.nextAttractMs = getNextAttractMs();
 
@@ -651,8 +651,8 @@ class Activities {
         // handle new animal arriving
         if(App.animals.treat){
             const timeDelta = Date.now() - App.animals.nextAttractMs;
-            const repeatTimes = Math.ceil(timeDelta / (App.constants.ONE_HOUR * 8));
-            for(let i = 0; i < clamp(repeatTimes, 1, 10); i++){
+            const repeatTimes = Math.ceil(timeDelta / (App.constants.ONE_HOUR * 2));
+            for(let i = 0; i < clamp(repeatTimes, 0, 10); i++){
                 checkForArrivedAnimal();
             }
         }
