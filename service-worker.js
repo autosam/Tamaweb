@@ -30,7 +30,6 @@ const ASSETS = [
   "src/Plant.js",
   "src/Animal.js",
   // libs
-  "src/libs/jquery-3.7.1.min.js",
   "src/libs/moment.js",
   // cdn
   "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css",
