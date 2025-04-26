@@ -735,6 +735,7 @@ class Activities {
                                                             if(spriteOffset > 2) spawnedAnimal.stopScriptedState();
                                                         }
                                                     );
+                                                    Missions.done(Missions.TYPES.feed_animal);
                                                     return true;
                                                 }
                                                 return App.handlers.open_food_list(false, false, false, false, onUseFn);
@@ -749,6 +750,7 @@ class Activities {
                                                 App.pet.stopScriptedState();
                                                 spawnedAnimal.stopScriptedState();
                                                 spawnedAnimal.interactWith(App.pet, {animation: 'cheering', length: 5000});
+                                                Missions.done(Missions.TYPES.play_with_animal);
                                             }
                                         },
                                         {
