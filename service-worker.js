@@ -28,6 +28,7 @@ const ASSETS = [
   "src/Utils.js",
   "src/Missions.js",
   "src/Plant.js",
+  "src/Animal.js",
   // libs
   "src/libs/jquery-3.7.1.min.js",
   "src/libs/moment.js",
