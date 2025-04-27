@@ -31,6 +31,8 @@ const App = {
     },
     constants: {
         ONE_HOUR: 1000 * 60 * 60,
+        ONE_MINUTE: 1000 * 60,
+        ONE_SECOND: 1000,
         FOOD_SPRITESHEET: 'resources/img/item/foods_on.png',
         FOOD_SPRITESHEET_DIMENSIONS: {
             cellNumber: 1,

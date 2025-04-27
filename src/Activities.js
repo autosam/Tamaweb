@@ -1298,8 +1298,13 @@ class Activities {
             ])
         })
     }
-    static encounter(){
-        if(random(0, 256) != 1) return false;
+    static encounter(forced){
+        const chance = App.pet.stats.is_revived_once 
+            ? random(0, 128) 
+            : random(0, 256);
+        if(chance != 1 && !forced) return false;
+
+        const despawnTime = App.time + (App.constants.ONE_SECOND * random(15, 30));
         const def = new PetDefinition({
             sprite: NPC_CHARACTERS[0],
             name: '-_-',
@@ -1317,12 +1322,21 @@ class Activities {
             x: -50,
             castShadow: false,
             z: App.constants.ACTIVE_PET_Z + 1,
+            isDespawning: false,
             onDraw: (me) => {
-                if(!App.pet.stats.is_sleeping){
-                    me.removeObject();
+                if(me.isDespawning){
+                    me.opacity -= 0.001 * App.deltaTime;
+                    if(me.opacity < 0) me.removeObject()
                 }
+
+                if(App.pet.stats.is_revived_once){
+                    me.isDespawning = App.time > despawnTime;
+                    return;
+                }
+
+                me.isDespawning = !App.pet.stats.is_sleeping;
             }
-        });
+        }); 
         return true;
     }
     static goToVacation(vacationFn){
