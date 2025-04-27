@@ -1308,6 +1308,7 @@ class Activities {
         const def = new PetDefinition({
             sprite: NPC_CHARACTERS[0],
             name: '-_-',
+            accessories: App.pet.stats.is_revived_once ? ['demon wings'] : [],
         }).setStats({
             current_hunger: 0,
             current_health: 0,
