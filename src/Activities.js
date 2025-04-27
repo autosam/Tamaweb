@@ -10,7 +10,21 @@ class Activities {
         App.pet.stats.current_health = 50;
         App.pet.stats.current_death_tick = 100;
         App.pet.stats.is_revived_once = true;
-        App.pet.triggerScriptedState('shocked', 2000, false, true, 
+
+        const reviveBackgroundObject = new Object2d({
+            img: 'resources/img/misc/light_rays_02.png',
+            x: '50%', y: '50%', z: App.constants.ACTIVE_PET_Z - 0.01,
+            opacity: 1,
+            composite: 'lighter',
+            onDraw: (me) => {
+                me.rotation += 0.01 * App.deltaTime;
+                me.x = '50%'; me.y = '50%';
+                me.opacity -= 0.0004 * App.deltaTime;
+                if(me.opacity < 0) me.removeObject();
+            }
+        })
+
+        App.pet.triggerScriptedState('shocked', 3500, false, true, 
             () => {
                 App.pet.y = '100%';
                 App.pet.opacity = 1;
@@ -25,7 +39,7 @@ class Activities {
                 });
             },
             () => {
-                App.pet.y = lerp(App.pet.y, 96, 0.0008 * App.deltaTime);
+                App.pet.y = lerp(App.pet.y, 90, 0.00065 * App.deltaTime);
             }
         )
     }
