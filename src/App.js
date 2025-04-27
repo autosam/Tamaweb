@@ -1643,6 +1643,11 @@ const App = {
             }, random(1000, 2000))
         }
 
+        // revived encounter
+        if(App.pet.stats.is_revived_once){
+            if(Activities.reckoning()) return;
+        }
+
         // entity encounter
         if(Activities.encounter()) return;
     },

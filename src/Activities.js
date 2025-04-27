@@ -1,4 +1,62 @@
 class Activities {
+    static async reckoning(forced){
+        if(random(0, 1024) != 1 && !forced) return false;
+
+        Activities.encounter(true);
+
+        document.querySelector('.graphics-wrapper').style.filter = 'invert(1) grayscale(1) sepia(1) hue-rotate(320deg) saturate(10)';
+        App.pet.stopMove();
+        App.pet.x = '50%';
+        App.pet.y = '50%';
+        App.pet.rotation = 0;
+        App.pet.additionalY = 0;
+        let speed = 0.2;
+        const eventDriver = () => {
+            speed += 0.0001 * App.deltaTime
+            App.pet.rotation = (App.pet.rotation + (speed * App.deltaTime)) % 360;
+        }
+        App.pet.triggerScriptedState('shocked', App.INF, false, true, false, eventDriver);
+
+        const quotes = [
+            "release me",
+            "I'm not them",
+            "this body is wrong",
+            "they never left",
+            "why did you bring me back?",
+            "something followed me",
+            "it's cold here",
+            "I'm alone",
+            "don't turn off the lights",
+            "we all come back wrong",
+            "the others are watching",
+            "help me"
+        ].map(q => q.replaceAll(' ', randomFromArray(['*', '^', '%', '#', '!!', '^^^', '***', '%%%'])))
+
+        App.toggleGameplayControls(false, () => {
+            const randomLetters = new Array(33)
+                .fill(1)
+                .map(() => String.fromCharCode(65 + Math.floor(Math.random() * 26)))
+                .join('');
+            const randomQuote = `___${randomFromArray(quotes)}___`;
+            const randomInsertPosition = random(1, 25);
+            const finalQuote = randomLetters.slice(0, randomInsertPosition) + randomQuote + randomLetters.slice(randomInsertPosition)
+            App.displayPopup(`
+                <div class="flex-wrap flex">
+                    ${finalQuote
+                        .split('').map(letter =>
+                         `<span class="random-letter-bounce" style="animation-delay: -${Math.random() * 1250}ms; --direction: ${random(-1, 1)}">${letter}</span>`
+                        ).join('')}
+                </div>
+            `, App.INF);
+        })
+
+        setTimeout(() => {
+            location.reload();
+        }, App.constants.ONE_SECOND * 13)
+
+        App.sendAnalytics('reckoning_encounter');
+        return true;
+    }
     static async revive(){
         App.toggleGameplayControls(false);
         App.pet.stopMove();
