@@ -349,6 +349,19 @@ const App = {
                 e.preventDefault();
             }
         }); */
+        
+
+        // in-game events
+        if(loadedData.eventsHistory){
+            App.gameEventsHistory = loadedData.eventsHistory;
+        }
+        this.handleInGameEvents();
+
+        // load room customizations
+        this.applyRoomCustomizations(loadedData.roomCustomizations);
+
+        // records
+        App.records = loadedData.records;
 
         // random encounters
         App.runRandomEncounters();
@@ -808,7 +821,7 @@ const App = {
             return;
         }
 
-        const addEvent = App.addEvent;
+        const { addEvent } = App;
 
         if(!App.userName){
             App.handlers.show_set_username_dialog();
