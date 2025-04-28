@@ -1024,13 +1024,12 @@ class Activities {
         App.pet.triggerScriptedState('idle', App.INF, 0, true, null);
         Activities.task_foam(
             () => {
-                vacationFn()
+                vacationFn();
             },
         )
     }
     static seaVacation(){
         App.pet.stats.is_at_vacation = true;
-        App.save();
         App.setScene(App.scene.seaVacation);
 
         const end = () => {
@@ -1466,7 +1465,6 @@ class Activities {
         App.setScene(App.scene.parentsHome);
 
         App.pet.stats.is_at_parents = true;
-        App.save();
     }
     static goToClinic(){
         App.toggleGameplayControls(false);

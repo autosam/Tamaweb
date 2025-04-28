@@ -292,18 +292,25 @@ const App = {
             }
         }
 
+        // in-game events
+        if(loadedData.eventsHistory){
+            App.gameEventsHistory = loadedData.eventsHistory;
+        }
+        this.handleInGameEvents();
+
+        // records
+        App.records = loadedData.records;
+
+        // load room customizations
+        this.applyRoomCustomizations(loadedData.roomCustomizations);
+
+        // missions
+        Missions.init(loadedData.missions);
+
         // check if at daycare
         if(App.pet.stats.is_at_parents){
             Activities.stayAtParents();
         }
-
-        // check if at vacation
-        if(App.pet.stats.is_at_vacation){
-            Activities.seaVacation();
-        }
-
-        // touch / mouse pos on canvas
-        App.registerInputUpdates();
 
         /* // routing
         const historyIndex = window.history.length;
@@ -318,25 +325,17 @@ const App = {
                 e.preventDefault();
             }
         }); */
-        
 
-        // in-game events
-        if(loadedData.eventsHistory && !Array.isArray(loadedData.eventsHistory)){
-            App.gameEventsHistory = loadedData.eventsHistory;
+        // check if at vacation
+        if(App.pet.stats.is_at_vacation){
+            Activities.seaVacation();
         }
-        this.handleInGameEvents();
-
-        // load room customizations
-        this.applyRoomCustomizations(loadedData.roomCustomizations);
-
-        // records
-        App.records = loadedData.records;
 
         // random encounters
         App.runRandomEncounters();
 
-        // missions
-        Missions.init(loadedData.missions);
+        // touch / mouse pos on canvas
+        App.registerInputUpdates();
 
         // saver
         setInterval(() => {
@@ -4270,6 +4269,7 @@ const App = {
                                     goToVacation(Activities.seaVacation)
                                     App.sendAnalytics('go_on_vacation');
                                     App.definitions.achievements.go_to_vacation_x_times.advance();
+                                    App.save();
                                 }
                             },
                             {
