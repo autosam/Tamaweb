@@ -681,8 +681,8 @@ class Activities {
             ], animalDef.name)
         }
 
-        const getNextAttractMs = () => {
-            return (App.animals.nextAttractMs || Date.now()) + App.constants.ONE_HOUR * random(2, 8);
+        const getNextAttractMs = (fromMs = App.animals.nextAttractMs) => {
+            return (fromMs || Date.now()) + App.constants.ONE_HOUR * random(2, 8);
         }
         const resetTreat = () => {
             App.animals.treat = null;
@@ -690,28 +690,27 @@ class Activities {
         }
         const checkForArrivedAnimal = () => {
             if(!App.animals.treat) return;
+            if(App.animals.nextAttractMs > Date.now()) return;
 
-            if(App.animals.nextAttractMs < Date.now()){
-                App.animals.treatBiteCount ++;
-                App.animals.nextAttractMs = getNextAttractMs();
+            App.animals.treatBiteCount ++;
+            App.animals.nextAttractMs = getNextAttractMs();
 
-                if(!random(0, 2)){
-                    resetTreat();
-                    const newAnimal = new AnimalDefinition({
-                        name: getRandomName(false, true),
-                        sprite: randomFromArray(ANIMAL_CHARACTERS)
-                    });
-                    App.animals.list.push(newAnimal);
-                    App.displayPopup(`A new animal ${newAnimal.getFullCSprite()} has chosen your backyard as their new home. Take good care of them!`, 3000, () => openChooseNameDialog(newAnimal));
-                } else if(App.animals.treatBiteCount > 2) {
-                    resetTreat();
-                    App.displayConfirm(`The food you placed out earlier is gone.<br><br>Unfortunately, its visitor chose not to stay this time, maybe you'll meet them next time!`, [
-                        {
-                            name: 'ok',
-                            onclick: () => {}
-                        }
-                    ]);
-                }
+            if(!random(0, 2)){
+                resetTreat();
+                const newAnimal = new AnimalDefinition({
+                    name: getRandomName(false, true),
+                    sprite: randomFromArray(ANIMAL_CHARACTERS)
+                });
+                App.animals.list.push(newAnimal);
+                App.displayPopup(`A new animal ${newAnimal.getFullCSprite()} has chosen your backyard as their new home. Take good care of them!`, 3000, () => openChooseNameDialog(newAnimal));
+            } else if(App.animals.treatBiteCount > 2) {
+                resetTreat();
+                App.displayConfirm(`The food you placed out earlier is gone.<br><br>Unfortunately, its visitor chose not to stay this time, maybe you'll meet them next time!`, [
+                    {
+                        name: 'ok',
+                        onclick: () => {}
+                    }
+                ]);
             }
         }
 
@@ -899,7 +898,7 @@ class Activities {
                                                     App.closeAllDisplays();
                                                     App.animals.treat = selectedFood.sprite;
                                                     App.animals.treatBiteCount = 0;
-                                                    App.animals.nextAttractMs = getNextAttractMs();
+                                                    App.animals.nextAttractMs = getNextAttractMs(Date.now());
                                                     App.reloadScene(true);
                                                     return true;
                                                 }
