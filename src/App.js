@@ -312,6 +312,11 @@ const App = {
             Activities.stayAtParents();
         }
 
+        // check if at vacation
+        if(App.pet.stats.is_at_vacation){
+            Activities.seaVacation();
+        }
+
         /* // routing
         const historyIndex = window.history.length;
         window.history.pushState(null, null, window.top.location.pathname + window.top.location.search);
@@ -325,11 +330,6 @@ const App = {
                 e.preventDefault();
             }
         }); */
-
-        // check if at vacation
-        if(App.pet.stats.is_at_vacation){
-            Activities.seaVacation();
-        }
 
         // random encounters
         App.runRandomEncounters();
