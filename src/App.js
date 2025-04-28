@@ -322,11 +322,11 @@ const App = {
         // records
         App.records = loadedData.records;
 
-        // load room customizations
-        this.applyRoomCustomizations(loadedData.roomCustomizations);
-
         // missions
         Missions.init(loadedData.missions);
+
+        // load room customizations
+        this.applyRoomCustomizations(loadedData.roomCustomizations);
 
         // check if at daycare
         if(App.pet.stats.is_at_parents){
@@ -352,19 +352,6 @@ const App = {
             }
         }); */
         
-
-        // in-game events
-        if(loadedData.eventsHistory){
-            App.gameEventsHistory = loadedData.eventsHistory;
-        }
-        this.handleInGameEvents();
-
-        // load room customizations
-        this.applyRoomCustomizations(loadedData.roomCustomizations);
-
-        // records
-        App.records = loadedData.records;
-
         // random encounters
         App.runRandomEncounters();
 
