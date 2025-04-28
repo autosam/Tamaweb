@@ -5783,8 +5783,9 @@ const App = {
         const charCode = `save:${btoa(encodeURIComponent(JSON.stringify(serializableStorage)))}:endsave`;
         return charCode;
     },
-    vibrate: function(dur){
-        if(!navigator?.vibrate || !App.settings.vibrate) return;
+    vibrate: function(dur, force){
+        if(!App.settings.vibrate && !force) return;
+        if(!navigator?.vibrate) return;
         navigator?.vibrate(dur || 35);
     },
     sendAnalytics: function(type, value, force){

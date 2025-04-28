@@ -2,6 +2,8 @@ class Activities {
     static async reckoning(forced){
         if(random(0, 1024) != 1 && !forced) return false;
 
+        App.closeAllDisplays();
+
         Activities.encounter(true);
 
         document.querySelector('.graphics-wrapper').style.filter = 'invert(1) grayscale(1) sepia(1) hue-rotate(320deg) saturate(10)';
@@ -13,9 +15,18 @@ class Activities {
         let speed = 0.2;
         const eventDriver = () => {
             speed += 0.0001 * App.deltaTime
-            App.pet.rotation = (App.pet.rotation + (speed * App.deltaTime)) % 360;
+            App.pet.additionalY = Math.sin(Math.random() * App.deltaTime) * (speed * 3);
+            App.pet.rotation = random(-16, 16);
         }
-        App.pet.triggerScriptedState('shocked', App.INF, false, true, false, eventDriver);
+        App.pet.triggerScriptedState('sad', App.INF, false, true, false, eventDriver);
+
+        // sfx
+        setInterval(() => {
+            App.playSound('resources/sounds/wedding_song_01.ogg', true);
+        }, 150)
+        setInterval(() => {
+            App.vibrate(random(100, 250), true);
+        }, 300);
 
         const quotes = [
             "release me",
@@ -33,6 +44,10 @@ class Activities {
         ].map(q => q.replaceAll(' ', randomFromArray(['*', '^', '%', '#', '!!', '^^^', '***', '%%%'])))
 
         App.toggleGameplayControls(false, () => {
+            setTimeout(() => {
+                location.reload();
+            }, App.constants.ONE_SECOND * 13)
+
             const randomLetters = new Array(33)
                 .fill(1)
                 .map(() => String.fromCharCode(65 + Math.floor(Math.random() * 26)))
@@ -49,10 +64,6 @@ class Activities {
                 </div>
             `, App.INF);
         })
-
-        setTimeout(() => {
-            location.reload();
-        }, App.constants.ONE_SECOND * 13)
 
         App.sendAnalytics('reckoning_encounter');
         return true;
@@ -1378,7 +1389,7 @@ class Activities {
         })
         new Pet(def, {
             opacity: 0.5,
-            x: -50,
+            x: forced ? '50%' : -50,
             castShadow: false,
             z: App.constants.ACTIVE_PET_Z + 1,
             isDespawning: false,
