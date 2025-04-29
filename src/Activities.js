@@ -663,13 +663,13 @@ class Activities {
         App.toggleGameplayControls(false, displayMainList)
     }
     static goToGarden(){
-        const openChooseNameDialog = (animalDef) => {
+        const openChooseNameDialog = (animalDef, onEndFn) => {
             return App.displayPrompt(`Choose a name for ${animalDef.getFullCSprite()}:`, [
                 {
                     name: 'set',
                     onclick: (text) => {
                         animalDef.name = text;
-                        App.closeAllDisplays();
+                        onEndFn?.();
                         App.displayPopup(`Name set to ${animalDef.name}!`);
                     }
                 },
@@ -841,7 +841,7 @@ class Activities {
                                         },
                                         {
                                             name: 'rename',
-                                            onclick: () => openChooseNameDialog(animalDef)
+                                            onclick: () => openChooseNameDialog(animalDef, () => App.closeAllDisplays())
                                         },
                                         {
                                             name: `<span style="color: red;">Release</span>`,
