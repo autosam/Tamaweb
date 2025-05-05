@@ -801,6 +801,9 @@ const App = {
                         App.displayPopup(`Set tester: ${App.settings.isTester}`, 1000, () => window.location.reload());
                         break;
                     default: showInvalidError();
+                    case 'activity:reckoning':
+                        Activities.reckoning(true);
+                        break;
                 }
         }
     },
@@ -1181,6 +1184,10 @@ const App = {
                 App.handleAnimalsSpawn(false);
                 App.pet.staticShadow = false;
             }
+        }),
+        reviverDen: new Scene({
+            image: 'resources/img/background/house/reviver_01.png',
+            noShadows: true,
         }),
     },
     setScene(scene, noPositionChange){
@@ -3756,7 +3763,7 @@ const App = {
                 }
                 let current = App.definitions.accessories[accessoryName];
 
-                if(buyMode && current.isCraftable) continue;
+                if(buyMode && (current.isCraftable || current.price === -1)) continue;
 
                 // check for unlockables
                 if(current.unlockKey && !App.getRecord(current.unlockKey)){

@@ -2,6 +2,7 @@ class Activities {
     static async reckoning(forced){
         if(random(0, 1024) != 1 && !forced) return false;
 
+        App.setScene(App.scene.reviverDen);
         App.closeAllDisplays();
 
         Activities.encounter(true);
@@ -70,21 +71,66 @@ class Activities {
     }
     static async revive(){
         App.toggleGameplayControls(false);
-        App.pet.stopMove();
-        App.pet.x = '50%';
-        App.pet.stats.is_dead = false;
-        App.setScene(App.scene.home);
-        App.pet.y = 0;
-        App.pet.opacity = 0.5;
+
+        // revive
         App.pet.stats.current_health = 50;
         App.pet.stats.current_death_tick = 100;
         App.pet.stats.is_revived_once = true;
+        App.pet.stats.is_dead = false;
+
+        App.setScene(App.scene.reviverDen);
+        App.pet.stopMove();
+        App.pet.x = '50%';
+        App.pet.y = -999;
+        App.pet.opacity = 0.5;
+        App.pet.staticShadow = true;
+
+        setTimeout(() => {
+            App.playSound('resources/sounds/revival_01.ogg', true);
+        })
+
+        const reviverNpc = new Pet(
+            new PetDefinition({
+                sprite: 'resources/img/character/chara_193b.png',
+                name: 'The Exorcist',
+                accessories: ['reviver hood'],
+            }), 
+            {
+                x: '20%',
+                z: App.constants.ACTIVE_PET_Z - 1,
+            }
+        );
+        reviverNpc.triggerScriptedState('mild_uncomfortable', App.INF, false, true);
+
+        const doppelGanger = new Object2d({
+            img: App.petDefinition.sprite,
+            spritesheet: {
+                ...App.petDefinition.spritesheet,
+                cellNumber: App.petDefinition.animations.sleeping.start,
+            },
+            additionalY: App.petDefinition.spritesheet.offsetY,
+            noPreload: true,
+            y: '65%',
+            onDraw: (me) => {
+                if(me.y + me.spritesheet.cellSize/2 < App.pet.y) {
+                    me.removeObject();
+                    App.pet.opacity = 1;
+                    App.pet.stopScriptedState();
+                    App.pet.setState('shocked');
+                }
+            }
+        })
+
+        await App.pet.triggerScriptedState('idle', 3100, false, true); // idling at the top
+
+        App.pet.y = 0;
+        reviverNpc.setState('shocked');
 
         const reviveBackgroundObject = new Object2d({
             img: 'resources/img/misc/light_rays_02.png',
             x: '50%', y: '50%', z: App.constants.ACTIVE_PET_Z - 0.01,
             opacity: 1,
-            composite: 'lighter',
+            composite: 'difference',
             onDraw: (me) => {
                 me.rotation += 0.01 * App.deltaTime;
                 me.x = '50%'; me.y = '50%';
@@ -93,24 +139,28 @@ class Activities {
             }
         })
 
-        App.pet.triggerScriptedState('shocked', 3500, false, true, 
-            () => {
-                App.pet.y = '100%';
-                App.pet.opacity = 1;
-                App.pet.playUncomfortableAnimation(() => {
-                    App.toggleGameplayControls(true);
-                    App.displayConfirm(`<b>${App.petDefinition.name} has been revived!</b> <br><br> please take better care of them from now on since you won't be able to revive them again!`, [
-                        {
-                            name: 'ok',
-                            onclick:() => {}
-                        }
-                    ])
-                });
-            },
+        await App.pet.triggerScriptedState('angry', 3500, false, true, false,
             () => {
                 App.pet.y = lerp(App.pet.y, 90, 0.00065 * App.deltaTime);
             }
         )
+
+        reviverNpc.setState('cheering');
+
+        // App.pet.y = '100%';
+        App.pet.opacity = 1;
+        // doppelGanger.removeObject();
+        App.pet.playUncomfortableAnimation(() => {
+            reviverNpc.removeObject();
+            App.setScene(App.scene.home);
+            App.toggleGameplayControls(true);
+            App.displayConfirm(`<b>${App.petDefinition.name} has been revived!</b> <br><br> please take better care of them from now on since you won't be able to revive them again!`, [
+                {
+                    name: 'ok',
+                    onclick:() => {}
+                }
+            ])
+        });
     }
     static async goToCurrentRabbitHole(isStarting) {
         if(isStarting) { // starting animation

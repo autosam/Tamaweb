@@ -1638,6 +1638,12 @@ App.definitions = (() => {
                 isCraftable: true,
                 craftingRecipe: ['red tulip', 'purple tulip', 'yellow tulip'],
             },
+            // reviver
+            'reviver hood': {
+                image: 'resources/img/accessory/reviver_hood_01.png',
+                front: true,
+                price: -1, // makes it not buyable
+            },
         },
     
         /* ACHIEVEMENTS */
