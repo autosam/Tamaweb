@@ -16,6 +16,7 @@ class Pet extends Object2d {
     accessoryObjects = [];
     castShadow = true;
     speedOverride = 0;
+    additionalAccessories = [];
 
     constructor(petDefinition, additionalProps){
         const image = petDefinition.spriteSkin 
@@ -132,12 +133,15 @@ class Pet extends Object2d {
             }
         })
     }
-    equipAccessories(additionalAccessories){
+    equipAccessories(){
         // removing old accessories
         this.accessoryObjects.forEach(accessoryObject => accessoryObject?.removeObject());
         this.accessoryObjects = [];
 
-        const accessoriesToEquip = [...this.petDefinition.accessories, additionalAccessories];
+        const accessoriesToEquip = [
+            ...this.petDefinition.accessories,
+            ...this.additionalAccessories
+        ];
 
         if(!accessoriesToEquip) return;
         accessoriesToEquip.forEach((accName) => {
@@ -168,10 +172,12 @@ class Pet extends Object2d {
         })
     }
     handleGhost(){
-        this.castShadow = false;
-        this.opacity = this.stats.is_ghost ? 0.7 : 1;
-        this.equipAccessories('cupid wings');
+        if(!this.stats.is_ghost) return;
 
+        this.castShadow = false;
+        this.opacity = 0.7;
+        this.additionalAccessories = ['cupid wings'];
+        this.equipAccessories();
         this.animations.moving = this.animations.idle_side;
 
         // bobbing animation
