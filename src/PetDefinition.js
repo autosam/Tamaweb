@@ -222,6 +222,7 @@ class PetDefinition {
             endTime: false,
         },
         is_revived_once: false,
+        is_ghost: true,
     }
     friends = [];
     family = [];
