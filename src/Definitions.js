@@ -877,6 +877,14 @@ App.definitions = (() => {
                 unlockLikes: 80,
                 unlockKey: 'bg_silky_retreat_sky',
             },
+            "car city": {
+                image: 'resources/img/background/house/cc_06.png',
+                price: 0,
+                isNew: true,
+                onlineShopAccessible: true,
+                unlockLikes: 100,
+                unlockKey: 'bg_car_city',
+            },
             "astra": {
                 image: 'resources/img/background/house/cc_01.png',
                 price: 250,

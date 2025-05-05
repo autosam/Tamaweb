@@ -500,11 +500,13 @@ class Activities {
         }, 3000);
     }
     static goToInnerGarden(){
+        Activities.task_handleLeavingAnimals();
+        
         App.pet.stopScriptedState();
-        App.setScene(App.scene.garden_inner);
         App.pet.x = '100%';
         App.pet.targetX = 50;
-
+        App.setScene(App.scene.garden_inner);
+        
         const displayPlantsList = ({
             onPlantClick, 
             filterFn = () => true, 
@@ -774,31 +776,7 @@ class Activities {
         }
 
         // handle animals leaving
-        const leavingAnimals = App.animals.list.filter(a => a.stats.current_happiness <= 0);
-        if(leavingAnimals.length){
-            App.displayList([
-                {
-                    name: `
-                        these animals left because they were neglected:
-                        <br><br>
-                        ${leavingAnimals.map(animalDef => (`
-                            <span style="color: red;">
-                                ${animalDef.getFullCSprite()}${animalDef.name}    
-                            </span>
-                        `)).join('<br>')}
-                    `,
-                    type: 'text',
-                },
-                {
-                    name: "When animals lose all happiness, they leave. Take better care of them!",
-                    type: 'info',
-                }
-            ], null, 'neglect!');
-            leavingAnimals.forEach(a => {
-                App.animals.list.splice(App.animals.list.indexOf(a), 1);
-            })
-        }
-
+        Activities.task_handleLeavingAnimals();
 
         App.pet.stopScriptedState();
         App.setScene(App.scene.garden);
@@ -1051,8 +1029,8 @@ class Activities {
     static async goToOnlineHub(){
         const {hasUploadedPetDef, randomPetDefs} = App.temp.online;
         const INTERACTION_LIKES = {
-            outgoing: hasUploadedPetDef.interactionOutgoingLikes ?? 0,
-            receiving: hasUploadedPetDef.interactionReceivingLikes ?? 0,
+            outgoing: hasUploadedPetDef.interactionOutgoingLikes ?? 2,
+            receiving: hasUploadedPetDef.interactionReceivingLikes ?? 1,
         }
         const addInteraction = (def, skipApi) => {
             if(!skipApi) App.apiService.addInteraction(def.ownerId);
@@ -1298,8 +1276,9 @@ class Activities {
                     }
                 } else badge = App.getBadge('<i class="fa-solid fa-check"></i>', 'gray'); */
                 return {
-                    name: `<img class="icon" src="${icon}"></img> ${name}`,
-                    onclick: onClick
+                    name: `<img class="icon" src="${icon}"></img> ${name} ${item.isNew ? App.getBadge('new!') : ''}`,
+                    onclick: onClick,
+                    isNew: item.isNew,
                 }
             }
         
@@ -1334,13 +1313,13 @@ class Activities {
                     return createEntryButton(icon, item.name, item, () => showItem(icon, item.name, 'shell design', item.unlockLikes, item.unlockKey))
                 })
         
-            return App.displayList(
-                [
-                    ...accessories,
-                    ...backgrounds,
-                    ...shells,
-                ]
-            )
+            const finalList = [
+                ...accessories,
+                ...backgrounds,
+                ...shells,
+            ].sort((a, b) => b.isNew - a.isNew);
+        
+            return App.displayList(finalList)
         }
 
         App.toggleGameplayControls(false, () => {
@@ -3167,6 +3146,32 @@ class Activities {
                 me.x += Math.sin(swayFloat) * 2;
                 if(me.y < -16) me.removeObject();
             }
+        }
+    }
+    static task_handleLeavingAnimals(){
+        const leavingAnimals = App.animals.list.filter(a => a.stats.current_happiness <= 0);
+        if(leavingAnimals.length){
+            App.displayList([
+                {
+                    name: `
+                        these animals left because they were neglected:
+                        <br><br>
+                        ${leavingAnimals.map(animalDef => (`
+                            <span style="color: red;">
+                                ${animalDef.getFullCSprite()}${animalDef.name}    
+                            </span>
+                        `)).join('<br>')}
+                    `,
+                    type: 'text',
+                },
+                {
+                    name: "When animals lose all happiness, they leave. Take better care of them!",
+                    type: 'info',
+                }
+            ], null, 'neglect!');
+            leavingAnimals.forEach(a => {
+                App.animals.list.splice(App.animals.list.indexOf(a), 1);
+            })
         }
     }
 }
