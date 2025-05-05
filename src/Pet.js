@@ -40,6 +40,7 @@ class Pet extends Object2d {
 
         this.createOverlays();
         this.equipAccessories();
+        this.handleGhost();
     }
 
     createOverlays(){
@@ -78,6 +79,8 @@ class Pet extends Object2d {
             z: 4.89,
             hidden: !this.castShadow,
             onDraw: (overlay) => {
+                overlay.hidden = !this.castShadow;
+
                 overlay.x = this.x;
 
                 if(App.currentScene.noShadows) {
@@ -129,13 +132,15 @@ class Pet extends Object2d {
             }
         })
     }
-    equipAccessories(){
+    equipAccessories(additionalAccessories){
         // removing old accessories
         this.accessoryObjects.forEach(accessoryObject => accessoryObject?.removeObject());
         this.accessoryObjects = [];
 
-        if(!this.petDefinition.accessories) return;
-        this.petDefinition.accessories.forEach((accName) => {
+        const accessoriesToEquip = [...this.petDefinition.accessories, additionalAccessories];
+
+        if(!accessoriesToEquip) return;
+        accessoriesToEquip.forEach((accName) => {
             const accessory = App.definitions.accessories[accName];
             if(!accessory) return;
 
@@ -161,6 +166,21 @@ class Pet extends Object2d {
 
             this.accessoryObjects.push(accessoryObject);
         })
+    }
+    handleGhost(){
+        this.castShadow = false;
+        this.opacity = this.stats.is_ghost ? 0.7 : 1;
+        this.equipAccessories('cupid wings');
+
+        this.animations.moving = this.animations.idle_side;
+
+        // bobbing animation
+        const initialAdditionalY = this.additionalY;
+        let animationFloat = 0;
+        this.onDraw = (me) => {
+            animationFloat += 0.0075 * App.deltaTime;
+            me.additionalY = initialAdditionalY - 3 - Math.sin(animationFloat) * 3;
+        }
     }
     onLateDraw() {
         this.behavior();
