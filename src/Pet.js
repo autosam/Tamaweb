@@ -39,7 +39,7 @@ class Pet extends Object2d {
         }
 
         this.createOverlays();
-        this.createAccessories();
+        this.equipAccessories();
     }
 
     createOverlays(){
@@ -113,7 +113,7 @@ class Pet extends Object2d {
             }
         });
     }
-    createAccessories(){
+    equipAccessories(){
         // removing old accessories
         this.accessoryObjects.forEach(accessoryObject => accessoryObject?.removeObject());
         this.accessoryObjects = [];

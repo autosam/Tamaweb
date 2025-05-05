@@ -3820,7 +3820,7 @@ const App = {
                         // toggle equip mode
                         if(equipped) App.petDefinition.accessories.splice(App.petDefinition.accessories.indexOf(accessoryName), 1);
                         else App.petDefinition.accessories.push(accessoryName);
-                        Activities.getDressed(() => App.pet.createAccessories(), reopen, !equipped);
+                        Activities.getDressed(() => App.pet.equipAccessories(), reopen, !equipped);
                         App.sendAnalytics('accessory', `${accessoryName} (${!equipped})`);
                     }
                 })
