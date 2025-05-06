@@ -60,7 +60,21 @@ class Drawer {
             x = Math.round(x);
 
             function drawSprite(object, x, y, context) {
-                const { image, spritesheet, inverted, upperHalfOffsetY, scale, width, height, clipCircle, rotation, composite, opacity, isSkybox } = object;
+                const { 
+                    image, 
+                    spritesheet, 
+                    inverted, 
+                    upperHalfOffsetY, 
+                    scale, 
+                    width, 
+                    height, 
+                    clipCircle, 
+                    rotation, 
+                    composite, 
+                    opacity, 
+                    isSkybox,
+                    filter,
+                } = object;
                 if (!image) return;
 
                 context.save();
@@ -96,6 +110,10 @@ class Drawer {
 
                 if (composite) {
                     context.globalCompositeOperation = composite ?? "multiply";
+                }
+
+                if(filter) {
+                    context.filter = filter;
                 }
 
                 if (opacity !== undefined) {
