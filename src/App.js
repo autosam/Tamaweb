@@ -2959,7 +2959,7 @@ const App = {
                 }
 
                 // some entries become randomly unavailable to buy for the day
-                const isOutOfStock = ++index && buyMode && pRandom.getPercent(40) && currentType !== 'med';
+                const isOutOfStock = ++index && buyMode && pRandom.getPercent(20) && currentType !== 'med';
 
                 // 50% off on sales day
                 let price = current.price;
@@ -3085,7 +3085,7 @@ const App = {
                 }
 
                 // some entries become randomly unavailable to buy for the day
-                const isOutOfStock = ++index && buyMode && pRandom.getPercent(25);
+                const isOutOfStock = ++index && buyMode && pRandom.getPercent(20);
 
                 // 50% off on sales day
                 let price = current.price;
