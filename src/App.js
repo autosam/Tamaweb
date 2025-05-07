@@ -1637,6 +1637,7 @@ const App = {
                     App.addRecord('newspaper_delivery_ms', nextMs, true);
                 })
             }, random(1000, 2000))
+            return;
         }
 
         // revived encounter
