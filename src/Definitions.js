@@ -877,6 +877,14 @@ App.definitions = (() => {
                 unlockLikes: 80,
                 unlockKey: 'bg_silky_retreat_sky',
             },
+            "car city": {
+                image: 'resources/img/background/house/cc_06.png',
+                price: 0,
+                isNew: true,
+                onlineShopAccessible: true,
+                unlockLikes: 100,
+                unlockKey: 'bg_car_city',
+            },
             "astra": {
                 image: 'resources/img/background/house/cc_01.png',
                 price: 250,
@@ -1638,6 +1646,12 @@ App.definitions = (() => {
                 isCraftable: true,
                 craftingRecipe: ['red tulip', 'purple tulip', 'yellow tulip'],
             },
+            // reviver
+            'reviver hood': {
+                image: 'resources/img/accessory/reviver_hood_01.png',
+                front: true,
+                price: -1, // makes it not buyable
+            },
         },
     
         /* ACHIEVEMENTS */
@@ -2104,5 +2118,40 @@ App.definitions = (() => {
                 }
             },
         ],
+
+        /* GAMEPLAY BUFFS */
+        gameplay_buffs: {
+            // garden buffs
+            doubleHarvest: {
+                key: 'doubleHarvest',
+                name: '+ Harvests',
+                description: 'Increases the amount of harvests in the garden.',
+                type: 'garden',
+            },
+            increasedWateredDuration: {
+                key: 'increasedWateredDuration',
+                name: '+ Wet Duration',
+                description: 'Increases the amount the plants stay wet.',
+                type: 'garden',
+            },
+            longerDeathDuration: {
+                key: 'longerDeathDuration',
+                name: '+ Health Duration',
+                description: 'Increases the time before the plants start dying without water.',
+                type: 'garden',
+            },
+            // alwaysWatered: {
+            //     key: 'alwaysWatered',
+            //     name: '∞ Infinite Water',
+            //     description: 'Plants stay watered infinitely.',
+            //     type: 'garden',
+            // },
+            shorterGrowthDelay: {
+                key: 'shorterGrowthDelay',
+                name: '+ Growth',
+                description: 'Makes plants grow faster.',
+                type: 'garden',
+            },
+        }
     }
 })()

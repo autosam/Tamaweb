@@ -1,33 +1,166 @@
 class Activities {
-    static async revive(){
-        App.toggleGameplayControls(false);
+    static async reckoning(forced){
+        if(random(0, 1024) != 1 && !forced) return false;
+
+        App.setScene(App.scene.reviverDen);
+        App.closeAllDisplays();
+
+        Activities.encounter(true);
+
+        document.querySelector('.graphics-wrapper').style.filter = 'invert(1) grayscale(1) sepia(1) hue-rotate(320deg) saturate(10)';
         App.pet.stopMove();
         App.pet.x = '50%';
-        App.pet.stats.is_dead = false;
-        App.setScene(App.scene.home);
-        App.pet.y = 0;
-        App.pet.opacity = 0.5;
+        App.pet.y = '50%';
+        App.pet.rotation = 0;
+        App.pet.additionalY = 0;
+        let speed = 0.2;
+        const eventDriver = () => {
+            speed += 0.0001 * App.deltaTime
+            App.pet.additionalY = Math.sin(Math.random() * App.deltaTime) * (speed * 3);
+            App.pet.rotation = random(-16, 16);
+        }
+        App.pet.triggerScriptedState('sad', App.INF, false, true, false, eventDriver);
+
+        // sfx
+        setInterval(() => {
+            App.playSound('resources/sounds/wedding_song_01.ogg', true);
+        }, 150)
+        setInterval(() => {
+            App.vibrate(random(100, 250), true);
+        }, 300);
+
+        const quotes = [
+            "release me",
+            "I'm not them",
+            "this body is wrong",
+            "they never left",
+            "why did you bring me back?",
+            "something followed me",
+            "it's cold here",
+            "I'm alone",
+            "don't turn off the lights",
+            "we all come back wrong",
+            "the others are watching",
+            "help me"
+        ].map(q => q.replaceAll(' ', randomFromArray(['*', '^', '%', '#', '!!', '^^^', '***', '%%%'])))
+
+        App.toggleGameplayControls(false, () => {
+            setTimeout(() => {
+                location.reload();
+            }, App.constants.ONE_SECOND * 13)
+
+            const randomLetters = new Array(33)
+                .fill(1)
+                .map(() => String.fromCharCode(65 + Math.floor(Math.random() * 26)))
+                .join('');
+            const randomQuote = `___${randomFromArray(quotes)}___`;
+            const randomInsertPosition = random(1, 25);
+            const finalQuote = randomLetters.slice(0, randomInsertPosition) + randomQuote + randomLetters.slice(randomInsertPosition)
+            App.displayPopup(`
+                <div class="flex-wrap flex">
+                    ${finalQuote
+                        .split('').map(letter =>
+                         `<span class="random-letter-bounce" style="animation-delay: -${Math.random() * 1250}ms; --direction: ${random(-1, 1)}">${letter}</span>`
+                        ).join('')}
+                </div>
+            `, App.INF);
+        })
+
+        App.sendAnalytics('reckoning_encounter');
+        return true;
+    }
+    static async revive(){
+        App.toggleGameplayControls(false);
+
+        // revive
         App.pet.stats.current_health = 50;
         App.pet.stats.current_death_tick = 100;
         App.pet.stats.is_revived_once = true;
-        App.pet.triggerScriptedState('shocked', 2000, false, true, 
-            () => {
-                App.pet.y = '100%';
-                App.pet.opacity = 1;
-                App.pet.playUncomfortableAnimation(() => {
-                    App.toggleGameplayControls(true);
-                    App.displayConfirm(`<b>${App.petDefinition.name} has been revived!</b> <br><br> please take better care of them from now on since you won't be able to revive them again!`, [
-                        {
-                            name: 'ok',
-                            onclick:() => {}
-                        }
-                    ])
-                });
+        App.pet.stats.is_dead = false;
+
+        App.setScene(App.scene.reviverDen);
+        App.pet.stopMove();
+        App.pet.x = '50%';
+        App.pet.y = -999;
+        App.pet.opacity = 0.5;
+        App.pet.staticShadow = true;
+
+        setTimeout(() => {
+            App.playSound('resources/sounds/revival_01.ogg', true);
+        })
+
+        const reviverNpc = new Pet(
+            new PetDefinition({
+                sprite: 'resources/img/character/chara_193b.png',
+                name: 'The Exorcist',
+                accessories: ['reviver hood'],
+            }), 
+            {
+                x: '20%',
+                z: App.constants.ACTIVE_PET_Z - 1,
+            }
+        );
+        reviverNpc.triggerScriptedState('mild_uncomfortable', App.INF, false, true);
+
+        const doppelGanger = new Object2d({
+            img: App.petDefinition.sprite,
+            spritesheet: {
+                ...App.petDefinition.spritesheet,
+                cellNumber: App.petDefinition.animations.sleeping.start,
             },
+            additionalY: App.petDefinition.spritesheet.offsetY,
+            noPreload: true,
+            y: '65%',
+            onDraw: (me) => {
+                if(me.y + me.spritesheet.cellSize/2 < App.pet.y) {
+                    me.removeObject();
+                    App.pet.opacity = 1;
+                    App.pet.stopScriptedState();
+                    App.pet.setState('shocked');
+                }
+            }
+        })
+
+        await App.pet.triggerScriptedState('idle', 3100, false, true); // idling at the top
+
+        App.pet.y = 0;
+        reviverNpc.setState('shocked');
+
+        const reviveBackgroundObject = new Object2d({
+            img: 'resources/img/misc/light_rays_02.png',
+            x: '50%', y: '50%', z: App.constants.ACTIVE_PET_Z - 0.01,
+            opacity: 1,
+            composite: 'difference',
+            onDraw: (me) => {
+                me.rotation += 0.01 * App.deltaTime;
+                me.x = '50%'; me.y = '50%';
+                me.opacity -= 0.0004 * App.deltaTime;
+                if(me.opacity < 0) me.removeObject();
+            }
+        })
+
+        await App.pet.triggerScriptedState('angry', 3500, false, true, false,
             () => {
-                App.pet.y = lerp(App.pet.y, 96, 0.0008 * App.deltaTime);
+                App.pet.y = lerp(App.pet.y, 90, 0.00065 * App.deltaTime);
             }
         )
+
+        reviverNpc.setState('cheering');
+
+        // App.pet.y = '100%';
+        App.pet.opacity = 1;
+        // doppelGanger.removeObject();
+        App.pet.playUncomfortableAnimation(() => {
+            reviverNpc.removeObject();
+            App.setScene(App.scene.home);
+            App.toggleGameplayControls(true);
+            App.displayConfirm(`<b>${App.petDefinition.name} has been revived!</b> <br><br> please take better care of them from now on since you won't be able to revive them again!`, [
+                {
+                    name: 'ok',
+                    onclick:() => {}
+                }
+            ])
+        });
     }
     static async goToCurrentRabbitHole(isStarting) {
         if(isStarting) { // starting animation
@@ -263,7 +396,7 @@ class Activities {
 
             App.pet.playCheeringAnimation();
 
-            App.setScene(App.currentScene); // to reset pet pos
+            App.reloadScene(); // to reset pet pos
             
             App.toggleGameplayControls(true);
 
@@ -367,11 +500,13 @@ class Activities {
         }, 3000);
     }
     static goToInnerGarden(){
+        Activities.task_handleLeavingAnimals();
+        
         App.pet.stopScriptedState();
-        App.setScene(App.scene.garden_inner);
         App.pet.x = '100%';
         App.pet.targetX = 50;
-
+        App.setScene(App.scene.garden_inner);
+        
         const displayPlantsList = ({
             onPlantClick, 
             filterFn = () => true, 
@@ -388,8 +523,8 @@ class Activities {
             return App.displayList([...additionalStartOptions, ...allPlantsList]);
         }
 
-        App.toggleGameplayControls(false, () => {
-            return App.displayList([
+        const displayMainList = () => {
+            const mainList =  App.displayList([
                 {
                     name: '<i class="icon fa-solid fa-plus icon"></i> plant',
                     _disable: App.plants.length === App.constants.MAX_PLANTS,
@@ -441,13 +576,17 @@ class Activities {
                     _disable: !App.plants.some(p => p.age === Plant.AGE.grown),
                     onclick: () => {
                         const displayHarvestables = () => {
+                            if(!App.plants.some(p => p.age === Plant.AGE.grown)) return;
+
                             const list = displayPlantsList({
                                 onPlantClick: (plant, plantIndex) => {
                                     App.plants.splice(plantIndex, 1); // removing plant
                                     App.handleGardenPlantsSpawn(true);
                                     Activities.task_floatingObjects(10, ['resources/img/misc/tick_green_01.png']);
 
-                                    const amount = random(4, 8);
+                                    let amount = random(3, 5);
+                                    if(App.isGameplayBuffActive('doubleHarvest')) amount += random(3, 5);
+
                                     App.addNumToObject(App.pet.inventory.harvests, plant.name, amount);
                                     App.displayConfirm(`
                                             <div>${plant.getCSprite()}</div>
@@ -457,7 +596,10 @@ class Activities {
                                         {
                                             name: 'ok',
                                             onclick: () => {
+                                                UI.clearLastClicked();
+                                                mainList.close();
                                                 list.close();
+                                                displayMainList();
                                                 displayHarvestables();
                                             }
                                         }
@@ -474,7 +616,7 @@ class Activities {
                 },
                 {
                     name: 'remove',
-                    _disable: !App.plants.length,
+                    _disable: !App.plants.length || App.plants.every(p => p.age === Plant.AGE.grown),
                     onclick: () => {
                         displayPlantsList({
                             additionalStartOptions: App.plants.some(p => p.isDead) ? [
@@ -535,13 +677,17 @@ class Activities {
                             {
                                 name: `
                                 <div class="flex-between flex-wrap" style="row-gap: 4px">
-                                    ${App.getHarvestInventory()}
+                                    ${App.getHarvestInventoryUI()}
                                 </div>
                                 `,
                                 type: 'text',
                             },
                         ]);
                     }
+                },
+                {
+                    name: `active buffs ${App.getBadge()}`,
+                    onclick: () => App.handlers.open_active_buffs('garden'),
                 },
                 {
                     name: '<i class="icon fa-solid fa-home"></i> go inside',
@@ -561,24 +707,249 @@ class Activities {
                 //         Activities.goToGarden();
                 //     }
                 // }
-            ])
-        })
+            ]);
+
+            return mainList;
+        }
+
+        App.toggleGameplayControls(false, displayMainList)
     }
     static goToGarden(){
+        const openChooseNameDialog = (animalDef, onEndFn) => {
+            return App.displayPrompt(`Choose a name for ${animalDef.getFullCSprite()}:`, [
+                {
+                    name: 'set',
+                    onclick: (text) => {
+                        animalDef.name = text;
+                        onEndFn?.();
+                        App.displayPopup(`Name set to ${animalDef.name}!`);
+                    }
+                },
+                {
+                    name: 'cancel',
+                    class: 'back-btn',
+                    onclick: () => {}
+                }
+            ], animalDef.name)
+        }
+
+        const getNextAttractMs = (fromMs = App.animals.nextAttractMs) => {
+            return (fromMs || Date.now()) + App.constants.ONE_HOUR * random(2, 8);
+        }
+        const resetTreat = () => {
+            App.animals.treat = null;
+            App.animals.treatBiteCount = 0;
+        }
+        const checkForArrivedAnimal = () => {
+            if(!App.animals.treat) return;
+            if(App.animals.nextAttractMs > Date.now()) return;
+
+            App.animals.treatBiteCount ++;
+            App.animals.nextAttractMs = getNextAttractMs();
+
+            if(!random(0, 2)){
+                resetTreat();
+                const newAnimal = new AnimalDefinition({
+                    name: getRandomName(false, true),
+                    sprite: randomFromArray(ANIMAL_CHARACTERS)
+                });
+                App.animals.list.push(newAnimal);
+                App.displayPopup(`A new animal ${newAnimal.getFullCSprite()} has chosen your backyard as their new home. Take good care of them!`, 3000, () => openChooseNameDialog(newAnimal));
+            } else if(App.animals.treatBiteCount > 2) {
+                resetTreat();
+                App.displayConfirm(`The food you placed out earlier is gone.<br><br>Unfortunately, its visitor chose not to stay this time, maybe you'll meet them next time!`, [
+                    {
+                        name: 'ok',
+                        onclick: () => {}
+                    }
+                ]);
+            }
+        }
+
+        // handle new animal arriving
+        if(App.animals.treat){
+            const timeDelta = Date.now() - App.animals.nextAttractMs;
+            const repeatTimes = Math.ceil(timeDelta / (App.constants.ONE_HOUR * 2));
+            for(let i = 0; i < clamp(repeatTimes, 0, 10); i++){
+                checkForArrivedAnimal();
+            }
+        }
+
+        // handle animals leaving
+        Activities.task_handleLeavingAnimals();
+
         App.pet.stopScriptedState();
         App.setScene(App.scene.garden);
         App.pet.x = '100%';
         App.pet.targetX = 50;
+
         App.toggleGameplayControls(false, () => {
             return App.displayList([
                 {
+                    _ignore: true,
                     name: 'Garden',
                     onclick: () => {
                         Activities.goToInnerGarden();
                     }
                 },
                 {
+                    name: 'Animals',
+                    onclick: () => {
+                        return App.displayList([
+                            ...App.animals.list.map(animalDef => ({
+                                name: `${animalDef.getFullCSprite()}${animalDef.name}`,
+                                onclick: () => {
+                                    return App.displayList([
+                                        {
+                                            type: 'text',
+                                            name: `
+                                                Happiness:
+                                                ${App.createProgressbar(animalDef.stats.current_happiness).node.outerHTML}
+                                            `,
+                                        },
+                                        {
+                                            name: 'feed',
+                                            onclick: () => {
+                                                const onUseFn = (selectedFood) => {
+                                                    App.closeAllDisplays();
+                                                    animalDef.feed(selectedFood.hunger_replenish * 3);
+
+                                                    const startTime = App.time;
+                                                    const spawnedAnimal = App.spawnedAnimals.find(a => a.animalDefinition === animalDef);
+                                                    const foodObject = new Object2d({
+                                                        parent: spawnedAnimal,
+                                                        image: App.preloadedResources[App.constants.FOOD_SPRITESHEET],
+                                                        spritesheet: {
+                                                            ...App.constants.FOOD_SPRITESHEET_DIMENSIONS,
+                                                            cellNumber: selectedFood.sprite
+                                                        },
+                                                        scale: 1,
+                                                        x: spawnedAnimal.x + spawnedAnimal.spritesheet.cellSize,
+                                                        y: spawnedAnimal.y - spawnedAnimal.spritesheet.cellSize,
+                                                        onDraw: (me) => {
+                                                            App.pet.setLocalZBasedOnSelf(me);
+                                                        },
+                                                    })
+                                                    spawnedAnimal.stopMove();
+                                                    spawnedAnimal.inverted = true;
+                                                    spawnedAnimal.triggerScriptedState('eating', App.INF, false, true, 
+                                                        () => {
+                                                            foodObject.removeObject();
+                                                            spawnedAnimal.playCheeringAnimation(null, true);
+                                                        },
+                                                        () => {
+                                                            const elapsedTime = App.time - startTime;
+                                                            const spriteOffset = Math.floor(elapsedTime / 1500);
+                                                            foodObject.spritesheet.cellNumber = selectedFood.sprite + clamp(spriteOffset, 0, 2);
+                                                            // foodObject.scale = 1 - (spriteOffset * 0.2);
+                                                            if(spriteOffset > 2) spawnedAnimal.stopScriptedState();
+                                                        }
+                                                    );
+                                                    Missions.done(Missions.TYPES.feed_animal);
+                                                    return true;
+                                                }
+                                                return App.handlers.open_food_list(false, false, false, false, onUseFn);
+                                            }
+                                        },
+                                        {
+                                            name: 'play',
+                                            onclick: () => {
+                                                App.closeAllDisplays();
+                                                animalDef.increaseHappiness(random(2, 5));
+                                                const spawnedAnimal = App.spawnedAnimals.find(a => a.animalDefinition === animalDef);
+                                                App.pet.stopScriptedState();
+                                                spawnedAnimal.stopScriptedState();
+                                                spawnedAnimal.interactWith(App.pet, {animation: 'cheering', length: 5000});
+                                                Missions.done(Missions.TYPES.play_with_animal);
+                                            }
+                                        },
+                                        {
+                                            type: 'text',
+                                            name: App.getGameplayBuffUI(animalDef.getBuff()),
+                                        },
+                                        {
+                                            name: 'rename',
+                                            onclick: () => openChooseNameDialog(animalDef, () => App.closeAllDisplays())
+                                        },
+                                        {
+                                            name: `<span style="color: red;">Release</span>`,
+                                            onclick: () => {
+                                                return App.displayConfirm(`Are you sure you want release ${animalDef.name} back into the wild?`, [
+                                                    {
+                                                        name: 'yes',
+                                                        onclick: async () => {
+                                                            App.closeAllDisplays();
+
+                                                            const previousController = App.getGameplayControlsState().onclick;
+                                                            App.toggleGameplayControls(false);
+                                                            App.pet.stopMove();
+                                                            App.pet.inverted = false;
+                                                            App.pet.x = '75%';
+                                                            App.pet.triggerScriptedState('uncomfortable', App.INF, false, true);
+                                                            const spawnedAnimal = App.spawnedAnimals.find(a => a.animalDefinition === animalDef);
+                                                            spawnedAnimal.stopMove();
+                                                            spawnedAnimal.x = '50%';
+                                                            spawnedAnimal.y = '100%';
+                                                            spawnedAnimal.targetX = -100;
+                                                            await spawnedAnimal.triggerScriptedState('moving', 5000, false, true);
+                                                            App.toggleGameplayControls(false, previousController);
+                                                            App.pet.stopScriptedState();
+
+                                                            App.displayPopup(`${animalDef.name} has been released back into the wild.`, 4000);
+                                                            App.animals.list.splice(
+                                                                App.animals.list.indexOf(animalDef),
+                                                                1
+                                                            );
+                                                            App.reloadScene(true);
+                                                        }
+                                                    },
+                                                    {
+                                                        name: 'no',
+                                                        class: 'back-btn',
+                                                        onclick: () => {}
+                                                    }
+                                                ])
+                                            }
+                                        }
+                                    ])
+                                }
+                            })),
+                            {
+                                _disable: App.animals.list.length >= App.constants.MAX_ANIMALS,
+                                name: '<i class="fa-solid fa-plus icon"></i> Attract Animal',
+                                onclick: () => {
+                                    return App.displayList([
+                                        {
+                                            name: App.animals.treat ? 'Replace food' : 'Place food',
+                                            onclick: () => {
+                                                const onUseFn = (selectedFood) => {
+                                                    App.closeAllDisplays();
+                                                    App.animals.treat = selectedFood.sprite;
+                                                    App.animals.treatBiteCount = 0;
+                                                    App.animals.nextAttractMs = getNextAttractMs(Date.now());
+                                                    App.reloadScene(true);
+                                                    return true;
+                                                }
+                                                return App.handlers.open_food_list(false, false, false, false, onUseFn);
+                                            }
+                                        },
+                                        {
+                                            type: 'info',
+                                            name: `Placing food out may attract new animals!`
+                                        }
+                                    ])
+                                }
+                            },
+                        ])
+                    }
+                },
+                {
+                    name: `active buffs`,
+                    onclick: App.handlers.open_active_buffs,
+                },
+                {
                     name: '<i class="icon fa-solid fa-home"></i> go inside',
+                    class: 'back-btn',
                     onclick: () => {
                         App.setScene(App.scene.home);
                         App.toggleGameplayControls(true);
@@ -605,6 +976,7 @@ class Activities {
             x: '0%',
             y: App.scene.garden.petY,
             targetX: 50,
+            onDraw: (me) => App.pet.setLocalZBasedOnSelf(me),
         });
         const payload = () => {
             mailMan.removeObject();
@@ -657,8 +1029,8 @@ class Activities {
     static async goToOnlineHub(){
         const {hasUploadedPetDef, randomPetDefs} = App.temp.online;
         const INTERACTION_LIKES = {
-            outgoing: hasUploadedPetDef.interactionOutgoingLikes ?? 0,
-            receiving: hasUploadedPetDef.interactionReceivingLikes ?? 0,
+            outgoing: hasUploadedPetDef.interactionOutgoingLikes ?? 2,
+            receiving: hasUploadedPetDef.interactionReceivingLikes ?? 1,
         }
         const addInteraction = (def, skipApi) => {
             if(!skipApi) App.apiService.addInteraction(def.ownerId);
@@ -904,8 +1276,9 @@ class Activities {
                     }
                 } else badge = App.getBadge('<i class="fa-solid fa-check"></i>', 'gray'); */
                 return {
-                    name: `<img class="icon" src="${icon}"></img> ${name}`,
-                    onclick: onClick
+                    name: `<img class="icon" src="${icon}"></img> ${name} ${item.isNew ? App.getBadge('new!') : ''}`,
+                    onclick: onClick,
+                    isNew: item.isNew,
                 }
             }
         
@@ -940,13 +1313,13 @@ class Activities {
                     return createEntryButton(icon, item.name, item, () => showItem(icon, item.name, 'shell design', item.unlockLikes, item.unlockKey))
                 })
         
-            return App.displayList(
-                [
-                    ...accessories,
-                    ...backgrounds,
-                    ...shells,
-                ]
-            )
+            const finalList = [
+                ...accessories,
+                ...backgrounds,
+                ...shells,
+            ].sort((a, b) => b.isNew - a.isNew);
+        
+            return App.displayList(finalList)
         }
 
         App.toggleGameplayControls(false, () => {
@@ -1022,11 +1395,17 @@ class Activities {
             ])
         })
     }
-    static encounter(){
-        if(random(0, 256) != 1) return false;
+    static encounter(forced){
+        const chance = App.pet.stats.is_revived_once 
+            ? random(0, 128) 
+            : random(0, 256);
+        if(chance != 1 && !forced) return false;
+
+        const despawnTime = App.time + (App.constants.ONE_SECOND * random(15, 30));
         const def = new PetDefinition({
             sprite: NPC_CHARACTERS[0],
             name: '-_-',
+            accessories: App.pet.stats.is_revived_once ? ['demon wings'] : [],
         }).setStats({
             current_hunger: 0,
             current_health: 0,
@@ -1038,15 +1417,24 @@ class Activities {
         })
         new Pet(def, {
             opacity: 0.5,
-            x: -50,
+            x: forced ? '50%' : -50,
             castShadow: false,
             z: App.constants.ACTIVE_PET_Z + 1,
+            isDespawning: false,
             onDraw: (me) => {
-                if(!App.pet.stats.is_sleeping){
-                    me.removeObject();
+                if(me.isDespawning){
+                    me.opacity -= 0.001 * App.deltaTime;
+                    if(me.opacity < 0) me.removeObject()
                 }
+
+                if(App.pet.stats.is_revived_once){
+                    me.isDespawning = App.time > despawnTime;
+                    return;
+                }
+
+                me.isDespawning = !App.pet.stats.is_sleeping;
             }
-        });
+        }); 
         return true;
     }
     static goToVacation(vacationFn){
@@ -1301,7 +1689,7 @@ class Activities {
         await App.pet.triggerScriptedState('idle', App.INF, null, true, () => {
             // App.pet.y = y;
             // App.pet.x = '50%';
-            App.setScene(App.currentScene);
+            App.reloadScene();
             App.toggleGameplayControls(true);
             App.pet.shadowOffset = 0;
             App.pet.scale = 1;
@@ -2758,6 +3146,32 @@ class Activities {
                 me.x += Math.sin(swayFloat) * 2;
                 if(me.y < -16) me.removeObject();
             }
+        }
+    }
+    static task_handleLeavingAnimals(){
+        const leavingAnimals = App.animals.list.filter(a => a.stats.current_happiness <= 0);
+        if(leavingAnimals.length){
+            App.displayList([
+                {
+                    name: `
+                        these animals left because they were neglected:
+                        <br><br>
+                        ${leavingAnimals.map(animalDef => (`
+                            <span style="color: red;">
+                                ${animalDef.getFullCSprite()}${animalDef.name}    
+                            </span>
+                        `)).join('<br>')}
+                    `,
+                    type: 'text',
+                },
+                {
+                    name: "When animals lose all happiness, they leave. Take better care of them!",
+                    type: 'info',
+                }
+            ], null, 'neglect!');
+            leavingAnimals.forEach(a => {
+                App.animals.list.splice(App.animals.list.indexOf(a), 1);
+            })
         }
     }
 }

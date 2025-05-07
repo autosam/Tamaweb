@@ -28,17 +28,24 @@ class Plant {
 
         if(App.isWeatherEffectActive()) this.water(now);
 
-        this.isWatered = (now - this.lastWatered) < this.wateredDuration;
+        let wateredDuration = this.wateredDuration;
+        if(App.isGameplayBuffActive('increasedWateredDuration')) wateredDuration += App.constants.ONE_HOUR * 2;
+        let deathDuration = this.deathDuration;
+        if(App.isGameplayBuffActive('longerDeathDuration')) deathDuration += App.constants.ONE_HOUR * 5;
+        let growthDelay = this.growthDelay;
+        if(App.isGameplayBuffActive('shorterGrowthDelay')) growthDelay -= App.constants.ONE_HOUR * 4;
 
-        if (now > this.lastWatered + this.wateredDuration + this.deathDuration) {
+        this.isWatered = (now - this.lastWatered) < wateredDuration;
+
+        if (now > this.lastWatered + wateredDuration + deathDuration) {
             this.age = Plant.AGE.dead;
             return;
         }
 
         if([Plant.AGE.grown, Plant.AGE.dead].includes(this.age)) return;
 
-        while (this.lastGrowthTime + this.growthDelay < now && this.age !== Plant.AGE.grown) {
-            this.lastGrowthTime += this.growthDelay;
+        while (this.lastGrowthTime + growthDelay < now && this.age !== Plant.AGE.grown) {
+            this.lastGrowthTime += growthDelay;
             this.age = clamp(this.age + 1, Plant.AGE.seedling, Plant.AGE.grown);
         }
     }
@@ -76,10 +83,11 @@ class Plant {
                 cellNumber: plantDefinition.sprite + this.age,
             },
             ...position,
-            z: App.constants.ACTIVE_PET_Z + 0.01,
-            onDraw: () => {
+            onDraw: (me) => {
                 this.checkForProgress();
                 plant.spritesheet.cellNumber = plantDefinition.sprite + this.age;
+                App.pet.setLocalZBasedOnSelf(plant);
+                // console.log(plantDefinition.sprite, me.z, me.localZ)
             }
         })
         const statusIndicator = new Object2d({

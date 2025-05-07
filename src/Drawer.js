@@ -26,13 +26,19 @@ class Drawer {
         if(!objects) objects = this.objects;
 
         // sorting based on z
-        objects = objects.filter(object => object).sort((a, b) => (a.z || 0) - (b.z || 0));
+        objects = objects.filter(object => object)
+        .sort((a, b) => {
+            if ((a.z || 0) === (b.z || 0)) {
+                return (a.localZ || 0) - (b.localZ || 0);
+            }
+            return (a.z || 0) - (b.z || 0);
+        });
+        
 
         objects.forEach(object => {
             if(!object || object.hidden || object.absHidden) return;
 
-            if (object.onDraw !== undefined)
-                object.onDraw(object);
+            object.onDraw?.(object);
 
             if (object.x.toString().indexOf('%') >= 0) {
                 let width = object.spritesheet ? object.spritesheet.cellSize : object.width || object.image.width;
@@ -54,7 +60,21 @@ class Drawer {
             x = Math.round(x);
 
             function drawSprite(object, x, y, context) {
-                const { image, spritesheet, inverted, upperHalfOffsetY, scale, width, height, clipCircle, rotation, composite, opacity, isSkybox } = object;
+                const { 
+                    image, 
+                    spritesheet, 
+                    inverted, 
+                    upperHalfOffsetY, 
+                    scale, 
+                    width, 
+                    height, 
+                    clipCircle, 
+                    rotation, 
+                    composite, 
+                    opacity, 
+                    isSkybox,
+                    filter,
+                } = object;
                 if (!image) return;
 
                 context.save();
@@ -90,6 +110,10 @@ class Drawer {
 
                 if (composite) {
                     context.globalCompositeOperation = composite ?? "multiply";
+                }
+
+                if(filter) {
+                    context.filter = filter;
                 }
 
                 if (opacity !== undefined) {
@@ -196,8 +220,7 @@ class Drawer {
                 this.context.fillText(object.text, x, y);
             }
 
-            if (object.onLateDraw !== undefined)
-                object.onLateDraw();
+            object.onLateDraw?.(object);
         })
         return this;
     }

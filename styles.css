@@ -1120,6 +1120,10 @@ input#background-color-picker {
     height: 100%;
 }
 
+.font-small {
+    font-size: small;
+}
+
 .flex-dir-col {
     flex-direction: column;
 }
@@ -2185,4 +2189,18 @@ a {
 }
 .seller-analysis.positive:after {
     content: "\f0d8";
+}
+
+@keyframes randomLetterBounceAnim {
+    from {
+        opacity: 0.5;
+        transform: rotateZ(calc(var(--direction) * -5deg)) translate(calc(var(--direction) * 1px), 2px);
+    }
+    to {
+        padding-top: 2px;
+        transform: rotateZ(calc(var(--direction) * 5deg));
+    }
+}
+.random-letter-bounce  {
+    animation: randomLetterBounceAnim 0.5s linear infinite;
 }

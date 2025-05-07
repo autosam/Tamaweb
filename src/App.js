@@ -5,7 +5,16 @@ const App = {
     userId: '_', userName: null, sessionId: Math.round(Math.random() * 9999999999),
     ENV: location.port == 5500 ? 'dev' : 'prod', isOnItch: false, isOnElectronClient: false,
     shellBackground: '', deferredInstallPrompt: null,
-    gameEventsHistory: {}, misc: {}, mods: [], records: {}, temp: {}, ownedFurniture: [], plants: [],
+
+    gameEventsHistory: {}, 
+    misc: {}, 
+    mods: [], 
+    records: {}, 
+    temp: {}, 
+    ownedFurniture: [], 
+    plants: [],
+    animals: { treat: null, list: [], nextAttractMs: 0, treatBiteCount: 0 },
+
     settings: {
         screenSize: 1,
         playSound: true,
@@ -22,6 +31,8 @@ const App = {
     },
     constants: {
         ONE_HOUR: 1000 * 60 * 60,
+        ONE_MINUTE: 1000 * 60,
+        ONE_SECOND: 1000,
         FOOD_SPRITESHEET: 'resources/img/item/foods_on.png',
         FOOD_SPRITESHEET_DIMENSIONS: {
             cellNumber: 1,
@@ -43,6 +54,7 @@ const App = {
             rows: 28,
             columns: 28,
         },
+        MAX_ANIMALS: 8,
         MAX_PLANTS: 8,
         SLEEP_START: 21,
         SLEEP_END: 8,
@@ -136,8 +148,16 @@ const App = {
         if(loadedData.plants)
             this.plants = loadedData.plants.map(p => new Plant(p));
 
+        // animals
+        if(loadedData.animals){
+            this.animals = {
+                ...loadedData.animals,
+                list: loadedData.animals.list.map(a => new AnimalDefinition(a))
+            };
+        }
+
         // handle preloading
-        let forPreload = [
+        const forPreload = [
             ...SPRITES,
             ...PET_ELDER_CHARACTERS,
             ...PET_ADULT_CHARACTERS,
@@ -145,6 +165,7 @@ const App = {
             ...PET_CHILD_CHARACTERS,
             ...PET_BABY_CHARACTERS,
             ...NPC_CHARACTERS,
+            ...ANIMAL_CHARACTERS,
         ];
         this.preloadedResources = {};
         const preloadedResources = await this.preloadImages(forPreload);
@@ -301,11 +322,11 @@ const App = {
         // records
         App.records = loadedData.records;
 
-        // load room customizations
-        this.applyRoomCustomizations(loadedData.roomCustomizations);
-
         // missions
         Missions.init(loadedData.missions);
+
+        // load room customizations
+        this.applyRoomCustomizations(loadedData.roomCustomizations);
 
         // check if at daycare
         if(App.pet.stats.is_at_parents){
@@ -330,7 +351,7 @@ const App = {
                 e.preventDefault();
             }
         }); */
-
+        
         // random encounters
         App.runRandomEncounters();
 
@@ -492,7 +513,7 @@ const App = {
             }
         }
         if(App.currentScene){
-            App.setScene(App.currentScene);
+            App.reloadScene();
         }
 
         // screenshot
@@ -780,6 +801,9 @@ const App = {
                         App.displayPopup(`Set tester: ${App.settings.isTester}`, 1000, () => window.location.reload());
                         break;
                     default: showInvalidError();
+                    case 'activity:reckoning':
+                        Activities.reckoning(true);
+                        break;
                 }
         }
     },
@@ -789,7 +813,7 @@ const App = {
             return;
         }
 
-        const addEvent = App.addEvent;
+        const { addEvent } = App;
 
         if(!App.userName){
             App.handlers.show_set_username_dialog();
@@ -806,7 +830,7 @@ const App = {
         //     ])
         // })) return;
 
-        if(addEvent(`update_15_notice`, () => {
+        if(addEvent(`update_16_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
@@ -815,7 +839,7 @@ const App = {
                     bold: true,
                 },
                 {
-                    name: `Check out the new Gardening, Child and Elder life stages, Cooking and crafting, Homeworld Getaways and more!`,
+                    name: `Check out the new Animal Pets, Reviving, and more!`,
                     type: 'text',
                 },
                 {
@@ -1079,9 +1103,42 @@ const App = {
             shadowOffset: -5,
             onLoad: () => {
                 App.pet.staticShadow = false;
+    
+                App.temp.petBowlObject = new Object2d({
+                    img: 'resources/img/misc/pet_bowl_01.png',
+                    x: '20%',
+                    y: '67%',
+                    width: 22, height: 22,
+                    onLateDraw: (me) => {
+                        App.pet.setLocalZBasedOnSelf(me);
+                    }
+                })
+        
+                if(App.animals.treat){
+                    App.temp.animalTreatObject = new Object2d({
+                        img: App.constants.FOOD_SPRITESHEET,
+                        spritesheet: {
+                            ...App.constants.FOOD_SPRITESHEET_DIMENSIONS,
+                            cellNumber: App.animals.treat + App.animals.treatBiteCount,
+                        },
+                        x: App.temp.petBowlObject.x,
+                        y: '63%',
+                        onLateDraw: (me) => {
+                            me.z = App.temp.petBowlObject.z;
+                            me.localZ = App.temp.petBowlObject.localZ + 0.001;
+                        }
+                    })
+                }
+
+                App.handleAnimalsSpawn(true);
             },
             onUnload: () => {
                 App.pet.staticShadow = true;
+
+                App.temp.petBowlObject?.removeObject?.();
+                App.temp.animalTreatObject?.removeObject?.();
+
+                App.handleAnimalsSpawn(false);
             }
         }),
         beach: new Scene({
@@ -1115,23 +1172,32 @@ const App = {
         garden_inner: new Scene({
             image: 'resources/img/background/outside/garden_inner_01.png',
             petY: '55%',
+            animalMinY: 55,
             shadowOffset: -5,
             onLoad: () => {
                 App.handleGardenPlantsSpawn(true);
+                App.handleAnimalsSpawn(true);
                 App.pet.staticShadow = true;
             },
             onUnload: () => {
                 App.handleGardenPlantsSpawn(false);
+                App.handleAnimalsSpawn(false);
                 App.pet.staticShadow = false;
             }
         }),
+        reviverDen: new Scene({
+            image: 'resources/img/background/house/reviver_01.png',
+            noShadows: true,
+        }),
     },
-    setScene(scene){
+    setScene(scene, noPositionChange){
         App.currentScene?.onUnload?.(scene);
 
         App.currentScene = scene;
-        App.pet.x = scene.petX || '50%';
-        App.pet.y = scene.petY || '100%';
+        if(!noPositionChange){
+            App.pet.x = scene.petX || '50%';
+            App.pet.y = scene.petY || '100%';
+        }
         if(scene.foodsX) App.foods.x = scene.foodsX;
         if(scene.foodsY) App.foods.y = scene.foodsY;
         App.background.setImg(scene.image);
@@ -1141,6 +1207,9 @@ const App = {
         }
 
         this.applySky();
+    },
+    reloadScene(noPositionChange){
+        App.setScene(App.currentScene, noPositionChange);
     },
     isRoomFurnishable(){
         return App.scene.home.image?.includes('furnishable/');
@@ -1329,6 +1398,21 @@ const App = {
             this.spawnedPlants.push(patch);
         }
     },
+    handleAnimalsSpawn(shouldSpawn){
+        this.spawnedAnimals?.forEach?.(o => o?.removeObject?.());
+
+        if(!shouldSpawn) {
+            return false;
+        }
+
+        this.spawnedAnimals = App.animals.list?.map(animalDef => {
+            const animal = new Animal(animalDef, {
+                x: random(0, App.drawer.bounds.width),
+            })
+            animal.y = animal.getValidRandomYPosition();
+            return animal;
+        })
+    },
     applySky() {
         const { AFTERNOON_TIME, EVENING_TIME, NIGHT_TIME } = App.constants;
         const date = new Date();
@@ -1380,7 +1464,39 @@ const App = {
 
         if(data.home.image) App.scene.home.image = data.home.image;
 
-        App.setScene(App.currentScene);
+        App.reloadScene();
+    },
+    getRandomAnimalDef: function(type){
+        const animalGroups = {};
+        animalGroups.cat = ANIMAL_CHARACTERS.filter(char => char.includes('cat'));
+        animalGroups.dog = ANIMAL_CHARACTERS.filter(char => char.includes('dog'));
+        animalGroups.other = ANIMAL_CHARACTERS.filter(char => !animalGroups.cat.includes(char) && !animalGroups.dog.includes(char));
+
+        if(type && !(type in animalGroups)) {
+            console.error('Invalid Animal Group type: ', type);
+            type = null;
+        }
+
+        const typesArray = type ? 
+            [animalGroups[type]] : 
+            [
+                // increases the chance of dogs and cats
+                animalGroups.cat, animalGroups.dog,
+                animalGroups.cat, animalGroups.dog,
+                animalGroups.cat, animalGroups.dog,
+                animalGroups.other  
+            ];
+
+        const sprite = randomFromArray(
+            randomFromArray(typesArray)
+        );
+
+        const animal = new AnimalDefinition({
+            name: getRandomName(false, true),
+            sprite
+        });
+
+        return animal;
     },
     getRandomPetDef: function(age, seed){
         pRandom.save();
@@ -1519,6 +1635,11 @@ const App = {
                     App.addRecord('newspaper_delivery_ms', nextMs, true);
                 })
             }, random(1000, 2000))
+        }
+
+        // revived encounter
+        if(App.pet.stats.is_revived_once){
+            if(Activities.reckoning()) return;
         }
 
         // entity encounter
@@ -1771,6 +1892,12 @@ const App = {
                     }
                 },
                 {
+                    name: `Backyard ${App.getBadge()}`,
+                    onclick: () => {
+                        Activities.goToGarden();
+                    }
+                },
+                {
                     name: `Garden`,
                     onclick: () => {
                         Activities.goToInnerGarden();
@@ -1808,13 +1935,6 @@ const App = {
                         ])
                         
                         return true;
-                    }
-                },
-                {
-                    name: `backyard`,
-                    _ignore: true,
-                    onclick: () => {
-                        Activities.goToGarden();
                     }
                 },
                 {
@@ -2814,7 +2934,7 @@ const App = {
             list.appendChild(content);
             App.sendAnalytics('opened_family_tree');
         },
-        open_food_list: function(buyMode, activeIndex, filterType, sellMode){
+        open_food_list: function(buyMode, activeIndex, filterType, sellMode, useMode){
             let list = [];
             let sliderInstance;
             const salesDay = App.isSalesDay();
@@ -2839,7 +2959,7 @@ const App = {
                 }
 
                 // some entries become randomly unavailable to buy for the day
-                const isOutOfStock = ++index && buyMode && pRandom.getPercent(40) && currentType !== 'med';
+                const isOutOfStock = ++index && buyMode && pRandom.getPercent(20) && currentType !== 'med';
 
                 // 50% off on sales day
                 let price = current.price;
@@ -2888,9 +3008,20 @@ const App = {
                             }
 
                             // console.log(list.scrollTop);
-                            let nList = App.handlers.open_food_list(buyMode, sliderInstance?.getCurrentIndex(), filterType, sellMode);
+                            let nList = App.handlers.open_food_list(buyMode, sliderInstance?.getCurrentIndex(), filterType, sellMode, useMode);
                                 // nList.scrollTop = list.scrollTop;
                             return false;
+                        }
+
+                        const removeOneFoodFromInventory = () => {
+                            if(App.pet.inventory.food[food] > 0)
+                                App.pet.inventory.food[food] -= 1;
+                        }
+
+                        if(useMode){
+                            const useResult = useMode(current);
+                            if(useResult) removeOneFoodFromInventory();
+                            return;
                         }
 
                         // eat mode
@@ -2905,8 +3036,7 @@ const App = {
                         App.closeAllDisplays();
                         let ateFood = App.pet.feed(current.sprite, current.hunger_replenish, currentType, null, reopenFn);
                         if(ateFood) {
-                            if(App.pet.inventory.food[food] > 0)
-                                App.pet.inventory.food[food] -= 1;
+                            removeOneFoodFromInventory();
 
                             App.pet.stats.current_fun += current.fun_replenish ?? 0;
                             App.pet.stats.current_sleep += current.sleep_replenish ?? 0;
@@ -2929,6 +3059,7 @@ const App = {
             let acceptLabel = 'Eat';
             if(buyMode) acceptLabel = 'Purchase';
             else if(sellMode) acceptLabel = 'Sell';
+            else if(useMode) acceptLabel = 'Use';
             sliderInstance = App.displaySlider(
                 list, 
                 activeIndex, 
@@ -2954,7 +3085,7 @@ const App = {
                 }
 
                 // some entries become randomly unavailable to buy for the day
-                const isOutOfStock = ++index && buyMode && pRandom.getPercent(25);
+                const isOutOfStock = ++index && buyMode && pRandom.getPercent(20);
 
                 // 50% off on sales day
                 let price = current.price;
@@ -3077,7 +3208,7 @@ const App = {
                                         {
                                             name: `
                                             <div class="flex-between flex-wrap" style="row-gap: 4px">
-                                                ${App.getHarvestInventory(item => !item.def.inedible)}
+                                                ${App.getHarvestInventoryUI(item => !item.def.inedible)}
                                             </div>
                                             `,
                                             type: 'text',
@@ -3230,6 +3361,26 @@ const App = {
                     }
                 },
             ], null, 'Information')
+        },
+        open_active_buffs: (type) => {
+            if(typeof type !== 'string') type = null;
+            
+            const activeBuffs = Object.values(App.definitions.gameplay_buffs)
+                .filter(buff => type ? buff.type === type : true)
+                .filter(buff => App.isGameplayBuffActive(buff.key))
+            const buffsUI = activeBuffs
+                .map(buff => App.getGameplayBuffUI(buff))
+                .join('<hr>')
+            return App.displayList([
+                {
+                    name: activeBuffs.length ? buffsUI : App.getEmptyStateUI(`No ${type ?? 'active'} buffs`),
+                    type: 'text',
+                },
+                {
+                    name: 'You can get buffs by adopting animals in the backyard!',
+                    type: 'info',
+                }
+            ])
         },
         open_profile: function(){
             const petTraitIcons = [
@@ -3612,7 +3763,7 @@ const App = {
                 }
                 let current = App.definitions.accessories[accessoryName];
 
-                if(buyMode && current.isCraftable) continue;
+                if(buyMode && (current.isCraftable || current.price === -1)) continue;
 
                 // check for unlockables
                 if(current.unlockKey && !App.getRecord(current.unlockKey)){
@@ -3669,7 +3820,7 @@ const App = {
                         // toggle equip mode
                         if(equipped) App.petDefinition.accessories.splice(App.petDefinition.accessories.indexOf(accessoryName), 1);
                         else App.petDefinition.accessories.push(accessoryName);
-                        Activities.getDressed(() => App.pet.createAccessories(), reopen, !equipped);
+                        Activities.getDressed(() => App.pet.equipAccessories(), reopen, !equipped);
                         App.sendAnalytics('accessory', `${accessoryName} (${!equipped})`);
                     }
                 })
@@ -5366,17 +5517,14 @@ const App = {
             return Plant.getCSprite(plantName, undefined, hasInInventory ? 'enabled' : disabledClassName);
         }).join(delimiter);
     },
-    getHarvestInventory: function(filterFn = () => true){
+    getHarvestInventoryUI: function(filterFn = () => true){
         const harvestsToShow = Object.keys(App.pet.inventory.harvests)
             .map(name => ({amount: App.pet.inventory.harvests[name], name, def: Plant.getDefinitionByName(name)}) )
             .filter(item => item.amount)
             .filter(filterFn);
 
         if(!harvestsToShow.length){
-            return `<small class="flex-center width-full flex-gap-05 opacity-half">
-                <i class="fa-solid fa-ghost"></i>
-                <i>Empty inventory</i>
-            </small>`;
+            return App.getEmptyStateUI('Empty inventory');
         }
 
         return `
@@ -5384,6 +5532,12 @@ const App = {
             .map(item => `<div onclick="App.displayPopup('${item.name} <div><b>x${item.amount}</b></div>')" class="flex align-center flex-gap-05">${Plant.getCSprite(item.name)} <span><small>x</small>${item.amount}</span></div>`)
             .join('')}
         `
+    },
+    getEmptyStateUI: function(text, icon = 'fa-ghost'){
+        return `<small class="flex-center width-full flex-gap-05 opacity-half">
+            <i class="fa-solid ${icon}"></i>
+            <i>${text}</i>
+        </small>`;
     },
     isCompanionAllowed: function(room){
         if(!room) room = App.currentScene;
@@ -5397,6 +5551,37 @@ const App = {
         ];
 
         return allowedScenes.includes(room);
+    },
+    getRandomGameplayBuff () {
+        return randomFromArray(Object.values(App.definitions.gameplay_buffs)).key;
+    },
+    isGameplayBuffActive: (buffKey) => {
+        // currently only check for animals
+        // but we can reuse the same method for other buff sources
+        const hasBuff = App.animals.list.some(a => a.stats.buff === buffKey);
+        return hasBuff;
+    },
+    getGameplayBuffDefinitionFromKey: (buffKey) => {
+        return App.definitions.gameplay_buffs[buffKey];
+    },
+    getGameplayBuffUI: (buff) => {
+        if(typeof buff === 'string') buff = App.getGameplayBuffDefinitionFromKey(buff);
+
+        const getTypeUI = () => {
+            let color = '';
+            switch(buff.type){
+                case 'garden': color = 'green'; break;
+            }
+            return `<span style="color: ${color}"> <i class="fa-solid fa-arrow-circle-up icon"></i> ${buff.type}</span> Buff`;
+        }
+
+        return `
+            <div class="font-small flex flex-dir-col gameplay-buff-container">
+                <div style="opacity: 0.75;"> ${getTypeUI()} </div>
+                <b style="color: #3d00ff"> ${buff.name}</b>
+                <i>${buff.description}</i>
+            </div>
+        `;
     },
     playSound: function(path, force){
         if(!App.settings.playSound) return;
@@ -5437,8 +5622,14 @@ const App = {
             currentPts: Missions.currentPts,
             refreshTime: Missions.refreshTime
         }))
-        setItem('furniture', (App.ownedFurniture));
+        setItem('furniture', App.ownedFurniture);
         setItem('plants', App.plants);
+        setItem('animals', {
+            ...App.animals,
+            list: [
+                ...App.animals.list.map(a => a.serialize())
+            ]
+        });
 
         // -3600000
         if(!noIndicator){
@@ -5478,6 +5669,7 @@ const App = {
         const missions = await getItem('missions', {});
         const furniture = await getItem('furniture', false);
         const plants = await getItem('plants', App.plants);
+        const animals = await getItem('animals', App.animals);
 
         App.loadedData = {
             pet,
@@ -5491,7 +5683,8 @@ const App = {
             records,
             missions,
             furniture,
-            plants
+            plants,
+            animals,
         };
     
         return App.loadedData;
@@ -5597,8 +5790,9 @@ const App = {
         const charCode = `save:${btoa(encodeURIComponent(JSON.stringify(serializableStorage)))}:endsave`;
         return charCode;
     },
-    vibrate: function(dur){
-        if(!navigator?.vibrate || !App.settings.vibrate) return;
+    vibrate: function(dur, force){
+        if(!App.settings.vibrate && !force) return;
+        if(!navigator?.vibrate) return;
         navigator?.vibrate(dur || 35);
     },
     sendAnalytics: function(type, value, force){

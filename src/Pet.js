@@ -39,7 +39,7 @@ class Pet extends Object2d {
         }
 
         this.createOverlays();
-        this.createAccessories();
+        this.equipAccessories();
     }
 
     createOverlays(){
@@ -113,7 +113,7 @@ class Pet extends Object2d {
             }
         });
     }
-    createAccessories(){
+    equipAccessories(){
         // removing old accessories
         this.accessoryObjects.forEach(accessoryObject => accessoryObject?.removeObject());
         this.accessoryObjects = [];
@@ -340,7 +340,7 @@ class Pet extends Object2d {
         }
     }
     sleep(){
-        if(this.stats.is_sleeping) return;
+        if(this.stats.is_sleeping || App.currentScene !== App.scene.home) return;
         this.stopMove();
         this.x = '50%';
         if(this.hasMoodlet('rested') && !App.isSleepHour()){
@@ -617,7 +617,7 @@ class Pet extends Object2d {
         stats.current_sleep -= sleep_depletion_rate;
         if(stats.current_sleep <= 0){
             stats.current_sleep = 0;
-            if(App.currentScene == App.scene.home){
+            if(App.currentScene === App.scene.home){
                 this.stats.is_sleeping = true;
             }
         }
@@ -915,14 +915,14 @@ class Pet extends Object2d {
             this.nextRandomTargetSelect = 0;
         }
     }
-    jump(strength = 0.28){
+    jump(strength = 0.28, silent){
         if(this.isJumping !== undefined) return false;
 
         this.isJumping = true;
         const gravity = 0.001;
         const startY = this.y;
         let velocity = strength;
-        App.playSound('resources/sounds/jump.ogg', true);
+        if(!silent) App.playSound('resources/sounds/jump.ogg', true);
 
         this.triggerScriptedState('jumping', App.INF, 0, true, 
         () => { // on end
@@ -1040,6 +1040,9 @@ class Pet extends Object2d {
                 me.opacity = lerp(me.opacity, opacityTarget, App.deltaTime * 0.01);
             }
         })
+
+        this.activeBubble?.removeObject?.();
+        this.activeBubble = bubble;
 
         // shows type icon if exists
         if([
@@ -1169,6 +1172,16 @@ class Pet extends Object2d {
             setTimeout(() => bubble.removeObject(), 1000);
         }, 5000);
     }
+    setLocalZBasedOnSelf(otherObject){
+        const currentBoundingBox = this.getBoundingBox();
+        const otherBoundingBox = otherObject.getBoundingBox();
+        
+        const localZ = (otherBoundingBox.y + otherBoundingBox.height) - (currentBoundingBox.y + currentBoundingBox.height);
+
+        otherObject.z = this.z;
+        otherObject.localZ = localZ;
+    }
+
     static scriptedEventDrivers = {
         playing: function(start){
             this.pet.setState('moving');
@@ -1181,6 +1194,11 @@ class Pet extends Object2d {
             if(this.pet.x == this.pet.targetX){
                 if(this.pet.targetX == 0) this.pet.targetX = 100 - this.pet.spritesheet.cellSize;
                 else this.pet.targetX = 0;
+            }
+        },
+        moveCheck: function(){
+            if(this.pet.x === this.pet.targetX || this.pet.targetX === undefined) {
+                this.pet.stopScriptedState();
             }
         },
         movingOut: function(start){
