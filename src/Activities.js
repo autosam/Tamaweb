@@ -964,7 +964,7 @@ class Activities {
     static getMail(){
         App.pet.stopMove();
         App.toggleGameplayControls(false);
-        App.setScene(App.scene.garden);
+        App.setScene(App.scene.garden, false, { noPetBowl: true });
         App.pet.x = '78%';
         App.pet.inverted = false;
         App.pet.triggerScriptedState('idle_side', App.INF, false, true);

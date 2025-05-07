@@ -1101,33 +1101,35 @@ const App = {
             image: 'resources/img/background/outside/garden_01.png',
             petY: '95%',
             shadowOffset: -5,
-            onLoad: () => {
+            onLoad: (args) => {
                 App.pet.staticShadow = false;
-    
-                App.temp.petBowlObject = new Object2d({
-                    img: 'resources/img/misc/pet_bowl_01.png',
-                    x: '20%',
-                    y: '67%',
-                    width: 22, height: 22,
-                    onLateDraw: (me) => {
-                        App.pet.setLocalZBasedOnSelf(me);
-                    }
-                })
-        
-                if(App.animals.treat){
-                    App.temp.animalTreatObject = new Object2d({
-                        img: App.constants.FOOD_SPRITESHEET,
-                        spritesheet: {
-                            ...App.constants.FOOD_SPRITESHEET_DIMENSIONS,
-                            cellNumber: App.animals.treat + App.animals.treatBiteCount,
-                        },
-                        x: App.temp.petBowlObject.x,
-                        y: '63%',
+                
+                if(!args?.noPetBowl){
+                    App.temp.petBowlObject = new Object2d({
+                        img: 'resources/img/misc/pet_bowl_01.png',
+                        x: '20%',
+                        y: '67%',
+                        width: 22, height: 22,
                         onLateDraw: (me) => {
-                            me.z = App.temp.petBowlObject.z;
-                            me.localZ = App.temp.petBowlObject.localZ + 0.001;
+                            App.pet.setLocalZBasedOnSelf(me);
                         }
                     })
+            
+                    if(App.animals.treat){
+                        App.temp.animalTreatObject = new Object2d({
+                            img: App.constants.FOOD_SPRITESHEET,
+                            spritesheet: {
+                                ...App.constants.FOOD_SPRITESHEET_DIMENSIONS,
+                                cellNumber: App.animals.treat + App.animals.treatBiteCount,
+                            },
+                            x: App.temp.petBowlObject.x,
+                            y: '63%',
+                            onLateDraw: (me) => {
+                                me.z = App.temp.petBowlObject.z;
+                                me.localZ = App.temp.petBowlObject.localZ + 0.001;
+                            }
+                        })
+                    }
                 }
 
                 App.handleAnimalsSpawn(true);
@@ -1190,7 +1192,7 @@ const App = {
             noShadows: true,
         }),
     },
-    setScene(scene, noPositionChange){
+    setScene(scene, noPositionChange, onLoadArg){
         App.currentScene?.onUnload?.(scene);
 
         App.currentScene = scene;
@@ -1203,7 +1205,7 @@ const App = {
         App.background.setImg(scene.image);
 
         if(scene.onLoad){
-            scene.onLoad();
+            scene.onLoad(onLoadArg);
         }
 
         this.applySky();
