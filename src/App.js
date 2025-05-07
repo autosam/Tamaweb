@@ -830,7 +830,7 @@ const App = {
         //     ])
         // })) return;
 
-        if(addEvent(`update_15_notice`, () => {
+        if(addEvent(`update_16_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
@@ -839,7 +839,7 @@ const App = {
                     bold: true,
                 },
                 {
-                    name: `Check out the new Gardening, Child and Elder life stages, Cooking and crafting, Homeworld Getaways and more!`,
+                    name: `Check out the new Animal Pets, Reviving, and more!`,
                     type: 'text',
                 },
                 {
