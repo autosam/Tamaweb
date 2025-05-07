@@ -3173,6 +3173,7 @@ class Activities {
             leavingAnimals.forEach(a => {
                 App.animals.list.splice(App.animals.list.indexOf(a), 1);
             })
+            App.pet.stats.current_fun -= 100;
         }
     }
 }
