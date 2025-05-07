@@ -3149,6 +3149,7 @@ class Activities {
         }
     }
     static task_handleLeavingAnimals(){
+        App.animals.list?.forEach(a => a?.handleStatsUpdate?.());
         const leavingAnimals = App.animals.list.filter(a => a.stats.current_happiness <= 0);
         if(leavingAnimals.length){
             App.displayList([
