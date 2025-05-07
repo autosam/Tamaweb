@@ -1,7 +1,5 @@
 class Activities {
-    static async reckoning(forced){
-        if(random(0, 1024) != 1 && !forced) return false;
-
+    static async reckoning(){
         App.setScene(App.scene.reviverDen);
         App.closeAllDisplays();
 
@@ -1395,12 +1393,7 @@ class Activities {
             ])
         })
     }
-    static encounter(forced){
-        const chance = App.pet.stats.is_revived_once 
-            ? random(0, 128) 
-            : random(0, 256);
-        if(chance != 1 && !forced) return false;
-
+    static encounter(spawnInMiddle){
         const despawnTime = App.time + (App.constants.ONE_SECOND * random(15, 30));
         const def = new PetDefinition({
             sprite: NPC_CHARACTERS[0],
@@ -1417,7 +1410,7 @@ class Activities {
         })
         new Pet(def, {
             opacity: 0.5,
-            x: forced ? '50%' : -50,
+            x: spawnInMiddle ? '50%' : -50,
             castShadow: false,
             z: App.constants.ACTIVE_PET_Z + 1,
             isDespawning: false,

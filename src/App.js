@@ -1640,12 +1640,17 @@ const App = {
         }
 
         // revived encounter
-        if(App.pet.stats.is_revived_once){
-            if(Activities.reckoning()) return;
+        if(App.pet.stats.is_revived_once && random(0, 1024) === 1){
+            return Activities.reckoning();
         }
 
         // entity encounter
-        if(Activities.encounter()) return;
+        const encounterChance = App.pet.stats.is_revived_once 
+            ? random(0, 128) 
+            : random(0, 256);
+        if(encounterChance === 1){
+            return Activities.encounter();
+        }
     },
     handlers: {
         open_hubchi_search: function(onAddCallback){
