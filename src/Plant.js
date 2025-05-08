@@ -29,9 +29,9 @@ class Plant {
         if(App.isWeatherEffectActive()) this.water(now);
 
         let wateredDuration = this.wateredDuration;
-        if(App.isGameplayBuffActive('increasedWateredDuration')) wateredDuration += App.constants.ONE_HOUR * 2;
+        if(App.isGameplayBuffActive('increasedWateredDuration')) wateredDuration += App.constants.ONE_HOUR * 3;
         let deathDuration = this.deathDuration;
-        if(App.isGameplayBuffActive('longerDeathDuration')) deathDuration += App.constants.ONE_HOUR * 5;
+        if(App.isGameplayBuffActive('longerDeathDuration')) deathDuration += App.constants.ONE_HOUR * 10;
         let growthDelay = this.growthDelay;
         if(App.isGameplayBuffActive('shorterGrowthDelay')) growthDelay -= App.constants.ONE_HOUR * 4;
 

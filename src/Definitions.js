@@ -2131,13 +2131,13 @@ App.definitions = (() => {
             increasedWateredDuration: {
                 key: 'increasedWateredDuration',
                 name: '+ Wet Duration',
-                description: 'Increases the amount the plants stay wet.',
+                description: 'Increases the amount the plants stay hydrated by 3 hours.',
                 type: 'garden',
             },
             longerDeathDuration: {
                 key: 'longerDeathDuration',
                 name: '+ Health Duration',
-                description: 'Increases the time before the plants start dying without water.',
+                description: 'Increases the time before the plants start dying without water by 10 hours.',
                 type: 'garden',
             },
             // alwaysWatered: {
