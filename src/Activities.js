@@ -1390,7 +1390,7 @@ class Activities {
                     onclick: handleSyncCharacter,
                 },
                 {
-                    name: `rewards store`,
+                    name: `rewards store ${App.getBadge()}`,
                     onclick: handleRewardStore,
                 },
                 {
