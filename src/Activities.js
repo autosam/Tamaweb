@@ -544,6 +544,18 @@ class Activities {
                     }
                 },
                 {
+                    name: `stats ${App.getBadge()}`,
+                    onclick: () => {
+                        return displayPlantsList({
+                            onPlantClick: (plant) => {
+                                App.handlers.open_plant_stats(plant);
+                                return true;
+                            },
+                            filterFn: (a) => !a.isDead
+                        })
+                    },
+                },
+                {
                     name: 'water',
                     _disable: !App.plants.some(p => !p.isDead),
                     onclick: async () => {

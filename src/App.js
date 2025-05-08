@@ -1906,7 +1906,7 @@ const App = {
                     }
                 },
                 {
-                    name: `Garden`,
+                    name: `Garden ${App.getBadge()}`,
                     onclick: () => {
                         Activities.goToInnerGarden();
                     }
@@ -3455,6 +3455,46 @@ const App = {
                 copyUIDButton.remove();
             }
 
+            list.appendChild(content);
+        },
+        open_plant_stats: function(plant){
+            const list = UI.genericListContainer();
+            const content = UI.empty();
+
+            const { wateredDuration, deathDuration, growthDelay } = plant.getStatDurations();
+
+            const getTimeDisplay = (time, pastMessage) => {
+                const timeAsMoment = moment(time);
+                // const text = timeAsMoment.fromNow(true);
+                const text = App.getPreciseTimeFromNow(time);
+                const isPast = timeAsMoment.isBefore(moment());
+
+                if(isPast) return `<span class="overflow-hidden ellipsis" style="opacity: 0.7;text-decoration: line-through;display: block;">${pastMessage}</span>`;
+
+                return `<span">${text}</span>`;
+            }
+
+            const nextGrowthTime = plant.lastGrowthTime + growthDelay;
+            const deathTime = plant.lastWatered + deathDuration;
+            const hydratedTime = plant.lastWatered + wateredDuration;
+
+            content.innerHTML = `
+            <div class="inner-padding b-radius-10 m surface-stylized">
+                <div>
+                    <b>GROWS IN:</b>
+                    <div class="surface-stylized inner-padding">${getTimeDisplay(nextGrowthTime, 'GROWN')}</div>
+                </div>
+                <div>
+                    <b>Dehydrates in:</b>
+                    <div class="surface-stylized inner-padding">${getTimeDisplay(hydratedTime, 'DEHYDRATED')}</div>
+                </div>
+                <div>
+                    <b>DIES IN:</b>
+                    <div><small>(after dehydration)</small></div>
+                    <div class="surface-stylized inner-padding">${getTimeDisplay(deathTime, 'DEAD')}</div>
+                </div>
+            </div>
+            `;
             list.appendChild(content);
         },
         open_achievements_list: function(checkIfHasNewUnlocks){
@@ -5862,6 +5902,18 @@ const App = {
         }
         App.pet.stats.gold -= amount;
         return true;
+    },
+    getPreciseTimeFromNow: (time) => {
+        const duration = moment.duration(moment(time).diff(moment()));
+    
+        const hours = Math.floor(duration.asHours());
+        const minutes = Math.floor(duration.asMinutes()) % 60;
+    
+        if (hours > 0) {
+            return `${hours} hour${hours !== 1 ? 's' : ''} and ${minutes} minute${minutes !== 1 ? 's' : ''}`;
+        } else {
+            return `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+        }
     },
     useWebcam: function(callback, facingMode, shutterDelay){
         if(!facingMode) facingMode = 'environment';

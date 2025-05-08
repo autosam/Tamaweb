@@ -10,7 +10,6 @@ class Plant {
             age = Plant.AGE.seedling, 
             lastGrowthTime = Date.now(),
             lastWatered = Date.now() - this.wateredDuration - 1000,
-            health = 100,
         } = config;
         this.age = age;
         this.name = name;
@@ -19,8 +18,6 @@ class Plant {
         const defWateredDuration = this.getDefinition(name)?.wateredDuration;
         if(defWateredDuration) this.wateredDuration = defWateredDuration * 1000 * 60;
 
-        this.health = health;
-
         this.lastWatered = lastWatered;
     }
     checkForProgress(){
@@ -28,16 +25,18 @@ class Plant {
 
         if(App.isWeatherEffectActive()) this.water(now);
 
-        let wateredDuration = this.wateredDuration;
-        if(App.isGameplayBuffActive('increasedWateredDuration')) wateredDuration += App.constants.ONE_HOUR * 3;
-        let deathDuration = this.deathDuration;
-        if(App.isGameplayBuffActive('longerDeathDuration')) deathDuration += App.constants.ONE_HOUR * 10;
-        let growthDelay = this.growthDelay;
-        if(App.isGameplayBuffActive('shorterGrowthDelay')) growthDelay -= App.constants.ONE_HOUR * 4;
+        // let wateredDuration = this.wateredDuration;
+        // if(App.isGameplayBuffActive('increasedWateredDuration')) wateredDuration += App.constants.ONE_HOUR * 3;
+        // let deathDuration = this.deathDuration;
+        // if(App.isGameplayBuffActive('longerDeathDuration')) deathDuration += App.constants.ONE_HOUR * 10;
+        // let growthDelay = this.growthDelay;
+        // if(App.isGameplayBuffActive('shorterGrowthDelay')) growthDelay -= App.constants.ONE_HOUR * 4;
+
+        const { wateredDuration, deathDuration, growthDelay } = this.getStatDurations();
 
         this.isWatered = (now - this.lastWatered) < wateredDuration;
 
-        if (now > this.lastWatered + wateredDuration + deathDuration) {
+        if (now > this.lastWatered + deathDuration + wateredDuration) {
             this.age = Plant.AGE.dead;
             return;
         }
@@ -47,6 +46,20 @@ class Plant {
         while (this.lastGrowthTime + growthDelay < now && this.age !== Plant.AGE.grown) {
             this.lastGrowthTime += growthDelay;
             this.age = clamp(this.age + 1, Plant.AGE.seedling, Plant.AGE.grown);
+        }
+    }
+    getStatDurations(){
+        let wateredDuration = this.wateredDuration;
+        if(App.isGameplayBuffActive('increasedWateredDuration')) wateredDuration += App.constants.ONE_HOUR * 3;
+        let deathDuration = this.deathDuration;
+        if(App.isGameplayBuffActive('longerDeathDuration')) deathDuration += App.constants.ONE_HOUR * 10;
+        let growthDelay = this.growthDelay;
+        if(App.isGameplayBuffActive('shorterGrowthDelay')) growthDelay -= App.constants.ONE_HOUR * 4;
+
+        return {
+            wateredDuration,
+            deathDuration,
+            growthDelay
         }
     }
     water(now = Date.now()){
