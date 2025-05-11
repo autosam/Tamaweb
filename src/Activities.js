@@ -938,6 +938,7 @@ class Activities {
                                                     App.animals.treatBiteCount = 0;
                                                     App.animals.nextAttractMs = getNextAttractMs(Date.now());
                                                     App.reloadScene(true);
+                                                    App.displayPopup("The food has been placed!<br><br>Check back in a few hours to see if you've gotten a visitor!", 4000);
                                                     return true;
                                                 }
                                                 return App.handlers.open_food_list(false, false, false, false, onUseFn);
