@@ -2051,30 +2051,35 @@ const App = {
                     type: 'text',
                     name: `<small>art by</small>
                         <br>
-                        <div class="credit-author surface-stylized">
+                        <div class="credit-author">
                             <a href="https://samandev.itch.io" target="_blank">
                                 SamanDev
                             </a>
                         </div>
-                        <div class="credit-author surface-stylized">
+                        <div class="credit-author">
                             <a href="https://sa311.tumblr.com/post/163140958242/about-me" target="_blank">
                                 Curlour
                             </a>
                             <small>(eternitchi)</small>
                         </div>
-                        <div class="credit-author surface-stylized">
-                            <a href="https://vairasmythe.carrd.co/" target="_blank">
-                                Vaira Smythe
-                            </a>
-                        </div>
-                        <div class="credit-author surface-stylized">
+                        <div class="credit-author">
                             <a href="https://www.tiktok.com/@prion_sigma" target="_blank">
                                 Prion Sigma
                             </a>
                         </div>
-                        <div class="credit-author surface-stylized">
+                        <div class="credit-author">
+                            <a href="https://vairasmythe.carrd.co/" target="_blank">
+                                Vaira Smythe
+                            </a>
+                        </div>
+                        <div class="credit-author">
                             <a href="https://www.artstation.com/pistispixel" target="_blank">
                                 Piixel_Nun
+                            </a>
+                        </div>
+                        <div class="credit-author">
+                            <a href="https://www.instagram.com/abysmdelirium" target="_blank">
+                                abysmDelirium
                             </a>
                         </div>
                     `

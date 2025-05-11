@@ -2074,6 +2074,8 @@ a {
 .credit-author {
     margin: 5px -10px;
     padding: 5px 10px;
+    border-radius: 16px;
+    background: #f5deb39c;
 }
 
 /* fullscreen mode */
