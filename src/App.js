@@ -56,6 +56,7 @@ const App = {
         },
         MAX_ANIMALS: 8,
         MAX_PLANTS: 8,
+        MAX_REVIVE_GOLDS: 1000,
         SLEEP_START: 21,
         SLEEP_END: 8,
         PARENT_DAYCARE_START: 8,

@@ -221,7 +221,7 @@ class Pet extends Object2d {
                     },
                 ], false);
             } else {
-                const revivalPrice = clamp(Math.floor(App.pet.stats.gold / 2), 0, 500);
+                const revivalPrice = clamp(Math.floor(App.pet.stats.gold / 2), 0, App.constants.MAX_REVIVE_GOLDS);
                 App.displayConfirm(`<b>${App.petDefinition.name}</b> is dead but you can choose to revive them only <b>once</b>, do you want to revive them?`, [
                     {
                         name: `revive ($${revivalPrice})`,
