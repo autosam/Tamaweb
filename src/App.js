@@ -839,7 +839,7 @@ const App = {
                     bold: true,
                 },
                 {
-                    name: `Check out the new Animal Pets, Reviving, and more!`,
+                    name: `Check out the new Animal Pets, Revival mechanic, and more!`,
                     type: 'text',
                 },
                 {
