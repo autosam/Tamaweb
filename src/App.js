@@ -56,6 +56,7 @@ const App = {
         },
         MAX_ANIMALS: 8,
         MAX_PLANTS: 8,
+        MIN_REVIVE_GOLDS: 250,
         MAX_REVIVE_GOLDS: 1000,
         SLEEP_START: 21,
         SLEEP_END: 8,
@@ -5898,7 +5899,7 @@ const App = {
     },
     pay: function(amount){
         if(App.pet.stats.gold < amount){
-            App.displayPopup(`Don't have enough gold!`);
+            App.displayPopup(`Don't have enough money!`);
             return false;
         }
         App.pet.stats.gold -= amount;
