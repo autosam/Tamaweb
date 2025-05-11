@@ -312,6 +312,7 @@ App.definitions = (() => {
                 sleep_replenish: 50,
                 price: 15,
                 cookableOnly: true,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "veggie burger": {
                 sprite: 213,
@@ -320,6 +321,7 @@ App.definitions = (() => {
                 health_replenish: 15,
                 price: 15,
                 cookableOnly: true,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "puzzlewich": {
                 sprite: 175,
@@ -327,6 +329,7 @@ App.definitions = (() => {
                 fun_replenish: 50,
                 price: 15,
                 cookableOnly: true,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "lunchbox": {
                 sprite: 186,
@@ -334,6 +337,7 @@ App.definitions = (() => {
                 health_replenish: 10,
                 price: 10,
                 cookableOnly: true,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "veggies roll": {
                 sprite: 192,
@@ -342,6 +346,7 @@ App.definitions = (() => {
                 sleep_replenish: 50,
                 price: 18,
                 cookableOnly: true,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "veggies basket": {
                 sprite: 195,
@@ -349,6 +354,7 @@ App.definitions = (() => {
                 health_replenish: 50,
                 price: 10,
                 cookableOnly: true,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "veggies stew": {
                 sprite: 222,
@@ -356,6 +362,7 @@ App.definitions = (() => {
                 health_replenish: 20,
                 price: 12,
                 cookableOnly: true,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "stir veggies": {
                 sprite: 533,
@@ -363,6 +370,7 @@ App.definitions = (() => {
                 health_replenish: 20,
                 price: 12,
                 cookableOnly: true,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "melodywich": {
                 sprite: 668,
@@ -370,6 +378,7 @@ App.definitions = (() => {
                 fun_replenish: 50,
                 price: 12,
                 cookableOnly: true,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "veggies curry": {
                 sprite: 536,
@@ -377,12 +386,14 @@ App.definitions = (() => {
                 fun_replenish: 10,
                 price: 10,
                 cookableOnly: true,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "potato soup": {
                 sprite: 599,
                 hunger_replenish: 50,
                 price: 8,
                 cookableOnly: true,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "rice ball": {
                 sprite: 800,
@@ -390,6 +401,7 @@ App.definitions = (() => {
                 sleep_replenish: 50,
                 price: 15,
                 cookableOnly: true,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "hot pot": {
                 sprite: 596,
@@ -397,6 +409,7 @@ App.definitions = (() => {
                 fun_replenish: 5,
                 price: 12,
                 cookableOnly: true,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "lovely salad": {
                 sprite: 276,
@@ -404,6 +417,7 @@ App.definitions = (() => {
                 fun_replenish: 50,
                 price: 10,
                 cookableOnly: true,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "fresh salad": {
                 sprite: 323,
@@ -411,6 +425,7 @@ App.definitions = (() => {
                 health_replenish: 20,
                 price: 15,
                 cookableOnly: true,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "vegetables cut": {
                 sprite: 617,
@@ -418,12 +433,14 @@ App.definitions = (() => {
                 sleep_replenish: 50,
                 price: 15,
                 cookableOnly: true,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "roasted sweet potatoes": {
                 sprite: 945,
                 hunger_replenish: 100,
                 price: 20,
                 cookableOnly: true,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "sweet rainbow": {
                 sprite: 803,
@@ -431,6 +448,7 @@ App.definitions = (() => {
                 fun_replenish: 80,
                 price: 20,
                 cookableOnly: true,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
     
     
@@ -858,6 +876,14 @@ App.definitions = (() => {
                 onlineShopAccessible: true,
                 unlockLikes: 80,
                 unlockKey: 'bg_silky_retreat_sky',
+            },
+            "car city": {
+                image: 'resources/img/background/house/cc_06.png',
+                price: 0,
+                isNew: true,
+                onlineShopAccessible: true,
+                unlockLikes: 100,
+                unlockKey: 'bg_car_city',
             },
             "astra": {
                 image: 'resources/img/background/house/cc_01.png',
@@ -1620,6 +1646,12 @@ App.definitions = (() => {
                 isCraftable: true,
                 craftingRecipe: ['red tulip', 'purple tulip', 'yellow tulip'],
             },
+            // reviver
+            'reviver hood': {
+                image: 'resources/img/accessory/reviver_hood_01.png',
+                front: true,
+                price: -1, // makes it not buyable
+            },
         },
     
         /* ACHIEVEMENTS */
@@ -2086,5 +2118,40 @@ App.definitions = (() => {
                 }
             },
         ],
+
+        /* GAMEPLAY BUFFS */
+        gameplay_buffs: {
+            // garden buffs
+            doubleHarvest: {
+                key: 'doubleHarvest',
+                name: '+ Harvests',
+                description: 'Increases the amount of harvests in the garden.',
+                type: 'garden',
+            },
+            increasedWateredDuration: {
+                key: 'increasedWateredDuration',
+                name: '+ Wet Duration',
+                description: 'Increases the amount the plants stay hydrated by 3 hours.',
+                type: 'garden',
+            },
+            longerDeathDuration: {
+                key: 'longerDeathDuration',
+                name: '+ Health Duration',
+                description: 'Increases the time before the plants start dying without water by 8 hours.',
+                type: 'garden',
+            },
+            // alwaysWatered: {
+            //     key: 'alwaysWatered',
+            //     name: '∞ Infinite Water',
+            //     description: 'Plants stay watered infinitely.',
+            //     type: 'garden',
+            // },
+            shorterGrowthDelay: {
+                key: 'shorterGrowthDelay',
+                name: '+ Growth',
+                description: 'Makes plants grow faster.',
+                type: 'garden',
+            },
+        }
     }
 })()

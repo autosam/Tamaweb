@@ -28,8 +28,8 @@ const ASSETS = [
   "src/Utils.js",
   "src/Missions.js",
   "src/Plant.js",
+  "src/Animal.js",
   // libs
-  "src/libs/jquery-3.7.1.min.js",
   "src/libs/moment.js",
   // cdn
   "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css",
@@ -56,6 +56,7 @@ const ASSETS = [
   "resources/sounds/wedding_song_01.ogg",
   "resources/sounds/online_hub_transition_01.ogg",
   "resources/sounds/camera_shutter_01.ogg",
+  "resources/sounds/revival_01.ogg",
   // other
   "resources/font/PixelifySans-VariableFont_wght.ttf",
   "resources/font/PixelColeco.otf",
@@ -70,6 +71,7 @@ const ASSETS = [
   ...PET_CHILD_CHARACTERS,
   ...PET_BABY_CHARACTERS,
   ...NPC_CHARACTERS,
+  ...ANIMAL_CHARACTERS,
 ];
 
 self.addEventListener("install", (e) => {

@@ -39,7 +39,7 @@ class Pet extends Object2d {
         }
 
         this.createOverlays();
-        this.createAccessories();
+        this.equipAccessories();
     }
 
     createOverlays(){
@@ -100,8 +100,20 @@ class Pet extends Object2d {
                 overlay.scale = 1 - ((distanceToCaster + 4) * 0.01);
             }
         })
+
+        this.sicknessOverlay = new Object2d({
+            parent: this,
+            img: 'resources/img/misc/sickness_overlay_01.png',
+            x: 0,
+            y: 0,
+            hidden: true,
+            z: App.constants.ACTIVE_PET_Z + 0.1,
+            onDraw: (overlay) => {
+                Object2d.animations.flip(overlay, 750);
+            }
+        });
     }
-    createAccessories(){
+    equipAccessories(){
         // removing old accessories
         this.accessoryObjects.forEach(accessoryObject => accessoryObject?.removeObject());
         this.accessoryObjects = [];
@@ -165,46 +177,74 @@ class Pet extends Object2d {
         }
     }
     handleDead(){
+        const me = this;
         this.x = -600;
 
         App.toggleGameplayControls(false, () => {
-            // App.displayPopup('dead');
-            App.displayConfirm(`Do you want to receive a new egg?`, [
-                {
-                    name: 'yes',
-                    onclick: () => {
-                        const lastPet = App.petDefinition;
-                        App.pet.removeObject();
-                        App.petDefinition = new PetDefinition({
-                            name: getRandomName(),
-                            sprite: randomFromArray(PET_BABY_CHARACTERS),
-                        }).setStats({is_egg: true});
+            const handleReceiveEgg = () => {
+                const lastPet = App.petDefinition;
+                App.pet.removeObject();
+                App.petDefinition = new PetDefinition({
+                    name: getRandomName(),
+                    sprite: randomFromArray(PET_BABY_CHARACTERS),
+                }).setStats({is_egg: true});
 
-                        App.petDefinition.inventory = lastPet.inventory;
-                        App.petDefinition.stats.gold = lastPet.stats.gold;
-                        App.petDefinition.deceasedPredecessors = [...lastPet.deceasedPredecessors, 
-                            {
-                                birthday: lastPet.birthday,
-                                family: lastPet.family,
-                                sprite: lastPet.sprite,
-                                name: lastPet.name,
-                            }
-                        ];
-
-                        App.pet = App.createActivePet(App.petDefinition);
-                        setTimeout(() => {
-                            Activities.playEggUfoAnimation(() => App.handlers.show_set_pet_name_dialog());
-                        }, 100);
-                        App.setScene(App.scene.home);
-                        App.toggleGameplayControls(true);
+                App.petDefinition.inventory = lastPet.inventory;
+                App.petDefinition.stats.gold = lastPet.stats.gold;
+                App.petDefinition.deceasedPredecessors = [...lastPet.deceasedPredecessors, 
+                    {
+                        birthday: lastPet.birthday,
+                        family: lastPet.family,
+                        sprite: lastPet.sprite,
+                        name: lastPet.name,
                     }
-                },
-                {
-                    name: 'no',
-                    class: 'back-btn',
-                    onclick: () => { }
-                },
-            ], false);
+                ];
+
+                App.pet = App.createActivePet(App.petDefinition);
+                setTimeout(() => {
+                    Activities.playEggUfoAnimation(() => App.handlers.show_set_pet_name_dialog());
+                }, 100);
+                App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
+            }
+
+            if(App.pet.stats.is_revived_once){
+                App.displayConfirm(`Do you want to receive a new egg?`, [
+                    {
+                        name: 'yes',
+                        onclick: handleReceiveEgg
+                    },
+                    {
+                        name: 'no',
+                        class: 'back-btn',
+                        onclick: () => { }
+                    },
+                ], false);
+            } else {
+                const revivalPrice = clamp(Math.floor(App.pet.stats.gold / 2), App.constants.MIN_REVIVE_GOLDS, App.constants.MAX_REVIVE_GOLDS);
+                App.displayConfirm(`<b>${App.petDefinition.name}</b> is dead but you can choose to revive them only <b>once</b>, do you want to revive them?`, [
+                    {
+                        name: `revive ($${revivalPrice})`,
+                        onclick: () => {
+                            if(App.pay(revivalPrice)){
+                                Activities.revive()
+                                return false;
+                            }
+                            return true;
+                        }
+                    },
+                    {
+                        name: 'get a new egg',
+                        onclick: handleReceiveEgg
+                    },
+                    {
+                        name: 'back',
+                        class: 'back-btn',
+                        onclick: () => {}
+                    }
+                ])
+            }
+
         })
 
         if(!this.ghostObject){
@@ -212,11 +252,14 @@ class Pet extends Object2d {
                 img: 'resources/img/misc/ghost_01.png',
                 x: 0, 
                 y: -5,
-                onDraw: (me) => {
-                    Object2d.animations.bob(me, 0.001, 0.1);
-                    Object2d.animations.flip(me, 1500);
+                onDraw: (ghostObject) => {
+                    Object2d.animations.bob(ghostObject, 0.001, 0.1);
+                    Object2d.animations.flip(ghostObject, 1500);
 
-                    if(!App.pet.stats.is_dead) me.removeObject();
+                    if(!App.pet.stats.is_dead) {
+                        ghostObject.removeObject();
+                        delete me.ghostObject;
+                    }
                 }
             });
 
@@ -297,7 +340,7 @@ class Pet extends Object2d {
         }
     }
     sleep(){
-        if(this.stats.is_sleeping) return;
+        if(this.stats.is_sleeping || App.currentScene !== App.scene.home) return;
         this.stopMove();
         this.x = '50%';
         if(this.hasMoodlet('rested') && !App.isSleepHour()){
@@ -574,7 +617,7 @@ class Pet extends Object2d {
         stats.current_sleep -= sleep_depletion_rate;
         if(stats.current_sleep <= 0){
             stats.current_sleep = 0;
-            if(App.currentScene == App.scene.home){
+            if(App.currentScene === App.scene.home){
                 this.stats.is_sleeping = true;
             }
         }
@@ -594,16 +637,8 @@ class Pet extends Object2d {
                 }, 'poop');
             }
         }
-        if(stats.current_bladder <= stats.max_bladder / 4){
-            this.needsToiletOverlay.hidden = false;
-        } else {
-            this.needsToiletOverlay.hidden = true;
-        }
-        if(this.stats.has_poop_out){
-            App.poop.hidden = false;
-        } else {
-            App.poop.hidden = true;
-        }
+        this.needsToiletOverlay.hidden = stats.current_bladder > stats.max_bladder / 4;
+        App.poop.hidden = !this.stats.has_poop_out;
         stats.current_cleanliness -= cleanliness_depletion_rate;
         if(stats.current_cleanliness <= 0){
             stats.current_cleanliness = 0;
@@ -634,6 +669,7 @@ class Pet extends Object2d {
         if(stats.current_death_tick <= 0){
             App.pet.stats.is_dead = true;
         }
+        this.sicknessOverlay.hidden = stats.current_death_tick >= max_death_tick;
 
         // care rating check
         const careAffectingStats = [
@@ -879,14 +915,14 @@ class Pet extends Object2d {
             this.nextRandomTargetSelect = 0;
         }
     }
-    jump(strength = 0.28){
+    jump(strength = 0.28, silent){
         if(this.isJumping !== undefined) return false;
 
         this.isJumping = true;
         const gravity = 0.001;
         const startY = this.y;
         let velocity = strength;
-        App.playSound('resources/sounds/jump.ogg', true);
+        if(!silent) App.playSound('resources/sounds/jump.ogg', true);
 
         this.triggerScriptedState('jumping', App.INF, 0, true, 
         () => { // on end
@@ -1004,6 +1040,9 @@ class Pet extends Object2d {
                 me.opacity = lerp(me.opacity, opacityTarget, App.deltaTime * 0.01);
             }
         })
+
+        this.activeBubble?.removeObject?.();
+        this.activeBubble = bubble;
 
         // shows type icon if exists
         if([
@@ -1133,6 +1172,16 @@ class Pet extends Object2d {
             setTimeout(() => bubble.removeObject(), 1000);
         }, 5000);
     }
+    setLocalZBasedOnSelf(otherObject){
+        const currentBoundingBox = this.getBoundingBox();
+        const otherBoundingBox = otherObject.getBoundingBox();
+        
+        const localZ = (otherBoundingBox.y + otherBoundingBox.height) - (currentBoundingBox.y + currentBoundingBox.height);
+
+        otherObject.z = this.z;
+        otherObject.localZ = localZ;
+    }
+
     static scriptedEventDrivers = {
         playing: function(start){
             this.pet.setState('moving');
@@ -1145,6 +1194,11 @@ class Pet extends Object2d {
             if(this.pet.x == this.pet.targetX){
                 if(this.pet.targetX == 0) this.pet.targetX = 100 - this.pet.spritesheet.cellSize;
                 else this.pet.targetX = 0;
+            }
+        },
+        moveCheck: function(){
+            if(this.pet.x === this.pet.targetX || this.pet.targetX === undefined) {
+                this.pet.stopScriptedState();
             }
         },
         movingOut: function(start){

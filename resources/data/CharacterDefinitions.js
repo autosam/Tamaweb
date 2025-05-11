@@ -403,3 +403,18 @@ const NPC_CHARACTERS = [
     "resources/img/character/chara_247c.png",
     "resources/img/character/mailman_01.png",
 ];
+
+const ANIMAL_CHARACTERS = [
+    "resources/img/animal/cat_01.png",
+    "resources/img/animal/cat_02.png",
+    "resources/img/animal/cat_03.png",
+    "resources/img/animal/cat_04.png",
+    "resources/img/animal/cat_05.png",
+    "resources/img/animal/cat_06.png",
+    "resources/img/animal/cat_07.png",
+    "resources/img/animal/cat_08.png",
+    "resources/img/animal/dog_01.png",
+    "resources/img/animal/dog_02.png",
+    "resources/img/animal/dog_03.png",
+    "resources/img/animal/other_01.png",
+];

@@ -220,7 +220,8 @@ class PetDefinition {
         current_rabbit_hole: {
             name: false,
             endTime: false,
-        }
+        },
+        is_revived_once: false,
     }
     friends = [];
     family = [];
@@ -288,6 +289,7 @@ class PetDefinition {
                     used_toilet: this.stats.used_toilet,
                     is_potty_trained: this.stats.is_potty_trained,
                     current_rabbit_hole: this.stats.current_rabbit_hole,
+                    is_revived_once: this.stats.is_revived_once,
                 }
                 return;
             }

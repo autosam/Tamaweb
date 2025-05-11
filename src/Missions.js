@@ -26,6 +26,8 @@ const Missions = {
         visit_market: 'visit_market',
         plant_in_garden: 'plant_in_garden',
         water_crop: 'water_crop',
+        play_with_animal: 'play_with_animal',
+        feed_animal: 'feed_animal',
     },
     TYPE_DESCRIPTIONS: {
         food: 'Eat food',
@@ -49,6 +51,8 @@ const Missions = {
         visit_market: 'Visit the market',
         plant_in_garden: 'Plant something in the garden',
         water_crop: 'Water your garden plant',
+        play_with_animal: 'Play with your pet animal',
+        feed_animal: 'Feed your pet animal',
     },
     init: function(data){
         if(data?.current) this.current = data?.current;
