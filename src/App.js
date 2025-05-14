@@ -71,7 +71,7 @@ const App = {
             end: '12-31',
             absDay: '12-25',
         },
-        MANUAL_AGE_HOURS_BABY: 6,
+        MANUAL_AGE_HOURS_BABY: 1,
         MANUAL_AGE_HOURS_CHILD: 9,
         MANUAL_AGE_HOURS_TEEN: 12,
         MANUAL_AGE_HOURS_ADULT: 72,
@@ -2949,7 +2949,7 @@ const App = {
             list.appendChild(content);
             App.sendAnalytics('opened_family_tree');
         },
-        open_food_list: function(buyMode, activeIndex, filterType, sellMode, useMode){
+        open_food_list: function(buyMode, activeIndex, filterType, sellMode, useMode, age = App.petDefinition.lifeStage){
             let list = [];
             let sliderInstance;
             const salesDay = App.isSalesDay();
@@ -2960,13 +2960,13 @@ const App = {
                 const currentType = current.type || 'food';
 
                 // lifestage check
-                if('age' in current && !current.age.includes(App.petDefinition.lifeStage)) continue;
+                if('age' in current && !current.age.includes(age)) continue;
 
                 // buy mode and is free
                 if(buyMode && (current.price === 0 || current.cookableOnly)) continue;
 
                 // filter check
-                if(filterType && currentType != filterType) continue;
+                if(filterType && currentType !== filterType) continue;
 
                 // check if current pet has this food on its inventory
                 if(current.price && !App.pet.inventory.food[food] && !buyMode){
@@ -3197,7 +3197,7 @@ const App = {
                                 }
                             },
                             {
-                                name: `harvests ${App.getBadge('new!')}`,
+                                name: `harvests`,
                                 onclick: () => {
                                     let allPlants = [];
                                     const getIngredients = (name) => {
@@ -3481,12 +3481,11 @@ const App = {
                 return `<span">${text}</span>`;
             }
 
-            const nextGrowthTime = plant.lastGrowthTime + growthDelay;
+            const nextGrowthTime = !plant.isDead ? plant.lastGrowthTime + growthDelay : -1;
             const deathTime = plant.lastWatered + deathDuration;
             const hydratedTime = plant.lastWatered + wateredDuration;
 
-            content.innerHTML = `
-            <div class="inner-padding b-radius-10 m surface-stylized">
+            let innerContent = `
                 <div>
                     <b>GROWS IN:</b>
                     <div class="surface-stylized inner-padding">${getTimeDisplay(nextGrowthTime, 'GROWN')}</div>
@@ -3500,8 +3499,15 @@ const App = {
                     <div><small>(after dehydration)</small></div>
                     <div class="surface-stylized inner-padding">${getTimeDisplay(deathTime, 'DEAD')}</div>
                 </div>
-            </div>
             `;
+
+            content.innerHTML = `
+                <div class="inner-padding b-radius-10 m surface-stylized">
+                    ${innerContent}
+                </div>
+            `;
+
+
             list.appendChild(content);
         },
         open_achievements_list: function(checkIfHasNewUnlocks){
@@ -4478,15 +4484,17 @@ const App = {
                             {
                                 name: `yes ($${price})`,
                                 onclick: () => {
-                                    if(App.pet.stats.gold - price < 0) {
-                                        App.displayPopup(`You don't have enough gold!`);
-                                        return;
+                                    const commitFn = () => {
+                                        goToVacation(Activities.seaVacation)
+                                        App.sendAnalytics('go_on_vacation');
+                                        App.definitions.achievements.go_to_vacation_x_times.advance();
+                                        App.save();
                                     }
-                                    App.pet.stats.gold -= price;
-                                    goToVacation(Activities.seaVacation)
-                                    App.sendAnalytics('go_on_vacation');
-                                    App.definitions.achievements.go_to_vacation_x_times.advance();
-                                    App.save();
+
+                                    if(!App.pay(price)) return;
+                                    if(App.animals?.list?.length){
+                                        App.displayPopup('Your animal(s) will be taken care of while you are away!', 5000, commitFn);
+                                    } else commitFn();
                                 }
                             },
                             {

@@ -228,8 +228,12 @@ class PetDefinition {
     deceasedPredecessors = [];
     inventory = {
         food: {
-            'bread': 1,
-            'slice of pizza': 3,
+            'bread': 10,
+            'pizza': 2,
+            'paster': 2,
+            'lollipop': 3,
+            'cupcake': 3,
+            'medicine': 2,
         },
         item: { 'rattle': 1 },
         accessory: {},
@@ -515,7 +519,10 @@ class PetDefinition {
     }
 
     refreshWant(currentTry = 1, existingCurrentCategory, forced){
-        if(currentTry > 48 && !forced) return;
+        if(currentTry > 48 && !forced) {
+            console.error('Failed to pick a want:', {existingCurrentCategory, forced})
+            return;
+        }
 
         const {current_want} = this.stats;
 
@@ -545,9 +552,9 @@ class PetDefinition {
                 const wantedFood = randomFromArray(Object.keys(App.definitions.food));
                 const wantedFoodDef = App.definitions.food[wantedFood];
                 if(
-                    'age' in wantedFoodDef 
-                    && !App.definitions.food[wantedFood].age.includes(this.lifeStage) 
-                    || ['med', 'treat'].includes(App.definitions.food[wantedFood].type)
+                    ('age' in wantedFoodDef 
+                    && !wantedFoodDef.age.includes(this.lifeStage) )
+                    || ['med', 'treat'].includes(wantedFoodDef.type)
                 ) return this.refreshWant(++currentTry, currentCategory);
                 current_want.type = App.constants.WANT_TYPES.food;
                 current_want.item = wantedFood;
@@ -556,9 +563,9 @@ class PetDefinition {
                 const wantedSnack = randomFromArray(Object.keys(App.definitions.food));
                 const wantedSnackDef = App.definitions.food[wantedSnack];
                 if(
-                    'age' in wantedSnackDef 
-                    && !wantedSnackDef.age.includes(this.lifeStage) 
-                    || !['treat'].includes(App.definitions.food[wantedSnack].type)
+                    ('age' in wantedSnackDef 
+                    && !wantedSnackDef.age.includes(this.lifeStage) )
+                    || !['treat'].includes(wantedSnackDef.type)
                 ) return this.refreshWant(++currentTry, currentCategory);
                 current_want.type = App.constants.WANT_TYPES.food;
                 current_want.item = wantedSnack;

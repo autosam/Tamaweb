@@ -513,8 +513,9 @@ class Activities {
             const allPlantsList = App.plants
                 .filter(filterFn)
                 .map((currentPlant, currentPlantIndex) => {
+                    const plantNameText = `<span style="${currentPlant.isDead ? 'color: red': ''}"> ${currentPlant.name} </span>`
                     return {
-                        name: `<span class="icon">${currentPlant.getCSprite()}</span> ${currentPlant.name}`,
+                        name: `<span class="icon ${currentPlant.isDead ? 'opacity-half' : ''}">${currentPlant.getCSprite()}</span> ${plantNameText}`,
                         onclick: () => onPlantClick(currentPlant, currentPlantIndex)
                     }
                 })
@@ -545,13 +546,13 @@ class Activities {
                 },
                 {
                     name: `stats ${App.getBadge()}`,
+                    _disable: !App.plants.length,
                     onclick: () => {
                         return displayPlantsList({
                             onPlantClick: (plant) => {
                                 App.handlers.open_plant_stats(plant);
                                 return true;
                             },
-                            filterFn: (a) => !a.isDead
                         })
                     },
                 },
@@ -858,7 +859,7 @@ class Activities {
                                                     Missions.done(Missions.TYPES.feed_animal);
                                                     return true;
                                                 }
-                                                return App.handlers.open_food_list(false, false, false, false, onUseFn);
+                                                return App.handlers.open_food_list(false, false, 'food', false, onUseFn, PetDefinition.LIFE_STAGE.adult);
                                             }
                                         },
                                         {
@@ -941,7 +942,7 @@ class Activities {
                                                     App.displayPopup("The food has been placed!<br><br>Check back in a few hours to see if you've gotten a visitor!", 4000);
                                                     return true;
                                                 }
-                                                return App.handlers.open_food_list(false, false, false, false, onUseFn);
+                                                return App.handlers.open_food_list(false, false, 'food', false, onUseFn, PetDefinition.LIFE_STAGE.adult);
                                             }
                                         },
                                         {
@@ -1468,6 +1469,9 @@ class Activities {
                 App.pet.playCheeringAnimation();
                 App.save();
             })
+            
+            // feed all animals before ending
+            App.animals?.list?.forEach(a => a?.feed?.(100));
         }
 
         App.pet.triggerScriptedState('idle', App.INF, 0, true, null, 
