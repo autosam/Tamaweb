@@ -4492,7 +4492,7 @@ const App = {
                                     }
 
                                     if(!App.pay(price)) return;
-                                    if(!App.animals?.list?.length){
+                                    if(App.animals?.list?.length){
                                         App.displayPopup('Your animal(s) will be taken care of while you are away!', 5000, commitFn);
                                     } else commitFn();
                                 }
