@@ -2949,7 +2949,7 @@ const App = {
             list.appendChild(content);
             App.sendAnalytics('opened_family_tree');
         },
-        open_food_list: function(buyMode, activeIndex, filterType, sellMode, useMode){
+        open_food_list: function(buyMode, activeIndex, filterType, sellMode, useMode, age = App.petDefinition.lifeStage){
             let list = [];
             let sliderInstance;
             const salesDay = App.isSalesDay();
@@ -2960,13 +2960,13 @@ const App = {
                 const currentType = current.type || 'food';
 
                 // lifestage check
-                if('age' in current && !current.age.includes(App.petDefinition.lifeStage)) continue;
+                if('age' in current && !current.age.includes(age)) continue;
 
                 // buy mode and is free
                 if(buyMode && (current.price === 0 || current.cookableOnly)) continue;
 
                 // filter check
-                if(filterType && currentType != filterType) continue;
+                if(filterType && currentType !== filterType) continue;
 
                 // check if current pet has this food on its inventory
                 if(current.price && !App.pet.inventory.food[food] && !buyMode){
