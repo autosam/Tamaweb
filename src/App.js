@@ -3197,7 +3197,7 @@ const App = {
                                 }
                             },
                             {
-                                name: `harvests ${App.getBadge('new!')}`,
+                                name: `harvests`,
                                 onclick: () => {
                                     let allPlants = [];
                                     const getIngredients = (name) => {
