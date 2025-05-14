@@ -228,8 +228,12 @@ class PetDefinition {
     deceasedPredecessors = [];
     inventory = {
         food: {
-            'bread': 1,
-            'slice of pizza': 3,
+            'bread': 10,
+            'pizza': 2,
+            'paster': 2,
+            'lollipop': 3,
+            'cupcake': 3,
+            'medicine': 2,
         },
         item: { 'rattle': 1 },
         accessory: {},
