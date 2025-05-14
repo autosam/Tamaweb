@@ -1469,6 +1469,9 @@ class Activities {
                 App.pet.playCheeringAnimation();
                 App.save();
             })
+            
+            // feed all animals before ending
+            App.animals?.list?.forEach(a => a?.feed?.(100));
         }
 
         App.pet.triggerScriptedState('idle', App.INF, 0, true, null, 

@@ -4484,15 +4484,17 @@ const App = {
                             {
                                 name: `yes ($${price})`,
                                 onclick: () => {
-                                    if(App.pet.stats.gold - price < 0) {
-                                        App.displayPopup(`You don't have enough gold!`);
-                                        return;
+                                    const commitFn = () => {
+                                        goToVacation(Activities.seaVacation)
+                                        App.sendAnalytics('go_on_vacation');
+                                        App.definitions.achievements.go_to_vacation_x_times.advance();
+                                        App.save();
                                     }
-                                    App.pet.stats.gold -= price;
-                                    goToVacation(Activities.seaVacation)
-                                    App.sendAnalytics('go_on_vacation');
-                                    App.definitions.achievements.go_to_vacation_x_times.advance();
-                                    App.save();
+
+                                    if(!App.pay(price)) return;
+                                    if(!App.animals?.list?.length){
+                                        App.displayPopup('Your animal(s) will be taken care of while you are away!', 5000, commitFn);
+                                    } else commitFn();
                                 }
                             },
                             {
