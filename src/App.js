@@ -71,7 +71,7 @@ const App = {
             end: '12-31',
             absDay: '12-25',
         },
-        MANUAL_AGE_HOURS_BABY: 6,
+        MANUAL_AGE_HOURS_BABY: 1,
         MANUAL_AGE_HOURS_CHILD: 9,
         MANUAL_AGE_HOURS_TEEN: 12,
         MANUAL_AGE_HOURS_ADULT: 72,
