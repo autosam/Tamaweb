@@ -3481,12 +3481,11 @@ const App = {
                 return `<span">${text}</span>`;
             }
 
-            const nextGrowthTime = plant.lastGrowthTime + growthDelay;
+            const nextGrowthTime = !plant.isDead ? plant.lastGrowthTime + growthDelay : -1;
             const deathTime = plant.lastWatered + deathDuration;
             const hydratedTime = plant.lastWatered + wateredDuration;
 
-            content.innerHTML = `
-            <div class="inner-padding b-radius-10 m surface-stylized">
+            let innerContent = `
                 <div>
                     <b>GROWS IN:</b>
                     <div class="surface-stylized inner-padding">${getTimeDisplay(nextGrowthTime, 'GROWN')}</div>
@@ -3500,8 +3499,15 @@ const App = {
                     <div><small>(after dehydration)</small></div>
                     <div class="surface-stylized inner-padding">${getTimeDisplay(deathTime, 'DEAD')}</div>
                 </div>
-            </div>
             `;
+
+            content.innerHTML = `
+                <div class="inner-padding b-radius-10 m surface-stylized">
+                    ${innerContent}
+                </div>
+            `;
+
+
             list.appendChild(content);
         },
         open_achievements_list: function(checkIfHasNewUnlocks){

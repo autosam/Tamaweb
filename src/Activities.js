@@ -513,8 +513,9 @@ class Activities {
             const allPlantsList = App.plants
                 .filter(filterFn)
                 .map((currentPlant, currentPlantIndex) => {
+                    const plantNameText = `<span style="${currentPlant.isDead ? 'color: red': ''}"> ${currentPlant.name} </span>`
                     return {
-                        name: `<span class="icon">${currentPlant.getCSprite()}</span> ${currentPlant.name}`,
+                        name: `<span class="icon ${currentPlant.isDead ? 'opacity-half' : ''}">${currentPlant.getCSprite()}</span> ${plantNameText}`,
                         onclick: () => onPlantClick(currentPlant, currentPlantIndex)
                     }
                 })
@@ -545,13 +546,13 @@ class Activities {
                 },
                 {
                     name: `stats ${App.getBadge()}`,
+                    _disable: !App.plants.length,
                     onclick: () => {
                         return displayPlantsList({
                             onPlantClick: (plant) => {
                                 App.handlers.open_plant_stats(plant);
                                 return true;
                             },
-                            filterFn: (a) => !a.isDead
                         })
                     },
                 },
