@@ -2116,6 +2116,12 @@ App.definitions = (() => {
                 front: true,
                 price: -1, // makes it not buyable
             },
+            // angel / devil
+            'angel halo': {
+                image: 'resources/img/accessory/angel_halo_01.png',
+                font: true,
+                price: -1,
+            },
         },
     
         /* ACHIEVEMENTS */
