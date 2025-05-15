@@ -11,8 +11,8 @@ class Activities {
 
 
         App.toggleGameplayControls(false, () => {
-            activeSpeed += 5;
-            if(activeSpeed > 10) activeSpeed = 10;
+            // activeSpeed += 5;
+            // if(activeSpeed > 10) activeSpeed = 10;
         })
 
         const onEndFn = () => {
@@ -44,7 +44,7 @@ class Activities {
         }
 
         const driverFn = () => {
-            activeSpeed = 3;
+            activeSpeed = 1;
             globalOffset += activeSpeed * 0.025 * App.deltaTime;
             App.pet.setState(activeSpeed ? 'moving' : 'idle_side');
             
@@ -55,9 +55,8 @@ class Activities {
             lastGlobalOffsetLooped = globalOffsetLooped;
         }
 
-        const spawnEntities = () => {
+        const spawnEntities = (xOffset = globalOffset) => {
             spawnTicks++;
-            const xOffset = globalOffset;
             const moverFn = (me) => {
                 if(me._xOffset === undefined) me._xOffset = me.x;
 
@@ -99,16 +98,16 @@ class Activities {
             }
 
             // bush
-            for(let i = 0; i < 3; i++){
-                new Object2d({
-                    img: `resources/img/misc/forest_bush_0${random(1, 2)}.png`,
-                    x: (i * 32) + globalSpawnOffset,
-                    y: `${60 + random(0, 5)}%`,
-                    z: 0.1,
-                    inverted: !!random(0, 1),
-                    onDraw: moverFn,
-                })
-            }
+            // for(let i = 0; i < 3; i++){
+            //     new Object2d({
+            //         img: `resources/img/misc/forest_bush_0${random(1, 2)}.png`,
+            //         x: (i * 32) + globalSpawnOffset,
+            //         y: `${60 + random(0, 5)}%`,
+            //         z: 0.1,
+            //         inverted: !!random(0, 1),
+            //         onDraw: moverFn,
+            //     })
+            // }
 
             // flower
             for(let i = 0; i < 3; i++){
@@ -121,6 +120,10 @@ class Activities {
                 })
             }
         }
+        // initial spawning of the first two chunks
+        // otherwise the pet would run with no entities around at the start
+        spawnEntities(App.drawer.bounds.width * -1);
+        spawnEntities(App.drawer.bounds.width * -2);
 
         const movingBackgrounds = new Array(2)
         .fill(true)
