@@ -2811,10 +2811,10 @@ class Activities {
                     if(spawnDelay < 800) spawnDelay = 800;
 
                     const xPercentage = randomFromArray(['10%', '37%', '63%', '90%']);
-                    const currentIsFaulty = random(0, 3) == 1;
+                    const isCurrentFaulty = random(0, 3) == 1;
                     const projectileObject = new Object2d({
                         parent: spawnerObject,
-                        img: currentIsFaulty ? 'resources/img/misc/falling_poop.png' : 'resources/img/misc/heart_particle_01.png',
+                        img: isCurrentFaulty ? 'resources/img/misc/falling_poop.png' : 'resources/img/misc/heart_particle_01.png',
                         y: -20, x: xPercentage, rotation: random(0, 180), z: 6, width: 15, height: 13,
                         speed: projectileSpeed,
                         onDraw: (me) => {
@@ -2830,7 +2830,7 @@ class Activities {
                                 spawnSmoke(xCenter, me.y);
                                 me.removeObject();
                                 me.setImg('resources/img/misc/heart_particle_02.png')
-                                score(currentIsFaulty);
+                                score(isCurrentFaulty);
                             }
 
                             if(me.y > 90) me.removeObject();
@@ -2859,12 +2859,7 @@ class Activities {
         screen.innerHTML = `
         <div class="width-full" style="position: absolute; bottom: 0; left: 0;">
             <div class="flex-container" style="justify-content: space-between; padding: 4px">
-            <div class="flex-container" style="
-                background: #ff00c647;
-                padding: 0 4px;
-                border-radius: 6px;
-                color: #ffcaf4;
-            ">
+            <div class="flex-container mini-game-ui">
                 $
                 <div id="moneyWon">${moneyWon}</div>
             </div>
