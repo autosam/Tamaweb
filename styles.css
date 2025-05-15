@@ -2206,3 +2206,9 @@ a {
 .random-letter-bounce  {
     animation: randomLetterBounceAnim 0.5s linear infinite;
 }
+
+.mini-game-ui {
+    color: #3d00ff;
+    font-weight: bold;
+    text-shadow: 1px 1px white, -1px -1px white, 1px -1px white, -1px 1px white;
+}
