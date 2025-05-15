@@ -176,7 +176,7 @@ class Pet extends Object2d {
 
         this.castShadow = false;
         this.opacity = 0.7;
-        this.additionalAccessories = ['cupid wings'];
+        this.additionalAccessories = ['cupid wings', 'angel halo'];
         this.equipAccessories();
         this.animations.moving = this.animations.idle_side;
 
