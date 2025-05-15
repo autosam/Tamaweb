@@ -2179,8 +2179,8 @@ const App = {
                     onclick: () => {
                         const display = App.displayList([
                             {
-                                name: 'Note: <br>install / uninstalling mods will refresh the game',
-                                type: 'text'
+                                name: 'install / uninstalling mods will refresh the game',
+                                type: 'info'
                             },
                             {
                                 name: '<label class="custom-file-upload"><input id="mod-file" type="file"></input>+ Add mod</label>',
@@ -2218,6 +2218,7 @@ const App = {
                                                                             name: 'yes',
                                                                             onclick: () => {
                                                                                 App.mods.splice(App.mods.indexOf(modInfo), 1);
+                                                                                App.save();
                                                                                 App.sendAnalytics('mod_uninstall', modInfo.name);
                                                                                 App.displayPopup(`<b>${modInfo.name}</b> uninstalled successfully, refreshing...`, null, () => location.reload());
                                                                             }
@@ -2267,7 +2268,7 @@ const App = {
                                         location.reload();
                                     })
                                 }
-
+                                App.save();
                             } catch(e) {
                                 console.log(e);
                                 App.displayPopup(`Something went wrong, Invalid package: ${e}`);
