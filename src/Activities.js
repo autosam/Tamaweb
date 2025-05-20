@@ -911,6 +911,7 @@ class Activities {
                 });
                 App.animals.list.push(newAnimal);
                 App.displayPopup(`A new animal ${newAnimal.getFullCSprite()} has chosen your backyard as their new home. Take good care of them!`, 3000, () => openChooseNameDialog(newAnimal));
+                App.sendAnalytics('animal_arrived');
             } else if(App.animals.treatBiteCount > 2) {
                 resetTreat();
                 App.displayConfirm(`The food you placed out earlier is gone.<br><br>Unfortunately, its visitor chose not to stay this time, maybe you'll meet them next time!`, [
