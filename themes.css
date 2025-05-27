@@ -491,17 +491,17 @@
         border-radius: 0;
     }
     /* social posts */
-    --post-striped: repeating-linear-gradient(-45deg, #ded4ff 0 10px, #bca8ff 10px 20px);
+    --post-striped: repeating-linear-gradient(-45deg, #6146F3 0 10px, #DAC2FC 10px 20px);
     .post-canvas {
-        background-color: var(--prim-clr-a);
+        background-color: var(--prim-clr-b-text);
     }
     .post-text {
         background: #ffffff;
-        border-top: 5px solid var(--prim-clr-a);
+        border-top: 5px solid var(--prim-clr-b-text);
         color: #12004e;
     }
     .post-header {
-        background: var(--prim-clr-a);
+        background: var(--prim-clr-b-text);
         border-bottom: 1px solid #ffffff5c;
         color: white;
     }
@@ -513,12 +513,12 @@
         color: #ffffff;
     }
     .post-next {
-        background: var(--prim-clr-a);
+        background: var(--prim-clr-b-text);
         color: #ffffff;
     }
     .post-profile-icon {
         background: var(--post-striped);
-        outline: var(--prim-clr-a) 2px solid;
+        outline: var(--prim-clr-b-text) 2px solid;
     }
     /* stepper */
     --stepper-clr: #00014B;
@@ -587,7 +587,7 @@
     }
     /* other */
     .bg-bef-1:before { /* friend request */
-        background: #fcae7c !important;
+        background: var(--mm-clr-3) !important;
     }
     .save-indicator {
         text-shadow: 
