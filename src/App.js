@@ -28,6 +28,8 @@ const App = {
         sleepingHoursOffset: 0,
         classicMainMenuUI: false,
         isTester: false,
+        theme: false,
+        shellAdditionalSize: 0,
     },
     constants: {
         ONE_HOUR: 1000 * 60 * 60,
@@ -490,17 +492,23 @@ const App = {
         const isFullscreen = new URLSearchParams(location.search).has('fullscreen');
         if(isFullscreen) graphicsWrapper.classList.add('fullscreen');
 
+        // theme
+        if(this.settings.theme){
+            document.body.className = `theme-${this.settings.theme}`;
+        }
+
         // background
         document.body.style.backgroundColor = this.settings.backgroundColor;
         const metaThemeColor = document.querySelector('meta[name="theme-color"]');
         metaThemeColor?.setAttribute('content', this.settings.backgroundColor);
         document.querySelector('.loading-text').style.background = this.settings.backgroundColor;
 
-        // screen size
+        // screen / shell size
+        this.settings.shellAdditionalSize = clamp(this.settings.shellAdditionalSize, -0.5, 5);
         this.settings.screenSize = clamp(this.settings.screenSize, 0.6, 5);
         graphicsWrapper.style.transform = `scale(${this.settings.screenSize})`;
-        document.querySelector('.dom-shell').style.transform = `scale(${this.settings.screenSize})`;
-        
+        document.querySelector('.dom-shell').style.transform = `scale(${this.settings.screenSize + this.settings.shellAdditionalSize})`;
+
         // shell
         const domShell = document.querySelector('.dom-shell');
         domShell.style.display = App.settings.displayShell ? '' : 'none';
@@ -2501,7 +2509,23 @@ const App = {
                     }
                 },
                 {
-                    name: `change shell`,
+                    name: `Change Theme ${App.getBadge()}`,
+                    onclick: () => {
+                        return App.displayList(
+                            App.definitions.themes.map(themeName => ({
+                                name: themeName,
+                                class: `theme-${themeName}`,
+                                onclick: () => {
+                                    App.settings.theme = themeName;
+                                    App.applySettings();
+                                    return true;
+                                }
+                            }))
+                        )
+                    }
+                },
+                {
+                    name: `Shell Settings ${App.getBadge()}`,
                     onclick: () => {
                         // App.handlers.open_shell_background_list();
                         // return true;
@@ -2521,6 +2545,30 @@ const App = {
                                 onclick: (item) => {
                                     App.settings.displayShellButtons = !App.settings.displayShellButtons;
                                     item.innerHTML = `shell button: <i>${App.settings.displayShellButtons ? 'yes' : 'no'}</i>`;  
+                                    App.applySettings();
+                                    return true;
+                                }
+                            },
+                            {
+                                name: `+ shell size ${App.getBadge()}`,
+                                onclick: () => {
+                                    App.settings.shellAdditionalSize += 0.1;
+                                    App.applySettings();
+                                    return true;
+                                }
+                            },
+                            {
+                                name: `- shell size ${App.getBadge()}`,
+                                onclick: () => {
+                                    App.settings.shellAdditionalSize -= 0.1;
+                                    App.applySettings();
+                                    return true;
+                                }
+                            },
+                            {
+                                name: `reset shell size ${App.getBadge()}`,
+                                onclick: () => {
+                                    App.settings.shellAdditionalSize = 0;
                                     App.applySettings();
                                     return true;
                                 }
