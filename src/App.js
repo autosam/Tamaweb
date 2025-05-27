@@ -3041,6 +3041,30 @@ const App = {
                                 }
                             },
                             {
+                                name: `+ shell size ${App.getBadge()}`,
+                                onclick: () => {
+                                    App.settings.shellAdditionalSize += 0.1;
+                                    App.applySettings();
+                                    return true;
+                                }
+                            },
+                            {
+                                name: `- shell size ${App.getBadge()}`,
+                                onclick: () => {
+                                    App.settings.shellAdditionalSize -= 0.1;
+                                    App.applySettings();
+                                    return true;
+                                }
+                            },
+                            {
+                                name: `reset shell size ${App.getBadge()}`,
+                                onclick: () => {
+                                    App.settings.shellAdditionalSize = 0;
+                                    App.applySettings();
+                                    return true;
+                                }
+                            },
+                            {
                                 _mount: (e) => e.innerHTML = `shell shape: <i>${App.settings.shellShape}</i>`,
                                 onclick: (item) => {
                                     App.settings.shellShape++;

@@ -1008,7 +1008,7 @@ button {
 .dom-shell {
     width: 320px;
     height: 400px;
-    position: absolute;
+    position: fixed;
     background: 50% 50% / cover rgb(255, 237, 217);
     border-radius: 100% 100% 95% 95%;
     overflow: hidden;
