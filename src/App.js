@@ -234,13 +234,14 @@ const App = {
             image: App.preloadedResources["resources/img/background/sky/night.png"],
             x: 0, y: 0, z: 99999,
             composite: "destination-over",
-            // absHidden: true
+            static: true,
         })
         App.skyOverlay = new Object2d({
             image: App.preloadedResources["resources/img/background/sky/night_overlay.png"],
             x: 0, y: 0, z: 999,
             composite: "source-atop",
             opacity: 1,
+            static: true,
         })
         App.skyWeather = new Object2d({
             image: App.preloadedResources["resources/img/background/sky/rain_01.png"],
@@ -1238,6 +1239,9 @@ const App = {
         reviverDen: new Scene({
             image: 'resources/img/background/house/reviver_01.png',
             noShadows: true,
+        }),
+        emptyOutside: new Scene({
+            image: 'resources/img/background/outside/transparent.png',
         }),
     },
     setScene(scene, noPositionChange, onLoadArg){
@@ -4149,6 +4153,7 @@ const App = {
             return App.displayList([...list]);
         },
         open_activity_list: function(){
+            return Activities.goToActivities();
             return App.displayList([
                 {
                     name: `mall`,

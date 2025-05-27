@@ -574,7 +574,7 @@
     }
     /* directional control */
     .directional-control__container .control {
-        background: #d1c3ff;
+        background: var(--prim-clr-b-text);
         color: var(--prim-clr-a);
     }
     .directional-control__container .control#cancel {
