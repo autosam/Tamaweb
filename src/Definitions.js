@@ -1,6 +1,8 @@
 App.definitions = (() => {
     const _ls = PetDefinition.LIFE_STAGE;
     return  {
+        /* THEMES */
+        themes: ['default', 'sunset', 'white'],
         /* MAIN MENU */
         main_menu: [
             {
