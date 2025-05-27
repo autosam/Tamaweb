@@ -15,6 +15,10 @@
     -webkit-user-drag: none;
 }
 
+.style-clear * {
+    all: unset;
+}
+
 html {
     font-family: 'PixelOld', 'Pixel', serif;
     word-spacing: -3px;
@@ -28,6 +32,16 @@ body {
     color: white;
     overflow: hidden;
     text-transform: uppercase;
+}
+
+a {
+    color: var(--prim-clr-a);
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background: var(--prim-clr-b-border);
 }
 
 .loading-text {
@@ -193,6 +207,15 @@ body {
     background-repeat: no-repeat;
     animation: infinite 0.5s pointer-anim alternate;
 }
+.generic-btn.stylized:active {
+    background: color-mix(in srgb, var(--prim-clr-b-bg) 97%, black);
+    scale: 0.95;
+}
+.generic-btn:disabled, .generic-btn.disabled {
+    background-color: var(--prim-clr-b-bg) !important;
+    color: color-mix(in srgb, var(--prim-clr-b-text) 50%, var(--prim-clr-b-bg)) !important;
+    border-color: color-mix(in srgb, var(--prim-clr-b-text) 40%, var(--prim-clr-b-bg)) !important;
+}
 
 @keyframes pointer-anim {
     from {
@@ -349,10 +372,15 @@ input {
     padding: 5px 10px;
     border-radius: 10px;
     text-transform: none !important;
+    background: rgba(255, 255, 255, 0.849);
+    border: 1px solid var(--prim-clr-b-border);
+    color: var(--prim-clr-b-text);
 }
-
 input:focus {
     outline: 3px solid;
+}
+input:focus {
+    background: white;
 }
 
 @keyframes slider-item-anim-in-left {
@@ -1294,10 +1322,6 @@ a.generic-btn:before {
     height: 35px;
     box-sizing: border-box;
     border-radius: 100% !important;
-}
-
-hr {
-    border: 0;
 }
 
 @keyframes fade-out {
