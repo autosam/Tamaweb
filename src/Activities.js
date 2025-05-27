@@ -1,4 +1,132 @@
 class Activities {
+    static async goToActivities(){
+        App.setScene({
+            ...App.scene.emptyOutside,
+            petY: '94%',
+        });
+
+        let scenePositionX = -App.drawer.bounds.width;
+        App.pet.triggerScriptedState('idle', App.INF, false, true, false, (me) => {
+            me.setState(me.isMoving ? 'moving' : 'idle');
+        });
+        App.pet.speedOverride = 0.1;
+        App.pet.x = App.drawer.bounds.width - 40;
+
+        // ui
+        App.toggleGameplayControls(false);
+        const editDisplay = document.createElement('div');
+        editDisplay.className = 'absolute-fullscreen flex flex-dir-col'
+        document.querySelector('.screen-wrapper').appendChild(editDisplay)
+        editDisplay.close = () => editDisplay.remove();
+        editDisplay.innerHTML = `
+            <div class="solid-surface-stylized flex justify-center height-auto b-radius-10">
+                <span id="activity-name">$activity_name$</span>
+            </div>
+            <div class="directional-control__container">
+            <div class="controls-y">
+            <div></div> 
+                <div class="controls-x">
+                    <div class="control" id="left"><i class="fa fa-angle-left"></i></div>
+                    <div class="control" id="right"><i class="fa fa-angle-right"></i></div>
+                </div>
+                <div class="bottom-container">
+                    <div class="control" id="cancel"><i class="fa fa-times"></i></div>
+                    <div class="control" id="apply"><i class="fa fa-check"></i></div>
+                </div>
+                </div>
+            </div>
+        `;
+
+        
+        // logic
+        const ACTIVITIES = [
+            {
+                name: "Home",
+                image: 'resources/img/misc/activity_building_home.png',
+                onEnter: () => {},
+            },
+            {
+                name: "Mall",
+                image: 'resources/img/misc/activity_building_mall.png',
+                onEnter: Activities.goToMall,
+            },
+            {
+                name: "Market",
+                image: 'resources/img/misc/activity_building_market.png',
+                onEnter: Activities.goToMarket,
+            },
+            {
+                name: "Game Center",
+                image: 'resources/img/misc/seed_pack_01.png',
+                onEnter: Activities.goToArcade,
+            },
+            {
+                name: "Hospital",
+                image: 'resources/img/background/outside/hospital_01.png',
+                onEnter: Activities.goToClinic,
+            },
+        ]
+        const spawnedGameObjects = [];
+
+        // camera position adjuster draw event
+        const directorTask = () => {
+            const newPositionX = lerp(App.drawer.cameraPosition.x, -scenePositionX, 0.01 * App.deltaTime);
+            App.drawer.setCameraPosition(newPositionX, null);
+        }
+        App.registerOnDrawEvent(directorTask);
+
+        // end fn
+        const onEnd = () => {
+            App.unregisterOnDrawEvent(directorTask)
+            editDisplay.remove();
+            spawnedGameObjects.forEach(o => o.removeObject?.());
+            App.drawer.setCameraPosition(0, 0);
+            App.toggleGameplayControls(true);
+            App.pet.speedOverride = false;
+            App.setScene(App.scene.home);
+        }
+
+        const onEnter = () => {
+            onEnd();
+            const currentActivity = ACTIVITIES[currentActivityIndex];
+            currentActivity.onEnter?.();
+        }
+        
+        let currentActivityIndex = 1;
+
+        const updateSelectedActivity = (offset = 1) => {
+            if(spawnedGameObjects.length > 3){
+                const toDespwan = spawnedGameObjects.shift();
+                toDespwan?.removeObject?.();
+            }
+
+            currentActivityIndex -= offset;
+            if(currentActivityIndex > ACTIVITIES.length - 1) currentActivityIndex = 0;
+            if(currentActivityIndex < 0) currentActivityIndex = ACTIVITIES.length - 1;
+            const currentActivity = ACTIVITIES[currentActivityIndex];
+            document.querySelector('#activity-name').textContent =  `${currentActivity.name}`;
+            scenePositionX += App.drawer.bounds.width * offset;
+
+            const background = new Object2d({
+                img: 'resources/img/background/outside/activities_base_01.png',
+                x: scenePositionX, y: 0,
+            });
+            new Object2d({
+                img: currentActivity.image,
+                x: scenePositionX, y: 0,
+                parent: background
+            });
+            // App.pet.x = scenePositionX + App.drawer.bounds.width;
+            App.pet.targetX = scenePositionX + App.drawer.bounds.width - 40;
+            spawnedGameObjects.push(background);
+        }
+
+        updateSelectedActivity();
+        editDisplay.querySelector('#right').onclick = () => updateSelectedActivity(1);
+        editDisplay.querySelector('#left').onclick = () => updateSelectedActivity(-1);
+        editDisplay.querySelector('#cancel').onclick = () => onEnd();
+        editDisplay.querySelector('#apply').onclick = () => onEnter();
+    }
     static async reckoning(){
         App.setScene(App.scene.reviverDen);
         App.closeAllDisplays();
