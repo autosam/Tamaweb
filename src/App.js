@@ -2476,7 +2476,7 @@ const App = {
                         return App.displayList(
                             App.definitions.themes.map(themeName => ({
                                 name: themeName,
-                                class: `theme-${themeName}`,
+                                // class: `theme-${themeName}`,
                                 onclick: () => {
                                     App.settings.theme = themeName;
                                     App.applySettings();

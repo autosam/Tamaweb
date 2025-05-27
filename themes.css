@@ -486,6 +486,7 @@
     }
     .content-separator {
         border: 1px solid var(--prim-clr-a);
+        margin-top: 16px;
         width: 20%;
         border-radius: 0;
     }
