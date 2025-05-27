@@ -987,6 +987,9 @@ input#background-color-picker {
 .width-half {
     width: 50%;
 }
+.width-auto {
+    width: auto;
+}
 .items-center {
     align-items: center;
 }
