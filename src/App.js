@@ -1706,6 +1706,76 @@ const App = {
         }
     },
     handlers: {
+        open_works_list: function(){
+            return App.displayList([
+                {
+                    name: `stand work`,
+                    onclick: () => {
+                        Activities.standWork();
+                    }
+                },
+                {
+                    name: 'office work',
+                    onclick: () => {
+                        Activities.officeWork();
+                    }
+                },
+            ])
+        },
+        open_fortune_teller: function(){
+            return App.displayList([
+                {
+                    _disable: App.petDefinition.lifeStage === PetDefinition.LIFE_STAGE.elder,
+                    name: 'Next Evolution',
+                    onclick: () => {
+                        return App.displayConfirm(`Do you want to see ${App.petDefinition.name}'s <b>next possible evolution(s)</b> based on different <b>care ratings</b>?`, [
+                            {
+                                name: 'yes ($100)',
+                                onclick: () => {
+                                    if(!App.pay(100)) return;
+                                    App.closeAllDisplays();
+                                    Activities.goToFortuneTeller();
+                                }
+                            },
+                            {
+                                name: 'no',
+                                class: 'back-btn',
+                                onclick: () => {}
+                            }
+                        ])
+                    }
+                },
+                {
+                    _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult,
+                    name: 'Offspring with ...',
+                    onclick: () => {
+                        const filter = (petDefinition) => (
+                            !petDefinition.stats.is_player_family
+                            && petDefinition.lifeStage >= PetDefinition.LIFE_STAGE.adult
+                            && App.petDefinition.lifeStage >= PetDefinition.LIFE_STAGE.adult
+                        )
+                        App.handlers.open_friends_list((friendDef) => {
+                            return App.displayConfirm(`Do you want to see ${friendDef.name} and ${App.petDefinition.name}'s baby <b>offspring</b>?`, [
+                                {
+                                    name: 'yes ($100)',
+                                    onclick: () => {
+                                        if(!App.pay(100)) return;
+                                        App.closeAllDisplays();
+                                        Activities.goToFortuneTeller(friendDef);
+                                    }
+                                },
+                                {
+                                    name: 'no',
+                                    class: 'back-btn',
+                                    onclick: () => {}
+                                }
+                            ])
+                        }, filter);
+                        return true;
+                    }
+                }
+            ])
+        },
         open_hubchi_search: function(onAddCallback){
             const prompt = App.displayPrompt(
                 `
@@ -4153,131 +4223,9 @@ const App = {
             return App.displayList([...list]);
         },
         open_activity_list: function(){
-            return Activities.goToActivities();
-            return App.displayList([
-                {
-                    name: `mall`,
-                    onclick: () => {
-                        Activities.goToMall();
-                    }
-                },
-                {
-                    name: `market`,
-                    onclick: () => {
-                        Activities.goToMarket();
-                    }
-                },
-                {
-                    name: `game center`,
-                    onclick: () => {
-                        Activities.goToArcade();
-                    }
-                },
-                {
-                    _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child,
-                    name: `<span class="ellipsis">Homeworld Getaways</span>`,
-                    onclick: () => {
-                        return App.handlers.open_rabbitholes_list();
-                    }
-                },
-                {
-                    name: `fortune teller`,
-                    onclick: () => {
-                        return App.displayList([
-                            {
-                                _disable: App.petDefinition.lifeStage === PetDefinition.LIFE_STAGE.elder,
-                                name: 'Next Evolution',
-                                onclick: () => {
-                                    return App.displayConfirm(`Do you want to see ${App.petDefinition.name}'s <b>next possible evolution(s)</b> based on different <b>care ratings</b>?`, [
-                                        {
-                                            name: 'yes ($100)',
-                                            onclick: () => {
-                                                if(!App.pay(100)) return;
-                                                App.closeAllDisplays();
-                                                Activities.goToFortuneTeller();
-                                            }
-                                        },
-                                        {
-                                            name: 'no',
-                                            class: 'back-btn',
-                                            onclick: () => {}
-                                        }
-                                    ])
-                                }
-                            },
-                            {
-                                _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult,
-                                name: 'Offspring with ...',
-                                onclick: () => {
-                                    const filter = (petDefinition) => (
-                                        !petDefinition.stats.is_player_family
-                                        && petDefinition.lifeStage >= PetDefinition.LIFE_STAGE.adult
-                                        && App.petDefinition.lifeStage >= PetDefinition.LIFE_STAGE.adult
-                                    )
-                                    App.handlers.open_friends_list((friendDef) => {
-                                        return App.displayConfirm(`Do you want to see ${friendDef.name} and ${App.petDefinition.name}'s baby <b>offspring</b>?`, [
-                                            {
-                                                name: 'yes ($100)',
-                                                onclick: () => {
-                                                    if(!App.pay(100)) return;
-                                                    App.closeAllDisplays();
-                                                    Activities.goToFortuneTeller(friendDef);
-                                                }
-                                            },
-                                            {
-                                                name: 'no',
-                                                class: 'back-btn',
-                                                onclick: () => {}
-                                            }
-                                        ])
-                                    }, filter);
-                                    return true;
-                                }
-                            }
-                        ])
-                    }
-                },
-                {
-                    name: 'park',
-                    onclick: () => { // going to park with random pet
-                        Activities.goToPark();
-                    }
-                },
-                {
-                    name: `visit doctor`,
-                    onclick: () => {
-                        Activities.goToClinic();
-                    }
-                },
-                {
-                    _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult,
-                    name: `work`,
-                    onclick: () => {
-                        App.displayList([
-                            {
-                                name: `stand work`,
-                                onclick: () => {
-                                    Activities.standWork();
-                                }
-                            },
-                            {
-                                name: 'office work',
-                                onclick: () => {
-                                    Activities.officeWork();
-                                }
-                            },
-                        ])
-                        return true;
-                    }
-                },
-                // {
-                //     name: 'baby sitter',
-                //     onclick: () => {
-                //         App.displayPopup('To be implemented...', 1000);
-                //         return true;
-                //     }
-                // },
-            ], null, 'Activities')
+            return Activities.goToActivities({
+                activities: App.definitions.outside_activities
+            });
         },
         open_rabbitholes_list: function(){
             return App.displayList([

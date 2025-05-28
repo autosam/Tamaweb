@@ -1,21 +1,23 @@
 class Activities {
-    static async goToActivities(){
+    static async goToActivities({ activities } = {}){
         App.setScene({
             ...App.scene.emptyOutside,
             petY: '94%',
         });
 
         let scenePositionX = -App.drawer.bounds.width;
+
+        const fastMoveBound = App.drawer.bounds.width * 1.5;
         App.pet.triggerScriptedState('idle', App.INF, false, true, false, (me) => {
             me.setState(me.isMoving ? 'moving' : 'idle');
+            me.speedOverride = Math.abs(me.x - me.targetX) > fastMoveBound ? 1 : 0.1;
         });
-        App.pet.speedOverride = 0.1;
         App.pet.x = App.drawer.bounds.width - 40;
 
         // ui
         App.toggleGameplayControls(false);
         const editDisplay = document.createElement('div');
-        editDisplay.className = 'absolute-fullscreen flex flex-dir-col'
+        editDisplay.className = 'absolute-fullscreen flex flex-dir-col menu-animation'
         document.querySelector('.screen-wrapper').appendChild(editDisplay)
         editDisplay.close = () => editDisplay.remove();
         editDisplay.innerHTML = `
@@ -31,43 +33,10 @@ class Activities {
                     <div class="bottom-container align-end">
                         <button class="generic-btn stylized" id="apply"><i class="fa fa-door-open"></i></button>
                     </div>
-                    <div class="bottom-container hidden">
-                        <div class="control" id="cancel"><i class="fa fa-times"></i></div>
-                        <div class="control" id="apply"><i class="fa fa-check"></i></div>
-                    </div>
                 </div>
             </div>
         `;
 
-        
-        // logic
-        const ACTIVITIES = [
-            {
-                name: "Home",
-                image: 'resources/img/misc/activity_building_home.png',
-                onEnter: () => {},
-            },
-            {
-                name: "Mall",
-                image: 'resources/img/misc/activity_building_mall.png',
-                onEnter: Activities.goToMall,
-            },
-            {
-                name: "Market",
-                image: 'resources/img/misc/activity_building_market.png',
-                onEnter: Activities.goToMarket,
-            },
-            {
-                name: "Game Center",
-                image: 'resources/img/misc/seed_pack_01.png',
-                onEnter: Activities.goToArcade,
-            },
-            {
-                name: "Hospital",
-                image: 'resources/img/background/outside/hospital_01.png',
-                onEnter: Activities.goToClinic,
-            },
-        ]
         const spawnedGameObjects = [];
 
         // camera position adjuster draw event
@@ -84,18 +53,19 @@ class Activities {
             spawnedGameObjects.forEach(o => o.removeObject?.());
             App.drawer.setCameraPosition(0, 0);
             App.toggleGameplayControls(true);
+            App.pet.stopScriptedState();
+            App.pet.stopMove();
             App.pet.speedOverride = false;
             App.setScene(App.scene.home);
         }
 
         const onEnter = () => {
             onEnd();
-            const currentActivity = ACTIVITIES[currentActivityIndex];
+            const currentActivity = activities[currentActivityIndex];
             currentActivity.onEnter?.();
         }
         
         let currentActivityIndex = 1;
-
         const updateSelectedActivity = (offset = 1) => {
             if(spawnedGameObjects.length > 3){
                 const toDespwan = spawnedGameObjects.shift();
@@ -103,10 +73,19 @@ class Activities {
             }
 
             currentActivityIndex -= offset;
-            if(currentActivityIndex > ACTIVITIES.length - 1) currentActivityIndex = 0;
-            if(currentActivityIndex < 0) currentActivityIndex = ACTIVITIES.length - 1;
-            const currentActivity = ACTIVITIES[currentActivityIndex];
+            if(currentActivityIndex > activities.length - 1) currentActivityIndex = 0;
+            if(currentActivityIndex < 0) currentActivityIndex = activities.length - 1;
+            const currentActivity = activities[currentActivityIndex];
+
             document.querySelector('#activity-name').textContent =  `${currentActivity.name}`;
+            if(currentActivity.isDisabled?.()){
+                document.querySelector('#activity-name').classList.add('disabled');
+                editDisplay.querySelector('#apply').classList.add('disabled');
+            } else {
+                document.querySelector('#activity-name').classList.remove('disabled');
+                editDisplay.querySelector('#apply').classList.remove('disabled');
+            }
+
             scenePositionX += App.drawer.bounds.width * offset;
 
             const background = new Object2d({
@@ -118,15 +97,15 @@ class Activities {
                 x: scenePositionX, y: 0,
                 parent: background
             });
+            spawnedGameObjects.push(background);
+            
             // App.pet.x = scenePositionX + App.drawer.bounds.width;
             App.pet.targetX = scenePositionX + App.drawer.bounds.width - 40;
-            spawnedGameObjects.push(background);
         }
 
         updateSelectedActivity();
         editDisplay.querySelector('#right').onclick = () => updateSelectedActivity(1);
         editDisplay.querySelector('#left').onclick = () => updateSelectedActivity(-1);
-        editDisplay.querySelector('#cancel').onclick = () => onEnd();
         editDisplay.querySelector('#apply').onclick = () => onEnter();
     }
     static async goToWalk(){
