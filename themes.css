@@ -396,7 +396,7 @@
     }
     .grid-item:before {
         background: #FA2B95;
-        box-shadow: inset -10px 20px rgba(255, 255, 255, 0.158), 0 0px 12px 1px white;
+        box-shadow: inset 10px 10px 4px #ffffff31, 0 0px 12px 1px white;
         width: 56px;
         height: 56px;
     }
@@ -404,14 +404,14 @@
         background-color: #FA2B95;
         outline: 5px solid #ffffff3b;
     }
-    --mm-clr-1: #FA2B95;
-    --mm-clr-2: #EC7849;
-    --mm-clr-3: #9070F9;
-    --mm-clr-4: #0ED3CA;
-    --mm-clr-5: #CC80FE;
-    --mm-clr-6: #FA2B95;
-    --mm-clr-7: #EC7849;
-    --mm-clr-8: #0ED3CA;
+    --mm-clr-1: linear-gradient(-45deg, #FA2B95, #EE87E3);
+    --mm-clr-2: linear-gradient(-45deg, #EC7849, #F3BE18);
+    --mm-clr-3: linear-gradient(-45deg, #9070F9, #13F0EB);
+    --mm-clr-4: linear-gradient(-45deg, #0ED3CA, #43F887);
+    --mm-clr-5: linear-gradient(-45deg, #CC80FE, #E98FF1);
+    --mm-clr-6: linear-gradient(-45deg, #FA2B95, #EE87E3);
+    --mm-clr-7: linear-gradient(-45deg, #9070F9, #13F0EB);
+    --mm-clr-8: linear-gradient(-45deg, #0ED3CA, #43F887);
     .classic-main-menu__item:nth-child(1):hover,
     .grid-item:nth-child(1):before {
         background: var(--mm-clr-1);
@@ -440,10 +440,14 @@
     }
     .classic-main-menu__item:nth-child(7):hover,
     .grid-item:nth-child(7):before {
-        background: var(--mm-clr-7)
+        background: var(--mm-clr-2)
     }
     .classic-main-menu__item:nth-child(8):hover,
     .grid-item:nth-child(8):before {
+        background: var(--mm-clr-7)
+    }
+    .classic-main-menu__item:nth-child(9):hover,
+    .grid-item:nth-child(9):before {
         background: var(--mm-clr-8)
     }
     .classic-main-menu__item:nth-child(1){
