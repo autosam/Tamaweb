@@ -548,6 +548,10 @@ button {
     align-items: center;
 }
 
+.align-end {
+    align-items: end;
+}
+
 .justify-center {
     justify-content: center;
 }
@@ -1019,6 +1023,10 @@ input#background-color-picker {
     text-align: center;
 }
 
+.cursor-pointer {
+    cursor: pointer;
+}
+
 .modal {
     position: fixed;
     top: 0px;
@@ -1325,6 +1333,9 @@ a.generic-btn:before {
     height: 35px;
     box-sizing: border-box;
     border-radius: 100% !important;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
 }
 
 @keyframes fade-out {
