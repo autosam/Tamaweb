@@ -23,16 +23,18 @@ class Activities {
                 <span id="activity-name">$activity_name$</span>
             </div>
             <div class="directional-control__container">
-            <div class="controls-y">
-            <div></div> 
-                <div class="controls-x">
-                    <div class="control" id="left"><i class="fa fa-angle-left"></i></div>
-                    <div class="control" id="right"><i class="fa fa-angle-right"></i></div>
-                </div>
-                <div class="bottom-container">
-                    <div class="control" id="cancel"><i class="fa fa-times"></i></div>
-                    <div class="control" id="apply"><i class="fa fa-check"></i></div>
-                </div>
+                <div class="controls-y">
+                    <div class="controls-x flex-1 align-center">
+                        <button class="generic-btn stylized slide-action" id="left"><i class="fa fa-angle-left"></i></button>
+                        <button class="generic-btn stylized slide-action" id="right"><i class="fa fa-angle-right"></i></button>
+                    </div>
+                    <div class="bottom-container align-end">
+                        <button class="generic-btn stylized" id="apply"><i class="fa fa-door-open"></i></button>
+                    </div>
+                    <div class="bottom-container hidden">
+                        <div class="control" id="cancel"><i class="fa fa-times"></i></div>
+                        <div class="control" id="apply"><i class="fa fa-check"></i></div>
+                    </div>
                 </div>
             </div>
         `;
