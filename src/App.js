@@ -1952,13 +1952,13 @@ const App = {
                     }
                 },
                 {
-                    name: `Backyard ${App.getBadge()}`,
+                    name: `Backyard`,
                     onclick: () => {
                         Activities.goToGarden();
                     }
                 },
                 {
-                    name: `Garden ${App.getBadge()}`,
+                    name: `Garden`,
                     onclick: () => {
                         Activities.goToInnerGarden();
                     }
@@ -4462,7 +4462,7 @@ const App = {
             App.displayList([
                 {
                     _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby,
-                    name: `<span style="color: #ff00c6"><i class="icon fa-solid fa-globe"></i> hubchi</span> ${App.getBadge()}`,
+                    name: `<span style="color: #ff00c6"><i class="icon fa-solid fa-globe"></i> hubchi</span>`,
                     onclick: () => {
                         if(App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby){
                             return App.displayPopup(`${App.petDefinition.name} is not old enough to go to hubchi!`);

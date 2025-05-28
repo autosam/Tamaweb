@@ -818,7 +818,7 @@ class Activities {
                     }
                 },
                 {
-                    name: `stats ${App.getBadge()}`,
+                    name: `stats`,
                     _disable: !App.plants.length,
                     onclick: () => {
                         return displayPlantsList({
@@ -970,7 +970,7 @@ class Activities {
                     }
                 },
                 {
-                    name: `active buffs ${App.getBadge()}`,
+                    name: `active buffs`,
                     onclick: () => App.handlers.open_active_buffs('garden'),
                 },
                 {
@@ -1666,7 +1666,7 @@ class Activities {
                     onclick: handleSyncCharacter,
                 },
                 {
-                    name: `rewards store ${App.getBadge()}`,
+                    name: `rewards store`,
                     onclick: handleRewardStore,
                 },
                 {

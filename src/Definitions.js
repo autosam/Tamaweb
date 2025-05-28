@@ -882,7 +882,7 @@ App.definitions = (() => {
             "car city": {
                 image: 'resources/img/background/house/cc_06.png',
                 price: 0,
-                isNew: true,
+                isNew: false,
                 onlineShopAccessible: true,
                 unlockLikes: 100,
                 unlockKey: 'bg_car_city',
