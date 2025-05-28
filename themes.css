@@ -17,7 +17,7 @@
     --prim-clr-c-border: #ff572257;
     /* generic */
     .disabled {
-        color: gray; 
+        color: var(--prim-clr-b-text-shadow); 
     }
     /* buttons */
     /* main */

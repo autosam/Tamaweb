@@ -56,6 +56,57 @@ App.definitions = (() => {
                 }
             },
         ],
+
+        /* OUTDOOR ACTIVITIES */
+        outside_activities: [
+            {
+                name: "Home",
+                image: 'resources/img/misc/activity_building_home.png',
+                onEnter: () => {},
+            },
+            {
+                name: "Mall",
+                image: 'resources/img/misc/activity_building_mall.png',
+                onEnter: () => Activities.goToMall(),
+            },
+            {
+                name: "Market",
+                image: 'resources/img/misc/activity_building_market.png',
+                onEnter: () => Activities.goToMarket(),
+            },
+            {
+                name: "Game Center",
+                image: 'resources/img/misc/seed_pack_01.png',
+                onEnter: () => Activities.goToArcade(),
+            },
+            {
+                isDisabled: () => App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child,
+                name: 'Homeworld Getaways',
+                image: 'resources/img/misc/seed_pack_01.png',
+                onEnter: () => App.handlers.open_rabbitholes_list(),
+            },
+            {
+                name: 'Fortune Teller',
+                image: 'resources/img/misc/seed_pack_01.png',
+                onEnter: () => App.handlers.open_fortune_teller(),
+            },
+            {
+                name: 'Park',
+                image: 'resources/img/misc/seed_pack_01.png',
+                onEnter: () => Activities.goToPark(),
+            },
+            {
+                name: "Hospital",
+                image: 'resources/img/background/outside/hospital_01.png',
+                onEnter: () => Activities.goToClinic(),
+            },
+            {
+                isDisabled: () => App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult,
+                name: 'Work',
+                image: 'resources/img/misc/seed_pack_01.png',
+                onEnter: () => App.handlers.open_works_list(),
+            },
+        ],
     
         /* FOOD AND SNACKS */
         food: {
