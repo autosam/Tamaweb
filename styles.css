@@ -1744,6 +1744,27 @@ a.generic-btn:before {
     align-items: center;
 }
 
+.directional-control__activity-name {
+    background: transparent;
+    border: none;
+    text-shadow: 
+        1px 0 var(--prim-clr-b-text), 
+        -1px 0 var(--prim-clr-b-text), 
+        2px 0 var(--prim-clr-b-text), 
+        -2px 0 var(--prim-clr-b-text), 
+        0px 1px var(--prim-clr-b-text), 
+        0px -1px var(--prim-clr-b-text),
+        0px 2px var(--prim-clr-b-text), 
+        0px -2px var(--prim-clr-b-text);
+    color: var(--prim-clr-b-bg);
+    white-space: nowrap;
+    max-width: 90%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    text-align: center;
+}
+
 /* seed package */
 .seed-pack {
     background-image: url(resources/img/misc/seed_pack_01.png);
