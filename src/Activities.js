@@ -12,7 +12,7 @@ class Activities {
             me.setState(me.isMoving ? 'moving' : 'idle');
             me.speedOverride = Math.abs(me.x - me.targetX) > fastMoveBound ? 1 : 0.1;
         });
-        App.pet.x = App.drawer.bounds.width - 40;
+        // App.pet.x = App.drawer.bounds.width - 40;
 
         // ui
         App.toggleGameplayControls(false);
@@ -21,8 +21,8 @@ class Activities {
         document.querySelector('.screen-wrapper').appendChild(editDisplay)
         editDisplay.close = () => editDisplay.remove();
         editDisplay.innerHTML = `
-            <div class="solid-surface-stylized flex justify-center height-auto b-radius-10">
-                <span id="activity-name">$activity_name$</span>
+            <div class="flex justify-center height-auto b-radius-10">
+                <span id="activity-name" class="directional-control__activity-name">$activity_name$</span>
             </div>
             <div class="directional-control__container">
                 <div class="controls-y">
@@ -31,7 +31,9 @@ class Activities {
                         <button class="generic-btn stylized slide-action" id="right"><i class="fa fa-angle-right"></i></button>
                     </div>
                     <div class="bottom-container align-end">
-                        <button class="generic-btn stylized" id="apply"><i class="fa fa-door-open"></i></button>
+                        <button class="generic-btn stylized" id="apply">
+                            <i class="fa fa-door-open icon"></i>
+                        </button>
                     </div>
                 </div>
             </div>
