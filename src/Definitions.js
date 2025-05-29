@@ -87,7 +87,7 @@ App.definitions = (() => {
             },
             {
                 name: 'Fortune Teller',
-                image: 'resources/img/misc/seed_pack_01.png',
+                image: 'resources/img/misc/activity_building_fortune_teller.png',
                 onEnter: () => App.handlers.open_fortune_teller(),
             },
             {
@@ -97,13 +97,13 @@ App.definitions = (() => {
             },
             {
                 name: "Hospital",
-                image: 'resources/img/background/outside/hospital_01.png',
+                image: 'resources/img/misc/activity_building_hospital.png',
                 onEnter: () => Activities.goToClinic(),
             },
             {
                 isDisabled: () => App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult,
                 name: 'Work',
-                image: 'resources/img/misc/seed_pack_01.png',
+                image: 'resources/img/misc/activity_building_work.png',
                 onEnter: () => App.handlers.open_works_list(),
             },
         ],
