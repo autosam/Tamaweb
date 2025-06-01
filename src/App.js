@@ -561,15 +561,21 @@ const App = {
             downloadUpscaledCanvasAsImage(App.drawer.canvas, name, 5)
         }
     },
+    getModAdditionResourceId: ({name, type}) => `addition_${name}_${type}`, 
+    setModdedAddition: function(name, type, data) {
+        const resourceId = App.getModAdditionResourceId({name, type});
+        App.resourceOverrides[resourceId] = data;
+    },
     loadMods: function(mods){
         if(typeof mods !== 'object' || !mods || !mods.length) return;
         App.mods = mods;
         App.mods.forEach(mod => {
-            if(mod.replaced_resources){
-                mod.replaced_resources.forEach(([source, target]) => {
-                    App.resourceOverrides[source] = target;
-                })
-            }
+            mod.replaced_resources?.forEach(([source, target]) => {
+                App.resourceOverrides[source] = target;
+            })
+            mod.additions?.forEach(( {name, type, image} ) => {
+                App.setModdedAddition(name, type, image);
+            })
         })
     },
     handleFileLoad: function(inputElement, readType = 'readAsDataURL', onLoad){
@@ -635,10 +641,9 @@ const App = {
     preloadImages: function(urls) {
         const promises = urls.map((url) => {
             return new Promise((resolve, reject) => {
-                const image = new Image();
-    
-                image.src = App.checkResourceOverride(url);
-    
+                const image = App.createImageResource(
+                    App.checkResourceOverride(url)
+                );
                 image.onload = () => resolve(image);
                 image.onerror = () => reject(`Image failed to load: ${url}`);
             });
@@ -650,6 +655,11 @@ const App = {
     checkResourceOverride: function(res){
         if(!res) return res;
         return this.resourceOverrides[res.replace(location.href, '')] || res;
+    },
+    createImageResource: function(data){
+        const image = new Image();
+        image.src = data;
+        return image;
     },
     isTester: function(){
         if(App.settings.isTester) return true;
@@ -2133,6 +2143,33 @@ const App = {
                     onclick: () => {
                         App.handlers.open_craftables_list();
                         return true;
+                    }
+                },
+                {
+                    name: 'Skins',
+                    onclick: () => {
+                        let moddedSkins = [];
+                        App.mods?.forEach(mod => {
+                            mod.additions?.forEach(addition => {
+                                console.log(addition)
+                                if(addition.type !== 'char_skin') return;
+                                moddedSkins.push({
+                                    name: addition.name,
+                                    resource: App.getModAdditionResourceId(addition)
+                                });
+                            })
+                        })
+                        return App.displayList([
+                            ...moddedSkins.map(skin => ({
+                                name: `${PetDefinition.generateCSprite(skin.resource)}${skin.name}`,
+                                onclick: () => {
+                                    App.petDefinition.spriteSkin = skin.resource;
+                                    App.save();
+                                    App.displayPopup(`Switched to ${PetDefinition.generateCSprite(skin.resource)}`, App.INF);
+                                    setTimeout(() => window.location.reload(), 2000);
+                                }
+                            }))
+                        ])
                     }
                 }
             ], null, 'Stuff')
