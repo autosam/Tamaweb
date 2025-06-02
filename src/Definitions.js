@@ -1249,7 +1249,7 @@ App.definitions = (() => {
                 craftingRecipe: ['bamboo', 'lucrios', 'yellow tulip'],
                 onDraw: (me) => {
                     me.setImg(
-                        App.darkOverlay.hidden
+                        !App.darkOverlay.isVisible
                             ? 'resources/img/furniture/lamp_sun.png'
                             : 'resources/img/furniture/lamp_sun_off.png'
                     );

@@ -57,6 +57,8 @@ const ASSETS = [
   "resources/sounds/online_hub_transition_01.ogg",
   "resources/sounds/camera_shutter_01.ogg",
   "resources/sounds/revival_01.ogg",
+  "resources/sounds/vacation_track_01.ogg",
+  "resources/sounds/work_track_01.ogg",
   // other
   "resources/font/PixelifySans-VariableFont_wght.ttf",
   "resources/font/PixelColeco.otf",

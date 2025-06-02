@@ -812,11 +812,7 @@ class Pet extends Object2d {
                 return;
             }
         }
-
-        if(this.isMainPet){
-            App.darkOverlay.hidden = !this.stats.is_sleeping;
-        }
-
+        
         if(this.stats.is_sleeping){
             if(
                 (this.stats.current_sleep >= this.stats.max_sleep 
