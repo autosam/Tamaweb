@@ -1716,8 +1716,14 @@ class Activities {
         App.pet.stats.is_at_vacation = true;
         App.setScene(App.scene.seaVacation);
 
+        const backgroundMusic = App.playAdvancedSound({
+            loop: true, 
+            src: 'resources/sounds/vacation_track_01.ogg'
+        });
+
         const end = () => {
             App.toggleGameplayControls(false);
+            backgroundMusic.stop();
             Activities.task_foam(() => {
                 App.toggleGameplayControls(true);
                 App.pet.stats.is_at_vacation = false;
@@ -1967,6 +1973,12 @@ class Activities {
         App.closeAllDisplays();
         App.setScene(App.scene.stand);
         App.definitions.achievements.work_x_times.advance();
+
+        const backgroundMusic = App.playAdvancedSound({
+            loop: true, 
+            src: 'resources/sounds/work_track_01.ogg'
+        });
+
         let totalMoneyMade = 0;
 
         let standObject = new Object2d({
@@ -2042,6 +2054,7 @@ class Activities {
         let nextCustomerSpawnTime = Date.now() + random(0, 8000);
         let currentCustomer;
         App.pet.triggerScriptedState('idle', 200000, 0, true, () => {
+            backgroundMusic.stop();
             standObject.removeObject();
             let elapsedTime = Math.round((Date.now() - startTime) / 1000);
             Activities.task_endWork(elapsedTime, totalMoneyMade);
@@ -2612,6 +2625,11 @@ class Activities {
         App.closeAllDisplays();
         App.setScene(App.scene.office);
         App.definitions.achievements.work_x_times.advance();
+        
+        const backgroundMusic = App.playAdvancedSound({
+            loop: true, 
+            src: 'resources/sounds/work_track_01.ogg'
+        });
 
         App.toggleGameplayControls(false, () => {
             App.pet.stopScriptedState();
@@ -2629,6 +2647,7 @@ class Activities {
         App.pet.y = '60%';
         let startTime = Date.now();
         App.pet.triggerScriptedState('eating', 200000, false, true, () => {
+            backgroundMusic.stop();
             laptop.removeObject();
             let elapsedTime = Math.round((Date.now() - startTime) / 1000);
             Activities.task_endWork(elapsedTime, Math.round(elapsedTime / 2.5));
