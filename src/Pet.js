@@ -669,7 +669,7 @@ class Pet extends Object2d {
         if(stats.current_death_tick <= 0){
             App.pet.stats.is_dead = true;
         }
-        this.sicknessOverlay.hidden = stats.current_death_tick >= max_death_tick;
+        this.sicknessOverlay.hidden = stats.current_death_tick >= max_death_tick / 2;
 
         // care rating check
         const careAffectingStats = [
