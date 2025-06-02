@@ -143,6 +143,7 @@ const SPRITES = [
 "item/foods_on.png",
 "item/items.png",
 "item/plants.png",
+"misc/activity_building_arcade.png",
 "misc/activity_building_fortune_teller.png",
 "misc/activity_building_home.png",
 "misc/activity_building_hospital.png",
