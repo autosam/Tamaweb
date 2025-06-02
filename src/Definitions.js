@@ -76,7 +76,7 @@ App.definitions = (() => {
             },
             {
                 name: "Game Center",
-                image: 'resources/img/misc/seed_pack_01.png',
+                image: 'resources/img/misc/activity_building_arcade.png',
                 onEnter: () => Activities.goToArcade(),
             },
             {
