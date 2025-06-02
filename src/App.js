@@ -126,7 +126,7 @@ const App = {
 
         // load data
         let loadedData = await this.load();
-        if(!loadedData.lastTime){
+        if(!loadedData.lastTime && !loadedData.pet){
             console.log('legacy: loading from localStorage');
             loadedData = this.legacy_load();
         }
