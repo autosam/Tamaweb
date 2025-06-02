@@ -218,9 +218,17 @@ const App = {
 
         App.darkOverlay = new Object2d({
             img: "resources/img/background/house/dark_overlay.png",
-            hidden: true,
-            z: 10, opacity: 0.85,
+            z: 11, opacity: 0.85,
             composite: "source-atop",
+            static: true,
+            opacity: 0,
+            isVisible: false,
+            onDraw: (me) => {
+                const targetOpacity =  App.pet.stats.is_sleeping && App.pet.state === 'sleeping' ? 1 : 0;
+                const currentOpacity = lerp(me.opacity, targetOpacity, 0.015 * App.deltaTime);
+                me.opacity = clamp(currentOpacity, 0, 1);
+                me.isVisible = me.opacity > 0.2;
+            }
         })
         App.poop = new Object2d({
             image: App.preloadedResources["resources/img/misc/poop.png"],
@@ -247,6 +255,7 @@ const App = {
             image: App.preloadedResources["resources/img/background/sky/rain_01.png"],
             x: 0, y: 0, z: 999.1,
             composite: "xor",
+            static: true,
             // hidden: true,
             onDraw: (me) => {
                 Object2d.animations.flip(me, 200);
@@ -5451,6 +5460,9 @@ const App = {
             this.audioChannelIsBusy = false;
         });
 
+        this.loopedAudioElement = new Audio();
+        this.loopedAudioElement
+
         // button click event
         const clickSoundClassNames = ['click-sound', 'list-item'];
         const backSoundClassNames = ['back-btn', 'back-sound'];
@@ -5658,6 +5670,25 @@ const App = {
             this.audioElement.play();
             this.audioChannelIsBusy = true;
         } catch(e) {}
+    },
+    playAdvancedSound: function(config){
+        const audioElement = new Audio();
+        Object.keys(config).map(key => audioElement[key] = config[key]);
+        audioElement.play();
+        audioElement.muted = !App.settings.playSound;
+        return {
+            element: audioElement,
+            stop: () => {
+                const fadeOutEvent = App.registerOnDrawEvent(() => {
+                    const volume = audioElement.volume - (0.0005 * App.deltaTime)
+                    audioElement.volume = clamp(volume, 0, 1);
+                    if(audioElement.volume <= 0){
+                        audioElement.pause();
+                        App.unregisterOnDrawEvent(fadeOutEvent);
+                    }
+                })
+            }
+        };
     },
     save: function(noIndicator){
         const setItem = (key, value) => {
