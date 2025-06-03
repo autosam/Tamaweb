@@ -2073,7 +2073,7 @@ class Activities {
             })
         }
 
-        task_goto_hospital();
+        task_visit_doctor();
     }
     static bathe(){
         App.closeAllDisplays();
