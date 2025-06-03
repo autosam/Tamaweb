@@ -2144,9 +2144,9 @@ class Activities {
 
         App.pet.needsToiletOverlay.hidden = false;
         App.pet.stats.current_bladder = App.pet.stats.max_bladder;
-        if(App.petDefinition.lifeStage === PetDefinition.LIFE_STAGE.baby && !force) {
-            // make pet potty trained if used toilet more than 2 to 4 times and is baby
-            if(++App.pet.stats.used_toilet > random(2, 4)){
+        if(App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child && !force) {
+            // make pet potty trained if used toilet more than 2 to 5 times and is baby/child
+            if(++App.pet.stats.used_toilet > random(2, 5)){
                 App.pet.stats.is_potty_trained = true;
             }
         }
