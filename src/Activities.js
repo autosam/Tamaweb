@@ -1734,7 +1734,10 @@ class Activities {
             })
             
             // feed all animals before ending
-            App.animals?.list?.forEach(a => a?.feed?.(100));
+            App.animals?.list?.forEach(a => {
+                a.feed?.(100);
+                a.lastStatsUpdate = Date.now();
+            });
         }
 
         App.pet.triggerScriptedState('idle', App.INF, 0, true, null, 

@@ -126,7 +126,7 @@ const App = {
 
         // load data
         let loadedData = await this.load();
-        if(!loadedData.lastTime && !loadedData.pet){
+        if(!loadedData.lastTime || !loadedData.pet?.name){
             console.log('legacy: loading from localStorage');
             loadedData = this.legacy_load();
         }
@@ -372,11 +372,6 @@ const App = {
         // touch / mouse pos on canvas
         App.registerInputUpdates();
 
-        // saver
-        setInterval(() => {
-            App.save(true);
-        }, 5000);
-
         // hide loading
         setTimeout(() => {
             UI.fadeOut(document.querySelector('.loading-text'));
@@ -387,6 +382,11 @@ const App = {
 
         // session start event
         App.sendSessionEvent(true);
+
+        // saver
+        setInterval(() => {
+            App.save(true);
+        }, 10000);
     },
     initRudderStack: function(){
         rudderanalytics.identify(App.userId, {
