@@ -21,6 +21,7 @@ const App = {
         vibrate: true,
         displayShell: true,
         displayShellButtons: true,
+        displayShellLogo: true,
         shellShape: 6,
         backgroundColor: '#FFDEAD',
         notifications: false,
@@ -526,6 +527,7 @@ const App = {
         document.querySelector('.shell-btn.main').style.display = App.settings.displayShellButtons ? '' : 'none';
         document.querySelector('.shell-btn.right').style.display = App.settings.displayShellButtons ? '' : 'none';
         document.querySelector('.shell-btn.left').style.display = App.settings.displayShellButtons ? '' : 'none';
+        document.querySelector('.dom-shell .logo').style.display = App.settings.displayShellLogo ? '' : 'none';
 
         // classic main menu layout
         let classicMainMenuContainer = document.querySelector('.classic-main-menu__container');
@@ -2564,7 +2566,7 @@ const App = {
                                 }
                             },
                             {
-                                name: '+ screen size',
+                                name: '+ view size',
                                 onclick: () => {
                                     App.settings.screenSize += 0.1;
                                     App.applySettings();
@@ -2572,7 +2574,7 @@ const App = {
                                 }
                             },
                             {
-                                name: '- screen size',
+                                name: '- view size',
                                 onclick: () => {
                                     App.settings.screenSize -= 0.1;
                                     App.applySettings();
@@ -2580,7 +2582,7 @@ const App = {
                                 }
                             },
                             {
-                                name: 'reset screen size',
+                                name: 'reset view size',
                                 onclick: () => {
                                     App.settings.screenSize = 1;
                                     App.applySettings();
@@ -2615,20 +2617,29 @@ const App = {
 
                         App.displayList([
                             {
-                                name: `display shell: <i>${App.settings.displayShell ? 'yes' : 'no'}</i>`,
+                                _mount: (e) => e.innerHTML = `display shell: <i>${App.settings.displayShell ? App.getIcon('eye') : App.getIcon('eye-slash')}</i>`,
                                 onclick: (item) => {
                                     App.settings.displayShell = !App.settings.displayShell;
-                                    item.innerHTML = `display shell: <i>${App.settings.displayShell ? 'yes' : 'no'}</i>`;  
                                     App.applySettings();
+                                    item._mount(); 
                                     return true;
                                 }
                             },
                             {
-                                name: `shell button: <i>${App.settings.displayShellButtons ? 'yes' : 'no'}</i>`,
+                                _mount: (e) => e.innerHTML =  `shell button: <i>${App.settings.displayShellButtons ? App.getIcon('eye') : App.getIcon('eye-slash')}</i>`,
                                 onclick: (item) => {
                                     App.settings.displayShellButtons = !App.settings.displayShellButtons;
-                                    item.innerHTML = `shell button: <i>${App.settings.displayShellButtons ? 'yes' : 'no'}</i>`;  
                                     App.applySettings();
+                                    item._mount(); 
+                                    return true;
+                                }
+                            },
+                            {
+                                _mount: (e) => e.innerHTML =  `shell logo: <i>${App.settings.displayShellLogo ? App.getIcon('eye') : App.getIcon('eye-slash')}</i> ${App.getBadge()}`,
+                                onclick: (item) => {
+                                    App.settings.displayShellLogo = !App.settings.displayShellLogo;
+                                    App.applySettings();
+                                    item._mount(); 
                                     return true;
                                 }
                             },
