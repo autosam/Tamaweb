@@ -3241,12 +3241,13 @@ class Activities {
         }, 5500);
     }
     static task_endWork(elapsedTime, moneyMade){
+        const clampedMoneyMade = clamp(moneyMade, 0, 400);
         App.displayPopup(`${App.petDefinition.name} worked for ${elapsedTime} seconds`, 2500, () => {
             if(elapsedTime > 10){
-                App.pet.stats.gold += moneyMade;
-            } else moneyMade = 0;
+                App.pet.stats.gold += clampedMoneyMade;
+            } else clampedMoneyMade = 0;
             App.pet.stats.current_fun -= elapsedTime / 3.5;
-            App.displayConfirm(`${App.petDefinition.name} made $${moneyMade}`, [
+            App.displayConfirm(`${App.petDefinition.name} made $${clampedMoneyMade}`, [
                 {
                     name: 'ok',
                     onclick: () => {
