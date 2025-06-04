@@ -56,7 +56,7 @@ const App = {
             rows: 28,
             columns: 28,
         },
-        MAX_ANIMALS: 8,
+        MAX_ANIMALS: 16,
         MAX_PLANTS: 8,
         MIN_REVIVE_GOLDS: 250,
         MAX_REVIVE_GOLDS: 1000,
