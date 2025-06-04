@@ -24,7 +24,7 @@ const App = {
         shellShape: 6,
         backgroundColor: '#FFDEAD',
         notifications: false,
-        automaticAging: false,
+        automaticAging: true,
         sleepingHoursOffset: 0,
         classicMainMenuUI: false,
         isTester: false,
