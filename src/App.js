@@ -478,35 +478,12 @@ const App = {
             });
         }
 
-        const dbg = document.querySelector('#debug');
-        // const acl = new Accelerometer({ frequency: 60 });
-        // acl.addEventListener("reading", () => {
-        //     console.log(`Acceleration along the X-axis ${acl.x}`);
-        //     console.log(`Acceleration along the Y-axis ${acl.y}`);
-        //     console.log(`Acceleration along the Z-axis ${acl.z}`);
-        //     dbg.innerHTML = `
-        //         Accel
-        //         <br>
-        //         Acceleration along the X-axis ${acl.x}
-        //         <br>
-        //         Acceleration along the Y-axis ${acl.y}
-        //         <br>
-        //         Acceleration along the Z-axis ${acl.z}
-        //     `
-        // });
 
-        // acl.start();
-        dbg.innerHTML = `
-                has: ${!!window.DeviceOrientationEvent}
-            `
-
-        window.addEventListener('devicemotion', function (event) {
-            dbg.innerHTML = `
-                Accel
-                <br>
-                x: ${event.acceleration.x} | y: ${event.acceleration.y}
-            `
-        }, true);
+        if ("persist" in navigator.storage) {
+            navigator.storage.persist().then((persistent) => {
+                App.isStoragePersistent = persistent;
+            });
+        }
     },
     sendSessionEvent: function(login){
         if(login){
