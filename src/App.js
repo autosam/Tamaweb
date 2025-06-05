@@ -439,6 +439,13 @@ const App = {
             App.sendSessionEvent(false);
             App.save();
         }
+
+
+        if ("persist" in navigator.storage) {
+            navigator.storage.persist().then((persistent) => {
+                App.isStoragePersistent = persistent;
+            });
+        }
     },
     sendSessionEvent: function(login){
         if(login){
@@ -1963,8 +1970,26 @@ const App = {
             UI.lastClickedButton = null;
             App.playSound(`resources/sounds/ui_click_01.ogg`, true);
             App.vibrate();
+            
+            if(typeof App.temp.showStoragePersistentBadge === 'undefined'){
+                App.temp.showStoragePersistentBadge = !App.isStoragePersistent;
+            }
+            const settingsBadge = App.temp.showStoragePersistentBadge ? App.getBadge('', 'red circle') : '';
+            const renderingMainMenu = App.definitions.main_menu.map(item => {
+                if(item.id === 'settings'){
+                    return {
+                        ...item,
+                        name: `${item.name} ${settingsBadge}`,
+                        onclick: () => {
+                            item.onclick();
+                            App.temp.showStoragePersistentBadge = false;
+                        }
+                    }
+                }
+                return item;
+            })
             App.displayGrid([
-                ...App.definitions.main_menu,
+                ...renderingMainMenu,
                 {
                     name: '<i class="fa-solid fa-arrow-left back-sound"></i>',
                     class: 'back-sound',
@@ -2184,6 +2209,25 @@ const App = {
             const ignoreFirstDivider = !(App.deferredInstallPrompt || !App.isOnItch);
 
             const settings = App.displayList([
+                {
+                    _ignore: App.isStoragePersistent,
+                    name: `
+                        <span>
+                            <b class="blink" style="color: red;">Your save data is at risk.</b><br> Your browser may <b>delete</b> it unexpectedly.
+                        </span>
+                        <div class="flex flex-dir-col mt-2">
+                            <button id="emergency-backup" class="generic-btn stylized primary solid"> ${App.getIcon('download')} Backup </button>
+                        </div>
+                    `,
+                    type: 'info',
+                    _mount: (e) => {
+                        e.querySelector('#emergency-backup').onclick = (evt) => {
+                            App.exportSaveCode();
+                            App.isStoragePersistent = true;
+                            evt.target.innerHTML = `${App.getIcon('check')} Exported!`
+                        }
+                    }
+                },
                 {
                     _ignore: !App.isTester(),
                     name: `<span style="color:red;">devtools</span> ${App.getBadge('debug', 'neutral')}`,
@@ -2736,12 +2780,7 @@ const App = {
                             },
                             {
                                 name: `<i class="fa-solid fa-upload icon"></i> Export`,
-                                onclick: async () => {
-                                    const loadingPopup = App.displayPopup('loading...');
-                                    const code = await App.getSaveCode();
-                                    loadingPopup.close();
-                                    downloadTextFile(`${App.petDefinition.name}_${generateTimestamp()}.tws`, code);
-                                }
+                                onclick: App.exportSaveCode
                             },
                             {
                                 name: `<i class="fa-solid fa-copy icon"></i> copy`,
@@ -5213,14 +5252,6 @@ const App = {
         return list;
     },
     displayGrid: function(listItems){
-        // listItems.push({
-        //     name: '⬅️',
-        //     class: 'back-btn',
-        //     onclick: () => {
-        //         return false;
-        //     }
-        // })
-
         let list = document.querySelector('.cloneables .generic-grid-container').cloneNode(true);
 
         list.close = function(){
@@ -5894,6 +5925,12 @@ const App = {
         unserializableAttributes.forEach(attribute => delete serializableStorage[attribute]);
         const charCode = `save:${btoa(encodeURIComponent(JSON.stringify(serializableStorage)))}:endsave`;
         return charCode;
+    },
+    exportSaveCode: async function(){
+        const loadingPopup = App.displayPopup('loading...');
+        const code = await App.getSaveCode();
+        loadingPopup.close();
+        downloadTextFile(`${App.petDefinition.name}_${generateTimestamp()}.tws`, code);
     },
     vibrate: function(dur, force){
         if(!App.settings.vibrate && !force) return;

@@ -6,19 +6,21 @@ App.definitions = (() => {
         /* MAIN MENU */
         main_menu: [
             {
-                name: '<i class="fa-solid fa-line-chart"></i>',
+                id: 'stats',
                 name: '<i class="fa-solid fa-dashboard"></i>',
                 onclick: () => {
                     App.handlers.open_stats_menu();
                 }
             },
             {
+                id: 'feeding',
                 name: '<i class="fa-solid fa-cutlery"></i>',
                 onclick: () => {
                     App.handlers.open_feeding_menu();
                 }
             },
             {
+                id: 'bath',
                 name: '<i class="fa-solid fa-bath"></i>',
                 onclick: () => {
                     // App.handlers.clean();
@@ -26,30 +28,35 @@ App.definitions = (() => {
                 }
             },
             {
+                id: 'care',
                 name: `<i class="fa-solid fa-house-chimney-user"></i>`,
                 onclick: () => {
                     App.handlers.open_care_menu();
                 }
             },
             {
+                id: 'activity',
                 name: '<i class="fa-solid fa-door-open"></i>',
                 onclick: () => {
                     App.handlers.open_activity_list();
                 }
             },
             {
+                id: 'stuff',
                 name: '<i class="fa-solid fa-box-open"></i>',
                 onclick: () => {
                     App.handlers.open_stuff_menu();
                 }
             },
             {
+                id: 'phone',
                 name: '<i class="fa-solid fa-mobile-alt"></i>',
                 onclick: () => {
                     App.handlers.open_phone();
                 }
             },
             {
+                id: 'settings',
                 name: `<i class="fa-solid fa-gear"></i>`,
                 onclick: () => {
                     App.handlers.open_settings();
