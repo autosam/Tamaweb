@@ -5751,8 +5751,6 @@ const App = {
             const value = await App.dbStore.getItem(key);
             return value !== null ? value : defaultValue;
         }
-
-        // await new Promise(resolve => setTimeout(resolve, 5000))
     
         const pet = await getItem('pet', {});
         const settings = await getItem('settings', null);
@@ -5766,7 +5764,7 @@ const App = {
         App.userId = userId;
     
         const userName = await getItem('user_name', null);
-        App.userName = userName == 'null' ? null : userName;
+        App.userName = userName === 'null' ? null : userName;
     
         App.playTime = parseInt(await getItem('play_time', 0), 10);
     
