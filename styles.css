@@ -870,6 +870,10 @@ input#background-color-picker {
     height: 100%;
 }
 
+.grid-item .badge {
+    margin: 6px;
+}
+
 .badge {
     font-size: x-small;
     padding: 2px 5px;
@@ -887,7 +891,9 @@ input#background-color-picker {
 }
 .badge.circle {
     padding: 4px;
-
+    width: 10px;
+    height: 10px;
+    padding: 0;
 }
 .badge.gold {
     outline: 1px solid;
@@ -1013,6 +1019,10 @@ input#background-color-picker {
 
 .m {
     margin: 6px;
+}
+
+.mt-2 {
+    margin-top: 4px;
 }
 
 .relative {
