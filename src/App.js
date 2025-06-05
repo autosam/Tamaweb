@@ -119,7 +119,8 @@ const App = {
 
         // localforage store
         App.dbStore = localforage.createInstance({
-            name: "tamaweb-store"
+            name: "tamaweb-store",
+            driver: localforage.INDEXEDDB
         });
 
         // moment settings
