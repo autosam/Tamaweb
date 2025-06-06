@@ -213,6 +213,7 @@ const SPRITES = [
 "misc/thought_heart_broken.png",
 "misc/thought_question.png",
 "misc/thought_talk.png",
+"misc/thought_vomit.png",
 "misc/tick_green_01.png",
 "misc/ufo_01.png",
 "misc/ufo_02.png",
