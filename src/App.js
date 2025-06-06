@@ -183,7 +183,11 @@ const App = {
 
         // creating game objects
         App.background = new Object2d({
-            image: null, x: 0, y: 0, width: 96, height: 96, z: App.constants.BACKGROUND_Z,
+            image: null,
+            x: 0, y: 0, 
+            width: 96, height: 96, 
+            z: App.constants.BACKGROUND_Z,
+            noPreload: Boolean(App.mods.length),
         })
         // App.foodsSpritesheet = new Object2d({
         //     image: App.preloadedResources["resources/img/item/foods.png"],
@@ -3935,6 +3939,8 @@ const App = {
                     {...absCurrent, image: App.getFurnishableBackground(absCurrent.image)} :
                     absCurrent;
 
+                    console.log(current)
+
 
                 // check for unlockables
                 if(current.unlockKey && !App.getRecord(current.unlockKey)){
@@ -3947,8 +3953,6 @@ const App = {
                 if(salesDay) price = price / 2;
                 price = Math.round(price);
 
-                const image = App.checkResourceOverride(current.image);
-
                 // room type
                 const roomType = current.type ?? 'home';
                 const scene = App.scene[roomType];
@@ -3958,9 +3962,9 @@ const App = {
 
                 list.push({
                     isNew: !!current.isNew,
-                    name: `<img style="min-height: 64px" src="${image}"></img> ${room.toUpperCase()} <b>$${price}</b> ${current.isNew ? App.getBadge('new!') : ''}`,
+                    name: `<img style="min-height: 64px" src="${App.checkResourceOverride(current.image)}"></img> ${room.toUpperCase()} <b>$${price}</b> ${current.isNew ? App.getBadge('new!') : ''}`,
                     onclick: (btn, list) => {
-                        if(image === defaultTypeImage){
+                        if(current.image === defaultTypeImage){
                             App.displayPopup('You already own this room');
                             return true;
                         }
@@ -3970,7 +3974,7 @@ const App = {
                         App.closeAllDisplays();
                         App.setScene(scene, true);
                         Activities.redecorRoom();
-                        scene.image = image;
+                        scene.image = current.image;
 
                         App.sendAnalytics('home_background_change', scene.image);
 
