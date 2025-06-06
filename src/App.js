@@ -1504,9 +1504,11 @@ const App = {
     },
     applyRoomCustomizations(data){
         if(typeof data !== 'object' || !data) return;
-
-        if(data.home.image) App.scene.home.image = data.home.image;
-
+        Object.keys(data).forEach(key => {
+            const scene = App.scene[key];
+            if(!scene) return console.error('Invalid scene:', key);
+            scene.image = data[key].image;
+        })
         App.reloadScene();
     },
     getRandomAnimalDef: function(type){
@@ -3955,27 +3957,30 @@ const App = {
 
                 const image = App.checkResourceOverride(current.image);
 
+                // room type
+                const roomType = current.type ?? 'home';
+                const scene = App.scene[roomType];
+                if(!scene) return console.error('Invalid scene:', {roomType, scene});
+
+                const defaultTypeImage = scene.image || App.scene.home.image;
+
                 list.push({
-                    // name: `<c-sprite width="22" height="22" index="${(current.sprite - 1)}" src="resources/img/item/items.png"></c-sprite> ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>$${buyMode ? `${price}` : ''}</b>`,
                     isNew: !!current.isNew,
                     name: `<img style="min-height: 64px" src="${image}"></img> ${room.toUpperCase()} <b>$${price}</b> ${current.isNew ? App.getBadge('new!') : ''}`,
                     onclick: (btn, list) => {
-                        if(image === App.scene.home.image){
+                        if(image === defaultTypeImage){
                             App.displayPopup('You already own this room');
                             return true;
                         }
 
-                        if(App.pet.stats.gold < price){
-                            App.displayPopup(`Don't have enough gold!`);
-                            return true;
-                        }
-                        App.pet.stats.gold -= price;
+                        if(!App.pay(price)) return true;
 
                         App.closeAllDisplays();
+                        App.setScene(scene, true);
                         Activities.redecorRoom();
-                        App.scene.home.image = image;
+                        scene.image = image;
 
-                        App.sendAnalytics('home_background_change', App.scene.home.image);
+                        App.sendAnalytics('home_background_change', scene.image);
 
                         return false;
                     }
@@ -4905,20 +4910,39 @@ const App = {
                 {
                     name: `redécor room ${hasNewDecor ? App.getBadge('new!') : ''}`,
                     onclick: () => {
+                        const createFilterFn = (type) => {
+                            return (e) => e.type === type && !e.isCraftable;
+                        }
                         return App.displayList([
                             {
-                                name: 'Pre-furnished',
-                                onclick: () => App.handlers.open_room_background_list(),
+                                name: `room`,
+                                onclick: () => {
+                                    return App.displayList([
+                                        {
+                                            name: 'Pre-furnished',
+                                            onclick: () => App.handlers.open_room_background_list(false, createFilterFn()),
+                                        },
+                                        {
+                                            name: 'Customizable',
+                                            onclick: () => App.handlers.open_room_background_list(true, createFilterFn())
+                                        },
+                                        {
+                                            type: 'info',
+                                            name: 'Place up to 5 furniture items of your choosing in customizable rooms.',
+                                        },
+                                    ])
+                                }
                             },
                             {
-                                name: 'Customizable',
-                                onclick: () => App.handlers.open_room_background_list(true)
+                                name: `bathroom ${App.getBadge()}`,
+                                onclick: () => App.handlers.open_room_background_list(false, createFilterFn('bathroom')),
                             },
                             {
-                                type: 'info',
-                                name: 'Place up to 5 furniture items of your choosing in customizable rooms.',
-                            },
+                                name: `kitchen ${App.getBadge()}`,
+                                onclick: () => App.handlers.open_room_background_list(false, createFilterFn('kitchen')),
+                            }
                         ])
+
                     }
                 },
                 {
@@ -5761,6 +5785,12 @@ const App = {
         setItem('room_customization', ({
             home: {
                 image: App.scene.home.image,
+            },
+            bathroom: {
+                image: App.scene.bathroom.image,
+            },
+            kitchen: {
+                image: App.scene.kitchen.image
             }
         }))
         setItem('missions', ({
