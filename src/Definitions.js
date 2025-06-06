@@ -89,7 +89,7 @@ App.definitions = (() => {
             {
                 isDisabled: () => App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child,
                 name: 'Homeworld Getaways',
-                image: 'resources/img/misc/seed_pack_01.png',
+                image: 'resources/img/misc/activity_building_homeworld_getaway.png',
                 onEnter: () => App.handlers.open_rabbitholes_list(),
             },
             {
@@ -99,7 +99,7 @@ App.definitions = (() => {
             },
             {
                 name: 'Park',
-                image: 'resources/img/misc/seed_pack_01.png',
+                image: 'resources/img/misc/activity_building_park.png',
                 onEnter: () => Activities.goToPark(),
             },
             {
