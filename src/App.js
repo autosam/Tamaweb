@@ -1847,6 +1847,8 @@ const App = {
                         <div> Ensure you search for their <b>UID</b> <small>(located in the profile section)</small> and <b>not their pet name</b> </div>
                         <br>
                         <div> UID is <b>case sensitive</b> </div>
+                        <br>
+                        <div> ${App.getUidUI()} </div>
                     `, 
                     [
                         {
@@ -3643,27 +3645,14 @@ const App = {
                         <span>${Math.floor(playTimeDuration.asHours())} hours and ${playTimeDuration.minutes()} minutes</span>
                     </div>
                 </div>
-                <div class="user-id surface-stylized inner-padding text-transform-none">
-                    <div class="flex flex-dir-col">
-                        <small>uid:</small>
-                        <span>${UID}</span>
-                    </div>
-                    <small style="display: flex;justify-content: flex-end;"> <button class="generic-btn stylized uppercase" id="copy-btn"> <i class="fa-solid fa-copy"></i> </button> </small>
-                </div>
+                ${App.getUidUI()}
             `
 
-            const copyUIDButton = content.querySelector('#copy-btn');
-            const isClipboardAvailable = "clipboard" in navigator && !App.isOnItch && UID;
-            if(isClipboardAvailable){
-                copyUIDButton.onclick = () => {
-                    navigator.clipboard.writeText(UID);
-                    App.displayPopup('UID Copied!');
-                }
-            } else {
-                copyUIDButton.remove();
-            }
-
             list.appendChild(content);
+        },
+        copyToClipboard: (content) => {
+            navigator.clipboard.writeText(content);
+            App.displayPopup('Copied!');
         },
         open_plant_stats: function(plant){
             const list = UI.genericListContainer();
@@ -5698,6 +5687,25 @@ const App = {
             <i class="fa-solid ${icon}"></i>
             <i>${text}</i>
         </small>`;
+    },
+    getUidUI: () => {
+        const UID = App.userName 
+            ? `${(App.userName ?? '') + '-' + App.userId?.toString().slice(0, 5)}` 
+            : '';
+        const isClipboardAvailable = "clipboard" in navigator && !App.isOnItch && UID;
+        return `
+            <div class="user-id surface-stylized inner-padding text-transform-none">
+                <div class="flex flex-dir-col">
+                    <small>uid:</small>
+                    <span>${UID}</span>
+                </div>
+                <small onclick="App.handlers.copyToClipboard('${UID}')" class="${isClipboardAvailable ? 'flex' : 'hidden'} justify-end"> 
+                    <button class="generic-btn stylized uppercase" id="copy-btn"> 
+                        <i class="fa-solid fa-copy"></i>
+                    </button> 
+                </small>
+            </div>
+        `;
     },
     isCompanionAllowed: function(room){
         if(!room) room = App.currentScene;

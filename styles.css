@@ -556,6 +556,10 @@ button {
     justify-content: center;
 }
 
+.justify-end {
+    justify-content: end;
+}
+
 .overflow-hidden {
     overflow: hidden;
 }
