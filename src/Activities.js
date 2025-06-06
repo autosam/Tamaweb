@@ -2111,9 +2111,15 @@ class Activities {
             App.playSound(`resources/sounds/ui_click_03.ogg`, true);
         });
 
-        let bathObject = new Object2d({
-            img: 'resources/img/misc/bathroom_01_bath.png',
-            x: 0, y: 0, z: 19
+        const bathClippedObject = new Object2d({
+            img: App.scene.bathroom.image,
+            x: 0, y: 0, z: 19,
+            clip: [
+                [38, 51],
+                [38, 68],
+                [81, 68],
+                [81, 51],
+            ]
         })
 
         App.pet.stopMove();
@@ -2122,7 +2128,7 @@ class Activities {
         App.pet.triggerScriptedState('idle', App.INF, 0, true, () => {
             App.pet.x = '50%';
             App.pet.y = '100%';
-            bathObject.removeObject();
+            bathClippedObject.removeObject();
             App.pet.playCheeringAnimation(() => {
                 App.setScene(App.scene.home);
                 App.toggleGameplayControls(true);
@@ -2352,7 +2358,6 @@ class Activities {
         });
     }
     static redecorRoom(callbackFn){
-        App.setScene(App.scene.home);
         App.toggleGameplayControls(false);
         let otherPetDef = new PetDefinition({
             sprite: 'resources/img/character/chara_290b.png',
@@ -2381,7 +2386,7 @@ class Activities {
 
             Activities.task_foam(
             () => {
-                App.setScene(App.scene.home);
+                App.setScene(App.currentScene, true);
                 App.pet.x = 10;
             }, 
             () => {

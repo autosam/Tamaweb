@@ -970,12 +970,47 @@ App.definitions = (() => {
                 price: 350,
                 isNew: false,
             },
+
             // craftables
             "collage": {
                 image: 'resources/img/background/house/c_01.png',
                 price: 350,
                 isCraftable: true,
                 craftingRecipe: ['red tulip', 'blue tulip', 'green tulip'],
+            },
+
+            // bathrooms
+            "plain": {
+                image: 'resources/img/background/house/bathroom_01.png',
+                price: 100,
+                isNew: false,
+                type: 'bathroom',
+            },
+            "nautical": {
+                image: 'resources/img/background/house/bathroom_cc_01.png',
+                price: 350,
+                isNew: true,
+                type: 'bathroom',
+            },
+
+            // kitchen
+            "bites": {
+                image: 'resources/img/background/house/kitchen_03.png',
+                price: 100,
+                isNew: false,
+                type: 'kitchen',
+            },
+            "vintage": {
+                image: 'resources/img/background/house/kitchen_02.png',
+                price: 100,
+                isNew: false,
+                type: 'kitchen',
+            },
+            "octopus": {
+                image: 'resources/img/background/house/kitchen_cc_01.png',
+                price: 350,
+                isNew: true,
+                type: 'kitchen',
             },
         },
     

@@ -76,8 +76,8 @@ class Drawer {
                     rotation, 
                     composite, 
                     opacity, 
-                    isSkybox,
                     filter,
+                    clip,
                 } = object;
                 if (!image) return;
 
@@ -104,6 +104,16 @@ class Drawer {
 
                     context.beginPath();
                     context.arc(spriteCenterX, spriteCenterY, radius, 0, Math.PI * 2, false);
+                    context.clip();
+                }
+
+                if(clip && clip.length === 4){
+                    context.beginPath();
+                    context.moveTo(clip[0][0], clip[0][1]);
+                    for (let i = 1; i < clip.length; i++) {
+                        context.lineTo(clip[i][0], clip[i][1]);
+                    }
+                    context.closePath();
                     context.clip();
                 }
 
