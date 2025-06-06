@@ -235,6 +235,35 @@ class Object2d {
             if(!me.rotateAroundFloat) me.rotateAroundFloat = 0;
             // me.rotateAroundFloat += speed * App.deltaTime;
             me.rotation += speed * App.deltaTime;
-        }
+        },
+        cycleThroughFrames: function(me, delay = 250, alternateDirection){
+            if(!me.spritesheet) return;
+            const maxCells = me.spritesheet.rows * me.spritesheet.columns;
+            
+            if(!me._cycleThroughFrames) me._cycleThroughFrames = {
+                nextTime: 0,
+                adder: 1,
+            }
+
+            if(me._cycleThroughFrames.nextTime < App.time){
+                const { cellNumber } = me.spritesheet;
+                const { adder } = me._cycleThroughFrames;
+
+                if (alternateDirection) {
+                    if (cellNumber + adder >= maxCells || cellNumber + adder <= 1) {
+                        me._cycleThroughFrames.adder *= -1;
+                    }
+                    me.spritesheet.cellNumber += adder;
+                } else {
+                    if (cellNumber + adder > maxCells) {
+                        me.spritesheet.cellNumber = 1;
+                    } else {
+                        me.spritesheet.cellNumber += adder;
+                    }
+                }
+
+                me._cycleThroughFrames.nextTime = App.time + delay;
+            }
+        },
     }
 }

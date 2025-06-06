@@ -139,7 +139,7 @@ class Drawer {
                     const cellSize = spritesheet.cellSize;
                     const rows = spritesheet.rows;
                     const columns = spritesheet.columns;
-                    const sx = (cellNumber % rows) * cellSize;
+                    const sx = (cellNumber % columns) * cellSize;
                     const sy = Math.floor(cellNumber / columns) * cellSize;
 
                     const upperHalfHeight = Math.round((4 / 5) * cellSize);
