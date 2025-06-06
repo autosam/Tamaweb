@@ -2493,26 +2493,36 @@ class Activities {
             src: 'resources/sounds/work_track_01.ogg'
         });
 
+        const dynamicBackground = new Object2d({
+            img: 'resources/img/background/house/office_01.png',
+            x: 0, y: 0,
+            spritesheet: {
+                cellSize: App.drawer.bounds.width,
+                cellNumber: 2,
+                rows: 1,
+                columns: 3
+            },
+            onDraw: (me) => Object2d.animations.cycleThroughFrames(me, 250, true),
+        })
+
         App.toggleGameplayControls(false, () => {
             App.pet.stopScriptedState();
         });
 
-        let laptop = new Object2d({
-            img: "resources/img/misc/laptop.png",
-            x: '70%', y: '50%',
-        });
-        laptop.x = '70%';
-        laptop.y = '50%';
+
         App.pet.stopMove();
         App.pet.inverted = true;
-        App.pet.x = '50%';
-        App.pet.y = '60%';
-        let startTime = Date.now();
+        App.pet.x = '53%';
+        App.pet.y = '78%';
+        const startTime = Date.now();
         App.pet.triggerScriptedState('eating', 200000, false, true, () => {
             backgroundMusic.stop();
-            laptop.removeObject();
+            dynamicBackground.removeObject();
             let elapsedTime = Math.round((Date.now() - startTime) / 1000);
             Activities.task_endWork(elapsedTime, Math.round(elapsedTime / 2.5));
+        }, (me) => {
+            if(random(0, 50)) return;
+            me.setState( randomFromArray(['eating', 'sitting']) );
         })
     }
     static inviteDoctorVisit(){
@@ -3246,7 +3256,7 @@ class Activities {
         }, 5500);
     }
     static task_endWork(elapsedTime, moneyMade){
-        const clampedMoneyMade = clamp(moneyMade, 0, 400);
+        let clampedMoneyMade = clamp(moneyMade, 0, 400);
         App.displayPopup(`${App.petDefinition.name} worked for ${elapsedTime} seconds`, 2500, () => {
             if(elapsedTime > 10){
                 App.pet.stats.gold += clampedMoneyMade;

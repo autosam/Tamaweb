@@ -228,6 +228,7 @@ const App = {
 
         App.darkOverlay = new Object2d({
             img: "resources/img/background/house/dark_overlay.png",
+            x: 0, y: 0,
             z: 11, opacity: 0.85,
             composite: "source-atop",
             static: true,
