@@ -360,26 +360,49 @@ class Pet extends Object2d {
         this.stopMove();
 
         const refuse = () => {
+            // App.foods.hidden = true;
             me.playRefuseAnimation();
             App.setScene(App.scene.home);
-            // App.foods.hidden = true;
             App.uiFood.style.visibility = 'hidden';
             App.toggleGameplayControls(true);
             return false;
         }
 
+        const shouldRefuse = () => {
+            switch(type){
+                case "food": 
+                    if(this.hasMoodlet('full')) return true;
+                    break;
+            }
+
+            // checking for over feeding the same item
+            const reFedAmount = this.petDefinition.stats.last_eaten.reduce(
+                (sum, current) => current === foodSpriteCellNumber ? sum + 1 : sum, 
+                0
+            );
+            if(reFedAmount >= App.constants.FEEDING_PICKINESS.refeedingTolerance) {
+                this.showThought('thought_vomit');
+                return true;
+            }
+
+            return false;
+        }
+
         const wantedFoodItem = App.definitions.food[this.stats.current_want.item];
-        if(App.petDefinition.checkWant(foodSpriteCellNumber == wantedFoodItem?.sprite, App.constants.WANT_TYPES.food)){
+        if(this.petDefinition.checkWant(foodSpriteCellNumber === wantedFoodItem?.sprite, App.constants.WANT_TYPES.food)){
             forced = true;
         }
 
         if(!forced){
-            switch(type){
-                case "food": 
-                    if(this.hasMoodlet('full')) return refuse();
-                    break;
-            }
+            if(shouldRefuse()) return refuse();
         }
+
+        // keeping a track of last X consumed items
+        this.petDefinition.stats.last_eaten = [
+            foodSpriteCellNumber, 
+            ...this.petDefinition.stats.last_eaten
+        ].toSpliced(App.constants.FEEDING_PICKINESS.bufferSize);
+        console.log(this.petDefinition.stats.last_eaten)
 
         Missions.done(Missions.TYPES.food);
 

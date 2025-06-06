@@ -90,6 +90,10 @@ const App = {
             fulfilled: 'fulfilled',
         },
         CHAR_UNLOCK_PREFIX: 'ch_unl',
+        FEEDING_PICKINESS: {
+            refeedingTolerance: 3,
+            bufferSize: 16,
+        },
         // z-index
         ACTIVE_PET_Z: 5,
         NPC_PET_Z: 4.6,
