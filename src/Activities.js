@@ -2916,6 +2916,123 @@ class Activities {
 
 
     // games
+    static async plantMatchingGame(){
+        const getRandomPlant = () => 
+            randomFromArray(Object.keys(App.definitions.plant))
+        const appendNonRepeatedPlant = (list = []) => {
+            let newPlant;
+            while(true){
+                newPlant = getRandomPlant();
+                if(!list.includes(newPlant)){
+                    break;
+                }
+            }
+            const newList = [...list, newPlant];
+            return newList;
+        }
+        const getListOfNonRepeatedPlants = (list = [], length = 4) => {
+            let newList = [...list];
+            for(let i = 0; i < length; i++){
+                newList = appendNonRepeatedPlant(newList);
+            }
+            return newList;
+        }
+
+
+        App.closeAllDisplays();
+        App.setScene(App.scene.arcade);
+        App.toggleGameplayControls(false);
+        App.pet.triggerScriptedState('idle', App.INF, null, true);
+        App.pet.x = '50%';
+        
+        // main list
+        const targetList = getListOfNonRepeatedPlants([], 4);
+        const selectionLists = targetList.map(item => {
+            return shuffleArray(getListOfNonRepeatedPlants([item], 3));
+        })
+
+        const mainListUI = App.display2xGrid(targetList.map((name, index) => ({
+            name: `
+                ${Plant.getCSprite(name, Plant.AGE.grown, 'x2 blink')}
+                <span class="absolute-fullscreen m">${index + 1}</span>
+            `,
+            class: 'disabled',
+        })))
+
+        await App.wait(4000);
+        mainListUI.close();
+
+        App.displayPopup(`Wait...`, 1000);
+        await App.wait(1000);
+        App.displayPopup('Go!', 1000);
+        await App.wait(1000);
+
+        const userSelectedList = [];
+        const advanceProgress = async (name) => {
+            userSelectedList.push(name);
+            const correctChoices = userSelectedList.reduce((sum, current, currentIndex) => checkIndex(current, currentIndex) ? sum + 1 : sum, 0);
+
+            const latestIndex = userSelectedList.length - 1;
+            const isCorrect = checkIndex(name, latestIndex);
+            App.displayPopup( isCorrect ? `Correct ${App.getIcon('check')}` : `Incorrect ${App.getIcon('times')}`, 1000 );
+            await App.wait(1000);
+
+            if(userSelectedList.length === targetList.length){
+                App.displayPopup(`${correctChoices}/${targetList.length}`, 3000);
+                await App.wait(2000);
+                App.closeAllDisplays();
+
+                const moneyWon = Math.max((correctChoices - 1) * 25, 0);
+                App.pet.stats.gold += moneyWon;
+                App.pet.stats.current_fun += moneyWon / 5;
+
+                const endFn = () => {
+                    App.setScene(App.scene.home);
+                    App.toggleGameplayControls(true);
+                    App.handlers.open_game_list();
+                }
+
+                if(moneyWon){
+                    App.pet.playCheeringAnimation(() => {
+                        App.displayPopup(`${App.petDefinition.name} won $${moneyWon}`);
+                        endFn();
+                    });
+                } else {
+                    App.pet.playUncomfortableAnimation(() => {
+                        App.displayPopup(`${App.petDefinition.name} lost!`);
+                        endFn();
+                    });
+                }
+            }
+        }
+        const checkIndex = (name, index) => targetList[index] === name;
+
+        selectionLists
+            .toReversed()
+            .forEach((list, index) => {
+                const currentList = App.display2xGrid(
+                    list.map((name) => ({
+                        name: Plant.getCSprite(name, Plant.AGE.grown, 'x2'),
+                        onclick: () => {
+                            advanceProgress(name);
+                        }
+                    }))
+                )
+                
+                const counterElement = UI.create({
+                    componentType: 'div',
+                    className: 'absolute-fullscreen pointer-events-none flex-container',
+                    parent: currentList,
+                    children: [
+                        {
+                            textContent: Math.abs((index + 1) - targetList.length) + 1,
+                            className: 'surface-stylized inner-padding'
+                        }
+                    ]
+                })
+            })
+        
+    }
     static parkRngGame(){
         App.closeAllDisplays();
         App.setScene(App.scene.park);
