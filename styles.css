@@ -467,6 +467,14 @@ input:focus {
     flex-wrap: wrap;
 }
 
+.grid-item-2x {
+    justify-content: center;
+    width: 30%;
+    flex-grow: 1;
+    height: auto !important;
+    margin: 0 !important;
+}
+
 .grid-item {
     width: 33.333333%;
     height: 33.333333%;
@@ -511,6 +519,10 @@ button {
 
 .uppercase {
     text-transform: uppercase;
+}
+
+.x2 {
+    scale: 2
 }
 
 .absolute-fullscreen {
@@ -1039,6 +1051,10 @@ input#background-color-picker {
 
 .cursor-pointer {
     cursor: pointer;
+}
+
+.pointer-events-none {
+    pointer-events: none;
 }
 
 .modal {

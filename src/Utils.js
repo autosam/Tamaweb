@@ -118,6 +118,12 @@ function getCookie(cname) {
     }
     return "";
 }
+function shuffleArray(array) {
+    return [...array]
+        .map(value => ({ value, sort: Math.random() }))
+        .sort((a, b) => a.sort - b.sort)
+        .map(({ value }) => value);
+}
 function downloadUpscaledCanvasAsImage(canvas, imageName, scale = 1){
     const scaledCanvas = document.createElement("canvas");
     scaledCanvas.width = canvas.width * scale;
