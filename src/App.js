@@ -5014,6 +5014,13 @@ const App = {
             const tutorialDisplayTime = 2000;
             App.displayList([
                 {
+                    name: `crop match ${App.getBadge()}`,
+                    onclick: () => {
+                        App.displayPopup(`Memorize the sequence of crops as the appear!`, tutorialDisplayTime, () => Activities.plantMatchingGame())
+                        return false;
+                    }
+                },
+                {
                     name: `mimic`,
                     onclick: () => {
                         const imgPath = 'resources/img/ui/';
@@ -5025,13 +5032,6 @@ const App = {
                         </div>
                         `
                         App.displayPopup(`Try to predict your opponents next stance ${images} and mimic them!`, tutorialDisplayTime, () => Activities.opponentMimicGame())
-                        return false;
-                    }
-                },
-                {
-                    name: `crop match ${App.getBadge()}`,
-                    onclick: () => {
-                        App.displayPopup(`Memorize the sequence of crops as the appear!`, tutorialDisplayTime, () => Activities.plantMatchingGame())
                         return false;
                     }
                 },
