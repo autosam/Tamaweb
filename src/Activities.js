@@ -2670,7 +2670,7 @@ class Activities {
         }
 
         function task_otherPetMoveOut(){
-            gift.y += 10;
+            // gift.y += 10;
             otherPet.triggerScriptedState('moving', App.INF, false, true, null, () => {
                 gift.x = otherPet.x + 10;
             });
