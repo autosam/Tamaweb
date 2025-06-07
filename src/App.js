@@ -5021,6 +5021,13 @@ const App = {
                     }
                 },
                 {
+                    name: `crop match ${App.getBadge()}`,
+                    onclick: () => {
+                        App.displayPopup(`Memorize the sequence of crops as the appear!`, tutorialDisplayTime, () => Activities.plantMatchingGame())
+                        return false;
+                    }
+                },
+                {
                     name: `catch`,
                     onclick: () => {
                         App.displayPopup(`Catch as much <img src="resources/img/misc/heart_particle_01.png"></img> while avoiding <img src="resources/img/misc/falling_poop.png"></img>`, tutorialDisplayTime, () => Activities.fallingStuffGame())
@@ -5284,6 +5291,31 @@ const App = {
         listItems.forEach(item => {
             let button = document.createElement('button');
                 button.className = 'grid-item ' + (item.class ? item.class : '');
+                button.innerHTML = item.name;
+                button.onclick = () => {
+                    let result = item.onclick(button, list);
+                    if(!result){
+                        list.close();
+                    }
+                };
+            list.appendChild(button);
+        });
+
+        document.querySelector('.screen-wrapper').appendChild(list);
+
+        return list;
+    },
+    display2xGrid: function(listItems){
+        const list = document.querySelector('.cloneables .generic-grid-container').cloneNode(true);
+        list.classList.add('flex-wrap', 'flex-gap-1');
+
+        list.close = function(){
+            list.remove();
+        }
+
+        listItems.forEach(item => {
+            let button = document.createElement('button');
+                button.className = 'grid-item-2x generic-btn stylized ' + (item.class ? item.class : '');
                 button.innerHTML = item.name;
                 button.onclick = () => {
                     let result = item.onclick(button, list);
