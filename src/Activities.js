@@ -2975,6 +2975,9 @@ class Activities {
 
             const latestIndex = userSelectedList.length - 1;
             const isCorrect = checkIndex(name, latestIndex);
+
+            if(isCorrect) setTimeout(() => App.playSound(`resources/sounds/ui_click_03.ogg`, true));
+
             App.displayPopup( isCorrect ? `Correct ${App.getIcon('check')}` : `Incorrect ${App.getIcon('times')}`, 1000 );
             await App.wait(1000);
 
