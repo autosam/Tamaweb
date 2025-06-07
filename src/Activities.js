@@ -2842,21 +2842,20 @@ class Activities {
                 App.pet.stats.gold += moneyWon;
                 App.pet.stats.current_fun += moneyWon / 5;
 
-                const endFn = () => {
+                const onEndFn = () => {
                     App.setScene(App.scene.home);
                     App.toggleGameplayControls(true);
+                    UI.clearLastClicked();
                     App.handlers.open_game_list();
                 }
 
                 if(moneyWon){
                     App.pet.playCheeringAnimation(() => {
-                        App.displayPopup(`${App.petDefinition.name} won $${moneyWon}`);
-                        endFn();
+                        App.displayPopup(`${App.petDefinition.name} won $${moneyWon}`, null, onEndFn);
                     });
                 } else {
                     App.pet.playUncomfortableAnimation(() => {
-                        App.displayPopup(`${App.petDefinition.name} lost!`);
-                        endFn();
+                        App.displayPopup(`${App.petDefinition.name} lost!`, null, onEndFn);
                     });
                 }
             }
