@@ -79,7 +79,7 @@ class Activities {
             if(currentActivityIndex < 0) currentActivityIndex = activities.length - 1;
             const currentActivity = activities[currentActivityIndex];
 
-            document.querySelector('#activity-name').textContent =  `${currentActivity.name}`;
+            document.querySelector('#activity-name').innerHTML =  `${currentActivity.name}`;
             if(currentActivity.isDisabled?.()){
                 document.querySelector('#activity-name').classList.add('disabled');
                 editDisplay.querySelector('#apply').classList.add('disabled');
@@ -2796,8 +2796,9 @@ class Activities {
         App.closeAllDisplays();
         App.setScene(App.scene.arcade);
         App.toggleGameplayControls(false);
-        App.pet.triggerScriptedState('idle', App.INF, null, true);
+        App.pet.stopMove();
         App.pet.x = '50%';
+        App.pet.triggerScriptedState('idle', App.INF, null, true);
         
         // main list
         const targetList = getListOfNonRepeatedPlants([], 4);
