@@ -1243,7 +1243,10 @@ const App = {
         }),
         genericOutside: new Scene({
             image: 'resources/img/background/outside/activities_base_01.png'
-        })
+        }),
+        mallInterior: new Scene({
+            image: 'resources/img/background/house/mall_interior_01.png'
+        }),
     },
     setScene(scene, noPositionChange, onLoadArg){
         App.currentScene?.onUnload?.(scene);
@@ -3797,11 +3800,8 @@ const App = {
                     name: `${iconElement} ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>${buyMode ? `$${price}` : ''}</b> ${current.isNew ? App.getBadge('new!') : ''}`,
                     onclick: (btn, list) => {
                         if(buyMode){
-                            if(App.pet.stats.gold < price){
-                                App.displayPopup(`Don't have enough gold!`);
-                                return true;
-                            }
-                            App.pet.stats.gold -= price;
+                            if(!App.pay(price)) return true;
+                            App.temp.purchasedMallItem = true;
                             App.addNumToObject(App.pet.inventory.item, item, 1);
                             // console.log(list.scrollTop);
                             let nList = App.handlers.open_item_list(true, sliderInstance?.getCurrentIndex());
@@ -4065,11 +4065,8 @@ const App = {
                                 App.displayPopup('You already own this accessory');
                                 return true;
                             }
-                            if(App.pet.stats.gold < price){
-                                App.displayPopup(`Don't have enough gold!`);
-                                return true;
-                            }
-                            App.pet.stats.gold -= price;
+                            if(!App.pay(price)) return true;
+                            App.temp.purchasedMallItem = true;
                             App.pet.inventory.accessory[accessoryName] = true;
                             //     // nList.scrollTop = list.scrollTop;
                             return reopen(buyMode);
@@ -4143,11 +4140,8 @@ const App = {
                     onclick: (btn, list) => {
                         if(owned) return App.displayPopup(`You already own the this furniture!`);
 
-                        if(App.pet.stats.gold < price){
-                            App.displayPopup(`Don't have enough gold!`);
-                            return true;
-                        }
-                        App.pet.stats.gold -= price;
+                        if(!App.pay(price)) return true;
+                        App.temp.purchasedMallItem = true;
 
                         App.ownedFurniture.push({
                             id: current.id,
@@ -4887,7 +4881,12 @@ const App = {
             });
 
             const backFn = () => { // unused
-                setTimeout(() => App.handlers.open_activity_list(), 0)
+                // setTimeout(() => App.handlers.open_activity_list(), 0)
+                if(App.temp.purchasedMallItem){
+                    App.temp.purchasedMallItem = false;
+                    App.closeAllDisplays();
+                    Activities.receivePurchasedItems();
+                }
             }
 
             App.displayList([
@@ -4953,7 +4952,7 @@ const App = {
                         return true;
                     }
                 }
-            ]);
+            ], backFn);
         },
         open_market_menu: function(){
             App.displayList([

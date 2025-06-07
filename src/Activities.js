@@ -1,4 +1,65 @@
 class Activities {
+    static async receivePurchasedItems(){
+        App.toggleGameplayControls(false, () => {
+            App.pet.stopScriptedState();
+        });
+        App.setScene(App.scene.mallInterior);
+
+        App.pet.stopMove();
+        App.pet.x = '80%';
+
+        const mallNpc = new Pet(
+            new PetDefinition({
+                sprite: 'resources/img/character/mall_npc_01.png',
+                name: 'Mall NPC',
+            }), {
+                x: '20%',
+                y: '100%',
+            }
+        );
+        mallNpc.triggerScriptedState('cheering', App.INF, false, true);
+
+        const gift = new Object2d({
+            img: 'resources/img/misc/gift.png',
+            x: '60%', y: '85%', z: App.constants.ACTIVE_PET_Z + 0.1,
+        });
+
+        App.pet.triggerScriptedState('cheering_with_icon', 3000, null, true, () => {
+            App.setScene(App.scene.home);
+            mallNpc.removeObject();
+            gift.removeObject();
+            App.toggleGameplayControls(true);
+        });
+    }
+    static goToMall(){
+        App.toggleGameplayControls(false, () => {
+            App.pet.stopScriptedState();
+        });
+        App.setScene(App.scene.mallInterior);
+        Missions.done(Missions.TYPES.visit_mall);
+
+        App.pet.x = '100%';
+
+        App.pet.targetX = -20;
+
+        const mallNpc = new Pet(
+            new PetDefinition({
+                sprite: 'resources/img/character/mall_npc_01.png',
+                name: 'Mall NPC',
+            }), {
+                x: '20%',
+                y: '100%',
+            }
+        );
+        mallNpc.triggerScriptedState('cheering', App.INF, false, true);
+
+        App.pet.triggerScriptedState('moving', 3000, null, true, () => {
+            App.setScene(App.scene.home);
+            App.handlers.open_mall_activity_list();
+            App.toggleGameplayControls(true);
+            mallNpc.removeObject();
+        });
+    }
     static async goToActivities({ activities } = {}){
         App.setScene({
             ...App.scene.emptyOutside,
@@ -2578,7 +2639,7 @@ class Activities {
         App.pet.stopMove();
         App.pet.x = 10;
 
-        let gift = new Object2d({
+        const gift = new Object2d({
             img: 'resources/img/misc/gift.png',
             x: '50%', y: '80%'
         });
@@ -2742,7 +2803,7 @@ class Activities {
 
         task_otherPetMoveIn();
     }
-    static goToMall(){
+    static goToWalkwayMall(){
         App.toggleGameplayControls(false, () => {
             App.pet.stopScriptedState();
         });
