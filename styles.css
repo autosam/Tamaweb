@@ -1166,6 +1166,28 @@ input#background-color-picker {
     outline: 2px solid black;
 }
 
+/* .dog-washing-button {
+    border-radius: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    outline: 2px solid;
+    color: #ff6b85;
+    background: pink;
+    position: absolute;
+    transition: all 0.1s;
+} */
+
+.dog-washing-button {
+    border-radius: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(#ffffff, transparent);
+    position: absolute;
+    transition: all 0.1s;
+}
+
 .webcam-container {
     overflow: hidden;
     background: black;

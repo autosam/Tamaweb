@@ -1241,6 +1241,9 @@ const App = {
         emptyOutside: new Scene({
             image: 'resources/img/background/outside/transparent.png',
         }),
+        genericOutside: new Scene({
+            image: 'resources/img/background/outside/activities_base_01.png'
+        })
     },
     setScene(scene, noPositionChange, onLoadArg){
         App.currentScene?.onUnload?.(scene);

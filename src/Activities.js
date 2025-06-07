@@ -2916,6 +2916,97 @@ class Activities {
 
 
     // games
+    static async dogWashingGame(){
+        App.closeAllDisplays();
+        App.setScene(App.scene.genericOutside);
+        App.toggleGameplayControls(false);
+        App.pet.stopMove();
+        App.pet.x = '35%';
+        App.pet.y = '93%';
+        App.pet.inverted = true;
+        App.pet.triggerScriptedState('idle_side', App.INF, null, true);
+        let remainingTime = 5;
+        let score = 0;
+
+        // ui
+        const buttonSizePx = 46;
+
+        const screen = App.displayEmpty();
+        screen.style.background = 'transparent';
+        screen.innerHTML = `
+            <div class="mini-game-ui flex align-center">
+            <i style="margin-right: 4px;" class="fa-solid fa-stopwatch icon"></i>
+                <div id="timeRemaining">${remainingTime}</div>
+            </div>
+            <button style="width: ${buttonSizePx}px; height: ${buttonSizePx}px" class="dog-washing-button">
+                <i class="fa-solid fa-bath"></i>
+            </button>
+        `;
+        const washActionButton = screen.querySelector('.dog-washing-button');
+        const repositionAction = () => {
+            const bounds = {
+                width: washActionButton.parentElement.clientWidth - buttonSizePx - 2,
+                height: washActionButton.parentElement.clientHeight - buttonSizePx - 2
+            }
+            const position = {
+                x: random(0, bounds.width),
+                y: random(0, bounds.height),
+            }
+            washActionButton.style.top = `${position.x}px`;
+            washActionButton.style.left = `${position.y}px`;
+        }
+        repositionAction();
+
+        const onEndFn = () => {
+            screen.close();
+            animal.removeObject();
+            App.pet.playCheeringAnimation(() => {
+                App.displayPopup(`Score: ${score}`)
+                App.setScene(App.scene.home);
+            })
+        }
+
+        const timerFn = setInterval(() => {
+            remainingTime--;
+            if(remainingTime <= 0){
+                remainingTime = 0;
+                clearInterval(timerFn);
+                onEndFn();
+                return;
+            }
+            document.querySelector('#timeRemaining').textContent = remainingTime;
+        }, 1000);
+
+
+        let animal = new Animal(App.getRandomAnimalDef('dog'));
+        animal.triggerScriptedState('idle', App.INF, null, true);
+        animal.y = '93%';
+        animal.x = 57;
+        const advanceProgress = () => {
+            const oldAnimal = animal;
+            oldAnimal.setState('moving');
+            oldAnimal.targetX = -100;
+            oldAnimal.onDraw = (me) => {
+                if(me.x <= -32) me.removeObject();
+            }
+            animal = new Animal(App.getRandomAnimalDef('dog'));
+            animal.onDraw = (me) => {
+                me.setState(me.isMoving ? 'moving' : 'idle_side');
+                App.pet.setLocalZBasedOnSelf(me);
+            }
+            animal.triggerScriptedState('idle', App.INF, null, true);
+            animal.x = 120;
+            animal.targetX = 57;
+            animal.y = `${random(92 - 5, 92 + 5)}%`;
+
+            score++;
+        }
+
+        washActionButton.onclick = () => {
+            repositionAction();
+            advanceProgress();
+        }
+    }
     static async plantMatchingGame(){
         const getRandomPlant = () => 
             randomFromArray(Object.keys(App.definitions.plant))
@@ -3273,13 +3364,13 @@ class Activities {
         screen.innerHTML = `
         <div class="width-full" style="position: absolute; bottom: 0; left: 0;">
             <div class="flex-container" style="justify-content: space-between; padding: 4px">
-            <div class="flex-container mini-game-ui">
-                $
-                <div id="moneyWon">${moneyWon}</div>
-            </div>
-            <div class="flex-container">
-                <div id="lives">${lives}</div>
-            </div>
+                <div class="flex-container mini-game-ui">
+                    $
+                    <div id="moneyWon">${moneyWon}</div>
+                </div>
+                <div class="flex-container">
+                    <div id="lives">${lives}</div>
+                </div>
             </div>
         </div>
         `;
