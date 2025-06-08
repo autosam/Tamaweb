@@ -4,11 +4,12 @@ class Activities {
             constructor(actor){
                 this.actor = actor;
                 this.actor.triggerScriptedState('idle', App.INF, false, true);
+                this.actor.stopMove();
             }
-            moveTo = ({x, y, speed = 0.15}) => {
+            moveTo = ({x, y, speed = 0.15, endState = 'idle'}) => {
                 return new Promise(resolve => {
                     this.actor.scriptedEventDriverFn = (me) => {
-                        me.setState(me.isMoving ? 'moving' : 'idle')
+                        me.setState(me.isMoving ? 'moving' : endState)
                         if(!me.isMoving) {
                             me.speedOverride = false;
                             resolve();
@@ -44,15 +45,23 @@ class Activities {
         const other = new TimelineDirector(otherPet);
 
         other.setState('idle_side');
-        other.setPosition({x: '0%'})
-        main.setPosition({x: '50%'})
-        await main.moveTo({x: 65, speed: 0.05});
-        await other.moveTo({x: main.getPosition('x') - other.getSize(), speed: 0.05});
+        other.setPosition({x: -other.getSize()})
+        main.setPosition({x: 55})
+        main.lookAt(false);
+        await other.moveTo({x: main.getPosition('x') - other.getSize(), speed: 0.05, endState: 'idle_side'});
+        await TimelineDirector.wait(1000);
+        main.setState('idle_side');
+        await TimelineDirector.wait(350);
+        main.setState('idle');
+        await TimelineDirector.wait(150);
+        main.setState('idle_side');
+        await TimelineDirector.wait(250);
         main.setState('shocked')
+        other.setState('shocked')
         await TimelineDirector.wait(500);
+        other.moveTo({x: main.getPosition('x')})
         await main.moveTo({x: 20});
         main.setState('uncomfortable');
-        other.setState('shocked')
         await TimelineDirector.wait(500);
         await other.moveTo({x: main.getPosition('x') + other.getSize(), speed: 0.025});
         other.setState('cheering');
