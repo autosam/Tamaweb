@@ -2303,6 +2303,7 @@ class Activities {
                 onDraw: (me) => {
                     Object2d.animations.flip(me, flipTime);
                     Object2d.animations.bob(me, foamSpeed, foamStr);
+                    Object2d.animations.pulseScale(me, foamSpeed, 0.01);
                 }
             })
             foams.push(foam);
