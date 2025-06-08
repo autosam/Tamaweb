@@ -1,4 +1,67 @@
 class Activities {
+    static async sequenceTest(){
+        class TimelineDirector {
+            constructor(actor){
+                this.actor = actor;
+                this.actor.triggerScriptedState('idle', App.INF, false, true);
+            }
+            moveTo = ({x, y, speed = 0.15}) => {
+                return new Promise(resolve => {
+                    this.actor.scriptedEventDriverFn = (me) => {
+                        me.setState(me.isMoving ? 'moving' : 'idle')
+                        if(!me.isMoving) {
+                            me.speedOverride = false;
+                            resolve();
+                            me.scriptedEventDriverFn = false;
+                        }
+                    }; 
+                    this.actor.targetX = x;
+                    this.actor.targetY = y;
+                    this.actor.speedOverride = speed;
+                })
+            }
+            setPosition = ({x, y}) => {
+                if(x) this.actor.x = x;
+                if(y) this.actor.y = y;
+            }
+            setState = (state) => this.actor.setState(state);
+            lookAt = (direction) => this.actor.inverted = direction;
+            release = () => this.actor.stopScriptedState();
+            remove = () => this.actor.removeObject();
+            getPosition = (axis) => {
+                if(axis === 'y') return this.actor.y;
+                return this.actor.x;
+            }
+            getSize = () => this.actor.spritesheet.cellSize
+            
+            
+            static wait = App.wait
+        }
+
+        const otherPet = new Pet(App.getRandomPetDef());
+        
+        const main = new TimelineDirector(App.pet);
+        const other = new TimelineDirector(otherPet);
+
+        other.setState('idle_side');
+        other.setPosition({x: '0%'})
+        main.setPosition({x: '50%'})
+        await main.moveTo({x: 65, speed: 0.05});
+        await other.moveTo({x: main.getPosition('x') - other.getSize(), speed: 0.05});
+        main.setState('shocked')
+        await TimelineDirector.wait(500);
+        await main.moveTo({x: 20});
+        main.setState('uncomfortable');
+        other.setState('shocked')
+        await TimelineDirector.wait(500);
+        await other.moveTo({x: main.getPosition('x') + other.getSize(), speed: 0.025});
+        other.setState('cheering');
+        main.setState('angry');
+        await TimelineDirector.wait(2000);
+        other.remove();
+        main.setPosition({x: '50%'});
+        main.release();
+    }
     static async receivePurchasedItems(){
         App.toggleGameplayControls(false, () => {
             App.pet.stopScriptedState();
