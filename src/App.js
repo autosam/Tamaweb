@@ -6317,3 +6317,71 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
     checkForAwayTimeAndInit();
 });
+
+class TimelineDirector {
+    constructor(actor){
+        this.actor = actor;
+        this.actor.triggerScriptedState('idle', App.INF, false, true);
+        this.actor.stopMove();
+    }
+    moveTo = ({x, y, speed = 0.15, endState = 'idle'}) => {
+        return new Promise(resolve => {
+            this.actor.scriptedEventDriverFn = (me) => {
+                me.setState(me.isMoving ? 'moving' : endState)
+                if(!me.isMoving) {
+                    me.speedOverride = false;
+                    resolve();
+                    me.scriptedEventDriverFn = false;
+                }
+            };
+            if(typeof x === 'string'){
+                const percent = parseFloat(x);
+                x = App.drawer.getRelativePositionX(percent) - (this.getSize() / 2);
+                console.log('newX', x);
+            }
+            this.actor.targetX = x;
+            this.actor.targetY = y;
+            this.actor.speedOverride = speed;
+        })
+    }
+    setPosition = ({x, y}) => {
+        if(x) this.actor.x = x;
+        if(y) this.actor.y = y;
+    }
+    setState = (state) => this.actor.setState(state);
+    lookAt = (direction) => this.actor.inverted = direction;
+    release = () => this.actor.stopScriptedState();
+    remove = () => this.actor.removeObject();
+    getPosition = (axis) => {
+        if(axis === 'y') return this.actor.y;
+        return this.actor.x;
+    }
+    getSize = () => this.actor.spritesheet.cellSize;
+    bob = ({speed = 0.011, strength = 5, maxCycles = 3} = {}) => {
+        return new Promise(resolve => {
+            const defaultY = this.actor.y;
+            const actor = this.actor;
+            let animationFloat = 0, currentCycles = 0;
+            const drawEvent = App.registerOnDrawEvent(() => {
+                animationFloat += speed * App.deltaTime;
+                const animation = clamp(Math.sin(animationFloat), 0, 999) * strength;
+                if(animation > 0) actor.setState('cheering');
+                else {
+                    if(actor.state === 'cheering') {
+                        actor.setState('idle');
+                        currentCycles++;
+                    }
+                    if(currentCycles >= maxCycles){
+                        actor.y = defaultY;
+                        App.unregisterOnDrawEvent(drawEvent);
+                        resolve();
+                    }
+                }
+                actor.y = defaultY - animation;
+            })
+        })
+    }
+    
+    
+    static wait = App.wait
+}
