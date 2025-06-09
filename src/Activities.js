@@ -3909,6 +3909,5 @@ class TimelineDirector {
     }
     think = (...args) => this.actor.showThought(...args);
     
-    
-    static wait = App.wait
+    static wait = (...args) => App.wait(...args);
 }
