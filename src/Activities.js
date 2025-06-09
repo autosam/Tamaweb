@@ -1,4 +1,62 @@
 class Activities {
+    static async talkingSequence() {
+        App.closeAllDisplays();
+
+        const otherPet = new Pet(App.getRandomPetDef(), {
+            staticShadow: false
+        });
+        App.pet.staticShadow = false;
+
+        const main = new TimelineDirector(App.pet);
+        const other = new TimelineDirector(otherPet);
+
+        main.setPosition({ x: '30%' });
+        main.setState('idle');
+        other.setPosition({ x: '70%' });
+        other.setState('idle');
+        await TimelineDirector.wait(500);
+
+        main.setState('idle_side');
+        main.lookAt(true);
+        other.setState('idle_side');
+        other.lookAt(false);
+
+        const reactions = [
+            'shocked', 
+            'blush', 
+            'uncomfortable', 
+            'angry', 
+            'mild_uncomfortable', 
+            'cheering',
+            'cheering',
+            'cheering',
+            'cheering',
+            'idle_side_uncomfortable',
+        ]
+
+        for(let i = 0; i < 5; i++){
+            // const position = {
+            //     x: `${random(35, 65)}%`,
+            //     y: `${random(80, 100)}%`
+            // }
+
+            // main.moveTo({...position, x: position.x});
+            // await TimelineDirector.wait(0);
+            // await other.moveTo({...position, x: main.targetX});
+
+            main.think('thought_talk', false, random(1000, 2000));
+            await main.bob({maxCycles: random(2, 8), strength: 0, animation: 'talking', landAnimation: 'idle_side'});
+            await TimelineDirector.wait(random(500, 1500));
+            other.think('thought_talk', false, random(1000, 2000));
+            await other.bob({maxCycles: random(2, 8), strength: 0, animation: 'talking', landAnimation: 'idle_side'});
+            await other.bob({maxCycles: 1, animation: randomFromArray(reactions)});
+            await main.bob({maxCycles: 1, animation: randomFromArray(reactions)});
+            await TimelineDirector.wait(random(250, 1500));
+            main.setState('idle_side');
+            await TimelineDirector.wait(random(250, 1500));
+            other.setState('idle_side');
+        }
+    }
     static async parkSequence(){
         App.setScene(App.scene.park);
         App.closeAllDisplays();
@@ -22,18 +80,18 @@ class Activities {
         other.setState('idle_side');
         other.lookAt(false);
         main.think('thought_talk', false, 2000);
-        await main.bob({maxCycles: 4, animation: 'idle_side'});
+        await main.bob({maxCycles: 4, strength: 0, animation: 'talking', landAnimation: 'idle_side'});
         await TimelineDirector.wait(500);
-        other.think('thought_talk', false, 2000);
-        await other.bob({maxCycles: 2, animation: 'idle_side'});
+        other.think('thought_talk', false, 1500);
+        await other.bob({maxCycles: 2, strength: 0, animation: 'talking', landAnimation: 'idle_side'});
         other.setState('blush');
         await main.bob({maxCycles: 1, animation: 'shocked'});
         await TimelineDirector.wait(1500);
         main.think('thought_talk', false, 2000);
-        await main.bob({maxCycles: 4, animation: 'idle_side'});
+        await main.bob({maxCycles: 4, strength: 0, animation: 'talking', landAnimation: 'idle_side'});
         await TimelineDirector.wait(500);
         other.think('thought_talk', false, 2000);
-        await other.bob({maxCycles: 2, animation: 'idle_side'});
+        await other.bob({maxCycles: 2, strength: 0, animation: 'talking', landAnimation: 'idle_side'});
 
 
 
@@ -3887,7 +3945,7 @@ class TimelineDirector {
             let animationFloat = 0, currentCycles = 0;
             const drawEvent = App.registerOnDrawEvent(() => {
                 animationFloat += speed * App.deltaTime;
-                const finalAnimationFloat = clamp(Math.sin(animationFloat), 0, 999) * strength;
+                const finalAnimationFloat = clamp(Math.sin(animationFloat), 0, 999);
                 if(finalAnimationFloat > 0) {
                     cycleCounted = false;
                     actor.setState(animation);
@@ -3903,7 +3961,7 @@ class TimelineDirector {
                         resolve();
                     }
                 }
-                actor.y = defaultY - finalAnimationFloat;
+                actor.y = defaultY - (finalAnimationFloat * strength);
             })
         })
     }
