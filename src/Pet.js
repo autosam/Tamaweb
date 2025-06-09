@@ -1040,7 +1040,7 @@ class Pet extends Object2d {
             this.showThought(this.stats.current_want.type, this.stats.current_want.item);
         }
     }
-    showThought(type, item){
+    showThought(type, item, disappearDelay = 5000){
         const bubble = new Object2d({
             parent: this,
             img: 'resources/img/misc/thought_bubble_01.png',
@@ -1189,7 +1189,7 @@ class Pet extends Object2d {
         setTimeout(() => {
             bubble.shouldFadeout = true;
             setTimeout(() => bubble.removeObject(), 1000);
-        }, 5000);
+        }, disappearDelay);
     }
     setLocalZBasedOnSelf(otherObject){
         const currentBoundingBox = this.getBoundingBox();
