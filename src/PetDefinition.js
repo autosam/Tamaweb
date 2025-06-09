@@ -40,6 +40,15 @@ class PetDefinition {
             //     interval: 2,
             // },
         },
+        talking: {
+            start: 10,
+            end: 11,
+            frameTime: 100,
+            // sound: {
+            //     file: 'walk_01.ogg',
+            //     interval: 2,
+            // },
+        },
         sitting: {
             start: 14,
             end: 15,
