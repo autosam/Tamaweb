@@ -1,6 +1,51 @@
 class Activities {
-    static async sequenceTest2(){
-        
+    static async parkSequence(){
+        App.setScene(App.scene.park);
+        App.closeAllDisplays();
+
+        const otherPet = new Pet(App.getRandomPetDef(), {
+            staticShadow: false
+        });
+        App.pet.staticShadow = false;
+
+        const main = new TimelineDirector(App.pet);
+        const other = new TimelineDirector(otherPet);
+
+        main.setPosition({ x: '30%' });
+        main.setState('cheering');
+        other.setPosition({ x: '70%' });
+        other.setState('cheering');
+        await TimelineDirector.wait(2500);
+
+        main.setState('idle_side');
+        main.lookAt(true);
+        other.setState('idle_side');
+        other.lookAt(false);
+        main.think('thought_talk', false, 2000);
+        await main.bob({maxCycles: 4, animation: 'idle_side'});
+        await TimelineDirector.wait(500);
+        other.think('thought_talk', false, 2000);
+        await other.bob({maxCycles: 2, animation: 'idle_side'});
+        other.setState('blush');
+        await main.bob({maxCycles: 1, animation: 'shocked'});
+        await TimelineDirector.wait(1500);
+        main.think('thought_talk', false, 2000);
+        await main.bob({maxCycles: 4, animation: 'idle_side'});
+        await TimelineDirector.wait(500);
+        other.think('thought_talk', false, 2000);
+        await other.bob({maxCycles: 2, animation: 'idle_side'});
+
+
+
+        main.setState('cheering');
+        other.setState('cheering');
+        await TimelineDirector.wait(1000);
+
+        other.remove();
+        main.setPosition({ x: '50%' });
+        main.release();
+
+        App.pet.playCheeringAnimation();
     }
     static async sequenceTest(){
         const otherPet = new Pet(App.getRandomPetDef(), {
@@ -3644,4 +3689,80 @@ class Activities {
             App.pet.stats.current_fun -= 100;
         }
     }
+}
+
+
+// timeline animation director
+class TimelineDirector {
+    constructor(actor){
+        this.actor = actor;
+        this.actor.triggerScriptedState('idle', App.INF, false, true);
+        this.actor.stopMove();
+    }
+    moveTo = ({x, y, speed = 0.15, endState = 'idle'}) => {
+        return new Promise(resolve => {
+            this.actor.scriptedEventDriverFn = (me) => {
+                me.setState(me.isMoving ? 'moving' : endState)
+                if(!me.isMoving) {
+                    me.speedOverride = false;
+                    resolve();
+                    me.scriptedEventDriverFn = false;
+                }
+            };
+            if(typeof x === 'string'){
+                const percent = parseFloat(x);
+                x = App.drawer.getRelativePositionX(percent) - (this.getSize() / 2);
+                console.log('newX', x);
+            }
+            this.actor.targetX = x;
+            this.actor.targetY = y;
+            this.actor.speedOverride = speed;
+        })
+    }
+    setPosition = ({x, y}) => {
+        if(x) this.actor.x = x;
+        if(y) this.actor.y = y;
+    }
+    setState = (state) => this.actor.setState(state);
+    lookAt = (direction) => this.actor.inverted = direction;
+    release = () => this.actor.stopScriptedState();
+    remove = () => this.actor.removeObject();
+    getPosition = (axis) => {
+        if(axis === 'y') return this.actor.y;
+        return this.actor.x;
+    }
+    getSize = () => this.actor.spritesheet.cellSize;
+    bob = ({speed = 0.011, strength = 5, maxCycles = 3, animation = 'cheering', landAnimation} = {}) => {
+        if(!landAnimation) landAnimation = animation;
+        let cycleCounted = false;
+        return new Promise(resolve => {
+            const defaultY = this.actor.y;
+            const actor = this.actor;
+            let animationFloat = 0, currentCycles = 0;
+            const drawEvent = App.registerOnDrawEvent(() => {
+                animationFloat += speed * App.deltaTime;
+                const finalAnimationFloat = clamp(Math.sin(animationFloat), 0, 999) * strength;
+                if(finalAnimationFloat > 0) {
+                    cycleCounted = false;
+                    actor.setState(animation);
+                } else {
+                    if(!cycleCounted) {
+                        cycleCounted = true;
+                        currentCycles++;
+                    }
+                    actor.setState(landAnimation);
+                    if(currentCycles >= maxCycles){
+                        actor.y = defaultY;
+                        App.unregisterOnDrawEvent(drawEvent);
+                        resolve();
+                    }
+                }
+                actor.y = defaultY - finalAnimationFloat;
+            })
+        })
+    }
+    think = (...args) => this.actor.showThought(...args);
+    
+    
+    static wait = App.wait
 }
