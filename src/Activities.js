@@ -64,7 +64,6 @@ class Activities {
         main.setState('idle_side');
         await TimelineDirector.wait(500);
 
-
         other.moveTo({x: '70%', speed: 0.05});
         await TimelineDirector.wait(450);
         await main.moveTo({x: '30%', speed: 0.08});
@@ -76,14 +75,6 @@ class Activities {
         await other.bob({maxCycles: 2, animation: 'cheering', landAnimation: 'idle'});
 
         for(let i = 0; i < 5; i++){
-            // const position = {
-            //     x: `${random(35, 65)}%`,
-            //     y: `${random(80, 100)}%`
-            // }
-
-            // main.moveTo({...position, x: position.x});
-            // await TimelineDirector.wait(0);
-            // await other.moveTo({...position, x: main.targetX});
             if(!main.actor) break;
 
             main.think(randomFromArray(thoughtIcons), false, random(1000, 2000));
