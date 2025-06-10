@@ -5010,7 +5010,7 @@ const App = {
                 {
                     name: `crop match ${App.getBadge()}`,
                     onclick: () => {
-                        App.displayPopup(`Memorize the sequence of crops as the appear!`, tutorialDisplayTime, () => Activities.plantMatchingGame())
+                        App.displayPopup(`Memorize the sequence of crops as they appear!`, tutorialDisplayTime, () => Activities.plantMatchingGame())
                         return false;
                     }
                 },
