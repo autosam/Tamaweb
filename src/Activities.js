@@ -1,8 +1,8 @@
 class Activities {
-    static async talkingSequence() {
+    static async talkingSequence(otherPetDef = App.getRandomPetDef()) {
         App.closeAllDisplays();
 
-        const otherPet = new Pet(App.getRandomPetDef(), {
+        const otherPet = new Pet(otherPetDef, {
             staticShadow: false
         });
         App.pet.staticShadow = false;
@@ -10,16 +10,16 @@ class Activities {
         const main = new TimelineDirector(App.pet);
         const other = new TimelineDirector(otherPet);
 
-        main.setPosition({ x: '30%' });
-        main.setState('idle');
-        other.setPosition({ x: '70%' });
-        other.setState('idle');
-        await TimelineDirector.wait(500);
+        const onEnd = () => {
+            main.release();
+            other.remove();
+            other.release();
+            App.setScene(App.currentScene);
+            App.pet.playCheeringAnimation();
+            App.toggleGameplayControls(true);
+        }
 
-        main.setState('idle_side');
-        main.lookAt(true);
-        other.setState('idle_side');
-        other.lookAt(false);
+        App.toggleGameplayControls(false, onEnd);
 
         const reactions = [
             'shocked', 
@@ -32,7 +32,48 @@ class Activities {
             'cheering',
             'cheering',
             'idle_side_uncomfortable',
-        ]
+        ];
+        const thoughtIcons = [
+            'thought_talk',
+            'thought_talk',
+            'thought_talk',
+            'thought_question',
+            'thought_exclaim',
+        ];
+
+        // main.setPosition({ x: '30%' });
+        // main.setState('idle_side');
+        // other.setPosition({ x: '70%' });
+        // other.setState('idle_side');
+        // await TimelineDirector.wait(250);
+
+        main.setPosition({x: '30%'})
+        main.setState('idle_side');
+        main.lookAt(true);
+
+        other.setPosition({x: '120%'});
+        other.setState('idle_side');
+        other.lookAt(false);
+
+        await main.moveTo({x: '50%', speed: 0.03, endState: 'side_idle'})
+
+        await TimelineDirector.wait(1000);
+
+        main.setState('cheering');
+        await TimelineDirector.wait(500);
+        main.setState('idle_side');
+        await TimelineDirector.wait(500);
+
+
+        other.moveTo({x: '70%', speed: 0.05});
+        await TimelineDirector.wait(450);
+        await main.moveTo({x: '30%', speed: 0.08});
+        main.lookAt(true);
+
+        await TimelineDirector.wait(250);
+
+        main.bob({maxCycles: 2, animation: 'cheering', landAnimation: 'idle'});
+        await other.bob({maxCycles: 2, animation: 'cheering', landAnimation: 'idle'});
 
         for(let i = 0; i < 5; i++){
             // const position = {
@@ -43,11 +84,12 @@ class Activities {
             // main.moveTo({...position, x: position.x});
             // await TimelineDirector.wait(0);
             // await other.moveTo({...position, x: main.targetX});
+            if(!main.actor) break;
 
-            main.think('thought_talk', false, random(1000, 2000));
+            main.think(randomFromArray(thoughtIcons), false, random(1000, 2000));
             await main.bob({maxCycles: random(2, 8), strength: 0, animation: 'talking', landAnimation: 'idle_side'});
             await TimelineDirector.wait(random(500, 1500));
-            other.think('thought_talk', false, random(1000, 2000));
+            other.think(randomFromArray(thoughtIcons), false, random(1000, 2000));
             await other.bob({maxCycles: random(2, 8), strength: 0, animation: 'talking', landAnimation: 'idle_side'});
             await other.bob({maxCycles: 1, animation: randomFromArray(reactions)});
             await main.bob({maxCycles: 1, animation: randomFromArray(reactions)});
@@ -56,6 +98,8 @@ class Activities {
             await TimelineDirector.wait(random(250, 1500));
             other.setState('idle_side');
         }
+
+        onEnd();
     }
     static async parkSequence(){
         App.setScene(App.scene.park);
@@ -3753,6 +3797,7 @@ class Activities {
 
 // timeline animation director
 class TimelineDirector {
+    registeredDrawEvents = [];
     constructor(actor){
         this.actor = actor;
         this.actor.triggerScriptedState('idle', App.INF, false, true);
@@ -3760,6 +3805,8 @@ class TimelineDirector {
     }
     moveTo = ({x, y, speed = 0.15, endState = 'idle'}) => {
         return new Promise(resolve => {
+            if(!this.actor) return resolve();
+
             this.actor.scriptedEventDriverFn = (me) => {
                 me.setState(me.isMoving ? 'moving' : endState)
                 if(!me.isMoving) {
@@ -3771,7 +3818,6 @@ class TimelineDirector {
             if(typeof x === 'string'){
                 const percent = parseFloat(x);
                 x = App.drawer.getRelativePositionX(percent) - (this.getSize() / 2);
-                console.log('newX', x);
             }
             this.actor.targetX = x;
             this.actor.targetY = y;
@@ -3779,26 +3825,38 @@ class TimelineDirector {
         })
     }
     setPosition = ({x, y}) => {
+        if(!this.actor) return;
         if(x) this.actor.x = x;
         if(y) this.actor.y = y;
     }
-    setState = (state) => this.actor.setState(state);
-    lookAt = (direction) => this.actor.inverted = direction;
-    release = () => this.actor.stopScriptedState();
-    remove = () => this.actor.removeObject();
-    getPosition = (axis) => {
-        if(axis === 'y') return this.actor.y;
-        return this.actor.x;
+    setState = (state) => this.actor?.setState?.(state);
+    lookAt = (direction) => this.actor && (this.actor.inverted = direction);
+    release = () => {
+        this.actor.stopScriptedState();
+        this.actor = false;
+        this.registeredDrawEvents.forEach(e => App.unregisterOnDrawEvent(e));
     }
-    getSize = () => this.actor.spritesheet.cellSize;
+    remove = () => this.actor?.removeObject();
+    getPosition = (axis) => {
+        if(axis === 'y') return this.actor?.y;
+        return this.actor?.x;
+    }
+    getSize = () => this.actor?.spritesheet.cellSize;
     bob = ({speed = 0.011, strength = 5, maxCycles = 3, animation = 'cheering', landAnimation} = {}) => {
         if(!landAnimation) landAnimation = animation;
-        let cycleCounted = false;
         return new Promise(resolve => {
+            if(!this.actor) return resolve();
+
             const defaultY = this.actor.y;
             const actor = this.actor;
-            let animationFloat = 0, currentCycles = 0;
+
+            let animationFloat = 0, 
+            currentCycles = 0, 
+            cycleCounted = false;
+
             const drawEvent = App.registerOnDrawEvent(() => {
+                if(!actor) App.unregisterOnDrawEvent(drawEvent);
+
                 animationFloat += speed * App.deltaTime;
                 const finalAnimationFloat = clamp(Math.sin(animationFloat), 0, 999);
                 if(finalAnimationFloat > 0) {
@@ -3818,9 +3876,11 @@ class TimelineDirector {
                 }
                 actor.y = defaultY - (finalAnimationFloat * strength);
             })
+
+            this.registeredDrawEvents.push(drawEvent);
         })
     }
-    think = (...args) => this.actor.showThought(...args);
+    think = (...args) => this.actor?.showThought(...args);
     
     static wait = (...args) => App.wait(...args);
 }

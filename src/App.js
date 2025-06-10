@@ -597,7 +597,7 @@ const App = {
     },
     unregisterOnDrawEvent: function(inp){
         const index = typeof inp === "function" ? this.registeredDrawEvents.indexOf(inp) : inp;
-        if(index != -1) this.registeredDrawEvents.splice(index, 1);
+        if(index !== -1) this.registeredDrawEvents[index] = null;
     },
     onFrameUpdate: function(time){
         App.date = new Date();
@@ -627,9 +627,7 @@ const App = {
             // drawing
             App.drawer?.draw();
             App.onDraw?.();
-            if(App.registeredDrawEvents.length){
-                App.registeredDrawEvents.forEach(fn => fn());
-            }
+            App.registeredDrawEvents.forEach(fn => fn?.());
         }
 
         // App.drawer.pixelate();
