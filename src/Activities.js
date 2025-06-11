@@ -496,9 +496,7 @@ class Activities {
 
         reviverNpc.setState('cheering');
 
-        // App.pet.y = '100%';
         App.pet.opacity = 1;
-        // doppelGanger.removeObject();
         App.pet.playUncomfortableAnimation(() => {
             reviverNpc.removeObject();
             App.setScene(App.scene.home);
@@ -539,13 +537,13 @@ class Activities {
             await App.pet.triggerScriptedState('shocked', 2000, false, true, 
                 // onEnd
                 () => {
-                    App.pet.y = '100%';
+                    App.pet.elevation = 0;
                     App.pet.x = -999;
                     ufoObject.removeObject();
                 },
                 // driver
                 () => {
-                    App.pet.y = lerp(App.pet.y, -100, 0.0005 * App.deltaTime);
+                    App.pet.elevation = lerp(App.pet.elevation, 200, 0.0005 * App.deltaTime);
                 }
             )
         }

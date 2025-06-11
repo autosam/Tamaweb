@@ -88,7 +88,7 @@ class Drawer {
                 const spriteCenterX = x + (spritesheet ? spritesheet.cellSize / 2 : (width || image.width) / 2);
                 const spriteCenterY = y + (spritesheet ? spritesheet.cellSize / 2 : (height || image.height) / 2);
 
-                if (scale) {
+                if (scale !== undefined) {
                     context.translate(spriteCenterX, spriteCenterY);
                     context.scale(scale, scale);
                     context.translate(-spriteCenterX, -spriteCenterY);

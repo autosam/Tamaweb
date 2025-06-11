@@ -116,7 +116,7 @@ class Pet extends Object2d {
                     return;
                 }
                 overlay.y = this.y + (this.additionalY / 4) + (this.shadowOffset || 0);
-                overlay.scale = 1 - (this.elevation * 0.01);
+                overlay.scale = clamp(1 - (this.elevation * 0.01), 0, 1);
             }
         });
         
