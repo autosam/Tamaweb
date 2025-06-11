@@ -534,16 +534,13 @@ const App = {
             if(!App.temp.defaultHomeSceneConfig){
                 App.temp.defaultHomeSceneConfig = {
                     petY: App.scene.home.petY,
-                    shadowOffset: App.scene.home.shadowOffset
                 }
             }
 
             App.scene.home.petY = '90%';
-            App.scene.home.shadowOffset = -10;
         } else {
             if(App.temp.defaultHomeSceneConfig){
                 App.scene.home.petY = App.temp.defaultHomeSceneConfig.petY;
-                App.scene.home.shadowOffset = App.temp.defaultHomeSceneConfig.shadowOffset;
             }
         }
         if(App.currentScene){
@@ -1132,7 +1129,6 @@ const App = {
         garden: new Scene({
             image: 'resources/img/background/outside/garden_01.png',
             petY: '95%',
-            shadowOffset: -5,
             onLoad: (args) => {
                 App.pet.staticShadow = false;
                 
@@ -1207,7 +1203,6 @@ const App = {
             image: 'resources/img/background/outside/garden_inner_01.png',
             petY: '55%',
             animalMinY: 55,
-            shadowOffset: -5,
             onLoad: () => {
                 App.handleGardenPlantsSpawn(true);
                 App.handleAnimalsSpawn(true);
@@ -1241,6 +1236,7 @@ const App = {
             App.pet.x = scene.petX || '50%';
             App.pet.y = scene.petY || '100%';
         }
+        App.pet.defaultY = false;
         if(scene.foodsX) App.foods.x = scene.foodsX;
         if(scene.foodsY) App.foods.y = scene.foodsY;
         App.background.setImg(scene.image);

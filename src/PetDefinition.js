@@ -192,8 +192,8 @@ class PetDefinition {
         // care
         max_care: 3,
         // wander (sec)
-        wander_min: 1.5,
-        wander_max: 8,
+        wander_min: 0.15,
+        wander_max: 4,
 
         // current
         current_hunger: 40 || 80,

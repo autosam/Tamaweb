@@ -16,6 +16,7 @@ class Pet extends Object2d {
     accessoryObjects = [];
     castShadow = true;
     speedOverride = 0;
+    elevation = 0;
 
     constructor(petDefinition, additionalProps){
         const image = petDefinition.spriteSkin 
@@ -69,7 +70,7 @@ class Pet extends Object2d {
             }
         });
 
-        this.shadowOverlay = new Object2d({
+        /* this.shadowOverlay = new Object2d({
             parent: this,
             img: 'resources/img/misc/shadow_01.png',
             width: this.petDefinition.spritesheet.cellSize, 
@@ -78,7 +79,7 @@ class Pet extends Object2d {
             z: 4.89,
             hidden: !this.castShadow,
             onDraw: (overlay) => {
-                overlay.x = this.x;
+                overlay.x = this.x + 20;
 
                 if(App.currentScene.noShadows) {
                     overlay.y = -9999;
@@ -99,7 +100,26 @@ class Pet extends Object2d {
                 const distanceToCaster = overlay.y - this.y;
                 overlay.scale = 1 - ((distanceToCaster + 4) * 0.01);
             }
-        })
+        }) */
+
+        this.shadowOverlay = new Object2d({
+            parent: this,
+            img: 'resources/img/misc/shadow_01.png',
+            width: this.petDefinition.spritesheet.cellSize, 
+            height: this.petDefinition.spritesheet.cellSize,
+            z: 4.89,
+            hidden: !this.castShadow,
+            onDraw: (overlay) => {
+                overlay.x = this.x;
+                if (App.currentScene.noShadows) {
+                    overlay.y = -9999;
+                    return;
+                }
+                overlay.y = this.y + (this.additionalY / 4) + (this.shadowOffset || 0);
+                overlay.scale = 1 - (this.elevation * 0.01);
+            }
+        });
+        
 
         this.sicknessOverlay = new Object2d({
             parent: this,
@@ -931,30 +951,36 @@ class Pet extends Object2d {
 
         if (App.lastTime > this.nextRandomTargetSelect) {
             this.targetX = random(this.drawer.getRelativePositionX(0), this.drawer.getRelativePositionX(100) - this.spritesheet.cellSize);
+            
+            if(!this.defaultY) this.defaultY = this.y;
+            const yOffset = random(-15, 0);
+            this.targetY = this.defaultY + yOffset;
+            
             this.nextRandomTargetSelect = 0;
         }
     }
-    jump(strength = 0.28, silent){
-        if(this.isJumping !== undefined) return false;
-
+    jump(strength = 0.28, silent) {
+        if (this.isJumping !== undefined) return false;
+    
         this.isJumping = true;
         const gravity = 0.001;
-        const startY = this.y;
         let velocity = strength;
-        if(!silent) App.playSound('resources/sounds/jump.ogg', true);
-
+        this.elevation = 0; // Start at zero
+    
+        if (!silent) App.playSound('resources/sounds/jump.ogg', true);
+    
         this.triggerScriptedState('jumping', App.INF, 0, true, 
         () => { // on end
-            this.y = startY;
+            this.elevation = 0;
             this.isJumping = undefined;
         }, () => { // driver fn
             velocity -= gravity * App.deltaTime;
-            this.y -= velocity * App.deltaTime;
-            if(this.y >= startY){
+            this.elevation += velocity * App.deltaTime;
+            if (this.elevation <= 0) {
                 this.stopScriptedState();
             }
         });
-    }
+    }    
     simulateAwayProgression(elapsedTime){
         this.isMainPet = true;
 

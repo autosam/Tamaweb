@@ -105,7 +105,7 @@ class Object2d {
         const shouldMoveY = this.targetY !== undefined && this.targetY != this.y;
         let currentSpeed = shouldMoveX && shouldMoveY ? speed / 2 : speed;
 
-        if (shouldMoveX) {
+        if (shouldMoveX || shouldMoveY) {
             this.isMoving = true;
             if (this.x > this.targetX)
                 this.moveLeft(this.targetX, currentSpeed);

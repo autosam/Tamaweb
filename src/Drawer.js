@@ -59,6 +59,8 @@ class Drawer {
             if (object.additionalX) x += object.additionalX;
             if (object.additionalY) y += object.additionalY;
 
+            if(object.elevation) y -= object.elevation;
+
             // fixes blurriness on some frames
             y = Math.round(y);
             x = Math.round(x);
