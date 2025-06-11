@@ -424,6 +424,21 @@ const App = {
 
         document.addEventListener('mousemove', moveEventHandler);
         document.addEventListener('touchmove', moveEventHandler);
+
+        const handleSwipe = (dir) => {
+            console.log('swiped!', dir)
+            App.handleSwipe(dir);
+        }
+
+        const screenWrapper = document.querySelector('.screen-wrapper');
+        const screenWrapperHammer = new Hammer(screenWrapper);
+        screenWrapperHammer.on("swiperight", () => handleSwipe(1));
+        screenWrapperHammer.on("swipeleft", () => handleSwipe(-1));
+    },
+    handleSwipe: (dir) => {
+        if(App.pet.isDuringScriptedState()) return;
+
+        
     },
     registerLoadEvents: function(){
         const initializeRenderer = () => {
