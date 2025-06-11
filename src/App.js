@@ -3929,9 +3929,6 @@ const App = {
                     {...absCurrent, image: App.getFurnishableBackground(absCurrent.image)} :
                     absCurrent;
 
-                    console.log(current)
-
-
                 // check for unlockables
                 if(current.unlockKey && !App.getRecord(current.unlockKey)){
                     continue;
