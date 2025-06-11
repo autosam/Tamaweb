@@ -2431,13 +2431,18 @@ class Activities {
         } catch(e) {}
 
         const heartParticleSpawner = setInterval(() => Activities.task_floatingHearts(), 500);
-
-        const overlay = new Object2d({
-            img: 'resources/img/background/house/wedding_overlay.png',
-            x: 0,
-            y: 0,
-            z: 99
-        })
+        const heartSpawner = setInterval(() => {
+            new Object2d({
+                img: 'resources/img/misc/wedding_heart_01.png',
+                x: 0, y: 0, scale: 0, opacity: 0.95,
+                composite: 'color-burn',
+                onDraw: (me) => {
+                    me.scale += 0.00115 * App.deltaTime;
+                    me.opacity -= 0.0005 * App.deltaTime;
+                    if(me.opacity <= 0) me.removeObject();
+                }
+            })
+        }, 1000);
 
         App.pet.stopMove();
         otherPet.stopMove();
@@ -2475,7 +2480,6 @@ class Activities {
             Activities.task_foam(() => {
                 App.pet.removeObject();
                 otherPet.removeObject();
-                overlay.removeObject();
 
                 let parentA = App.petDefinition,
                     parentB = otherPetDef;
@@ -2489,6 +2493,7 @@ class Activities {
                 App.pet = App.createActivePet(App.petDefinition);
 
                 clearInterval(heartParticleSpawner);
+                clearInterval(heartSpawner);
             }, () => {
                 App.toggleGameplayControls(true);
 
