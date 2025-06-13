@@ -1025,6 +1025,10 @@ input#background-color-picker {
     /* box-shadow: 4px 4px 0px 0px #00000042; */
 }
 
+.bg-transparent {
+    background: transparent;
+}
+
 .b-radius-10 {
     border-radius: 10px;
 }
@@ -1874,4 +1878,31 @@ a.generic-btn:before {
 
 .mini-game-ui {
     font-weight: bold;
+}
+
+.message-bubble {
+    margin: 10px;
+	position: relative;
+	background: var(--prim-clr-b-bg);
+	border-radius: .4em;
+    color: var(--prim-clr-b-text);
+    padding: 4px 10px;
+    filter: 
+        drop-shadow(-1px -1px 0px var(--prim-clr-b-text)) 
+        drop-shadow(1px 1px 0px var(--prim-clr-b-text)) 
+        drop-shadow(0px 2px 0px var(--prim-clr-b-text)) 
+        drop-shadow(2px 2px 0px var(--prim-clr-b-text));
+}
+.message-bubble:after {
+	content: '';
+	position: absolute;
+	bottom: 0;
+	left: 50%;
+	width: 0;
+	height: 0;
+	border: 24px solid transparent;
+	border-top-color: var(--prim-clr-b-bg);
+	border-bottom: 0;
+	border-right: 0;
+	margin-bottom: -24px;
 }
