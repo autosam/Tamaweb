@@ -3326,6 +3326,10 @@ class Activities {
                 await App.wait(2000);
                 App.closeAllDisplays();
 
+                if(correctChoices === targetList.length){
+                    App.definitions.achievements.perfect_minigame_cropmatch_win_x_times.advance();
+                }
+
                 const moneyWon = Math.max((correctChoices - 1) * 25, 0);
                 Activities.task_winMoneyFromArcade({
                     amount: moneyWon,
@@ -3610,7 +3614,7 @@ class Activities {
                 opponentPet.removeObject();
                 App.setScene(App.scene.arcade_game01);
                 const moneyWon = roundsWon * random(20, 30);
-                if(roundsWon == totalRounds){
+                if(roundsWon === totalRounds){
                     App.definitions.achievements.perfect_minigame_mimic_win_x_times.advance();
                 }
                 Activities.task_winMoneyFromArcade({
