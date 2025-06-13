@@ -5399,6 +5399,12 @@ const App = {
 
         return list;
     },
+    displayMessageBubble: function(content){
+        const display = App.displayEmpty('bg-transparent pointer-events-none');
+        display.close = () => display.remove();
+        display.innerHTML = `<div class="message-bubble">${content}</div>`
+        return display;
+    },
     displayPopup: function(content, ms, onEndFn, isReveal){
         let popup = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
             popup.classList.add('popup');
