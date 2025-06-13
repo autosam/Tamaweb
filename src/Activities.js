@@ -3164,6 +3164,7 @@ class Activities {
     // games
     static async dogWashingGame(){
         App.closeAllDisplays();
+        App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
         App.setScene(App.scene.genericOutside);
         App.toggleGameplayControls(false);
         App.pet.stopMove();
@@ -3254,6 +3255,8 @@ class Activities {
         }
     }
     static async plantMatchingGame(){
+        App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+
         const getRandomPlant = () => 
             randomFromArray(Object.keys(App.definitions.plant))
         const appendNonRepeatedPlant = (list = []) => {
@@ -3324,25 +3327,11 @@ class Activities {
                 App.closeAllDisplays();
 
                 const moneyWon = Math.max((correctChoices - 1) * 25, 0);
-                App.pet.stats.gold += moneyWon;
-                App.pet.stats.current_fun += moneyWon / 5;
-
-                const onEndFn = () => {
-                    App.setScene(App.scene.home);
-                    App.toggleGameplayControls(true);
-                    UI.clearLastClicked();
-                    App.handlers.open_game_list();
-                }
-
-                if(moneyWon){
-                    App.pet.playCheeringAnimation(() => {
-                        App.displayPopup(`${App.petDefinition.name} won $${moneyWon}`, null, onEndFn);
-                    });
-                } else {
-                    App.pet.playUncomfortableAnimation(() => {
-                        App.displayPopup(`${App.petDefinition.name} lost!`, null, onEndFn);
-                    });
-                }
+                Activities.task_winMoneyFromArcade({
+                    amount: moneyWon,
+                    happiness: moneyWon / 5,
+                    hasWon: Boolean(moneyWon)
+                })
             }
         }
         const checkIndex = (name, index) => targetList[index] === name;
@@ -3373,56 +3362,11 @@ class Activities {
             })
         
     }
-    static parkRngGame(){
-        App.closeAllDisplays();
-        App.setScene(App.scene.park);
-        App.toggleGameplayControls(false);
-        App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
-
-        // const randomPetRef = App.getRandomPetDef();
-        const randomPetRef = new PetDefinition({
-            name: 'park_game_npc',
-            sprite: 'resources/img/character/chara_175b.png',
-        });
-        const randomPet = new Pet(randomPetRef);
-        randomPet.stopMove();
-        randomPet.triggerScriptedState('eating', 5000, null, true);
-        randomPet.x = 20;
-        randomPet.inverted = true;
-
-        App.pet.x = 80 - App.pet.spritesheet.cellSize;
-        App.pet.inverted = false;
-        App.pet.stopMove();
-        App.pet.triggerScriptedState('eating', 5000, null, true, () => {
-            App.drawer.removeObject(randomPet);
-            App.pet.x = '50%';
-            if(Math.random() > 0.5){ // win
-                let winningGold = 25;
-                App.pet.stats.gold += winningGold;
-                App.pet.stats.current_fun += 35;
-                App.pet.playCheeringAnimation(() => {
-                    App.displayPopup(`${App.petDefinition.name} won $${winningGold}`);
-                    App.toggleGameplayControls(true);
-                    App.setScene(App.scene.home);
-                    App.handlers.open_game_list();
-                });
-            } else {
-                App.pet.playAngryAnimation(() => {
-                    App.displayPopup(`${App.petDefinition.name} lost!`);
-                    App.pet.stats.current_fun -= 15;
-                    App.toggleGameplayControls(true);
-                    App.setScene(App.scene.home);
-                    App.handlers.open_game_list();
-                });
-            }
-        });
-        
-        return false;  
-    }
     static barTimingGame(){
         App.closeAllDisplays();
         App.toggleGameplayControls(false);
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.setScene(App.scene.arcade_game01);
 
         let screen = App.displayEmpty();
         screen.innerHTML = `
@@ -3483,39 +3427,23 @@ class Activities {
 
             round++;
 
-            if(round == 3){
+            if(round === 3){
                 setTimeout(() => {
                     screen.close();
                     App.onDraw = null;
-                    App.displayPopup(`${App.petDefinition.name} won $${moneyWon}!`, null, () => {
-                        App.toggleGameplayControls(false);
-                        App.pet.stats.gold += moneyWon;
-                        App.pet.stats.current_fun += roundsWin * 10;
-                        App.setScene(App.scene.arcade);
-                        App.pet.stopMove();
-                        App.pet.x = '50%';
-                        const onEnd = () => {
-                            App.toggleGameplayControls(true);
-                            App.handlers.open_game_list();
-                            App.setScene(App.scene.home);
-                        }
-                        if(roundsWin <= 1){
-                            // App.pet.triggerScriptedState('uncomfortable', 3000, 0, true, onEnd);
-                            App.pet.playAngryAnimation(onEnd);
-                        } else {
-                            if(roundsWin == 3){
-                                App.definitions.achievements.perfect_minigame_rodrush_win_x_times.advance();
-                            }
-                            App.pet.playCheeringAnimationIfTrue(roundsWin == 3, onEnd);
-                            Missions.done(Missions.TYPES.win_game);
-                        }
-                    });
+                    if(roundsWin === 3){
+                        App.definitions.achievements.perfect_minigame_rodrush_win_x_times.advance();
+                    }
+                    Activities.task_winMoneyFromArcade({
+                        amount: moneyWon,
+                        happiness: roundsWin * 10,
+                        hasWon: roundsWin >= 2
+                    })
                 }, 500);
             } else {
                 setTimeout(() => {
                     reset(0.15);
-
-                    cursorSpeed = round == 1 ? 0.27 : 0.37;
+                    cursorSpeed = round === 1 ? 0.27 : 0.37;
                 }, 500);
             }
         }
@@ -3636,31 +3564,14 @@ class Activities {
         const finish = () => {
             screen.remove();
             spawnerObject.removeObject();
-            App.pet.stopScriptedState();
-            App.pet.x = '50%';
-
-            const end = () => {
-                App.setScene(App.scene.home);
-                App.handlers.open_game_list();
-                App.toggleGameplayControls(true);
-                App.pet.stats.gold += moneyWon;
-                App.pet.stats.current_fun += moneyWon / 6;
-                App.pet.speedOverride = 0;
-                if(moneyWon >= App.definitions.achievements.perfect_minigame_catch_win_x_gold.required){
-                    App.definitions.achievements.perfect_minigame_catch_win_x_gold.advance();
-                }
-                if(moneyWon)
-                    App.displayPopup(`${App.petDefinition.name} won $${moneyWon}`);
-                else 
-                    App.displayPopup(`${App.petDefinition.name} lost!`);
+            if(moneyWon >= App.definitions.achievements.perfect_minigame_catch_win_x_gold.required){
+                App.definitions.achievements.perfect_minigame_catch_win_x_gold.advance();
             }
-
-            if(moneyWon > 30){
-                App.pet.playCheeringAnimation(() => end());
-                Missions.done(Missions.TYPES.win_game);
-            } else {
-                App.pet.playUncomfortableAnimation(() => end());
-            }
+            Activities.task_winMoneyFromArcade({
+                amount: moneyWon,
+                hasWon: moneyWon > 30,
+                happiness: moneyWon / 6,
+            })
         }
 
         const score = (faulty) => {
@@ -3696,36 +3607,17 @@ class Activities {
 
         const reset = () => {
             if(playedRounds >= totalRounds){
-                App.pet.stopScriptedState();
                 opponentPet.removeObject();
-                App.pet.x = '50%';
-
-                const end = () => {
-                    App.setScene(App.scene.home);
-                    App.handlers.open_game_list();
-                    App.toggleGameplayControls(true);
-                    const moneyWon = roundsWon * random(20, 30);
-                    App.pet.stats.gold += moneyWon;
-                    App.pet.stats.current_fun += roundsWon * 15;
-                    if(moneyWon)
-                        App.displayPopup(`${App.petDefinition.name} won $${moneyWon}`);
-                    else 
-                        App.displayPopup(`${App.petDefinition.name} lost!`);
-                    if(roundsWon == totalRounds){
-                        App.definitions.achievements.perfect_minigame_mimic_win_x_times.advance();
-                    }
+                App.setScene(App.scene.arcade_game01);
+                const moneyWon = roundsWon * random(20, 30);
+                if(roundsWon == totalRounds){
+                    App.definitions.achievements.perfect_minigame_mimic_win_x_times.advance();
                 }
-
-                if(roundsWon >= 2){
-                    App.pet.playCheeringAnimation(() => end());
-                    Missions.done(Missions.TYPES.win_game);
-                } else if(roundsWon == 0){
-                    App.pet.playUncomfortableAnimation(() => end());
-                } else {
-                    end();
-                    Missions.done(Missions.TYPES.win_game);
-                }
-
+                Activities.task_winMoneyFromArcade({
+                    amount: moneyWon,
+                    happiness: roundsWon * 15,
+                    hasWon: roundsWon !== 0,
+                })
                 return;
             }
 
@@ -3809,6 +3701,53 @@ class Activities {
                 }, 1500);
             }, 1000);
         }
+        
+        return false;  
+    }
+    static parkRngGame(){
+        /* unused */
+        App.closeAllDisplays();
+        App.setScene(App.scene.park);
+        App.toggleGameplayControls(false);
+        App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+
+        // const randomPetRef = App.getRandomPetDef();
+        const randomPetRef = new PetDefinition({
+            name: 'park_game_npc',
+            sprite: 'resources/img/character/chara_175b.png',
+        });
+        const randomPet = new Pet(randomPetRef);
+        randomPet.stopMove();
+        randomPet.triggerScriptedState('eating', 5000, null, true);
+        randomPet.x = 20;
+        randomPet.inverted = true;
+
+        App.pet.x = 80 - App.pet.spritesheet.cellSize;
+        App.pet.inverted = false;
+        App.pet.stopMove();
+        App.pet.triggerScriptedState('eating', 5000, null, true, () => {
+            App.drawer.removeObject(randomPet);
+            App.pet.x = '50%';
+            if(Math.random() > 0.5){ // win
+                let winningGold = 25;
+                App.pet.stats.gold += winningGold;
+                App.pet.stats.current_fun += 35;
+                App.pet.playCheeringAnimation(() => {
+                    App.displayPopup(`${App.petDefinition.name} won $${winningGold}`);
+                    App.toggleGameplayControls(true);
+                    App.setScene(App.scene.home);
+                    App.handlers.open_game_list();
+                });
+            } else {
+                App.pet.playAngryAnimation(() => {
+                    App.displayPopup(`${App.petDefinition.name} lost!`);
+                    App.pet.stats.current_fun -= 15;
+                    App.toggleGameplayControls(true);
+                    App.setScene(App.scene.home);
+                    App.handlers.open_game_list();
+                });
+            }
+        });
         
         return false;  
     }
@@ -3932,6 +3871,54 @@ class Activities {
             })
             App.pet.stats.current_fun -= 100;
         }
+    }
+    static async task_winMoneyFromArcade({amount = 0, happiness, hasWon}){
+        const moneyBag = new Object2d({
+            img: 'resources/img/misc/money_bag_01.png',
+            x: '50%', y: '0%', width: 24, height: 24,
+            targetY: 67,
+            onDraw: (me) => me.moveToTarget(0.025),
+        })
+
+        App.toggleGameplayControls(false);
+        // App.setScene(App.scene.arcade);
+        App.pet.staticShadow = false;
+
+        App.pet.stats.gold += amount;
+        App.pet.stats.current_fun += happiness ?? (amount / 5);
+        if(hasWon) Missions.done(Missions.TYPES.win_game);
+
+        const petMain = new TimelineDirector(App.pet);
+        const petClerk = new TimelineDirector(new Pet(new PetDefinition({
+            name: 'prize giver',
+            sprite: 'resources/img/character/chara_175b.png',
+        })));
+
+        petMain.setPosition({x: '75%'});
+        petMain.setState('idle')
+        petClerk.setPosition({x: '25%'});
+        petClerk.setState('idle')
+        await TimelineDirector.wait(1500);
+        const messageBubble = App.displayMessageBubble(`$${amount}`);
+        await petMain.bob({maxCycles: 1, animation: 'shocked'});
+        if(hasWon){
+            petMain.setState('cheering_with_icon');
+            petClerk.setState('cheering');
+        } else {
+            petMain.setState('uncomfortable');
+            petClerk.setState('mild_uncomfortable');
+        }
+        await TimelineDirector.wait(3500);
+
+        moneyBag.removeObject();
+        petMain.release();
+        petClerk.remove();
+
+        App.setScene(App.scene.home);
+        App.toggleGameplayControls(true);
+        UI.clearLastClicked();
+        messageBubble.close();
+        App.handlers.open_game_list();
     }
 }
 
