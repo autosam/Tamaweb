@@ -1874,6 +1874,16 @@ App.definitions = (() => {
                     App.displayPopup(`You've received $500!`);
                 }
             },
+            perfect_minigame_cropmatch_win_x_times: {
+                name: 'Memory Maestro',
+                description: 'Win with perfect score in Crop Match game 10 times!',
+                checkProgress: () => App.getRecord('times_perfected_cropmatch_minigame') >= 10,
+                advance: (amount) => App.addRecord('times_perfected_cropmatch_minigame', amount),
+                getReward: () => {
+                    App.pet.stats.gold += 500;
+                    App.displayPopup(`You've received $500!`);
+                }
+            },
         },
     
         /* MAIL */
