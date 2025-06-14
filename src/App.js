@@ -1241,6 +1241,9 @@ const App = {
         mallInterior: new Scene({
             image: 'resources/img/background/house/mall_interior_01.png'
         }),
+        animalBathroom: new Scene({
+            image: 'resources/img/background/house/animal_bathroom_01.png'
+        }),
     },
     setScene(scene, noPositionChange, onLoadArg){
         App.currentScene?.onUnload?.(scene);
@@ -5030,6 +5033,13 @@ const App = {
                     name: `crop match ${App.getBadge()}`,
                     onclick: () => {
                         App.displayPopup(`Memorize the sequence of crops as they appear!`, tutorialDisplayTime, () => Activities.plantMatchingGame())
+                        return false;
+                    }
+                },
+                {
+                    name: `pet grooming ${App.getBadge()}`,
+                    onclick: () => {
+                        App.displayPopup(`Press the wash icon <i class="fa-solid fa-hands-wash"></i> as much as possible before the timer runs out!`, tutorialDisplayTime, () => Activities.dogWashingGame())
                         return false;
                     }
                 },

@@ -571,9 +571,11 @@ button {
 .justify-center {
     justify-content: center;
 }
-
 .justify-end {
     justify-content: end;
+}
+.justify-between {
+    justify-content: space-between;
 }
 
 .overflow-hidden {
@@ -1191,9 +1193,20 @@ input#background-color-picker {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: radial-gradient(#ffffff, transparent);
+    background: var(--prim-clr-b-bg);
+    color: var(--prim-clr-b-text);
+    outline: 3px solid;
     position: absolute;
     transition: all 0.1s;
+    animation: dog-wash-button-animation 0.25s ease-in infinite !important;
+}
+@keyframes dog-wash-button-animation {
+    from {
+        transform: scale(1);
+    }
+    to {
+        transform: scale(0.8);
+    }
 }
 
 .webcam-container {
@@ -1886,6 +1899,7 @@ a.generic-btn:before {
 
 .message-bubble {
     margin: 10px;
+    margin-top: 24px;
 	position: relative;
 	background: var(--prim-clr-b-bg);
 	border-radius: .4em;

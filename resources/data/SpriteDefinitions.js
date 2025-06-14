@@ -27,6 +27,7 @@ const SPRITES = [
 "background/house/05.png",
 "background/house/06.png",
 "background/house/07.png",
+"background/house/animal_bathroom_01.png",
 "background/house/arcade_01.png",
 "background/house/arcade_02.png",
 "background/house/bathroom_01.png",
