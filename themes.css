@@ -71,9 +71,6 @@
     .generic-slider-container {
         background: var(--background-c);
     }
-    .generic-slider-container .content img {
-        outline: 2px solid #ffb4e6;
-    }
     .generic-grid-container {
         background: linear-gradient(0deg, #ffe5ca, #ffdaf7);
         background: var(--background-a);
@@ -386,9 +383,6 @@
     .generic-slider-container {
         background: var(--background-c);
     }
-    .generic-slider-container .content img {
-        outline: 2px solid #ffb4e6;
-    }
     .generic-grid-container {
         background: linear-gradient(0deg, #ffe5ca, #ffdaf7);
         background: var(--background-a);
@@ -700,9 +694,6 @@
     }
     .generic-slider-container {
         background: var(--background-c);
-    }
-    .generic-slider-container .content img {
-        outline: 2px solid #7dd3fc;
     }
     .generic-grid-container {
         background: var(--background-a);
@@ -1019,9 +1010,6 @@
     }
     .generic-slider-container {
         background: var(--background-c);
-    }
-    .generic-slider-container .content img {
-        outline: 2px solid #ffb4e6;
     }
     .generic-grid-container {
         background: var(--background-a);
