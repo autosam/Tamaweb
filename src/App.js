@@ -2221,6 +2221,11 @@ const App = {
                                 abysmDelirium
                             </a>
                         </div>
+                        <div class="credit-author">
+                            <a href="https://bsky.app/profile/teddieursa.bsky.social" target="_blank">
+                                Teddie
+                            </a>
+                        </div>
                     `
                 },
             ])
