@@ -1853,6 +1853,32 @@ App.definitions = (() => {
                     App.displayPopup(`You've received $300!`);
                 }
             },
+            harvest_cook_x_times: {
+                name: 'Farm-to-table Chef',
+                description: `Successfully cook 10 food items using harvests!`,
+                checkProgress: () => App.getRecord('harvestable_cooked_x_times') >= 10,
+                advance: (amount) => App.addRecord('harvestable_cooked_x_times', amount),
+                getReward: () => {
+                    const [rewardFoodName, rewardFoodInfo] = shuffleArray(Object.entries(App.definitions.food))
+                        .find( ([_, info]) => info.cookableOnly );
+                    App.pet.stats.gold += 200;
+                    App.addNumToObject(App.pet.inventory.food, rewardFoodName, 10);
+                    App.displayPopup(`You've received $200 and <br>${App.getFoodCSprite(rewardFoodInfo.sprite)}<br> <b>${rewardFoodName}</b> <small>x5</small>`);
+                }
+            },
+            camera_cook_x_times: {
+                name: 'Camera Chef',
+                description: `Successfully cook 10 food items using the camera!`,
+                checkProgress: () => App.getRecord('camera_cooked_x_times') >= 10,
+                advance: (amount) => App.addRecord('camera_cooked_x_times', amount),
+                getReward: () => {
+                    const [rewardFoodName, rewardFoodInfo] = shuffleArray(Object.entries(App.definitions.food))
+                        .find( ([_, info]) => info.cookableOnly );
+                    App.pet.stats.gold += 200;
+                    App.addNumToObject(App.pet.inventory.food, rewardFoodName, 5);
+                    App.displayPopup(`You've received $200 and <br>${App.getFoodCSprite(rewardFoodInfo.sprite)}<br> <b>${rewardFoodName}</b> <small>x5</small>`);
+                }
+            },
     
             // minigames
             perfect_minigame_rodrush_win_x_times: {
