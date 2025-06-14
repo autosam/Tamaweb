@@ -2220,6 +2220,22 @@ const App = {
                         </div>
                     `
                 },
+                {
+                    type: 'text',
+                    name: `<small>music/sfx by</small>
+                        <br>
+                        <div class="credit-author">
+                            <a href="https://samandev.itch.io" target="_blank">
+                                SamanDev
+                            </a>
+                        </div>
+                        <div class="credit-author">
+                            <a href="https://x.com/Eth_DNautiluss" target="_blank">
+                                Eth-D'Nautiluss
+                            </a>
+                        </div>
+                    `
+                },
             ])
         },
         open_settings: function(){
