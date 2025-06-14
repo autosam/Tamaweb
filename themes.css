@@ -958,7 +958,7 @@
     --prim-clr-c-bg: repeating-linear-gradient(
         45deg, 
         color-mix(in srgb, var(--custom-clr) 90%, white) 0 15px,
-        color-mix(in srgb, var(--custom-clr) 95%, white) 15px 30px, 
+        color-mix(in srgb, var(--custom-clr) 75%, white) 15px 30px, 
         color-mix(in srgb, var(--custom-clr) 50%, white) 30px 45px
     );
     --prim-clr-c-text: color-mix(in srgb, var(--custom-clr) 5%, white);
