@@ -3022,14 +3022,14 @@ class Activities {
     static async dogWashingGame(){
         App.closeAllDisplays();
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
-        App.setScene(App.scene.genericOutside);
+        App.setScene(App.scene.animalBathroom);
         App.toggleGameplayControls(false);
         App.pet.stopMove();
         App.pet.x = '35%';
-        App.pet.y = '93%';
+        App.pet.y = '82%';
         App.pet.inverted = true;
         App.pet.triggerScriptedState('idle_side', App.INF, null, true);
-        let remainingTime = 5;
+        let remainingTime = 10;
         let score = 0;
 
         // ui
@@ -3038,12 +3038,20 @@ class Activities {
         const screen = App.displayEmpty();
         screen.style.background = 'transparent';
         screen.innerHTML = `
-            <div class="mini-game-ui flex align-center">
-            <i style="margin-right: 4px;" class="fa-solid fa-stopwatch icon"></i>
-                <div id="timeRemaining">${remainingTime}</div>
+            <div class="mini-game-ui flex align-center justify-between">
+                <div class="flex align-center">
+                    <i style="margin-right: 4px;" class="fa-solid fa-stopwatch icon"></i>
+                    <div id="timeRemaining">
+                        <span class="opacity-half">${remainingTime}</span>
+                    </div>
+                </div>
+                <div class="flex align-center">
+                    <i style="margin-right: 4px;" class="fa-solid fa-hands-wash icon"></i>
+                    <div id="score">${score}</div>
+                </div>
             </div>
             <button style="width: ${buttonSizePx}px; height: ${buttonSizePx}px" class="dog-washing-button">
-                <i class="fa-solid fa-bath"></i>
+                <i class="fa-solid fa-hands-wash fa-2x"></i>
             </button>
         `;
         const washActionButton = screen.querySelector('.dog-washing-button');
@@ -3064,46 +3072,57 @@ class Activities {
         const onEndFn = () => {
             screen.close();
             animal.removeObject();
-            App.pet.playCheeringAnimation(() => {
-                App.displayPopup(`Score: ${score}`)
-                App.setScene(App.scene.home);
+            App.pet.y = '100%';
+            const moneyWon = Math.floor(score * 1.7);
+            const hasWon = score > 18;
+            if(hasWon){
+                App.definitions.achievements.perfect_minigame_petgroom_win_x_times.advance();
+            }
+            Activities.task_winMoneyFromArcade({
+                amount: moneyWon,
+                hasWon: hasWon,
+                happiness: score * 1.2,
             })
         }
 
-        const timerFn = setInterval(() => {
-            remainingTime--;
-            if(remainingTime <= 0){
-                remainingTime = 0;
-                clearInterval(timerFn);
-                onEndFn();
-                return;
-            }
-            document.querySelector('#timeRemaining').textContent = remainingTime;
-        }, 1000);
+        let timerFn;
 
-
-        let animal = new Animal(App.getRandomAnimalDef('dog'));
-        animal.triggerScriptedState('idle', App.INF, null, true);
-        animal.y = '93%';
-        animal.x = 57;
+        const animal = new Animal(App.getRandomAnimalDef('dog'));
+        animal.triggerScriptedState('sitting', App.INF, null, true);
+        animal.y = '82%';
+        animal.x = '65%';
         const advanceProgress = () => {
-            const oldAnimal = animal;
-            oldAnimal.setState('moving');
-            oldAnimal.targetX = -100;
-            oldAnimal.onDraw = (me) => {
-                if(me.x <= -32) me.removeObject();
+            if(!timerFn){
+                timerFn = setInterval(() => {
+                    remainingTime--;
+                    if(remainingTime <= 0){
+                        remainingTime = 0;
+                        clearInterval(timerFn);
+                        onEndFn();
+                        return;
+                    }
+                    screen.querySelector('#timeRemaining').textContent = remainingTime;
+                }, 1000);
+                screen.querySelector('#timeRemaining').textContent = remainingTime;
             }
-            animal = new Animal(App.getRandomAnimalDef('dog'));
-            animal.onDraw = (me) => {
-                me.setState(me.isMoving ? 'moving' : 'idle_side');
-                App.pet.setLocalZBasedOnSelf(me);
-            }
-            animal.triggerScriptedState('idle', App.INF, null, true);
-            animal.x = 120;
-            animal.targetX = 57;
-            animal.y = `${random(92 - 5, 92 + 5)}%`;
 
+            const foam = new Object2d({
+                img: 'resources/img/misc/foam_single.png',
+                x: (animal.x - 6) + random(-4, 4), 
+                y: (animal.y - 18) + random(-4, 4), 
+                scale: random(5, 10) * 0.1, opacity: 1, z: 10,
+                onDraw: (me) => {
+                    Object2d.animations.flip(me);
+                    Object2d.animations.bob(me);
+                    Object2d.animations.pulseScale(me, 0.1, 0.01);
+                    me.scale -= 0.0005 * App.deltaTime;
+                    me.opacity -= 0.0005 * App.deltaTime;
+                    if(me.opacity <= 0) me.removeObject();
+
+                }
+            })
             score++;
+            screen.querySelector('#score').textContent = score;
         }
 
         washActionButton.onclick = () => {
@@ -3733,7 +3752,12 @@ class Activities {
             App.pet.stats.current_fun -= 100;
         }
     }
-    static async task_winMoneyFromArcade({amount = 0, happiness, hasWon}){
+    static async task_winMoneyFromArcade({
+            amount = 0, 
+            happiness, 
+            hasWon, 
+            npc = 'resources/img/character/chara_175b.png'
+        }){
         const moneyBag = new Object2d({
             img: 'resources/img/misc/money_bag_01.png',
             x: '50%', y: '0%', width: 24, height: 24,
@@ -3742,7 +3766,6 @@ class Activities {
         })
 
         App.toggleGameplayControls(false);
-        // App.setScene(App.scene.arcade);
         App.pet.staticShadow = false;
 
         App.pet.stats.gold += amount;
@@ -3752,7 +3775,7 @@ class Activities {
         const petMain = new TimelineDirector(App.pet);
         const petClerk = new TimelineDirector(new Pet(new PetDefinition({
             name: 'prize giver',
-            sprite: 'resources/img/character/chara_175b.png',
+            sprite: npc,
         })));
 
         petMain.setPosition({x: '75%'});
@@ -3763,13 +3786,15 @@ class Activities {
         const messageBubble = App.displayMessageBubble(`$${amount}`);
         await petMain.bob({maxCycles: 1, animation: 'shocked'});
         if(hasWon){
+            setTimeout(() => App.pet.playSound('resources/sounds/cheer_success.ogg', true));
             petMain.setState('cheering_with_icon');
             petClerk.setState('cheering');
         } else {
+            setTimeout(() => App.pet.playSound('resources/sounds/task_fail_01.ogg', true));
             petMain.setState('uncomfortable');
             petClerk.setState('mild_uncomfortable');
         }
-        await TimelineDirector.wait(3500);
+        await TimelineDirector.wait(3000);
 
         moneyBag.removeObject();
         petMain.release();
