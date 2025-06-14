@@ -3927,7 +3927,7 @@ class Activities {
         petMain.setState('idle')
         petClerk.setPosition({x: '25%'});
         petClerk.setState('idle')
-        await TimelineDirector.wait(1500);
+        await TimelineDirector.wait(1600);
         const messageBubble = App.displayMessageBubble(`$${amount}`);
         await petMain.bob({maxCycles: 1, animation: 'shocked'});
         if(hasWon){
