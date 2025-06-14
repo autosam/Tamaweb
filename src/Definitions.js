@@ -1922,6 +1922,16 @@ App.definitions = (() => {
                     App.displayPopup(`You've received $500!`);
                 }
             },
+            perfect_minigame_petgroom_win_x_times: {
+                name: 'Master of the Fluff',
+                description: 'Win with perfect score in Pet Grooming game 10 times!',
+                checkProgress: () => App.getRecord('times_perfected_petgroom_minigame') >= 10,
+                advance: (amount) => App.addRecord('times_perfected_petgroom_minigame', amount),
+                getReward: () => {
+                    App.pet.stats.gold += 200;
+                    App.displayPopup(`You've received $200!`);
+                }
+            },
         },
     
         /* MAIL */
