@@ -252,6 +252,10 @@ hr {
     flex-direction: column;
 }
 
+.generic-slider-container .content img {
+    outline: 2px solid;
+}
+
 .generic-slider-container .main-container {
     display: flex;
     flex-grow: 1;

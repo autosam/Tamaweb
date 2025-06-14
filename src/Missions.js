@@ -34,7 +34,7 @@ const Missions = {
         pat: 'Pat your pet',
         gift: 'Give gift to a friend',
         cook: 'Cook',
-        win_game: 'Win a game center game',
+        win_game: 'Win at the game center',
         online_interact: 'Interact with online players',
         buy_food: 'Buy food or snacks',
         playdate: 'Invite a friend over',
