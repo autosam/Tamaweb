@@ -1983,6 +1983,8 @@ class Activities {
                                         App.pet.playCheeringAnimation();
                                         App.pet.stats.current_fun += random(10, 25);
                                         App.addNumToObject(App.pet.inventory.food, randomFoodName, amount);
+                                        if(skipCamera) App.definitions.achievements.harvest_cook_x_times.advance();
+                                        else App.definitions.achievements.camera_cook_x_times.advance();
                                     });
                                 } else {
                                     App.displayPopup(`${App.petDefinition.name} <br>failed to make anything edible!<br>`, 3000, () => {
