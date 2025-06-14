@@ -398,7 +398,7 @@ class PetDefinition {
     }
 
     getLifeStage(){
-        return PetDefinition._getLifeStage(this.sprite);
+        return PetDefinition.getLifeStage(this.sprite);
     }
 
     getLifeStageLabel(){
@@ -677,7 +677,7 @@ class PetDefinition {
 
     static generateCSprite(sprite, noMargin){
         const margin = noMargin ? 0 : 10;
-        const lifeStage = PetDefinition._getLifeStage(sprite);
+        const lifeStage = PetDefinition.getLifeStage(sprite);
         switch(lifeStage){
             case PetDefinition.LIFE_STAGE.baby:
                 return `<c-sprite width="16" height="16" index="0" src="${sprite}" pos-x="0" pos-y="0" style="margin-right: ${margin}px;"></c-sprite>`;
@@ -690,7 +690,7 @@ class PetDefinition {
     }
 
     static generateFullCSprite(sprite){
-        const lifeStage = PetDefinition._getLifeStage(sprite);
+        const lifeStage = PetDefinition.getLifeStage(sprite);
 
         switch(lifeStage){
             case PetDefinition.LIFE_STAGE.baby:
@@ -703,7 +703,7 @@ class PetDefinition {
         }
     }
 
-    static _getLifeStage(sprite){
+    static getLifeStage(sprite){
         if(PET_BABY_CHARACTERS.some(char => char === sprite)) return PetDefinition.LIFE_STAGE.baby;
         else if(PET_TEEN_CHARACTERS.some(char => char === sprite)) return PetDefinition.LIFE_STAGE.teen;
         else if(PET_CHILD_CHARACTERS.some(char => char === sprite)) return PetDefinition.LIFE_STAGE.child;

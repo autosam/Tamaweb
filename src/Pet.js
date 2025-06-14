@@ -19,8 +19,8 @@ class Pet extends Object2d {
 
     constructor(petDefinition, additionalProps){
         const image = petDefinition.spriteSkin 
-            ? App.preloadedResources[petDefinition.spriteSkin]
-            : App.preloadedResources[petDefinition.sprite];
+            ? App.getPreloadedResource(petDefinition.spriteSkin)
+            : App.getPreloadedResource(petDefinition.sprite);
 
         const config = {
             image,

@@ -644,6 +644,15 @@ const App = {
     
         return Promise.all(promises);
     },
+    getPreloadedResource: (url) => {
+        const preloadedResource = App.preloadedResources[url];
+        if(!preloadedResource){
+            const image = new Image();
+            image.src = App.checkResourceOverride(url);
+            return image;
+        }
+        return preloadedResource;
+    },
     resourceOverrides: {},
     checkResourceOverride: function(res){
         if(!res) return res;
