@@ -153,6 +153,37 @@ function downloadUpscaledCanvasAsImage(canvas, imageName, scale = 1){
 
     scaledCanvas.remove();
 }
+function downscaleImage(imageUrl, sizeX = 256, sizeY = 256, quality = 1) {
+    return new Promise(resolve => {
+        const scaledCanvas = document.createElement("canvas");
+        scaledCanvas.width = sizeX;
+        scaledCanvas.height = sizeY;
+        const scaledCtx = scaledCanvas.getContext("2d");
+
+        const image = new Image();
+        image.src = imageUrl;
+        image.onload = () => {
+            const imageAspect = image.width / image.height;
+            const canvasAspect = sizeX / sizeY;
+
+            let drawWidth, drawHeight, offsetX, offsetY;
+
+            if (imageAspect > canvasAspect) {
+                drawHeight = sizeY;
+                drawWidth = sizeY * imageAspect;
+            } else {
+                drawWidth = sizeX;
+                drawHeight = sizeX / imageAspect;
+            }
+            offsetX = (sizeX - drawWidth) / 2;
+            offsetY = (sizeY - drawHeight) / 2;
+
+            scaledCtx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
+
+            resolve(scaledCanvas.toDataURL("image/jpeg", quality));
+        };
+    });
+}
 function downloadTextFile(filename, text = '') {
     const element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));

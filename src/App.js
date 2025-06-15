@@ -2775,8 +2775,9 @@ const App = {
                                         }
                                     ]);
 
-                                    App.handleFileLoad(display.querySelector('#shell-image-file'), 'readAsDataURL', (data) => {
-                                        let res = App.setShellBackground(data);
+                                    App.handleFileLoad(display.querySelector('#shell-image-file'), 'readAsDataURL', async (data) => {
+                                        const downscaledData = await downscaleImage(data, 768, 768, 0.5);
+                                        let res = App.setShellBackground(downscaledData);
                                         if(res) App.displayPopup('Shell background set');
                                         return true;
                                     })
