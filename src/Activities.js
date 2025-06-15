@@ -3150,27 +3150,38 @@ class Activities {
             const wantedFriendDef = App.petDefinition.friends[App.pet.stats.current_want.item];
             App.petDefinition.checkWant(otherPetDef == wantedFriendDef, App.constants.WANT_TYPES.playdate)
         }
+        App.pet.x = '50%';
         App.setScene(App.scene.park);
-        App.toggleGameplayControls(false);
+        App.toggleGameplayControls(false, () => App.pet.stopScriptedState());
+        App.pet.speedOverride = 0.025;
 
         let otherPet;
         if(otherPetDef){
-            otherPet = new Pet(otherPetDef);
+            otherPet = new Pet(otherPetDef, {
+                x: '75%', speedOverride: random(15, 35) * 0.001,
+            });
+            otherPet.triggerScriptedState('playing', 10000, null, true, false, Pet.scriptedEventDrivers.playing.bind({pet: otherPet}));
+
             otherPet.nextRandomTargetSelect = 0;
             App.petDefinition.addFriend(otherPetDef, 1);
             otherPetDef.increaseFriendship();
         }
-        App.pet.triggerScriptedState('playing', 10000, null, true, () => {
+        
+        const onEnd = () => {
+            App.toggleGameplayControls(false);
             App.pet.x = '50%';
-            App.pet.stats.current_fun += 40;
+            App.pet.stats.current_fun += 15;
             App.pet.statsManager();
             App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => {
                 App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
                 onEndFn?.();
             });
             if(otherPet) App.drawer.removeObject(otherPet);
-            App.toggleGameplayControls(true);
-        }, Pet.scriptedEventDrivers.playing.bind({pet: App.pet}));
+            App.pet.speedOverride = false;
+        }
+
+        App.pet.triggerScriptedState('playing', 10000, null, true, onEnd, Pet.scriptedEventDrivers.playing.bind({pet: App.pet}));
     }
 
 
