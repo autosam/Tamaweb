@@ -380,7 +380,7 @@ class Pet extends Object2d {
                 (sum, current) => current === foodSpriteCellNumber ? sum + 1 : sum, 
                 0
             );
-            if(reFedAmount >= App.constants.FEEDING_PICKINESS.refeedingTolerance) {
+            if(reFedAmount >= App.constants.FEEDING_PICKINESS.refeedingTolerance && type !== 'med') {
                 this.showThought('thought_vomit');
                 return true;
             }
@@ -402,7 +402,6 @@ class Pet extends Object2d {
             foodSpriteCellNumber, 
             ...this.petDefinition.stats.last_eaten
         ].toSpliced(App.constants.FEEDING_PICKINESS.bufferSize);
-        console.log(this.petDefinition.stats.last_eaten)
 
         Missions.done(Missions.TYPES.food);
 
