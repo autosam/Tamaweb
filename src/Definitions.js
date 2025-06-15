@@ -81,7 +81,7 @@ App.definitions = (() => {
             {
                 name: "Home",
                 image: 'resources/img/misc/activity_building_home.png',
-                onEnter: () => {},
+                onEnter: () => App.handlers.go_to_home(),
             },
             {
                 name: "Mall",
@@ -112,12 +112,12 @@ App.definitions = (() => {
             {
                 name: 'Park',
                 image: 'resources/img/misc/activity_building_park.png',
-                onEnter: () => Activities.goToPark(),
+                onEnter: () => App.handlers.go_to_park(),
             },
             {
                 name: "Hospital",
                 image: 'resources/img/misc/activity_building_hospital.png',
-                onEnter: () => Activities.goToClinic(),
+                onEnter: () => App.handlers.go_to_clinic(),
             },
             {
                 isDisabled: () => App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult,

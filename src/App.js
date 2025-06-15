@@ -1709,7 +1709,20 @@ const App = {
         }
     },
     handlers: {
+        go_to_home: function(){
+            App.pet.x = '0%';
+            App.pet.targetX = 50;
+        },
+        go_to_park: function(){
+            Activities.goToPark(false, () => App.handlers.open_activity_list(true))
+        },
+        go_to_clinic: function(){
+            Activities.goToClinic(() => App.handlers.open_activity_list(true))
+        },
         open_works_list: function(){
+            const backFn = () => {
+                App.handlers.open_activity_list(true);
+            }
             return App.displayList([
                 {
                     name: `stand work`,
@@ -1723,9 +1736,12 @@ const App = {
                         Activities.officeWork();
                     }
                 },
-            ])
+            ], backFn)
         },
         open_fortune_teller: function(){
+            const backFn = () => {
+                App.handlers.open_activity_list(true);
+            }
             return App.displayList([
                 {
                     _disable: App.petDefinition.lifeStage === PetDefinition.LIFE_STAGE.elder,
@@ -1777,7 +1793,7 @@ const App = {
                         return true;
                     }
                 }
-            ])
+            ], backFn)
         },
         open_hubchi_search: function(onAddCallback){
             const prompt = App.displayPrompt(
@@ -4268,12 +4284,16 @@ const App = {
 
             return App.displayList([...list]);
         },
-        open_activity_list: function(){
+        open_activity_list: function(noIndexReset){
+            if(!noIndexReset) App.temp.outsideActivityIndex = 1;
             return Activities.goToActivities({
                 activities: App.definitions.outside_activities
             });
         },
         open_rabbitholes_list: function(){
+            const backFn = () => {
+                App.handlers.open_activity_list(true);
+            }
             return App.displayList([
                 ...App.definitions.rabbit_hole_activities
                     .map(hole => ({
@@ -4313,7 +4333,7 @@ const App = {
                     type: 'info',
                     name: `${App.petDefinition.name} will visit their home planet to do one of <i>Homeworld Getaway</i> activities`
                 },
-            ])
+            ], backFn)
         },
         open_friends_list: function(onClickOverride, customFilter, additionalButtons = []){
             const friends = customFilter
@@ -4896,12 +4916,13 @@ const App = {
                 return App.definitions.item[key].isNew && isUnlocked;
             });
 
-            const backFn = () => { // unused
-                // setTimeout(() => App.handlers.open_activity_list(), 0)
+            const backFn = () => {
                 if(App.temp.purchasedMallItem){
                     App.temp.purchasedMallItem = false;
                     App.closeAllDisplays();
-                    Activities.receivePurchasedItems();
+                    Activities.receivePurchasedItems(() => App.handlers.open_activity_list(true));
+                } else {
+                    App.handlers.open_activity_list(true);
                 }
             }
 
@@ -4971,6 +4992,10 @@ const App = {
             ], backFn);
         },
         open_market_menu: function(){
+            const backFn = () => {
+                App.handlers.open_activity_list(true);
+            }
+
             App.displayList([
                 {
                     name: 'purchase food',
@@ -5011,7 +5036,7 @@ const App = {
                     name: `Shop stock changes daily, so check back often for new offers!`,
                     type: 'info',
                 },
-            ])
+            ], backFn)
         },
         open_sell_list: function(){
             App.displayList([
@@ -5030,6 +5055,9 @@ const App = {
         },
         open_game_list: function(){
             const tutorialDisplayTime = 2000;
+            const backFn = () => {
+                App.handlers.open_activity_list(true);
+            }
             App.displayList([
                 {
                     name: `crop match ${App.getBadge()}`,
@@ -5080,7 +5108,7 @@ const App = {
                 //         // return Activities.guessGame();
                 //     }
                 // },
-            ]);
+            ], backFn);
         },
         open_battle_screen: function(){
             Battle.start();
