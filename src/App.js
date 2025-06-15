@@ -1696,7 +1696,7 @@ const App = {
         }
 
         // revived encounter
-        if(App.pet.stats.is_revived_once && random(0, 1024) === 1){
+        if(App.pet.stats.is_revived_once && random(0, 1200) === 13){
             return Activities.reckoning();
         }
 
