@@ -871,7 +871,7 @@ const App = {
         //     ])
         // })) return;
 
-        if(addEvent(`update_16_notice`, () => {
+        if(addEvent(`update_17_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
@@ -880,7 +880,7 @@ const App = {
                     bold: true,
                 },
                 {
-                    name: `Check out the new Animal Pets, Revival mechanic, and more!`,
+                    name: `Check out the new Mini-games, customizable bathroom and kitchen, UI themes, travel system and more!`,
                     type: 'text',
                 },
                 {
