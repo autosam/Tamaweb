@@ -40,6 +40,15 @@ class PetDefinition {
             //     interval: 2,
             // },
         },
+        talking: {
+            start: 10,
+            end: 11,
+            frameTime: 100,
+            // sound: {
+            //     file: 'walk_01.ogg',
+            //     interval: 2,
+            // },
+        },
         sitting: {
             start: 14,
             end: 15,
@@ -183,8 +192,8 @@ class PetDefinition {
         // care
         max_care: 3,
         // wander (sec)
-        wander_min: 1.5,
-        wander_max: 8,
+        wander_min: 0.5,
+        wander_max: 4,
 
         // current
         current_hunger: 40 || 80,
@@ -222,6 +231,7 @@ class PetDefinition {
             endTime: false,
         },
         is_revived_once: false,
+        last_eaten: [],
     }
     friends = [];
     family = [];
@@ -294,6 +304,7 @@ class PetDefinition {
                     is_potty_trained: this.stats.is_potty_trained,
                     current_rabbit_hole: this.stats.current_rabbit_hole,
                     is_revived_once: this.stats.is_revived_once,
+                    last_eaten: this.stats.last_eaten,
                 }
                 return;
             }
@@ -387,7 +398,7 @@ class PetDefinition {
     }
 
     getLifeStage(){
-        return PetDefinition._getLifeStage(this.sprite);
+        return PetDefinition.getLifeStage(this.sprite);
     }
 
     getLifeStageLabel(){
@@ -666,7 +677,7 @@ class PetDefinition {
 
     static generateCSprite(sprite, noMargin){
         const margin = noMargin ? 0 : 10;
-        const lifeStage = PetDefinition._getLifeStage(sprite);
+        const lifeStage = PetDefinition.getLifeStage(sprite);
         switch(lifeStage){
             case PetDefinition.LIFE_STAGE.baby:
                 return `<c-sprite width="16" height="16" index="0" src="${sprite}" pos-x="0" pos-y="0" style="margin-right: ${margin}px;"></c-sprite>`;
@@ -679,7 +690,7 @@ class PetDefinition {
     }
 
     static generateFullCSprite(sprite){
-        const lifeStage = PetDefinition._getLifeStage(sprite);
+        const lifeStage = PetDefinition.getLifeStage(sprite);
 
         switch(lifeStage){
             case PetDefinition.LIFE_STAGE.baby:
@@ -692,7 +703,7 @@ class PetDefinition {
         }
     }
 
-    static _getLifeStage(sprite){
+    static getLifeStage(sprite){
         if(PET_BABY_CHARACTERS.some(char => char === sprite)) return PetDefinition.LIFE_STAGE.baby;
         else if(PET_TEEN_CHARACTERS.some(char => char === sprite)) return PetDefinition.LIFE_STAGE.teen;
         else if(PET_CHILD_CHARACTERS.some(char => char === sprite)) return PetDefinition.LIFE_STAGE.child;

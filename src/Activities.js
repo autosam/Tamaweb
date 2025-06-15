@@ -1,4 +1,358 @@
 class Activities {
+    static async talkingSequence(otherPetDef = App.getRandomPetDef()) {
+        App.closeAllDisplays();
+
+        const otherPet = new Pet(otherPetDef, {
+            staticShadow: false
+        });
+        App.pet.staticShadow = false;
+
+        const main = new TimelineDirector(App.pet);
+        const other = new TimelineDirector(otherPet);
+
+        const onEnd = () => {
+            main.release();
+            other.remove();
+            other.release();
+            App.setScene(App.currentScene);
+            App.pet.playCheeringAnimation();
+            App.toggleGameplayControls(true);
+        }
+
+        App.toggleGameplayControls(false, onEnd);
+
+        const reactions = [
+            'shocked', 
+            'blush', 
+            'uncomfortable', 
+            'angry', 
+            'mild_uncomfortable', 
+            'cheering',
+            'cheering',
+            'cheering',
+            'cheering',
+            'idle_side_uncomfortable',
+        ];
+        const thoughtIcons = [
+            'thought_talk',
+            'thought_talk',
+            'thought_talk',
+            'thought_question',
+            'thought_exclaim',
+        ];
+
+        // main.setPosition({ x: '30%' });
+        // main.setState('idle_side');
+        // other.setPosition({ x: '70%' });
+        // other.setState('idle_side');
+        // await TimelineDirector.wait(250);
+
+        main.setPosition({x: '30%'})
+        main.setState('idle_side');
+        main.lookAt(true);
+
+        other.setPosition({x: '120%'});
+        other.setState('idle_side');
+        other.lookAt(false);
+
+        await main.moveTo({x: '50%', speed: 0.03, endState: 'side_idle'})
+
+        await TimelineDirector.wait(1000);
+
+        main.setState('cheering');
+        await TimelineDirector.wait(500);
+        main.setState('idle_side');
+        await TimelineDirector.wait(500);
+
+        other.moveTo({x: '70%', speed: 0.05});
+        await TimelineDirector.wait(450);
+        await main.moveTo({x: '30%', speed: 0.08});
+        main.lookAt(true);
+
+        await TimelineDirector.wait(250);
+
+        main.bob({maxCycles: 2, animation: 'cheering', landAnimation: 'idle'});
+        await other.bob({maxCycles: 2, animation: 'cheering', landAnimation: 'idle'});
+
+        for(let i = 0; i < 5; i++){
+            if(!main.actor) break;
+
+            main.think(randomFromArray(thoughtIcons), false, random(1000, 2000));
+            await main.bob({maxCycles: random(2, 8), strength: 0, animation: 'talking', landAnimation: 'idle_side'});
+            await TimelineDirector.wait(random(500, 1500));
+            other.think(randomFromArray(thoughtIcons), false, random(1000, 2000));
+            await other.bob({maxCycles: random(2, 8), strength: 0, animation: 'talking', landAnimation: 'idle_side'});
+            await other.bob({maxCycles: 1, animation: randomFromArray(reactions)});
+            await main.bob({maxCycles: 1, animation: randomFromArray(reactions)});
+            await TimelineDirector.wait(random(250, 1500));
+            main.setState('idle_side');
+            await TimelineDirector.wait(random(250, 1500));
+            other.setState('idle_side');
+        }
+
+        onEnd();
+    }
+    static async parkSequence(){
+        App.setScene(App.scene.park);
+        App.closeAllDisplays();
+
+        const otherPet = new Pet(App.getRandomPetDef(), {
+            staticShadow: false
+        });
+        App.pet.staticShadow = false;
+
+        const main = new TimelineDirector(App.pet);
+        const other = new TimelineDirector(otherPet);
+
+        main.setPosition({ x: '30%' });
+        main.setState('cheering');
+        other.setPosition({ x: '70%' });
+        other.setState('cheering');
+        await TimelineDirector.wait(2500);
+
+        main.setState('idle_side');
+        main.lookAt(true);
+        other.setState('idle_side');
+        other.lookAt(false);
+        main.think('thought_talk', false, 2000);
+        await main.bob({maxCycles: 4, strength: 0, animation: 'talking', landAnimation: 'idle_side'});
+        await TimelineDirector.wait(500);
+        other.think('thought_talk', false, 1500);
+        await other.bob({maxCycles: 2, strength: 0, animation: 'talking', landAnimation: 'idle_side'});
+        other.setState('blush');
+        await main.bob({maxCycles: 1, animation: 'shocked'});
+        await TimelineDirector.wait(1500);
+        main.think('thought_talk', false, 2000);
+        await main.bob({maxCycles: 4, strength: 0, animation: 'talking', landAnimation: 'idle_side'});
+        await TimelineDirector.wait(500);
+        other.think('thought_talk', false, 2000);
+        await other.bob({maxCycles: 2, strength: 0, animation: 'talking', landAnimation: 'idle_side'});
+
+
+
+        main.setState('cheering');
+        other.setState('cheering');
+        await TimelineDirector.wait(1000);
+
+        other.remove();
+        main.setPosition({ x: '50%' });
+        main.release();
+
+        App.pet.playCheeringAnimation();
+    }
+    static async sequenceTest(){
+        const otherPet = new Pet(App.getRandomPetDef(), {
+            staticShadow: false
+        });
+        
+        const main = new TimelineDirector(App.pet);
+        const other = new TimelineDirector(otherPet);
+        
+
+        other.setState('idle_side');
+        other.setPosition({x: -other.getSize()})
+        main.setPosition({x: '75%'})
+        main.lookAt(false);
+        await TimelineDirector.wait(100)
+        await other.moveTo({x: main.getPosition('x') - other.getSize(), speed: 0.05, endState: 'idle_side'});
+        await TimelineDirector.wait(1000);
+        main.setState('idle_side');
+        await TimelineDirector.wait(350);
+        main.setState('idle');
+        await TimelineDirector.wait(150);
+        main.setState('idle_side');
+        await TimelineDirector.wait(250);
+        main.setState('shocked')
+        other.setState('shocked')
+        await TimelineDirector.wait(500);
+        other.moveTo({x: main.getPosition('x')})
+        await main.moveTo({x: '25%'});
+        main.setState('uncomfortable');
+        await TimelineDirector.wait(500);
+        await other.moveTo({x: main.getPosition('x') + other.getSize(), speed: 0.025});
+        other.setState('cheering');
+        other.bob();
+        main.setState('angry');
+        await TimelineDirector.wait(2000);
+        other.remove();
+        main.setPosition({x: '50%'});
+        main.release();
+    }
+    static async receivePurchasedItems(onEndFn){
+        App.toggleGameplayControls(false, () => {
+            App.pet.stopScriptedState();
+        });
+        App.setScene(App.scene.mallInterior);
+
+        App.pet.stopMove();
+        App.pet.x = '80%';
+
+        const mallNpc = new Pet(
+            new PetDefinition({
+                sprite: 'resources/img/character/mall_npc_01.png',
+                name: 'Mall NPC',
+            }), {
+                x: '20%',
+                y: '100%',
+            }
+        );
+        mallNpc.triggerScriptedState('cheering', App.INF, false, true);
+
+        const gift = new Object2d({
+            img: 'resources/img/misc/gift.png',
+            x: '60%', y: '85%', z: App.constants.ACTIVE_PET_Z + 0.1,
+        });
+
+        App.pet.triggerScriptedState('cheering_with_icon', 3000, null, true, () => {
+            App.setScene(App.scene.home);
+            mallNpc.removeObject();
+            gift.removeObject();
+            App.toggleGameplayControls(true);
+            onEndFn?.();
+        });
+    }
+    static goToMall(){
+        App.toggleGameplayControls(false, () => {
+            App.pet.stopScriptedState();
+        });
+        App.setScene(App.scene.mallInterior);
+        Missions.done(Missions.TYPES.visit_mall);
+
+        App.pet.x = '100%';
+
+        App.pet.targetX = -20;
+
+        const mallNpc = new Pet(
+            new PetDefinition({
+                sprite: 'resources/img/character/mall_npc_01.png',
+                name: 'Mall NPC',
+            }), {
+                x: '20%',
+                y: '100%',
+            }
+        );
+        mallNpc.triggerScriptedState('cheering', App.INF, false, true);
+
+        App.pet.triggerScriptedState('moving', 3000, null, true, () => {
+            App.setScene(App.scene.home);
+            App.handlers.open_mall_activity_list();
+            App.toggleGameplayControls(true);
+            mallNpc.removeObject();
+        });
+    }
+    static async goToActivities({ activities } = {}){
+        App.setScene({
+            ...App.scene.emptyOutside,
+            petY: '94%',
+        });
+
+        let scenePositionX = -App.drawer.bounds.width;
+
+        const fastMoveBound = App.drawer.bounds.width * 1.5;
+        App.pet.triggerScriptedState('idle', App.INF, false, true, false, (me) => {
+            me.setState(me.isMoving ? 'moving' : 'idle');
+            me.speedOverride = Math.abs(me.x - me.targetX) > fastMoveBound ? 1 : 0.1;
+        });
+        // App.pet.x = App.drawer.bounds.width - 40;
+
+        // ui
+        App.toggleGameplayControls(false);
+        const editDisplay = document.createElement('div');
+        editDisplay.className = 'absolute-fullscreen flex flex-dir-col menu-animation'
+        document.querySelector('.screen-wrapper').appendChild(editDisplay)
+        editDisplay.close = () => editDisplay.remove();
+        editDisplay.innerHTML = `
+            <div class="flex justify-center height-auto b-radius-10">
+                <span id="activity-name" class="directional-control__activity-name">$activity_name$</span>
+            </div>
+            <div class="directional-control__container">
+                <div class="controls-y">
+                    <div class="controls-x flex-1 align-center">
+                        <button class="generic-btn stylized slide-action" id="left"><i class="fa fa-angle-left"></i></button>
+                        <button class="generic-btn stylized slide-action" id="right"><i class="fa fa-angle-right"></i></button>
+                    </div>
+                    <div class="bottom-container align-end">
+                        <button class="generic-btn stylized" id="apply">
+                            <i class="fa fa-door-open icon"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const spawnedGameObjects = [];
+
+        // camera position adjuster draw event
+        const directorTask = () => {
+            const newPositionX = lerp(App.drawer.cameraPosition.x, -scenePositionX, 0.01 * App.deltaTime);
+            App.drawer.setCameraPosition(newPositionX, null);
+        }
+        App.registerOnDrawEvent(directorTask);
+
+        // end fn
+        const onEnd = () => {
+            App.unregisterOnDrawEvent(directorTask)
+            editDisplay.remove();
+            spawnedGameObjects.forEach(o => o.removeObject?.());
+            App.drawer.setCameraPosition(0, 0);
+            App.toggleGameplayControls(true);
+            App.pet.stopScriptedState();
+            App.pet.stopMove();
+            App.pet.speedOverride = false;
+            App.setScene(App.scene.home);
+        }
+
+        const onEnter = () => {
+            onEnd();
+            const currentActivity = activities[currentActivityIndex];
+            // offset by 1
+            App.temp.outsideActivityIndex = currentActivityIndex + 1;
+            currentActivity.onEnter?.();
+        }
+        
+        let currentActivityIndex = App.temp.outsideActivityIndex ?? 1;
+        const updateSelectedActivity = (offset = 1) => {
+            if(spawnedGameObjects.length > 3){
+                const toDespwan = spawnedGameObjects.shift();
+                toDespwan?.removeObject?.();
+            }
+
+            currentActivityIndex -= offset;
+            if(currentActivityIndex > activities.length - 1) currentActivityIndex = 0;
+            if(currentActivityIndex < 0) currentActivityIndex = activities.length - 1;
+            const currentActivity = activities[currentActivityIndex];
+
+            document.querySelector('#activity-name').innerHTML =  `${currentActivity.name}`;
+            if(currentActivity.isDisabled?.()){
+                document.querySelector('#activity-name').classList.add('disabled');
+                editDisplay.querySelector('#apply').classList.add('disabled');
+            } else {
+                document.querySelector('#activity-name').classList.remove('disabled');
+                editDisplay.querySelector('#apply').classList.remove('disabled');
+            }
+
+            scenePositionX += App.drawer.bounds.width * offset;
+
+            const background = new Object2d({
+                img: 'resources/img/background/outside/activities_base_01.png',
+                x: scenePositionX, y: 0,
+            });
+            new Object2d({
+                img: currentActivity.image,
+                x: scenePositionX, y: 0,
+                parent: background
+            });
+            spawnedGameObjects.push(background);
+            
+            // App.pet.x = scenePositionX + App.drawer.bounds.width;
+            App.pet.targetX = scenePositionX + App.drawer.bounds.width - 40;
+        }
+
+        updateSelectedActivity();
+        editDisplay.querySelector('#right').onclick = () => updateSelectedActivity(1);
+        editDisplay.querySelector('#left').onclick = () => updateSelectedActivity(-1);
+        editDisplay.querySelector('#apply').onclick = () => onEnter();
+    }
     static async reckoning(){
         App.setScene(App.scene.reviverDen);
         App.closeAllDisplays();
@@ -342,6 +696,7 @@ class Activities {
                         petsToReveal?.forEach(p => p?.removeObject());
                         App.setScene(App.scene.home);
                         App.toggleGameplayControls(true);
+                        App.handlers.open_fortune_teller();
                     });
                 });
                 petsToReveal?.forEach((p, i) => {
@@ -545,7 +900,7 @@ class Activities {
                     }
                 },
                 {
-                    name: `stats ${App.getBadge()}`,
+                    name: `stats`,
                     _disable: !App.plants.length,
                     onclick: () => {
                         return displayPlantsList({
@@ -697,7 +1052,7 @@ class Activities {
                     }
                 },
                 {
-                    name: `active buffs ${App.getBadge()}`,
+                    name: `active buffs`,
                     onclick: () => App.handlers.open_active_buffs('garden'),
                 },
                 {
@@ -766,6 +1121,7 @@ class Activities {
                 });
                 App.animals.list.push(newAnimal);
                 App.displayPopup(`A new animal ${newAnimal.getFullCSprite()} has chosen your backyard as their new home. Take good care of them!`, 3000, () => openChooseNameDialog(newAnimal));
+                App.sendAnalytics('animal_arrived');
             } else if(App.animals.treatBiteCount > 2) {
                 resetTreat();
                 App.displayConfirm(`The food you placed out earlier is gone.<br><br>Unfortunately, its visitor chose not to stay this time, maybe you'll meet them next time!`, [
@@ -1392,7 +1748,7 @@ class Activities {
                     onclick: handleSyncCharacter,
                 },
                 {
-                    name: `rewards store ${App.getBadge()}`,
+                    name: `rewards store`,
                     onclick: handleRewardStore,
                 },
                 {
@@ -1459,8 +1815,14 @@ class Activities {
         App.pet.stats.is_at_vacation = true;
         App.setScene(App.scene.seaVacation);
 
+        const backgroundMusic = App.playAdvancedSound({
+            loop: true, 
+            src: 'resources/sounds/vacation_track_01.ogg'
+        });
+
         const end = () => {
             App.toggleGameplayControls(false);
+            backgroundMusic.stop();
             Activities.task_foam(() => {
                 App.toggleGameplayControls(true);
                 App.pet.stats.is_at_vacation = false;
@@ -1471,7 +1833,10 @@ class Activities {
             })
             
             // feed all animals before ending
-            App.animals?.list?.forEach(a => a?.feed?.(100));
+            App.animals?.list?.forEach(a => {
+                a.feed?.(100);
+                a.lastStatsUpdate = Date.now();
+            });
         }
 
         App.pet.triggerScriptedState('idle', App.INF, 0, true, null, 
@@ -1622,6 +1987,8 @@ class Activities {
                                         App.pet.playCheeringAnimation();
                                         App.pet.stats.current_fun += random(10, 25);
                                         App.addNumToObject(App.pet.inventory.food, randomFoodName, amount);
+                                        if(skipCamera) App.definitions.achievements.harvest_cook_x_times.advance();
+                                        else App.definitions.achievements.camera_cook_x_times.advance();
                                     });
                                 } else {
                                     App.displayPopup(`${App.petDefinition.name} <br>failed to make anything edible!<br>`, 3000, () => {
@@ -1710,6 +2077,12 @@ class Activities {
         App.closeAllDisplays();
         App.setScene(App.scene.stand);
         App.definitions.achievements.work_x_times.advance();
+
+        const backgroundMusic = App.playAdvancedSound({
+            loop: true, 
+            src: 'resources/sounds/work_track_01.ogg'
+        });
+
         let totalMoneyMade = 0;
 
         let standObject = new Object2d({
@@ -1785,6 +2158,7 @@ class Activities {
         let nextCustomerSpawnTime = Date.now() + random(0, 8000);
         let currentCustomer;
         App.pet.triggerScriptedState('idle', 200000, 0, true, () => {
+            backgroundMusic.stop();
             standObject.removeObject();
             let elapsedTime = Math.round((Date.now() - startTime) / 1000);
             Activities.task_endWork(elapsedTime, totalMoneyMade);
@@ -1896,7 +2270,7 @@ class Activities {
 
         App.pet.stats.is_at_parents = true;
     }
-    static goToClinic(){
+    static goToClinic(onEndFn){
         App.toggleGameplayControls(false);
         Missions.done(Missions.TYPES.visit_doctor);
 
@@ -1917,18 +2291,22 @@ class Activities {
                     if(health <= App.pet.stats.max_health * 0.20) state = 'very sick';
                     else if(health <= App.pet.stats.max_health * 0.45) state = 'sick';
                     else if(health <= App.pet.stats.max_health * 0.75) state = 'healthy'
-    
+                    
+                    const onEnd = () => {
+                        App.setScene(App.scene.home);
+                        App.toggleGameplayControls(true);
+                        onEndFn?.();
+                    }
+
                     if(state == 'very sick' || state == 'sick'){
                         App.pet.triggerScriptedState('shocked', 2000, false, true, () => {
                             App.displayPopup(`${App.pet.petDefinition.name} is ${state}`, 5000, () => App.pet.x = '50%');
-                            App.setScene(App.scene.home);
-                            App.toggleGameplayControls(true);
+                            onEnd();
                         })
                     } else {
                         App.pet.triggerScriptedState('cheering_with_icon', 2000, false, true, () => {
                             App.displayPopup(`${App.pet.petDefinition.name} is ${state}`, 5000, () => App.pet.x = '50%');
-                            App.setScene(App.scene.home);
-                            App.toggleGameplayControls(true);
+                            onEnd();
                         })
                     }
                 });
@@ -1948,7 +2326,7 @@ class Activities {
             })
         }
 
-        task_goto_hospital();
+        task_visit_doctor();
     }
     static bathe(){
         App.closeAllDisplays();
@@ -1969,6 +2347,7 @@ class Activities {
                 onDraw: (me) => {
                     Object2d.animations.flip(me, flipTime);
                     Object2d.animations.bob(me, foamSpeed, foamStr);
+                    Object2d.animations.pulseScale(me, foamSpeed, 0.01);
                 }
             })
             foams.push(foam);
@@ -1983,9 +2362,15 @@ class Activities {
             App.playSound(`resources/sounds/ui_click_03.ogg`, true);
         });
 
-        let bathObject = new Object2d({
-            img: 'resources/img/misc/bathroom_01_bath.png',
-            x: 0, y: 0, z: 19
+        const bathClippedObject = new Object2d({
+            img: App.scene.bathroom.image,
+            x: 0, y: 0, z: 19,
+            clip: [
+                [38, 51],
+                [38, 68],
+                [81, 68],
+                [81, 51],
+            ]
         })
 
         App.pet.stopMove();
@@ -1994,7 +2379,7 @@ class Activities {
         App.pet.triggerScriptedState('idle', App.INF, 0, true, () => {
             App.pet.x = '50%';
             App.pet.y = '100%';
-            bathObject.removeObject();
+            bathClippedObject.removeObject();
             App.pet.playCheeringAnimation(() => {
                 App.setScene(App.scene.home);
                 App.toggleGameplayControls(true);
@@ -2019,9 +2404,9 @@ class Activities {
 
         App.pet.needsToiletOverlay.hidden = false;
         App.pet.stats.current_bladder = App.pet.stats.max_bladder;
-        if(App.petDefinition.lifeStage === PetDefinition.LIFE_STAGE.baby && !force) {
-            // make pet potty trained if used toilet more than 2 to 4 times and is baby
-            if(++App.pet.stats.used_toilet > random(2, 4)){
+        if(App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child && !force) {
+            // make pet potty trained if used toilet more than 2 to 5 times and is baby/child
+            if(++App.pet.stats.used_toilet > random(2, 5)){
                 App.pet.stats.is_potty_trained = true;
             }
         }
@@ -2056,13 +2441,18 @@ class Activities {
         } catch(e) {}
 
         const heartParticleSpawner = setInterval(() => Activities.task_floatingHearts(), 500);
-
-        const overlay = new Object2d({
-            img: 'resources/img/background/house/wedding_overlay.png',
-            x: 0,
-            y: 0,
-            z: 99
-        })
+        const heartSpawner = setInterval(() => {
+            new Object2d({
+                img: 'resources/img/misc/wedding_heart_01.png',
+                x: 0, y: 0, scale: 0, opacity: 0.95,
+                composite: 'color-burn',
+                onDraw: (me) => {
+                    me.scale += 0.00115 * App.deltaTime;
+                    me.opacity -= 0.0005 * App.deltaTime;
+                    if(me.opacity <= 0) me.removeObject();
+                }
+            })
+        }, 1000);
 
         App.pet.stopMove();
         otherPet.stopMove();
@@ -2100,7 +2490,6 @@ class Activities {
             Activities.task_foam(() => {
                 App.pet.removeObject();
                 otherPet.removeObject();
-                overlay.removeObject();
 
                 let parentA = App.petDefinition,
                     parentB = otherPetDef;
@@ -2114,6 +2503,7 @@ class Activities {
                 App.pet = App.createActivePet(App.petDefinition);
 
                 clearInterval(heartParticleSpawner);
+                clearInterval(heartSpawner);
             }, () => {
                 App.toggleGameplayControls(true);
 
@@ -2224,7 +2614,6 @@ class Activities {
         });
     }
     static redecorRoom(callbackFn){
-        App.setScene(App.scene.home);
         App.toggleGameplayControls(false);
         let otherPetDef = new PetDefinition({
             sprite: 'resources/img/character/chara_290b.png',
@@ -2253,7 +2642,7 @@ class Activities {
 
             Activities.task_foam(
             () => {
-                App.setScene(App.scene.home);
+                App.setScene(App.currentScene, true);
                 App.pet.x = 10;
             }, 
             () => {
@@ -2300,7 +2689,7 @@ class Activities {
         App.pet.stopMove();
         App.pet.x = 10;
 
-        let gift = new Object2d({
+        const gift = new Object2d({
             img: 'resources/img/misc/gift.png',
             x: '50%', y: '80%'
         });
@@ -2331,7 +2720,7 @@ class Activities {
         }
 
         function task_otherPetMoveOut(){
-            gift.y += 10;
+            // gift.y += 10;
             otherPet.triggerScriptedState('moving', App.INF, false, true, null, () => {
                 gift.x = otherPet.x + 10;
             });
@@ -2355,26 +2744,42 @@ class Activities {
         App.closeAllDisplays();
         App.setScene(App.scene.office);
         App.definitions.achievements.work_x_times.advance();
+        
+        const backgroundMusic = App.playAdvancedSound({
+            loop: true, 
+            src: 'resources/sounds/work_track_01.ogg'
+        });
+
+        const dynamicBackground = new Object2d({
+            img: 'resources/img/background/house/office_01.png',
+            x: 0, y: 0,
+            spritesheet: {
+                cellSize: App.drawer.bounds.width,
+                cellNumber: 2,
+                rows: 1,
+                columns: 3
+            },
+            onDraw: (me) => Object2d.animations.cycleThroughFrames(me, 250, true),
+        })
 
         App.toggleGameplayControls(false, () => {
             App.pet.stopScriptedState();
         });
 
-        let laptop = new Object2d({
-            img: "resources/img/misc/laptop.png",
-            x: '70%', y: '50%',
-        });
-        laptop.x = '70%';
-        laptop.y = '50%';
+
         App.pet.stopMove();
         App.pet.inverted = true;
-        App.pet.x = '50%';
-        App.pet.y = '60%';
-        let startTime = Date.now();
+        App.pet.x = '53%';
+        App.pet.y = '78%';
+        const startTime = Date.now();
         App.pet.triggerScriptedState('eating', 200000, false, true, () => {
-            laptop.removeObject();
+            backgroundMusic.stop();
+            dynamicBackground.removeObject();
             let elapsedTime = Math.round((Date.now() - startTime) / 1000);
             Activities.task_endWork(elapsedTime, Math.round(elapsedTime / 2.5));
+        }, (me) => {
+            if(random(0, 50)) return;
+            me.setState( randomFromArray(['eating', 'sitting']) );
         })
     }
     static inviteDoctorVisit(){
@@ -2448,7 +2853,7 @@ class Activities {
 
         task_otherPetMoveIn();
     }
-    static goToMall(){
+    static goToWalkwayMall(){
         App.toggleGameplayControls(false, () => {
             App.pet.stopScriptedState();
         });
@@ -2581,7 +2986,7 @@ class Activities {
                 App.pet.statsManager();
                 App.drawer.removeObject(otherPet);
                 App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => {
-                    if(onEndFn) return onEndFn();
+                    onEndFn?.();
                     App.toggleGameplayControls(true);
                     App.setScene(App.scene.home);
                 });
@@ -2590,7 +2995,7 @@ class Activities {
 
         task_otherPetMoveIn();
     }
-    static goToPark(otherPetDef){
+    static goToPark(otherPetDef, onEndFn){
         if(!otherPetDef){
             if(random(1, 100) <= 60){
                 otherPetDef = App.getRandomPetDef(App.petDefinition.lifeStage);
@@ -2600,78 +3005,270 @@ class Activities {
             const wantedFriendDef = App.petDefinition.friends[App.pet.stats.current_want.item];
             App.petDefinition.checkWant(otherPetDef == wantedFriendDef, App.constants.WANT_TYPES.playdate)
         }
+        App.pet.x = '50%';
         App.setScene(App.scene.park);
-        App.toggleGameplayControls(false);
+        App.toggleGameplayControls(false, () => App.pet.stopScriptedState());
+        App.pet.speedOverride = 0.025;
 
         let otherPet;
         if(otherPetDef){
-            otherPet = new Pet(otherPetDef);
+            otherPet = new Pet(otherPetDef, {
+                x: '75%', speedOverride: random(15, 35) * 0.001,
+            });
+            otherPet.triggerScriptedState('playing', 10000, null, true, false, Pet.scriptedEventDrivers.playing.bind({pet: otherPet}));
+
             otherPet.nextRandomTargetSelect = 0;
             App.petDefinition.addFriend(otherPetDef, 1);
             otherPetDef.increaseFriendship();
         }
-        App.pet.triggerScriptedState('playing', 10000, null, true, () => {
+        
+        const onEnd = () => {
+            App.toggleGameplayControls(false);
             App.pet.x = '50%';
-            App.pet.stats.current_fun += 40;
+            App.pet.stats.current_fun += 15;
             App.pet.statsManager();
-            App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => App.setScene(App.scene.home));
+            App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => {
+                App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
+                onEndFn?.();
+            });
             if(otherPet) App.drawer.removeObject(otherPet);
-            App.toggleGameplayControls(true);
-        }, Pet.scriptedEventDrivers.playing.bind({pet: App.pet}));
+            App.pet.speedOverride = false;
+        }
+
+        App.pet.triggerScriptedState('playing', 10000, null, true, onEnd, Pet.scriptedEventDrivers.playing.bind({pet: App.pet}));
     }
 
 
     // games
-    static parkRngGame(){
+    static async dogWashingGame(){
         App.closeAllDisplays();
-        App.setScene(App.scene.park);
+        App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.setScene(App.scene.animalBathroom);
         App.toggleGameplayControls(false);
+        App.pet.stopMove();
+        App.pet.x = '35%';
+        App.pet.y = '82%';
+        App.pet.inverted = true;
+        App.pet.triggerScriptedState('idle_side', App.INF, null, true);
+        let remainingTime = 10;
+        let score = 0;
+
+        // ui
+        const buttonSizePx = 46;
+
+        const screen = App.displayEmpty();
+        screen.style.background = 'transparent';
+        screen.innerHTML = `
+            <div class="mini-game-ui flex align-center justify-between">
+                <div class="flex align-center">
+                    <i style="margin-right: 4px;" class="fa-solid fa-stopwatch icon"></i>
+                    <div id="timeRemaining">
+                        <span class="opacity-half">${remainingTime}</span>
+                    </div>
+                </div>
+                <div class="flex align-center">
+                    <i style="margin-right: 4px;" class="fa-solid fa-hands-wash icon"></i>
+                    <div id="score">${score}</div>
+                </div>
+            </div>
+            <button style="width: ${buttonSizePx}px; height: ${buttonSizePx}px" class="dog-washing-button">
+                <i class="fa-solid fa-hands-wash fa-2x"></i>
+            </button>
+        `;
+        const washActionButton = screen.querySelector('.dog-washing-button');
+        const repositionAction = () => {
+            const bounds = {
+                width: washActionButton.parentElement.clientWidth - buttonSizePx - 2,
+                height: washActionButton.parentElement.clientHeight - buttonSizePx - 2
+            }
+            const position = {
+                x: random(0, bounds.width),
+                y: random(0, bounds.height),
+            }
+            washActionButton.style.top = `${position.x}px`;
+            washActionButton.style.left = `${position.y}px`;
+        }
+        repositionAction();
+
+        const onEndFn = () => {
+            screen.close();
+            animal.removeObject();
+            App.pet.y = '100%';
+            const moneyWon = Math.floor(score * 1.7);
+            const hasWon = score > 18;
+            if(hasWon){
+                App.definitions.achievements.perfect_minigame_petgroom_win_x_times.advance();
+            }
+            Activities.task_winMoneyFromArcade({
+                amount: moneyWon,
+                hasWon: hasWon,
+                happiness: score * 1.2,
+            })
+        }
+
+        let timerFn;
+
+        const animal = new Animal(App.getRandomAnimalDef('dog'));
+        animal.triggerScriptedState('sitting', App.INF, null, true);
+        animal.y = '82%';
+        animal.x = '65%';
+        const advanceProgress = () => {
+            if(!timerFn){
+                timerFn = setInterval(() => {
+                    remainingTime--;
+                    if(remainingTime <= 0){
+                        remainingTime = 0;
+                        clearInterval(timerFn);
+                        onEndFn();
+                        return;
+                    }
+                    screen.querySelector('#timeRemaining').textContent = remainingTime;
+                }, 1000);
+                screen.querySelector('#timeRemaining').textContent = remainingTime;
+            }
+
+            const foam = new Object2d({
+                img: 'resources/img/misc/foam_single.png',
+                x: (animal.x - 6) + random(-4, 4), 
+                y: (animal.y - 18) + random(-4, 4), 
+                scale: random(5, 10) * 0.1, opacity: 1, z: 10,
+                onDraw: (me) => {
+                    Object2d.animations.flip(me);
+                    Object2d.animations.bob(me);
+                    Object2d.animations.pulseScale(me, 0.1, 0.01);
+                    me.scale -= 0.0005 * App.deltaTime;
+                    me.opacity -= 0.0005 * App.deltaTime;
+                    if(me.opacity <= 0) me.removeObject();
+
+                }
+            })
+            score++;
+            screen.querySelector('#score').textContent = score;
+        }
+
+        washActionButton.onclick = () => {
+            repositionAction();
+            advanceProgress();
+        }
+    }
+    static async plantMatchingGame(){
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
 
-        // const randomPetRef = App.getRandomPetDef();
-        const randomPetRef = new PetDefinition({
-            name: 'park_game_npc',
-            sprite: 'resources/img/character/chara_175b.png',
-        });
-        const randomPet = new Pet(randomPetRef);
-        randomPet.stopMove();
-        randomPet.triggerScriptedState('eating', 5000, null, true);
-        randomPet.x = 20;
-        randomPet.inverted = true;
-
-        App.pet.x = 80 - App.pet.spritesheet.cellSize;
-        App.pet.inverted = false;
-        App.pet.stopMove();
-        App.pet.triggerScriptedState('eating', 5000, null, true, () => {
-            App.drawer.removeObject(randomPet);
-            App.pet.x = '50%';
-            if(Math.random() > 0.5){ // win
-                let winningGold = 25;
-                App.pet.stats.gold += winningGold;
-                App.pet.stats.current_fun += 35;
-                App.pet.playCheeringAnimation(() => {
-                    App.displayPopup(`${App.petDefinition.name} won $${winningGold}`);
-                    App.toggleGameplayControls(true);
-                    App.setScene(App.scene.home);
-                    App.handlers.open_game_list();
-                });
-            } else {
-                App.pet.playAngryAnimation(() => {
-                    App.displayPopup(`${App.petDefinition.name} lost!`);
-                    App.pet.stats.current_fun -= 15;
-                    App.toggleGameplayControls(true);
-                    App.setScene(App.scene.home);
-                    App.handlers.open_game_list();
-                });
+        const getRandomPlant = () => 
+            randomFromArray(Object.keys(App.definitions.plant))
+        const appendNonRepeatedPlant = (list = []) => {
+            let newPlant;
+            while(true){
+                newPlant = getRandomPlant();
+                if(!list.includes(newPlant)){
+                    break;
+                }
             }
-        });
+            const newList = [...list, newPlant];
+            return newList;
+        }
+        const getListOfNonRepeatedPlants = (list = [], length = 4) => {
+            let newList = [...list];
+            for(let i = 0; i < length; i++){
+                newList = appendNonRepeatedPlant(newList);
+            }
+            return newList;
+        }
+
+
+        App.closeAllDisplays();
+        App.setScene(App.scene.arcade);
+        App.toggleGameplayControls(false);
+        App.pet.stopMove();
+        App.pet.x = '50%';
+        App.pet.triggerScriptedState('idle', App.INF, null, true);
         
-        return false;  
+        // main list
+        const targetList = getListOfNonRepeatedPlants([], 4);
+        const selectionLists = targetList.map(item => {
+            return shuffleArray(getListOfNonRepeatedPlants([item], 3));
+        })
+
+        const mainListUI = App.display2xGrid(targetList.map((name, index) => ({
+            name: `
+                ${Plant.getCSprite(name, Plant.AGE.grown, 'x2 blink')}
+                <span class="absolute-fullscreen m">${index + 1}</span>
+            `,
+            class: 'disabled',
+        })))
+
+        await App.wait(4000);
+        mainListUI.close();
+
+        App.displayPopup(`Wait...`, 1000);
+        await App.wait(1000);
+        App.displayPopup('Go!', 1000);
+        await App.wait(1000);
+
+        const userSelectedList = [];
+        const advanceProgress = async (name) => {
+            userSelectedList.push(name);
+            const correctChoices = userSelectedList.reduce((sum, current, currentIndex) => checkIndex(current, currentIndex) ? sum + 1 : sum, 0);
+
+            const latestIndex = userSelectedList.length - 1;
+            const isCorrect = checkIndex(name, latestIndex);
+
+            if(isCorrect) setTimeout(() => App.playSound(`resources/sounds/ui_click_03.ogg`, true));
+
+            App.displayPopup( isCorrect ? `Correct ${App.getIcon('check')}` : `Incorrect ${App.getIcon('times')}`, 1000 );
+            await App.wait(1000);
+
+            if(userSelectedList.length === targetList.length){
+                App.displayPopup(`${correctChoices}/${targetList.length}`, 3000);
+                await App.wait(2000);
+                App.closeAllDisplays();
+
+                if(correctChoices === targetList.length){
+                    App.definitions.achievements.perfect_minigame_cropmatch_win_x_times.advance();
+                }
+
+                const moneyWon = Math.max((correctChoices - 1) * 25, 0);
+                Activities.task_winMoneyFromArcade({
+                    amount: moneyWon,
+                    happiness: moneyWon / 5,
+                    hasWon: Boolean(moneyWon)
+                })
+            }
+        }
+        const checkIndex = (name, index) => targetList[index] === name;
+
+        selectionLists
+            .toReversed()
+            .forEach((list, index) => {
+                const currentList = App.display2xGrid(
+                    list.map((name) => ({
+                        name: Plant.getCSprite(name, Plant.AGE.grown, 'x2'),
+                        onclick: () => {
+                            advanceProgress(name);
+                        }
+                    }))
+                )
+                
+                const counterElement = UI.create({
+                    componentType: 'div',
+                    className: 'absolute-fullscreen pointer-events-none flex-container',
+                    parent: currentList,
+                    children: [
+                        {
+                            textContent: Math.abs((index + 1) - targetList.length) + 1,
+                            className: 'surface-stylized inner-padding'
+                        }
+                    ]
+                })
+            })
+        
     }
     static barTimingGame(){
         App.closeAllDisplays();
         App.toggleGameplayControls(false);
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.setScene(App.scene.arcade_game01);
 
         let screen = App.displayEmpty();
         screen.innerHTML = `
@@ -2732,39 +3329,23 @@ class Activities {
 
             round++;
 
-            if(round == 3){
+            if(round === 3){
                 setTimeout(() => {
                     screen.close();
                     App.onDraw = null;
-                    App.displayPopup(`${App.petDefinition.name} won $${moneyWon}!`, null, () => {
-                        App.toggleGameplayControls(false);
-                        App.pet.stats.gold += moneyWon;
-                        App.pet.stats.current_fun += roundsWin * 10;
-                        App.setScene(App.scene.arcade);
-                        App.pet.stopMove();
-                        App.pet.x = '50%';
-                        const onEnd = () => {
-                            App.toggleGameplayControls(true);
-                            App.handlers.open_game_list();
-                            App.setScene(App.scene.home);
-                        }
-                        if(roundsWin <= 1){
-                            // App.pet.triggerScriptedState('uncomfortable', 3000, 0, true, onEnd);
-                            App.pet.playAngryAnimation(onEnd);
-                        } else {
-                            if(roundsWin == 3){
-                                App.definitions.achievements.perfect_minigame_rodrush_win_x_times.advance();
-                            }
-                            App.pet.playCheeringAnimationIfTrue(roundsWin == 3, onEnd);
-                            Missions.done(Missions.TYPES.win_game);
-                        }
-                    });
+                    if(roundsWin === 3){
+                        App.definitions.achievements.perfect_minigame_rodrush_win_x_times.advance();
+                    }
+                    Activities.task_winMoneyFromArcade({
+                        amount: moneyWon,
+                        happiness: roundsWin * 10,
+                        hasWon: roundsWin >= 2
+                    })
                 }, 500);
             } else {
                 setTimeout(() => {
                     reset(0.15);
-
-                    cursorSpeed = round == 1 ? 0.27 : 0.37;
+                    cursorSpeed = round === 1 ? 0.27 : 0.37;
                 }, 500);
             }
         }
@@ -2811,10 +3392,10 @@ class Activities {
                     if(spawnDelay < 800) spawnDelay = 800;
 
                     const xPercentage = randomFromArray(['10%', '37%', '63%', '90%']);
-                    const currentIsFaulty = random(0, 3) == 1;
+                    const isCurrentFaulty = random(0, 3) == 1;
                     const projectileObject = new Object2d({
                         parent: spawnerObject,
-                        img: currentIsFaulty ? 'resources/img/misc/falling_poop.png' : 'resources/img/misc/heart_particle_01.png',
+                        img: isCurrentFaulty ? 'resources/img/misc/falling_poop.png' : 'resources/img/misc/heart_particle_01.png',
                         y: -20, x: xPercentage, rotation: random(0, 180), z: 6, width: 15, height: 13,
                         speed: projectileSpeed,
                         onDraw: (me) => {
@@ -2830,7 +3411,7 @@ class Activities {
                                 spawnSmoke(xCenter, me.y);
                                 me.removeObject();
                                 me.setImg('resources/img/misc/heart_particle_02.png')
-                                score(currentIsFaulty);
+                                score(isCurrentFaulty);
                             }
 
                             if(me.y > 90) me.removeObject();
@@ -2859,18 +3440,13 @@ class Activities {
         screen.innerHTML = `
         <div class="width-full" style="position: absolute; bottom: 0; left: 0;">
             <div class="flex-container" style="justify-content: space-between; padding: 4px">
-            <div class="flex-container" style="
-                background: #ff00c647;
-                padding: 0 4px;
-                border-radius: 6px;
-                color: #ffcaf4;
-            ">
-                $
-                <div id="moneyWon">${moneyWon}</div>
-            </div>
-            <div class="flex-container">
-                <div id="lives">${lives}</div>
-            </div>
+                <div class="flex-container mini-game-ui">
+                    $
+                    <div id="moneyWon">${moneyWon}</div>
+                </div>
+                <div class="flex-container">
+                    <div id="lives">${lives}</div>
+                </div>
             </div>
         </div>
         `;
@@ -2890,31 +3466,14 @@ class Activities {
         const finish = () => {
             screen.remove();
             spawnerObject.removeObject();
-            App.pet.stopScriptedState();
-            App.pet.x = '50%';
-
-            const end = () => {
-                App.setScene(App.scene.home);
-                App.handlers.open_game_list();
-                App.toggleGameplayControls(true);
-                App.pet.stats.gold += moneyWon;
-                App.pet.stats.current_fun += moneyWon / 6;
-                App.pet.speedOverride = 0;
-                if(moneyWon >= App.definitions.achievements.perfect_minigame_catch_win_x_gold.required){
-                    App.definitions.achievements.perfect_minigame_catch_win_x_gold.advance();
-                }
-                if(moneyWon)
-                    App.displayPopup(`${App.petDefinition.name} won $${moneyWon}`);
-                else 
-                    App.displayPopup(`${App.petDefinition.name} lost!`);
+            if(moneyWon >= App.definitions.achievements.perfect_minigame_catch_win_x_gold.required){
+                App.definitions.achievements.perfect_minigame_catch_win_x_gold.advance();
             }
-
-            if(moneyWon > 30){
-                App.pet.playCheeringAnimation(() => end());
-                Missions.done(Missions.TYPES.win_game);
-            } else {
-                App.pet.playUncomfortableAnimation(() => end());
-            }
+            Activities.task_winMoneyFromArcade({
+                amount: moneyWon,
+                hasWon: moneyWon > 30,
+                happiness: moneyWon / 6,
+            })
         }
 
         const score = (faulty) => {
@@ -2950,36 +3509,17 @@ class Activities {
 
         const reset = () => {
             if(playedRounds >= totalRounds){
-                App.pet.stopScriptedState();
                 opponentPet.removeObject();
-                App.pet.x = '50%';
-
-                const end = () => {
-                    App.setScene(App.scene.home);
-                    App.handlers.open_game_list();
-                    App.toggleGameplayControls(true);
-                    const moneyWon = roundsWon * random(20, 30);
-                    App.pet.stats.gold += moneyWon;
-                    App.pet.stats.current_fun += roundsWon * 15;
-                    if(moneyWon)
-                        App.displayPopup(`${App.petDefinition.name} won $${moneyWon}`);
-                    else 
-                        App.displayPopup(`${App.petDefinition.name} lost!`);
-                    if(roundsWon == totalRounds){
-                        App.definitions.achievements.perfect_minigame_mimic_win_x_times.advance();
-                    }
+                App.setScene(App.scene.arcade_game01);
+                const moneyWon = roundsWon * random(20, 30);
+                if(roundsWon === totalRounds){
+                    App.definitions.achievements.perfect_minigame_mimic_win_x_times.advance();
                 }
-
-                if(roundsWon >= 2){
-                    App.pet.playCheeringAnimation(() => end());
-                    Missions.done(Missions.TYPES.win_game);
-                } else if(roundsWon == 0){
-                    App.pet.playUncomfortableAnimation(() => end());
-                } else {
-                    end();
-                    Missions.done(Missions.TYPES.win_game);
-                }
-
+                Activities.task_winMoneyFromArcade({
+                    amount: moneyWon,
+                    happiness: roundsWon * 15,
+                    hasWon: roundsWon !== 0,
+                })
                 return;
             }
 
@@ -3066,6 +3606,53 @@ class Activities {
         
         return false;  
     }
+    static parkRngGame(){
+        /* unused */
+        App.closeAllDisplays();
+        App.setScene(App.scene.park);
+        App.toggleGameplayControls(false);
+        App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+
+        // const randomPetRef = App.getRandomPetDef();
+        const randomPetRef = new PetDefinition({
+            name: 'park_game_npc',
+            sprite: 'resources/img/character/chara_175b.png',
+        });
+        const randomPet = new Pet(randomPetRef);
+        randomPet.stopMove();
+        randomPet.triggerScriptedState('eating', 5000, null, true);
+        randomPet.x = 20;
+        randomPet.inverted = true;
+
+        App.pet.x = 80 - App.pet.spritesheet.cellSize;
+        App.pet.inverted = false;
+        App.pet.stopMove();
+        App.pet.triggerScriptedState('eating', 5000, null, true, () => {
+            App.drawer.removeObject(randomPet);
+            App.pet.x = '50%';
+            if(Math.random() > 0.5){ // win
+                let winningGold = 25;
+                App.pet.stats.gold += winningGold;
+                App.pet.stats.current_fun += 35;
+                App.pet.playCheeringAnimation(() => {
+                    App.displayPopup(`${App.petDefinition.name} won $${winningGold}`);
+                    App.toggleGameplayControls(true);
+                    App.setScene(App.scene.home);
+                    App.handlers.open_game_list();
+                });
+            } else {
+                App.pet.playAngryAnimation(() => {
+                    App.displayPopup(`${App.petDefinition.name} lost!`);
+                    App.pet.stats.current_fun -= 15;
+                    App.toggleGameplayControls(true);
+                    App.setScene(App.scene.home);
+                    App.handlers.open_game_list();
+                });
+            }
+        });
+        
+        return false;  
+    }
 
 
     // utils
@@ -3113,16 +3700,18 @@ class Activities {
         }, 5500);
     }
     static task_endWork(elapsedTime, moneyMade){
+        let clampedMoneyMade = clamp(moneyMade, 0, 400);
         App.displayPopup(`${App.petDefinition.name} worked for ${elapsedTime} seconds`, 2500, () => {
             if(elapsedTime > 10){
-                App.pet.stats.gold += moneyMade;
-            } else moneyMade = 0;
+                App.pet.stats.gold += clampedMoneyMade;
+            } else clampedMoneyMade = 0;
             App.pet.stats.current_fun -= elapsedTime / 3.5;
-            App.displayConfirm(`${App.petDefinition.name} made $${moneyMade}`, [
+            App.displayConfirm(`${App.petDefinition.name} made $${clampedMoneyMade}`, [
                 {
                     name: 'ok',
                     onclick: () => {
                         App.setScene(App.scene.home);
+                        App.handlers.open_works_list();
                     }
                 }
             ]);
@@ -3186,4 +3775,149 @@ class Activities {
             App.pet.stats.current_fun -= 100;
         }
     }
+    static async task_winMoneyFromArcade({
+            amount = 0, 
+            happiness, 
+            hasWon, 
+            npc = 'resources/img/character/chara_175b.png'
+        }){
+        const moneyBag = new Object2d({
+            img: 'resources/img/misc/money_bag_01.png',
+            x: '50%', y: '0%', width: 24, height: 24,
+            targetY: 67,
+            onDraw: (me) => me.moveToTarget(0.025),
+        })
+
+        App.toggleGameplayControls(false);
+        App.pet.staticShadow = false;
+
+        App.pet.stats.gold += amount;
+        App.pet.stats.current_fun += happiness ?? (amount / 5);
+        if(hasWon) Missions.done(Missions.TYPES.win_game);
+
+        const petMain = new TimelineDirector(App.pet);
+        const petClerk = new TimelineDirector(new Pet(new PetDefinition({
+            name: 'prize giver',
+            sprite: npc,
+        })));
+
+        petMain.setPosition({x: '75%'});
+        petMain.setState('idle')
+        petClerk.setPosition({x: '25%'});
+        petClerk.setState('idle')
+        await TimelineDirector.wait(1600);
+        const messageBubble = App.displayMessageBubble(`$${amount}`);
+        await petMain.bob({maxCycles: 1, animation: 'shocked'});
+        if(hasWon){
+            setTimeout(() => App.pet.playSound('resources/sounds/cheer_success.ogg', true));
+            petMain.setState('cheering_with_icon');
+            petClerk.setState('cheering');
+        } else {
+            setTimeout(() => App.pet.playSound('resources/sounds/task_fail_01.ogg', true));
+            petMain.setState('uncomfortable');
+            petClerk.setState('mild_uncomfortable');
+        }
+        await TimelineDirector.wait(3000);
+
+        moneyBag.removeObject();
+        petMain.release();
+        petClerk.remove();
+
+        App.setScene(App.scene.home);
+        App.toggleGameplayControls(true);
+        UI.clearLastClicked();
+        messageBubble.close();
+        App.handlers.open_game_list();
+    }
+}
+
+
+// timeline animation director
+class TimelineDirector {
+    registeredDrawEvents = [];
+    constructor(actor){
+        this.actor = actor;
+        this.actor.triggerScriptedState('idle', App.INF, false, true);
+        this.actor.stopMove();
+    }
+    moveTo = ({x, y, speed = 0.15, endState = 'idle'}) => {
+        return new Promise(resolve => {
+            if(!this.actor) return resolve();
+
+            this.actor.scriptedEventDriverFn = (me) => {
+                me.setState(me.isMoving ? 'moving' : endState)
+                if(!me.isMoving) {
+                    me.speedOverride = false;
+                    resolve();
+                    me.scriptedEventDriverFn = false;
+                }
+            };
+            if(typeof x === 'string'){
+                const percent = parseFloat(x);
+                x = App.drawer.getRelativePositionX(percent) - (this.getSize() / 2);
+            }
+            this.actor.targetX = x;
+            this.actor.targetY = y;
+            this.actor.speedOverride = speed;
+        })
+    }
+    setPosition = ({x, y}) => {
+        if(!this.actor) return;
+        if(x) this.actor.x = x;
+        if(y) this.actor.y = y;
+    }
+    setState = (state) => this.actor?.setState?.(state);
+    lookAt = (direction) => this.actor && (this.actor.inverted = direction);
+    release = () => {
+        this.actor.stopScriptedState();
+        this.actor = false;
+        this.registeredDrawEvents.forEach(e => App.unregisterOnDrawEvent(e));
+    }
+    remove = () => this.actor?.removeObject();
+    getPosition = (axis) => {
+        if(axis === 'y') return this.actor?.y;
+        return this.actor?.x;
+    }
+    getSize = () => this.actor?.spritesheet.cellSize;
+    bob = ({speed = 0.011, strength = 5, maxCycles = 3, animation = 'cheering', landAnimation} = {}) => {
+        if(!landAnimation) landAnimation = animation;
+        return new Promise(resolve => {
+            if(!this.actor) return resolve();
+
+            const defaultY = this.actor.y;
+            const actor = this.actor;
+
+            let animationFloat = 0, 
+            currentCycles = 0, 
+            cycleCounted = false;
+
+            const drawEvent = App.registerOnDrawEvent(() => {
+                if(!actor) App.unregisterOnDrawEvent(drawEvent);
+
+                animationFloat += speed * App.deltaTime;
+                const finalAnimationFloat = clamp(Math.sin(animationFloat), 0, 999);
+                if(finalAnimationFloat > 0) {
+                    cycleCounted = false;
+                    actor.setState(animation);
+                } else {
+                    if(!cycleCounted) {
+                        cycleCounted = true;
+                        currentCycles++;
+                    }
+                    actor.setState(landAnimation);
+                    if(currentCycles >= maxCycles){
+                        actor.y = defaultY;
+                        App.unregisterOnDrawEvent(drawEvent);
+                        resolve();
+                    }
+                }
+                actor.y = defaultY - (finalAnimationFloat * strength);
+            })
+
+            this.registeredDrawEvents.push(drawEvent);
+        })
+    }
+    think = (...args) => this.actor?.showThought(...args);
+    
+    static wait = (...args) => App.wait(...args);
 }

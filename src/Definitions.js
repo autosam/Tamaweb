@@ -1,22 +1,38 @@
 App.definitions = (() => {
     const _ls = PetDefinition.LIFE_STAGE;
     return  {
+        /* THEMES */
+        themes: [
+            'default', 
+            'sunset', 
+            'uni', 
+            'color pink',
+            'color azure',
+            'color gray',
+            'color red', 
+            'color blue',
+            'color green',
+            'color purple',
+            'color black',
+        ],
         /* MAIN MENU */
         main_menu: [
             {
-                name: '<i class="fa-solid fa-line-chart"></i>',
+                id: 'stats',
                 name: '<i class="fa-solid fa-dashboard"></i>',
                 onclick: () => {
                     App.handlers.open_stats_menu();
                 }
             },
             {
+                id: 'feeding',
                 name: '<i class="fa-solid fa-cutlery"></i>',
                 onclick: () => {
                     App.handlers.open_feeding_menu();
                 }
             },
             {
+                id: 'bath',
                 name: '<i class="fa-solid fa-bath"></i>',
                 onclick: () => {
                     // App.handlers.clean();
@@ -24,34 +40,90 @@ App.definitions = (() => {
                 }
             },
             {
+                id: 'care',
                 name: `<i class="fa-solid fa-house-chimney-user"></i>`,
                 onclick: () => {
                     App.handlers.open_care_menu();
                 }
             },
             {
+                id: 'activity',
                 name: '<i class="fa-solid fa-door-open"></i>',
                 onclick: () => {
                     App.handlers.open_activity_list();
                 }
             },
             {
+                id: 'stuff',
                 name: '<i class="fa-solid fa-box-open"></i>',
                 onclick: () => {
                     App.handlers.open_stuff_menu();
                 }
             },
             {
+                id: 'phone',
                 name: '<i class="fa-solid fa-mobile-alt"></i>',
                 onclick: () => {
                     App.handlers.open_phone();
                 }
             },
             {
+                id: 'settings',
                 name: `<i class="fa-solid fa-gear"></i>`,
                 onclick: () => {
                     App.handlers.open_settings();
                 }
+            },
+        ],
+
+        /* OUTDOOR ACTIVITIES */
+        outside_activities: [
+            {
+                name: "Home",
+                image: 'resources/img/misc/activity_building_home.png',
+                onEnter: () => App.handlers.go_to_home(),
+            },
+            {
+                name: "Mall",
+                image: 'resources/img/misc/activity_building_mall.png',
+                onEnter: () => Activities.goToMall(),
+            },
+            {
+                name: "Market",
+                image: 'resources/img/misc/activity_building_market.png',
+                onEnter: () => Activities.goToMarket(),
+            },
+            {
+                name: `Game Center ${App.getBadge()}`,
+                image: 'resources/img/misc/activity_building_arcade.png',
+                onEnter: () => Activities.goToArcade(),
+            },
+            {
+                isDisabled: () => App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child,
+                name: 'Homeworld Getaways',
+                image: 'resources/img/misc/activity_building_homeworld_getaway.png',
+                onEnter: () => App.handlers.open_rabbitholes_list(),
+            },
+            {
+                name: 'Fortune Teller',
+                image: 'resources/img/misc/activity_building_fortune_teller.png',
+                onEnter: () => App.handlers.open_fortune_teller(),
+            },
+            {
+                name: 'Park',
+                image: 'resources/img/misc/activity_building_park.png',
+                onEnter: () => App.handlers.go_to_park(),
+            },
+            {
+                name: "Hospital",
+                image: 'resources/img/misc/activity_building_hospital.png',
+                onEnter: () => App.handlers.go_to_clinic(),
+            },
+            {
+                isDisabled: () => App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult,
+                name: 'Work',
+                image: 'resources/img/misc/activity_building_work.png',
+                onEnter: () => App.handlers.open_works_list(),
             },
         ],
     
@@ -880,7 +952,7 @@ App.definitions = (() => {
             "car city": {
                 image: 'resources/img/background/house/cc_06.png',
                 price: 0,
-                isNew: true,
+                isNew: false,
                 onlineShopAccessible: true,
                 unlockLikes: 100,
                 unlockKey: 'bg_car_city',
@@ -910,12 +982,47 @@ App.definitions = (() => {
                 price: 350,
                 isNew: false,
             },
+
             // craftables
             "collage": {
                 image: 'resources/img/background/house/c_01.png',
                 price: 350,
                 isCraftable: true,
                 craftingRecipe: ['red tulip', 'blue tulip', 'green tulip'],
+            },
+
+            // bathrooms
+            "plain": {
+                image: 'resources/img/background/house/bathroom_01.png',
+                price: 100,
+                isNew: false,
+                type: 'bathroom',
+            },
+            "nautical": {
+                image: 'resources/img/background/house/bathroom_cc_01.png',
+                price: 350,
+                isNew: true,
+                type: 'bathroom',
+            },
+
+            // kitchen
+            "bites": {
+                image: 'resources/img/background/house/kitchen_03.png',
+                price: 100,
+                isNew: false,
+                type: 'kitchen',
+            },
+            "vintage": {
+                image: 'resources/img/background/house/kitchen_02.png',
+                price: 100,
+                isNew: false,
+                type: 'kitchen',
+            },
+            "octopus": {
+                image: 'resources/img/background/house/kitchen_cc_01.png',
+                price: 350,
+                isNew: true,
+                type: 'kitchen',
             },
         },
     
@@ -1196,7 +1303,7 @@ App.definitions = (() => {
                 craftingRecipe: ['bamboo', 'lucrios', 'yellow tulip'],
                 onDraw: (me) => {
                     me.setImg(
-                        App.darkOverlay.hidden
+                        !App.darkOverlay.isVisible
                             ? 'resources/img/furniture/lamp_sun.png'
                             : 'resources/img/furniture/lamp_sun_off.png'
                     );
@@ -1746,6 +1853,32 @@ App.definitions = (() => {
                     App.displayPopup(`You've received $300!`);
                 }
             },
+            harvest_cook_x_times: {
+                name: 'Farm-to-table Chef',
+                description: `Successfully cook 10 food items using harvests!`,
+                checkProgress: () => App.getRecord('harvestable_cooked_x_times') >= 10,
+                advance: (amount) => App.addRecord('harvestable_cooked_x_times', amount),
+                getReward: () => {
+                    const [rewardFoodName, rewardFoodInfo] = shuffleArray(Object.entries(App.definitions.food))
+                        .find( ([_, info]) => info.cookableOnly );
+                    App.pet.stats.gold += 200;
+                    App.addNumToObject(App.pet.inventory.food, rewardFoodName, 10);
+                    App.displayPopup(`You've received $200 and <br>${App.getFoodCSprite(rewardFoodInfo.sprite)}<br> <b>${rewardFoodName}</b> <small>x5</small>`);
+                }
+            },
+            camera_cook_x_times: {
+                name: 'Camera Chef',
+                description: `Successfully cook 10 food items using the camera!`,
+                checkProgress: () => App.getRecord('camera_cooked_x_times') >= 10,
+                advance: (amount) => App.addRecord('camera_cooked_x_times', amount),
+                getReward: () => {
+                    const [rewardFoodName, rewardFoodInfo] = shuffleArray(Object.entries(App.definitions.food))
+                        .find( ([_, info]) => info.cookableOnly );
+                    App.pet.stats.gold += 200;
+                    App.addNumToObject(App.pet.inventory.food, rewardFoodName, 5);
+                    App.displayPopup(`You've received $200 and <br>${App.getFoodCSprite(rewardFoodInfo.sprite)}<br> <b>${rewardFoodName}</b> <small>x5</small>`);
+                }
+            },
     
             // minigames
             perfect_minigame_rodrush_win_x_times: {
@@ -1777,6 +1910,26 @@ App.definitions = (() => {
                 getReward: () => {
                     App.pet.stats.gold += 500;
                     App.displayPopup(`You've received $500!`);
+                }
+            },
+            perfect_minigame_cropmatch_win_x_times: {
+                name: 'Memory Maestro',
+                description: 'Win with perfect score in Crop Match game 10 times!',
+                checkProgress: () => App.getRecord('times_perfected_cropmatch_minigame') >= 10,
+                advance: (amount) => App.addRecord('times_perfected_cropmatch_minigame', amount),
+                getReward: () => {
+                    App.pet.stats.gold += 500;
+                    App.displayPopup(`You've received $500!`);
+                }
+            },
+            perfect_minigame_petgroom_win_x_times: {
+                name: 'Master of the Fluff',
+                description: 'Win with perfect score in Pet Grooming game 10 times!',
+                checkProgress: () => App.getRecord('times_perfected_petgroom_minigame') >= 10,
+                advance: (amount) => App.addRecord('times_perfected_petgroom_minigame', amount),
+                getReward: () => {
+                    App.pet.stats.gold += 200;
+                    App.displayPopup(`You've received $200!`);
                 }
             },
         },

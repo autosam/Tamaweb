@@ -19,8 +19,8 @@ class Pet extends Object2d {
 
     constructor(petDefinition, additionalProps){
         const image = petDefinition.spriteSkin 
-            ? App.preloadedResources[petDefinition.spriteSkin]
-            : App.preloadedResources[petDefinition.sprite];
+            ? App.getPreloadedResource(petDefinition.spriteSkin)
+            : App.getPreloadedResource(petDefinition.sprite);
 
         const config = {
             image,
@@ -360,26 +360,48 @@ class Pet extends Object2d {
         this.stopMove();
 
         const refuse = () => {
+            // App.foods.hidden = true;
             me.playRefuseAnimation();
             App.setScene(App.scene.home);
-            // App.foods.hidden = true;
             App.uiFood.style.visibility = 'hidden';
             App.toggleGameplayControls(true);
             return false;
         }
 
+        const shouldRefuse = () => {
+            switch(type){
+                case "food": 
+                    if(this.hasMoodlet('full')) return true;
+                    break;
+            }
+
+            // checking for over feeding the same item
+            const reFedAmount = this.petDefinition.stats.last_eaten.reduce(
+                (sum, current) => current === foodSpriteCellNumber ? sum + 1 : sum, 
+                0
+            );
+            if(reFedAmount >= App.constants.FEEDING_PICKINESS.refeedingTolerance && type !== 'med') {
+                this.showThought('thought_vomit');
+                return true;
+            }
+
+            return false;
+        }
+
         const wantedFoodItem = App.definitions.food[this.stats.current_want.item];
-        if(App.petDefinition.checkWant(foodSpriteCellNumber == wantedFoodItem?.sprite, App.constants.WANT_TYPES.food)){
+        if(this.petDefinition.checkWant(foodSpriteCellNumber === wantedFoodItem?.sprite, App.constants.WANT_TYPES.food)){
             forced = true;
         }
 
         if(!forced){
-            switch(type){
-                case "food": 
-                    if(this.hasMoodlet('full')) return refuse();
-                    break;
-            }
+            if(shouldRefuse()) return refuse();
         }
+
+        // keeping a track of last X consumed items
+        this.petDefinition.stats.last_eaten = [
+            foodSpriteCellNumber, 
+            ...this.petDefinition.stats.last_eaten
+        ].toSpliced(App.constants.FEEDING_PICKINESS.bufferSize);
 
         Missions.done(Missions.TYPES.food);
 
@@ -669,7 +691,7 @@ class Pet extends Object2d {
         if(stats.current_death_tick <= 0){
             App.pet.stats.is_dead = true;
         }
-        this.sicknessOverlay.hidden = stats.current_death_tick >= max_death_tick;
+        this.sicknessOverlay.hidden = stats.current_death_tick >= max_death_tick / 2;
 
         // care rating check
         const careAffectingStats = [
@@ -812,11 +834,7 @@ class Pet extends Object2d {
                 return;
             }
         }
-
-        if(this.isMainPet){
-            App.darkOverlay.hidden = !this.stats.is_sleeping;
-        }
-
+        
         if(this.stats.is_sleeping){
             if(
                 (this.stats.current_sleep >= this.stats.max_sleep 
@@ -1021,7 +1039,7 @@ class Pet extends Object2d {
             this.showThought(this.stats.current_want.type, this.stats.current_want.item);
         }
     }
-    showThought(type, item){
+    showThought(type, item, disappearDelay = 5000){
         const bubble = new Object2d({
             parent: this,
             img: 'resources/img/misc/thought_bubble_01.png',
@@ -1170,7 +1188,7 @@ class Pet extends Object2d {
         setTimeout(() => {
             bubble.shouldFadeout = true;
             setTimeout(() => bubble.removeObject(), 1000);
-        }, 5000);
+        }, disappearDelay);
     }
     setLocalZBasedOnSelf(otherObject){
         const currentBoundingBox = this.getBoundingBox();

@@ -20,6 +20,10 @@ class Drawer {
             height: optHeight || this.canvas.height
         }
         this.objects = [];
+        this.cameraPosition = {
+            x: 0,
+            y: 0
+        };
     }
     draw(objects, skipClear) {
         if(!skipClear) this.clear();
@@ -49,8 +53,8 @@ class Drawer {
                 object.y = this.getRelativePositionY(Number(object.y.slice(0, object.y.length - 1))) - height / 2;
             }
 
-            let x = object.x,
-                y = object.y;
+            let x = object.x + (object.static ? 0 : this.cameraPosition.x),
+                y = object.y + (object.static ? 0 : this.cameraPosition.y);
 
             if (object.additionalX) x += object.additionalX;
             if (object.additionalY) y += object.additionalY;
@@ -72,8 +76,8 @@ class Drawer {
                     rotation, 
                     composite, 
                     opacity, 
-                    isSkybox,
                     filter,
+                    clip,
                 } = object;
                 if (!image) return;
 
@@ -103,6 +107,16 @@ class Drawer {
                     context.clip();
                 }
 
+                if(clip && clip.length === 4){
+                    context.beginPath();
+                    context.moveTo(clip[0][0], clip[0][1]);
+                    for (let i = 1; i < clip.length; i++) {
+                        context.lineTo(clip[i][0], clip[i][1]);
+                    }
+                    context.closePath();
+                    context.clip();
+                }
+
                 if (inverted) {
                     context.scale(-1, 1);
                     x = -x - (spritesheet ? spritesheet.cellSize : (width || image.width));
@@ -125,7 +139,7 @@ class Drawer {
                     const cellSize = spritesheet.cellSize;
                     const rows = spritesheet.rows;
                     const columns = spritesheet.columns;
-                    const sx = (cellNumber % rows) * cellSize;
+                    const sx = (cellNumber % columns) * cellSize;
                     const sy = Math.floor(cellNumber / columns) * cellSize;
 
                     const upperHalfHeight = Math.round((4 / 5) * cellSize);
@@ -265,5 +279,19 @@ class Drawer {
                 this.removeObject(otherObject);
             }
         })
+    }
+    setCameraPosition(x, y, lerpSpeed){
+        const targetX = x ?? this.cameraPosition.x,
+            targetY = y ?? this.cameraPosition.y;
+
+        if(lerpSpeed){
+            this.setCameraPosition(
+                lerp(this.cameraPosition.x, targetX, lerpSpeed),
+                lerp(this.cameraPosition.y, targetY, lerpSpeed),
+            )
+            return;
+        }
+        this.cameraPosition.x = targetX;
+        this.cameraPosition.y = targetY;
     }
 }
