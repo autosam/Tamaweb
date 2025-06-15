@@ -4951,7 +4951,7 @@ const App = {
                         }
                         return App.displayList([
                             {
-                                name: `room`,
+                                name: `main room`,
                                 onclick: () => {
                                     return App.displayList([
                                         {
