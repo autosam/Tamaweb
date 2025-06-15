@@ -178,7 +178,7 @@ class Activities {
         main.setPosition({x: '50%'});
         main.release();
     }
-    static async receivePurchasedItems(){
+    static async receivePurchasedItems(onEndFn){
         App.toggleGameplayControls(false, () => {
             App.pet.stopScriptedState();
         });
@@ -208,6 +208,7 @@ class Activities {
             mallNpc.removeObject();
             gift.removeObject();
             App.toggleGameplayControls(true);
+            onEndFn?.();
         });
     }
     static goToMall(){
@@ -304,10 +305,12 @@ class Activities {
         const onEnter = () => {
             onEnd();
             const currentActivity = activities[currentActivityIndex];
+            // offset by 1
+            App.temp.outsideActivityIndex = currentActivityIndex + 1;
             currentActivity.onEnter?.();
         }
         
-        let currentActivityIndex = 1;
+        let currentActivityIndex = App.temp.outsideActivityIndex ?? 1;
         const updateSelectedActivity = (offset = 1) => {
             if(spawnedGameObjects.length > 3){
                 const toDespwan = spawnedGameObjects.shift();
@@ -838,6 +841,7 @@ class Activities {
                         petsToReveal?.forEach(p => p?.removeObject());
                         App.setScene(App.scene.home);
                         App.toggleGameplayControls(true);
+                        App.handlers.open_fortune_teller();
                     });
                 });
                 petsToReveal?.forEach((p, i) => {
@@ -2411,7 +2415,7 @@ class Activities {
 
         App.pet.stats.is_at_parents = true;
     }
-    static goToClinic(){
+    static goToClinic(onEndFn){
         App.toggleGameplayControls(false);
         Missions.done(Missions.TYPES.visit_doctor);
 
@@ -2432,18 +2436,22 @@ class Activities {
                     if(health <= App.pet.stats.max_health * 0.20) state = 'very sick';
                     else if(health <= App.pet.stats.max_health * 0.45) state = 'sick';
                     else if(health <= App.pet.stats.max_health * 0.75) state = 'healthy'
-    
+                    
+                    const onEnd = () => {
+                        App.setScene(App.scene.home);
+                        App.toggleGameplayControls(true);
+                        onEndFn?.();
+                    }
+
                     if(state == 'very sick' || state == 'sick'){
                         App.pet.triggerScriptedState('shocked', 2000, false, true, () => {
                             App.displayPopup(`${App.pet.petDefinition.name} is ${state}`, 5000, () => App.pet.x = '50%');
-                            App.setScene(App.scene.home);
-                            App.toggleGameplayControls(true);
+                            onEnd();
                         })
                     } else {
                         App.pet.triggerScriptedState('cheering_with_icon', 2000, false, true, () => {
                             App.displayPopup(`${App.pet.petDefinition.name} is ${state}`, 5000, () => App.pet.x = '50%');
-                            App.setScene(App.scene.home);
-                            App.toggleGameplayControls(true);
+                            onEnd();
                         })
                     }
                 });
@@ -3123,7 +3131,7 @@ class Activities {
                 App.pet.statsManager();
                 App.drawer.removeObject(otherPet);
                 App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => {
-                    if(onEndFn) return onEndFn();
+                    onEndFn?.();
                     App.toggleGameplayControls(true);
                     App.setScene(App.scene.home);
                 });
@@ -3132,7 +3140,7 @@ class Activities {
 
         task_otherPetMoveIn();
     }
-    static goToPark(otherPetDef){
+    static goToPark(otherPetDef, onEndFn){
         if(!otherPetDef){
             if(random(1, 100) <= 60){
                 otherPetDef = App.getRandomPetDef(App.petDefinition.lifeStage);
@@ -3156,7 +3164,10 @@ class Activities {
             App.pet.x = '50%';
             App.pet.stats.current_fun += 40;
             App.pet.statsManager();
-            App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => App.setScene(App.scene.home));
+            App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => {
+                App.setScene(App.scene.home);
+                onEndFn?.();
+            });
             if(otherPet) App.drawer.removeObject(otherPet);
             App.toggleGameplayControls(true);
         }, Pet.scriptedEventDrivers.playing.bind({pet: App.pet}));
@@ -3834,6 +3845,7 @@ class Activities {
                     name: 'ok',
                     onclick: () => {
                         App.setScene(App.scene.home);
+                        App.handlers.open_works_list();
                     }
                 }
             ]);
