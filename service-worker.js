@@ -13,6 +13,7 @@ const ASSETS = [
   // main
   "index.html",
   "styles.css",
+  "themes.css",
   // scripts
   "src/Version.js",
   "src/UiHelper.js",
