@@ -82,6 +82,7 @@ App.definitions = (() => {
                 name: "Home",
                 image: 'resources/img/misc/activity_building_home.png',
                 onEnter: () => App.handlers.go_to_home(),
+                isHome: true,
             },
             {
                 name: "Mall",

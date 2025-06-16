@@ -1710,6 +1710,7 @@ const App = {
     },
     handlers: {
         go_to_home: function(){
+            App.temp.outsideActivityIndex = 1;
             App.pet.x = '0%';
             App.pet.targetX = 50;
         },
