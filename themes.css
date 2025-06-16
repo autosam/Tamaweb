@@ -445,28 +445,29 @@
         background: var(--mm-clr-8)
     }
     .classic-main-menu__item:nth-child(1){
-        color: var(--mm-clr-1);
+        color: #FA2B95;
     }
     .classic-main-menu__item:nth-child(2){
-        color: var(--mm-clr-2)
+        color: #EC7849;
     }
     .classic-main-menu__item:nth-child(3){
-        color: var(--mm-clr-3)
+        color: #9070F9;
     }
     .classic-main-menu__item:nth-child(4){
-        color: var(--mm-clr-4)
+        color: #0ED3CA;
     }
     .classic-main-menu__item:nth-child(5){
-        color: var(--mm-clr-5)
+        
+        color: #0ED3CA;
     }
     .classic-main-menu__item:nth-child(6){
-        color: var(--mm-clr-6)
+        color: #9070F9
     }
     .classic-main-menu__item:nth-child(7){
-        color: var(--mm-clr-7)
+        color: #FA2B95;
     }
     .classic-main-menu__item:nth-child(8){
-        color: var(--mm-clr-8)
+        color: #CC80FE;
     }
     /* family tree */
     .family-tree__vertical-line {
@@ -622,7 +623,7 @@
     }
     .mini-game-ui {
         color: var(--prim-clr-a);
-        text-shadow: 1px 1px white, -1px -1px white, 1px -1px white, -1px 1px white;
+        text-shadow: 1px 1px #00014B, -1px -1px #00014B, 1px -1px #00014B, -1px 1px #00014B;
     }
 }
 
