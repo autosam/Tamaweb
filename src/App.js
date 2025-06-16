@@ -4709,7 +4709,7 @@ const App = {
                 App.temp.seenSocialMediaPosts = 0;
             }
             function showPost(petDefinition, noMood, noNextBtn){
-                if(++App.temp.seenSocialMediaPosts >= 12){
+                if(++App.temp.seenSocialMediaPosts >= 12 && !noNextBtn){
                     return App.displayPopup('There are no more social media posts, comeback later!');
                 }
 
@@ -4775,10 +4775,11 @@ const App = {
 
                 switch(App.pet.state){
                     default:
-                        const tweet = randomFromArray(App.definitions.tweets.generic);
-                        postText.innerHTML = tweet[0]; // text
-                        if(tweet[1]) character.spritesheet.cellNumber = tweet[1]; // pose
-                        if(tweet[2]) background.setImg(tweet[2]); // background
+                        const [text, pose, backgroundImg, backgroundSpritesheetDef] = randomFromArray(App.definitions.tweets.generic);
+                        postText.innerHTML = text; // text
+                        if(pose) character.spritesheet.cellNumber = pose; // pose
+                        if(backgroundImg) background.setImg(backgroundImg); // background
+                        if(backgroundSpritesheetDef) background.spritesheet = backgroundSpritesheetDef;
                 }
 
                 if(!noMood){
