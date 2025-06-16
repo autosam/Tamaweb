@@ -3065,7 +3065,7 @@ class Activities {
         let score = 0;
 
         // ui
-        const buttonSizePx = 46;
+        const buttonSizePx = 64;
 
         const screen = App.displayEmpty();
         screen.style.background = 'transparent';
