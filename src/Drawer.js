@@ -79,7 +79,7 @@ class Drawer {
                     filter,
                     clip,
                 } = object;
-                if (!image) return;
+                if (!image?.naturalWidth) return;
 
                 context.save();
 
