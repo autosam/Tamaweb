@@ -3676,7 +3676,7 @@ const App = {
                     </span>
                     <div class="pet-trait-icons-container">
                     ${petTraitIcons.map(icon => {
-                        return `<div title="${icon.title}" class="pet-trait-icon ${!icon.condition ? 'disabled' : ''}">
+                        return `<div onclick="App.displayPopup('<small>trait:</small> <br> <b>${icon.title}</b> <small>(${icon.condition ? 'active' : 'inactive'})</small>')" title="${icon.title}" class="pet-trait-icon ${!icon.condition ? 'disabled' : ''}">
                             <img src="${icon.img}"></img>
                         </div>`
                     }).join('')}
