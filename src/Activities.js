@@ -272,11 +272,11 @@ class Activities {
                         <button class="generic-btn stylized slide-action" id="right"><i class="fa fa-angle-right"></i></button>
                     </div>
                     <div class="bottom-container align-end">
-                        <button class="generic-btn stylized" id="apply">
-                            <i class="fa fa-door-open"></i>
-                        </button>
                         <button class="generic-btn stylized back-btn" id="cancel">
                             <i class="fa fa-home"></i>
+                        </button>
+                        <button class="generic-btn stylized" id="apply">
+                            <i class="fa fa-door-open"></i>
                         </button>
                     </div>
                 </div>
