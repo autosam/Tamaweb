@@ -5154,6 +5154,20 @@ const App = {
         initShellButtonDisplay: function(currentDisplay, justOpened, buttonNumber){
             if(!currentDisplay) currentDisplay = App.getCurrentDisplay();
             if (currentDisplay) {
+
+                const LIST_CONTAINERS_MAP = {
+                    'generic-slider-container': 'slider',
+                    'generic-grid-container': 'grid',
+                    'generic-list-container': 'list',
+                }
+
+                let foundType = Object.entries(LIST_CONTAINERS_MAP).find( ([className]) => {
+                    return currentDisplay.classList.contains(className);
+                } );
+                const currentDisplayType = foundType?.at(1) || LIST_CONTAINERS_MAP['generic-list-container'];
+                console.log(currentDisplayType)
+
+
                 let activeIndex = currentDisplay.dataset.activeItemIndex || -1;
 
                 const currentDisplayItems = [...currentDisplay.querySelectorAll('button, a')];
