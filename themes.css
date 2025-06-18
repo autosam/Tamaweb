@@ -634,6 +634,8 @@
     --background-c: repeating-linear-gradient(0deg, #d9f99d 0 15px, #bef264 15px 30px);
     --background-d: repeating-linear-gradient(-45deg, #fca5a5 0 10px, #f87171 10px 20px);
     --prim-clr-a: #2563eb;
+    --prim-clr-b-bg: white;
+    --prim-clr-b-text: #7c3aed;
 
     hr {
         height: 1px;
