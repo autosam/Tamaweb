@@ -95,7 +95,7 @@ App.definitions = (() => {
                 onEnter: () => Activities.goToMarket(),
             },
             {
-                name: `Game Center ${App.getBadge()}`,
+                name: `Game Center`,
                 image: 'resources/img/misc/activity_building_arcade.png',
                 onEnter: () => Activities.goToArcade(),
             },
@@ -1002,7 +1002,7 @@ App.definitions = (() => {
             "nautical": {
                 image: 'resources/img/background/house/bathroom_cc_01.png',
                 price: 350,
-                isNew: true,
+                isNew: false,
                 type: 'bathroom',
             },
 
@@ -1022,7 +1022,7 @@ App.definitions = (() => {
             "octopus": {
                 image: 'resources/img/background/house/kitchen_cc_01.png',
                 price: 350,
-                isNew: true,
+                isNew: false,
                 type: 'kitchen',
             },
         },

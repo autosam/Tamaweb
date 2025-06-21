@@ -91,7 +91,7 @@ const App = {
         },
         CHAR_UNLOCK_PREFIX: 'ch_unl',
         FEEDING_PICKINESS: {
-            refeedingTolerance: 3,
+            refeedingTolerance: 5,
             bufferSize: 16,
         },
         // z-index
@@ -2671,7 +2671,7 @@ const App = {
                     }
                 },
                 {
-                    name: `Change Theme ${App.getBadge()}`,
+                    name: `Change Theme`,
                     onclick: () => {
                         return App.displayList(
                             App.definitions.themes.map(themeName => ({
@@ -2687,7 +2687,7 @@ const App = {
                     }
                 },
                 {
-                    name: `Shell Settings ${App.getBadge()}`,
+                    name: `Shell Settings`,
                     onclick: () => {
                         // App.handlers.open_shell_background_list();
                         // return true;
@@ -2712,7 +2712,7 @@ const App = {
                                 }
                             },
                             {
-                                _mount: (e) => e.innerHTML =  `shell logo: <i>${App.settings.displayShellLogo ? App.getIcon('eye') : App.getIcon('eye-slash')}</i> ${App.getBadge()}`,
+                                _mount: (e) => e.innerHTML =  `shell logo: <i>${App.settings.displayShellLogo ? App.getIcon('eye') : App.getIcon('eye-slash')}</i>`,
                                 onclick: (item) => {
                                     App.settings.displayShellLogo = !App.settings.displayShellLogo;
                                     App.applySettings();
@@ -2721,7 +2721,7 @@ const App = {
                                 }
                             },
                             {
-                                name: `+ shell size ${App.getBadge()}`,
+                                name: `+ shell size`,
                                 onclick: () => {
                                     App.settings.shellAdditionalSize += 0.1;
                                     App.applySettings();
@@ -2729,7 +2729,7 @@ const App = {
                                 }
                             },
                             {
-                                name: `- shell size ${App.getBadge()}`,
+                                name: `- shell size`,
                                 onclick: () => {
                                     App.settings.shellAdditionalSize -= 0.1;
                                     App.applySettings();
@@ -2737,7 +2737,7 @@ const App = {
                                 }
                             },
                             {
-                                name: `reset shell size ${App.getBadge()}`,
+                                name: `reset shell size`,
                                 onclick: () => {
                                     App.settings.shellAdditionalSize = 0;
                                     App.applySettings();
@@ -4981,11 +4981,11 @@ const App = {
                                 }
                             },
                             {
-                                name: `bathroom ${App.getBadge()}`,
+                                name: `bathroom`,
                                 onclick: () => App.handlers.open_room_background_list(false, createFilterFn('bathroom')),
                             },
                             {
-                                name: `kitchen ${App.getBadge()}`,
+                                name: `kitchen`,
                                 onclick: () => App.handlers.open_room_background_list(false, createFilterFn('kitchen')),
                             }
                         ])
@@ -5070,14 +5070,14 @@ const App = {
             }
             App.displayList([
                 {
-                    name: `crop match ${App.getBadge()}`,
+                    name: `crop match`,
                     onclick: () => {
                         App.displayPopup(`Memorize the sequence of crops as they appear!`, tutorialDisplayTime, () => Activities.plantMatchingGame())
                         return false;
                     }
                 },
                 {
-                    name: `pet grooming ${App.getBadge()}`,
+                    name: `pet grooming`,
                     onclick: () => {
                         App.displayPopup(`Press the wash icon <i class="fa-solid fa-hands-wash"></i> as much as possible before the timer runs out!`, tutorialDisplayTime, () => Activities.dogWashingGame())
                         return false;
