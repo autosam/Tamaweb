@@ -1411,16 +1411,29 @@ a.generic-btn:before {
     align-items: center;
 }
 
+.fade-out {
+    animation-name: fade-out !important;
+    animation-duration: 0.5s;
+    animation-fill-mode: forwards !important;
+    opacity: 1;
+}
 @keyframes fade-out {
     to {
         opacity: 0;
-        /* background: black; */
     }
 }
-.fade-out {
-    animation-name: fade-out;
-    animation-fill-mode: forwards;
+
+.fade-in {
+  opacity: 0;
+  animation: fade-in 0.5s ease forwards;
 }
+
+@keyframes fade-in {
+  to {
+    opacity: 1;
+  }
+}
+
 
 .family-tree__partners-container {
     display: flex;
@@ -1923,4 +1936,8 @@ a.generic-btn:before {
 	border-bottom: 0;
 	border-left: 0;
 	margin-bottom: -12px;
+}
+.message-bubble > span {
+    animation: fade-in 0.1s ease forwards;
+    opacity: 0;
 }

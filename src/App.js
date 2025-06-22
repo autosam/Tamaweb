@@ -5480,9 +5480,15 @@ const App = {
         return list;
     },
     displayMessageBubble: function(content){
+        const splitContent = content.split('')
+            .map((letter, index) => `<span style="animation-delay: ${index * 0.05}s">${letter}</span>`)
+            .join('');
         const display = App.displayEmpty('bg-transparent pointer-events-none');
-        display.close = () => display.remove();
-        display.innerHTML = `<div class="message-bubble">${content}</div>`
+        display.close = () => {
+            UI.fadeOut(display.querySelector('.message-bubble'));
+            setTimeout(() => display.remove(), 1000);
+        }
+        display.innerHTML = `<div class="message-bubble">${splitContent}</div>`
         return display;
     },
     displayPopup: function(content, ms, onEndFn, isReveal){

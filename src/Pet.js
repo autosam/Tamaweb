@@ -1036,9 +1036,14 @@ class Pet extends Object2d {
         console.log(`Time every stats hit ~0:`, report);
         App.petDefinition.maxStats();
     }
-    showCurrentWant(){
+    showCurrentWant(withName){
         if(this.stats.current_want.type){
             this.showThought(this.stats.current_want.type, this.stats.current_want.item);
+        
+            if(withName){
+                const display = App.displayMessageBubble(this.petDefinition.getWantName());
+                setTimeout(() => display.close(), 3500);
+            }
         }
     }
     showThought(type, item, disappearDelay = 5000){

@@ -627,6 +627,18 @@ class PetDefinition {
         this.clearWant(true);
         return true;
     }
+    getWantName(){
+        switch(this.stats.current_want.type){
+            case App.constants.WANT_TYPES.item:
+            case App.constants.WANT_TYPES.food:
+                return this.stats.current_want.item;
+            case App.constants.WANT_TYPES.playdate:             
+                return this.friends?.at(this.stats.current_want.item)?.name || "Friend";
+            case App.constants.WANT_TYPES.minigame:
+                return "Game Center";
+        }
+        return "Unknown";
+    }
     adjustCare(add){
         if(add) this.stats.current_care += 1;
         else this.stats.current_care -= 1;
