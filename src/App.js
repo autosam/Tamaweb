@@ -2095,6 +2095,7 @@ const App = {
                                 onclick: () => {
                                     App.closeAllDisplays();
                                     Activities.stayAtParents();
+                                    App.save();
                                 }
                             },
                             {
