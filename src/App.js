@@ -121,7 +121,7 @@ const App = {
         App.drawer = new Drawer(document.querySelector('.graphics-canvas'));
         Object2d.setDrawer(App.drawer);
 
-        // localforage store
+        // localforage store /* DEPRECATED, stuck for compatibility, todo: remove later */
         App.dbStore = localforage.createInstance({
             name: "tamaweb-store",
             driver: localforage.INDEXEDDB
@@ -131,11 +131,11 @@ const App = {
         moment.relativeTimeThreshold('m', 59);
 
         // load data
-        let loadedData = await this.load();
-        if(!loadedData.lastTime || !loadedData.pet?.name){
-            console.log('legacy: loading from localStorage');
-            loadedData = this.legacy_load();
-        }
+        const loadedData = await this.handleSequentiallyLoad([
+            App.load,
+            App.localforage_load,
+            App.legacy_load,
+        ]);
         console.log({loadedData});
 
         // shell background
@@ -397,7 +397,7 @@ const App = {
         // saver
         setInterval(() => {
             App.save(true);
-        }, 10000);
+        }, 5000);
     },
     initRudderStack: function(){
         rudderanalytics.identify(App.userId, {
@@ -2903,8 +2903,8 @@ const App = {
                                     App.displayPopup('resetting...', App.INF);
 
                                     window.localStorage.clear();
-                                    await App.dbStore.removeItem('last_time');
-                                    await App.dbStore.removeItem('pet');
+                                    await App.dbStore.clear();
+                                    await idbKeyval.delMany(['last_time', 'pet']);
 
                                     location.reload();
                                     return false;
@@ -2934,6 +2934,7 @@ const App = {
                                                 App.displayPopup('resetting...', App.INF);
                                                 window.localStorage.clear();
                                                 await App.dbStore.clear();
+                                                await idbKeyval.clear();
                                                 location.reload();
                                                 return false;
                                             }
@@ -4622,7 +4623,7 @@ const App = {
                                 name: 'get code',
                                 onclick: async () => {
                                     const loading = App.displayPopup('Loading...', App.INF);
-                                    const pet = await App.dbStore.getItem('pet');
+                                    const pet = await idbKeyval.get('pet');
                                     loading.close();
                                     let charCode = 'friend:' + btoa(encodeURIComponent(JSON.stringify({ user_id: App.userId, pet })));
                                     navigator.clipboard.writeText(charCode);
@@ -5883,9 +5884,24 @@ const App = {
             }
         };
     },
+    handleSequentiallyLoad: async function(loaders){
+        const isValid = (data) => !!(data?.lastTime && data.pet?.name);
+
+        let mainData;
+        for (const loader of loaders) {
+            const data = await loader();
+            if(!mainData) mainData = data; // first loader is main data
+            if (isValid(data)) return data;
+        }
+
+        return mainData;
+    },
     save: function(noIndicator){
+        let savingData = [];
+
         const setItem = (key, value) => {
-            return App.dbStore.setItem(key, value);
+            savingData = [...savingData, [key, value]];
+            // return App.dbStore.setItem(key, value);
         }
         // setCookie('pet', App.pet.serializeStats(), 365);
         setItem('pet', App.pet.serializeStats());
@@ -5931,8 +5947,59 @@ const App = {
             saveIcon.style.display = '';
             setTimeout(() => saveIcon.style.display = 'none', 2000);
         }
+
+        idbKeyval.setMany(savingData);
     },
     load: async function() {
+        const getItem = async (key, defaultValue) => {
+            const value = await idbKeyval.get(key);
+            return value !== null && value !== undefined ? value : defaultValue;
+        }
+    
+        const pet = await getItem('pet', {});
+        const settings = await getItem('settings', null);
+        const lastTime = await getItem('last_time', false);
+        const eventsHistory = await getItem('ingame_events_history', null);
+        const roomCustomizations = await getItem('room_customization', null);
+        const mods = await getItem('mods', App.mods);
+        const records = await getItem('records', App.records);
+    
+        const userId = await getItem('user_id', random(100000000000, 999999999999));
+        App.userId = userId;
+    
+        const userName = await getItem('user_name', null);
+        App.userName = userName === 'null' ? null : userName;
+    
+        App.playTime = parseInt(await getItem('play_time', 0), 10);
+    
+        const shellBackground = await getItem('shell_background_v2.1', 
+            App.definitions.shell_background.find(shell => shell.isDefault).image ||
+            App.definitions.shell_background[1].image);
+    
+        const missions = await getItem('missions', {});
+        const furniture = await getItem('furniture', false);
+        const plants = await getItem('plants', App.plants);
+        const animals = await getItem('animals', App.animals);
+
+        App.loadedData = {
+            pet,
+            settings,
+            lastTime,
+            eventsHistory,
+            roomCustomizations,
+            shellBackground,
+            playTime: App.playTime,
+            mods,
+            records,
+            missions,
+            furniture,
+            plants,
+            animals,
+        };
+    
+        return App.loadedData;
+    },
+    localforage_load: async function() {
         const getItem = async (key, defaultValue) => {
             const value = await App.dbStore.getItem(key);
             return value !== null ? value : defaultValue;
@@ -5982,11 +6049,14 @@ const App = {
         return App.loadedData;
     },
     getDBItems: async function(){
-        const keys = await App.dbStore.keys();
+        const entries = await idbKeyval.entries();
+        return entries.reduce((acc, [key, value]) => acc = {...acc, [key]: value}, {});
+
+        const keys = await idbKeyval.keys();
         const items = {};
 
         for (const key of keys) {
-            items[key] = await App.dbStore.getItem(key);
+            items[key] = await idbKeyval.get(key);
         }
     
         return items;
@@ -6055,18 +6125,19 @@ const App = {
             'play_time',
             'last_time',
             'mods',
+            'shell_background_v2.1',
         ]
         App.save();
         App.save = () => {};
         for(let key of Object.keys(json)){
             if(ignoreKeys.includes(key)) continue;
-            await App.dbStore.setItem(key, json[key]);
+            await idbKeyval.set(key, json[key]);
         }
         const allowedKeys = [...Object.keys(json), ...ignoreKeys];
-        const currentKeys = await App.dbStore.keys();
+        const currentKeys = await idbKeyval.keys();
         for(let key of currentKeys){
             if(!allowedKeys.includes(key)){
-                await App.dbStore.removeItem(key);
+                await idbKeyval.del(key);
             }
         }
 
