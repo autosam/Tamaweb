@@ -2346,6 +2346,15 @@ const App = {
                     }
                 },
                 {
+                    name: `${App.getIcon('floppy-disk')} <span>Manual Save</span>`,
+                    onclick: (me) => {
+                        App.save();
+                        me.disabled = true;
+                        me.querySelector('span').textContent = 'Saved!';
+                        return true;
+                    }
+                },
+                {
                     _ignore: !App.deferredInstallPrompt,
                     name: 'install app',
                     onclick: () => {
@@ -2481,15 +2490,6 @@ const App = {
                     },
                 },
                 { type: 'separator', _ignore: ignoreFirstDivider },
-                {
-                    name: `${App.getIcon('floppy-disk')} <span>Save</span>`,
-                    onclick: (me) => {
-                        App.save();
-                        me.disabled = true;
-                        me.querySelector('span').textContent = 'Saved!';
-                        return true;
-                    }
-                },
                 {
                     name: `gameplay settings`,
                     onclick: () => {
