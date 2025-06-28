@@ -91,7 +91,7 @@ const App = {
         },
         CHAR_UNLOCK_PREFIX: 'ch_unl',
         FEEDING_PICKINESS: {
-            refeedingTolerance: 5,
+            refeedingTolerance: 10,
             bufferSize: 16,
         },
         // z-index
@@ -5909,9 +5909,7 @@ const App = {
 
         const setItem = (key, value) => {
             savingData = [...savingData, [key, value]];
-            // return App.dbStore.setItem(key, value);
         }
-        // setCookie('pet', App.pet.serializeStats(), 365);
         setItem('pet', App.pet.serializeStats());
         setItem('settings', (App.settings));
         setItem('last_time', Date.now());
