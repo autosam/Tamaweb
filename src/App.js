@@ -31,6 +31,7 @@ const App = {
         isTester: false,
         theme: false,
         shellAdditionalSize: 0,
+        showWantName: true,
     },
     constants: {
         ONE_HOUR: 1000 * 60 * 60,
@@ -2113,7 +2114,7 @@ const App = {
                     name: `current want`,
                     onclick: () => {
                         App.closeAllDisplays();
-                        App.pet.showCurrentWant();
+                        App.pet.showCurrentWant(App.settings.showWantName);
                     }
                 },
             ], null, 'Care')
@@ -2578,6 +2579,15 @@ const App = {
                                     updateUI();
 
                                     list.appendChild(content);
+                                    return true;
+                                }
+                            },
+                            {
+                                _mount: (e) => e.innerHTML = `show want name: <i>${App.settings.showWantName ? 'On' : 'Off'}</i>`,
+                                onclick: (item) => {
+                                    App.settings.showWantName = !App.settings.showWantName;
+                                    App.applySettings();
+                                    item._mount(); 
                                     return true;
                                 }
                             },
