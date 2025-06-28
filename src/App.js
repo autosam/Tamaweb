@@ -37,6 +37,7 @@ const App = {
         ONE_HOUR: 1000 * 60 * 60,
         ONE_MINUTE: 1000 * 60,
         ONE_SECOND: 1000,
+        AUTO_SAVE_INTERVAL_SECS: 6,
         FOOD_SPRITESHEET: 'resources/img/item/foods_on.png',
         FOOD_SPRITESHEET_DIMENSIONS: {
             cellNumber: 1,
@@ -398,7 +399,7 @@ const App = {
         // saver
         setInterval(() => {
             App.save(true);
-        }, 5000);
+        }, App.constants.AUTO_SAVE_INTERVAL_SECS * 1000);
     },
     initRudderStack: function(){
         rudderanalytics.identify(App.userId, {
@@ -2347,7 +2348,13 @@ const App = {
                     }
                 },
                 {
-                    name: `${App.getIcon('floppy-disk')} <span>Manual Save</span>`,
+                    name: `
+                        ${App.getIcon('floppy-disk')} 
+                        <span class="flex flex-dir-col">
+                            <span>Manual Save</span>
+                            <small style="font-size: x-small">auto-saves every ${App.constants.AUTO_SAVE_INTERVAL_SECS} secs</small> 
+                        </span>
+                        `,
                     onclick: (me) => {
                         App.save();
                         me.disabled = true;
@@ -6146,6 +6153,12 @@ const App = {
         ]
         App.save();
         App.save = () => {};
+
+        // handle animals to update their lastStatsUpdate time to now
+        json.animals?.list?.forEach(a => {
+            a.lastStatsUpdate = Date.now();
+        });
+
         for(let key of Object.keys(json)){
             if(ignoreKeys.includes(key)) continue;
             await idbKeyval.set(key, json[key]);
