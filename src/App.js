@@ -3236,7 +3236,7 @@ const App = {
             let sliderInstance;
             const salesDay = App.isSalesDay();
             let index = -1;
-            pRandom.seed = App.getDayId(true);
+            const getIsOutOfStock = App.getOutOfStockCounter(App.getDayId(true) + 25);
             for(let food of Object.keys(App.definitions.food)){
                 let current = App.definitions.food[food];
                 const currentType = current.type || 'food';
@@ -3256,7 +3256,7 @@ const App = {
                 }
 
                 // some entries become randomly unavailable to buy for the day
-                const isOutOfStock = ++index && buyMode && pRandom.getPercent(20) && currentType !== 'med';
+                const isOutOfStock = ++index && buyMode && getIsOutOfStock(20) && currentType !== 'med';
 
                 // 50% off on sales day
                 let price = current.price;
@@ -3369,7 +3369,7 @@ const App = {
             let sliderInstance;
             const salesDay = App.isSalesDay();
             let index = -1;
-            pRandom.seed = App.getDayId(true);
+            const getIsOutOfStock = App.getOutOfStockCounter(App.getDayId(true) + 50);
             for(let plant of Object.keys(App.definitions.plant)){
                 let current = App.definitions.plant[plant];
 
@@ -3382,7 +3382,7 @@ const App = {
                 }
 
                 // some entries become randomly unavailable to buy for the day
-                const isOutOfStock = ++index && buyMode && pRandom.getPercent(20);
+                const isOutOfStock = ++index && buyMode && getIsOutOfStock(10);
 
                 // 50% off on sales day
                 let price = current.price;
@@ -5704,7 +5704,7 @@ const App = {
         if(forCurrentUser){
             return +(
                 App.getDayId() + (App.userId || 1234)
-            ).toString().slice(0, 16);
+            ).toString().slice(0, 10);
         }
 
         const date = new Date();
@@ -5742,6 +5742,21 @@ const App = {
         } else {
             return current >= start || current < end;
         }
+    },
+    getOutOfStockCounter: (seed = random(1, 999999999)) => {
+        pRandom.save();
+        pRandom.seed = seed;
+        const randomArray = new Array(100).fill(50).map(() => pRandom.getIntBetween(0, 100)).reverse();
+        pRandom.load();
+        let pointer = 0;
+
+        const isOutOfStock = (percent) => {
+            pointer += 1;
+            if(pointer >= randomArray.length) pointer = 0;
+            return (randomArray.at(pointer) || 50) < percent;
+        }
+
+        return isOutOfStock;
     },
     clampWithin24HourFormat: function(hour){
         return ((hour % 24) + 24) % 24;

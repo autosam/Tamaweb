@@ -2,10 +2,10 @@ const pRandom = {
     a: 1664525,
     c: 1013904223,
     m: Math.pow(2, 32),
-    seed: Math.round(Math.random() * (Math.pow(2, 32) - 1)),
+    _private_seed: Math.round(Math.random() * (Math.pow(2, 32) - 1)),
     getInt: function(){
-        this.seed = (this.a * this.seed + this.c) % this.m;
-        return this.seed;
+        this._private_seed = (this.a * this._private_seed + this.c) % this.m;
+        return this._private_seed;
     },
     getFloat: function(){
         return this.getInt() / this.m;
@@ -25,7 +25,7 @@ const pRandom = {
         return (this.getFloatBetween(0,100) > p || p <= 0) ? false : true;
     },
     save: function(){
-    	this._seed = this.seed;
+    	this._seed = this._private_seed;
     },
     load: function(){
     	if(!this._seed) return false;
@@ -33,7 +33,19 @@ const pRandom = {
     },
     randomSeed: function(){
         this.seed = Math.round(Math.random() * (Math.pow(2, 32) - 1))
-    }
+    },
+    set seed(newSeed){
+        this._private_seed = this.hashSeed(newSeed);
+    },
+    get seed(){
+        return this._private_seed;
+    },
+    hashSeed: function(seed){
+        seed ^= seed >>> 21;
+        seed ^= seed << 35;
+        seed ^= seed >>> 4;
+        return (seed >>> 0) || 563214789;
+    },
 };
 
 const lerp = function(s, e, p){
