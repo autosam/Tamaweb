@@ -253,7 +253,7 @@ class Activities {
             me.setState(me.isMoving ? 'moving' : 'idle');
             me.speedOverride = Math.abs(me.x - me.targetX) > fastMoveBound ? 1 : 0.1;
         });
-        // App.pet.x = App.drawer.bounds.width - 40;
+        App.pet.x = '45%';
 
         // ui
         App.toggleGameplayControls(false);
@@ -272,8 +272,11 @@ class Activities {
                         <button class="generic-btn stylized slide-action" id="right"><i class="fa fa-angle-right"></i></button>
                     </div>
                     <div class="bottom-container align-end">
+                        <button class="generic-btn stylized back-btn" id="cancel">
+                            <i class="fa fa-home"></i>
+                        </button>
                         <button class="generic-btn stylized" id="apply">
-                            <i class="fa fa-door-open icon"></i>
+                            <i class="fa fa-door-open"></i>
                         </button>
                     </div>
                 </div>
@@ -345,13 +348,20 @@ class Activities {
             spawnedGameObjects.push(background);
             
             // App.pet.x = scenePositionX + App.drawer.bounds.width;
-            App.pet.targetX = scenePositionX + App.drawer.bounds.width - 40;
+            // App.pet.targetX = scenePositionX + App.drawer.bounds.width - 40;
+            App.pet.targetX = scenePositionX + 
+                App.drawer.getRelativePositionX(50) - 
+                (App.petDefinition.spritesheet.cellSize / 2);
         }
 
         updateSelectedActivity();
         editDisplay.querySelector('#right').onclick = () => updateSelectedActivity(1);
         editDisplay.querySelector('#left').onclick = () => updateSelectedActivity(-1);
         editDisplay.querySelector('#apply').onclick = () => onEnter();
+        editDisplay.querySelector('#cancel').onclick = () => {
+            onEnd();
+            activities.find(a => a.isHome)?.onEnter?.();
+        };
     }
     static async reckoning(){
         App.setScene(App.scene.reviverDen);
@@ -3055,7 +3065,7 @@ class Activities {
         let score = 0;
 
         // ui
-        const buttonSizePx = 46;
+        const buttonSizePx = 64;
 
         const screen = App.displayEmpty();
         screen.style.background = 'transparent';

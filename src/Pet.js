@@ -380,7 +380,9 @@ class Pet extends Object2d {
                 (sum, current) => current === foodSpriteCellNumber ? sum + 1 : sum, 
                 0
             );
-            if(reFedAmount >= App.constants.FEEDING_PICKINESS.refeedingTolerance && type !== 'med') {
+            
+            const isMilk = foodSpriteCellNumber === App.definitions.food['milk'].sprite;
+            if(reFedAmount >= App.constants.FEEDING_PICKINESS.refeedingTolerance && type !== 'med' && !isMilk) {
                 this.showThought('thought_vomit');
                 return true;
             }
@@ -1034,9 +1036,14 @@ class Pet extends Object2d {
         console.log(`Time every stats hit ~0:`, report);
         App.petDefinition.maxStats();
     }
-    showCurrentWant(){
+    showCurrentWant(withName){
         if(this.stats.current_want.type){
             this.showThought(this.stats.current_want.type, this.stats.current_want.item);
+        
+            if(withName){
+                const display = App.displayMessageBubble(this.petDefinition.getWantName());
+                setTimeout(() => display.close(), 3500);
+            }
         }
     }
     showThought(type, item, disappearDelay = 5000){

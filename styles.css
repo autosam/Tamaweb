@@ -670,7 +670,7 @@ button {
 .dom-shell {
     width: 320px;
     height: 400px;
-    position: fixed;
+    position: absolute;
     background: 50% 50% / cover rgb(255, 237, 217);
     border-radius: 100% 100% 95% 95%;
     overflow: hidden;
@@ -1411,16 +1411,29 @@ a.generic-btn:before {
     align-items: center;
 }
 
+.fade-out {
+    animation-name: fade-out !important;
+    animation-duration: 0.5s;
+    animation-fill-mode: forwards !important;
+    opacity: 1;
+}
 @keyframes fade-out {
     to {
         opacity: 0;
-        /* background: black; */
     }
 }
-.fade-out {
-    animation-name: fade-out;
-    animation-fill-mode: forwards;
+
+.fade-in {
+  opacity: 0;
+  animation: fade-in 0.5s ease forwards;
 }
+
+@keyframes fade-in {
+  to {
+    opacity: 1;
+  }
+}
+
 
 .family-tree__partners-container {
     display: flex;
@@ -1899,17 +1912,17 @@ a.generic-btn:before {
 
 .message-bubble {
     margin: 10px;
-    margin-top: 24px;
+    margin-top: 36px;
 	position: relative;
-	background: var(--prim-clr-b-bg);
-	border-radius: .4em;
-    color: var(--prim-clr-b-text);
+	background: white;
+	border-radius: 12px;
+    color: #000060;
     padding: 4px 10px;
     filter: 
-        drop-shadow(-1px -1px 0px var(--prim-clr-b-text)) 
-        drop-shadow(1px 1px 0px var(--prim-clr-b-text)) 
-        drop-shadow(0px 2px 0px var(--prim-clr-b-text)) 
-        drop-shadow(2px 2px 0px var(--prim-clr-b-text));
+        drop-shadow(-1px -1px 0px #000060) 
+        drop-shadow(1px 1px 0px #000060) 
+        drop-shadow(0px 2px 0px #000060) 
+        drop-shadow(2px 2px 0px #f86000);
 }
 .message-bubble:after {
 	content: '';
@@ -1918,9 +1931,13 @@ a.generic-btn:before {
 	left: 50%;
 	width: 0;
 	height: 0;
-	border: 24px solid transparent;
-	border-top-color: var(--prim-clr-b-bg);
+	border: 12px solid transparent;
+	border-top-color: white;
 	border-bottom: 0;
-	border-right: 0;
-	margin-bottom: -24px;
+	border-left: 0;
+	margin-bottom: -12px;
+}
+.message-bubble > span {
+    animation: fade-in 0.1s ease forwards;
+    opacity: 0;
 }

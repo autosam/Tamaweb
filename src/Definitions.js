@@ -82,6 +82,7 @@ App.definitions = (() => {
                 name: "Home",
                 image: 'resources/img/misc/activity_building_home.png',
                 onEnter: () => App.handlers.go_to_home(),
+                isHome: true,
             },
             {
                 name: "Mall",
@@ -94,7 +95,7 @@ App.definitions = (() => {
                 onEnter: () => Activities.goToMarket(),
             },
             {
-                name: `Game Center ${App.getBadge()}`,
+                name: `Game Center`,
                 image: 'resources/img/misc/activity_building_arcade.png',
                 onEnter: () => Activities.goToArcade(),
             },
@@ -1001,7 +1002,7 @@ App.definitions = (() => {
             "nautical": {
                 image: 'resources/img/background/house/bathroom_cc_01.png',
                 price: 350,
-                isNew: true,
+                isNew: false,
                 type: 'bathroom',
             },
 
@@ -1021,7 +1022,7 @@ App.definitions = (() => {
             "octopus": {
                 image: 'resources/img/background/house/kitchen_cc_01.png',
                 price: 350,
-                isNew: true,
+                isNew: false,
                 type: 'kitchen',
             },
         },
@@ -2154,7 +2155,12 @@ App.definitions = (() => {
                 ['#Hubchi', 2, "resources/img/background/house/online_hub_01.png"],
                 ['Played hide and seek with parents! #TinyGames', 2, "resources/img/background/house/parents_house_01.png"],
                 ['Leaf fell on me. Guess I’m a tree now! #TreeLife', 8, "resources/img/background/outside/park_02.png"],
-                ['#onthatgrind', 14, "resources/img/background/house/office_01.png"],
+                ['#onthatgrind', 2, "resources/img/background/house/office_01.png", {
+                    cellSize: 96, // App.drawer.bounds.width
+                    cellNumber: 2,
+                    rows: 1,
+                    columns: 3
+                }],
                 ['Market day! #shopping', 10, "resources/img/background/outside/market_01.png"],
                 ['Prices too high! #whatisthis', 7, "resources/img/background/outside/market_01.png"],
                 ['Looking for a cute #headband!', 8, "resources/img/background/outside/market_01.png"],

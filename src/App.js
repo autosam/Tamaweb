@@ -31,11 +31,13 @@ const App = {
         isTester: false,
         theme: false,
         shellAdditionalSize: 0,
+        showWantName: true,
     },
     constants: {
         ONE_HOUR: 1000 * 60 * 60,
         ONE_MINUTE: 1000 * 60,
         ONE_SECOND: 1000,
+        AUTO_SAVE_INTERVAL_SECS: 6,
         FOOD_SPRITESHEET: 'resources/img/item/foods_on.png',
         FOOD_SPRITESHEET_DIMENSIONS: {
             cellNumber: 1,
@@ -91,7 +93,7 @@ const App = {
         },
         CHAR_UNLOCK_PREFIX: 'ch_unl',
         FEEDING_PICKINESS: {
-            refeedingTolerance: 3,
+            refeedingTolerance: 10,
             bufferSize: 16,
         },
         // z-index
@@ -121,7 +123,7 @@ const App = {
         App.drawer = new Drawer(document.querySelector('.graphics-canvas'));
         Object2d.setDrawer(App.drawer);
 
-        // localforage store
+        // localforage store /* DEPRECATED, stuck for compatibility, todo: remove later */
         App.dbStore = localforage.createInstance({
             name: "tamaweb-store",
             driver: localforage.INDEXEDDB
@@ -131,11 +133,11 @@ const App = {
         moment.relativeTimeThreshold('m', 59);
 
         // load data
-        let loadedData = await this.load();
-        if(!loadedData.lastTime || !loadedData.pet?.name){
-            console.log('legacy: loading from localStorage');
-            loadedData = this.legacy_load();
-        }
+        const loadedData = await this.handleSequentiallyLoad([
+            App.load,
+            App.localforage_load,
+            App.legacy_load,
+        ]);
         console.log({loadedData});
 
         // shell background
@@ -397,7 +399,7 @@ const App = {
         // saver
         setInterval(() => {
             App.save(true);
-        }, 10000);
+        }, App.constants.AUTO_SAVE_INTERVAL_SECS * 1000);
     },
     initRudderStack: function(){
         rudderanalytics.identify(App.userId, {
@@ -1710,6 +1712,7 @@ const App = {
     },
     handlers: {
         go_to_home: function(){
+            App.temp.outsideActivityIndex = 1;
             App.pet.x = '0%';
             App.pet.targetX = 50;
         },
@@ -2094,6 +2097,7 @@ const App = {
                                 onclick: () => {
                                     App.closeAllDisplays();
                                     Activities.stayAtParents();
+                                    App.save();
                                 }
                             },
                             {
@@ -2111,7 +2115,7 @@ const App = {
                     name: `current want`,
                     onclick: () => {
                         App.closeAllDisplays();
-                        App.pet.showCurrentWant();
+                        App.pet.showCurrentWant(App.settings.showWantName);
                     }
                 },
             ], null, 'Care')
@@ -2344,6 +2348,22 @@ const App = {
                     }
                 },
                 {
+                    name: `
+                        ${App.getIcon('floppy-disk')} 
+                        <span class="flex flex-dir-col">
+                            <span>Manual Save</span>
+                            <small style="font-size: x-small">auto-saves every ${App.constants.AUTO_SAVE_INTERVAL_SECS} secs</small> 
+                        </span>
+                        ${App.getBadge()}
+                        `,
+                    onclick: (me) => {
+                        App.save();
+                        me.disabled = true;
+                        me.querySelector('span').textContent = 'Saved!';
+                        return true;
+                    }
+                },
+                {
                     _ignore: !App.deferredInstallPrompt,
                     name: 'install app',
                     onclick: () => {
@@ -2480,7 +2500,7 @@ const App = {
                 },
                 { type: 'separator', _ignore: ignoreFirstDivider },
                 {
-                    name: `gameplay settings`,
+                    name: `gameplay settings ${App.getBadge()}`,
                     onclick: () => {
                         return App.displayList([
                             {
@@ -2567,6 +2587,15 @@ const App = {
                                     updateUI();
 
                                     list.appendChild(content);
+                                    return true;
+                                }
+                            },
+                            {
+                                _mount: (e) => e.innerHTML = `show want name: <i>${App.settings.showWantName ? 'On' : 'Off'}</i> ${App.getBadge()}`,
+                                onclick: (item) => {
+                                    App.settings.showWantName = !App.settings.showWantName;
+                                    App.applySettings();
+                                    item._mount(); 
                                     return true;
                                 }
                             },
@@ -2662,7 +2691,7 @@ const App = {
                     }
                 },
                 {
-                    name: `Change Theme ${App.getBadge()}`,
+                    name: `Change Theme`,
                     onclick: () => {
                         return App.displayList(
                             App.definitions.themes.map(themeName => ({
@@ -2678,7 +2707,7 @@ const App = {
                     }
                 },
                 {
-                    name: `Shell Settings ${App.getBadge()}`,
+                    name: `Shell Settings`,
                     onclick: () => {
                         // App.handlers.open_shell_background_list();
                         // return true;
@@ -2703,7 +2732,7 @@ const App = {
                                 }
                             },
                             {
-                                _mount: (e) => e.innerHTML =  `shell logo: <i>${App.settings.displayShellLogo ? App.getIcon('eye') : App.getIcon('eye-slash')}</i> ${App.getBadge()}`,
+                                _mount: (e) => e.innerHTML =  `shell logo: <i>${App.settings.displayShellLogo ? App.getIcon('eye') : App.getIcon('eye-slash')}</i>`,
                                 onclick: (item) => {
                                     App.settings.displayShellLogo = !App.settings.displayShellLogo;
                                     App.applySettings();
@@ -2712,7 +2741,7 @@ const App = {
                                 }
                             },
                             {
-                                name: `+ shell size ${App.getBadge()}`,
+                                name: `+ shell size`,
                                 onclick: () => {
                                     App.settings.shellAdditionalSize += 0.1;
                                     App.applySettings();
@@ -2720,7 +2749,7 @@ const App = {
                                 }
                             },
                             {
-                                name: `- shell size ${App.getBadge()}`,
+                                name: `- shell size`,
                                 onclick: () => {
                                     App.settings.shellAdditionalSize -= 0.1;
                                     App.applySettings();
@@ -2728,7 +2757,7 @@ const App = {
                                 }
                             },
                             {
-                                name: `reset shell size ${App.getBadge()}`,
+                                name: `reset shell size`,
                                 onclick: () => {
                                     App.settings.shellAdditionalSize = 0;
                                     App.applySettings();
@@ -2901,8 +2930,8 @@ const App = {
                                     App.displayPopup('resetting...', App.INF);
 
                                     window.localStorage.clear();
-                                    await App.dbStore.removeItem('last_time');
-                                    await App.dbStore.removeItem('pet');
+                                    await App.dbStore.clear();
+                                    await idbKeyval.delMany(['last_time', 'pet']);
 
                                     location.reload();
                                     return false;
@@ -2932,6 +2961,7 @@ const App = {
                                                 App.displayPopup('resetting...', App.INF);
                                                 window.localStorage.clear();
                                                 await App.dbStore.clear();
+                                                await idbKeyval.clear();
                                                 location.reload();
                                                 return false;
                                             }
@@ -3199,7 +3229,7 @@ const App = {
             let sliderInstance;
             const salesDay = App.isSalesDay();
             let index = -1;
-            pRandom.seed = App.getDayId(true);
+            const getIsOutOfStock = App.getOutOfStockCounter(App.getDayId(true) + 25);
             for(let food of Object.keys(App.definitions.food)){
                 let current = App.definitions.food[food];
                 const currentType = current.type || 'food';
@@ -3219,7 +3249,7 @@ const App = {
                 }
 
                 // some entries become randomly unavailable to buy for the day
-                const isOutOfStock = ++index && buyMode && pRandom.getPercent(20) && currentType !== 'med';
+                const isOutOfStock = ++index && buyMode && getIsOutOfStock(20) && currentType !== 'med';
 
                 // 50% off on sales day
                 let price = current.price;
@@ -3332,7 +3362,7 @@ const App = {
             let sliderInstance;
             const salesDay = App.isSalesDay();
             let index = -1;
-            pRandom.seed = App.getDayId(true);
+            const getIsOutOfStock = App.getOutOfStockCounter(App.getDayId(true) + 50);
             for(let plant of Object.keys(App.definitions.plant)){
                 let current = App.definitions.plant[plant];
 
@@ -3345,7 +3375,7 @@ const App = {
                 }
 
                 // some entries become randomly unavailable to buy for the day
-                const isOutOfStock = ++index && buyMode && pRandom.getPercent(20);
+                const isOutOfStock = ++index && buyMode && getIsOutOfStock(10);
 
                 // 50% off on sales day
                 let price = current.price;
@@ -3675,7 +3705,7 @@ const App = {
                     </span>
                     <div class="pet-trait-icons-container">
                     ${petTraitIcons.map(icon => {
-                        return `<div title="${icon.title}" class="pet-trait-icon ${!icon.condition ? 'disabled' : ''}">
+                        return `<div onclick="App.displayPopup('<small>trait:</small> <br> <b>${icon.title}</b> <small>(${icon.condition ? 'active' : 'inactive'})</small>')" title="${icon.title}" class="pet-trait-icon ${!icon.condition ? 'disabled' : ''}">
                             <img src="${icon.img}"></img>
                         </div>`
                     }).join('')}
@@ -4620,7 +4650,7 @@ const App = {
                                 name: 'get code',
                                 onclick: async () => {
                                     const loading = App.displayPopup('Loading...', App.INF);
-                                    const pet = await App.dbStore.getItem('pet');
+                                    const pet = await idbKeyval.get('pet');
                                     loading.close();
                                     let charCode = 'friend:' + btoa(encodeURIComponent(JSON.stringify({ user_id: App.userId, pet })));
                                     navigator.clipboard.writeText(charCode);
@@ -4708,7 +4738,7 @@ const App = {
                 App.temp.seenSocialMediaPosts = 0;
             }
             function showPost(petDefinition, noMood, noNextBtn){
-                if(++App.temp.seenSocialMediaPosts >= 12){
+                if(++App.temp.seenSocialMediaPosts >= 12 && !noNextBtn){
                     return App.displayPopup('There are no more social media posts, comeback later!');
                 }
 
@@ -4774,10 +4804,11 @@ const App = {
 
                 switch(App.pet.state){
                     default:
-                        const tweet = randomFromArray(App.definitions.tweets.generic);
-                        postText.innerHTML = tweet[0]; // text
-                        if(tweet[1]) character.spritesheet.cellNumber = tweet[1]; // pose
-                        if(tweet[2]) background.setImg(tweet[2]); // background
+                        const [text, pose, backgroundImg, backgroundSpritesheetDef] = randomFromArray(App.definitions.tweets.generic);
+                        postText.innerHTML = text; // text
+                        if(pose) character.spritesheet.cellNumber = pose; // pose
+                        if(backgroundImg) background.setImg(backgroundImg); // background
+                        if(backgroundSpritesheetDef) background.spritesheet = backgroundSpritesheetDef;
                 }
 
                 if(!noMood){
@@ -4971,11 +5002,11 @@ const App = {
                                 }
                             },
                             {
-                                name: `bathroom ${App.getBadge()}`,
+                                name: `bathroom`,
                                 onclick: () => App.handlers.open_room_background_list(false, createFilterFn('bathroom')),
                             },
                             {
-                                name: `kitchen ${App.getBadge()}`,
+                                name: `kitchen`,
                                 onclick: () => App.handlers.open_room_background_list(false, createFilterFn('kitchen')),
                             }
                         ])
@@ -5060,14 +5091,14 @@ const App = {
             }
             App.displayList([
                 {
-                    name: `crop match ${App.getBadge()}`,
+                    name: `crop match`,
                     onclick: () => {
                         App.displayPopup(`Memorize the sequence of crops as they appear!`, tutorialDisplayTime, () => Activities.plantMatchingGame())
                         return false;
                     }
                 },
                 {
-                    name: `pet grooming ${App.getBadge()}`,
+                    name: `pet grooming`,
                     onclick: () => {
                         App.displayPopup(`Press the wash icon <i class="fa-solid fa-hands-wash"></i> as much as possible before the timer runs out!`, tutorialDisplayTime, () => Activities.dogWashingGame())
                         return false;
@@ -5470,9 +5501,15 @@ const App = {
         return list;
     },
     displayMessageBubble: function(content){
+        const splitContent = content.split('')
+            .map((letter, index) => `<span style="animation-delay: ${index * 0.05}s">${letter}</span>`)
+            .join('');
         const display = App.displayEmpty('bg-transparent pointer-events-none');
-        display.close = () => display.remove();
-        display.innerHTML = `<div class="message-bubble">${content}</div>`
+        display.close = () => {
+            UI.fadeOut(display.querySelector('.message-bubble'));
+            setTimeout(() => display.remove(), 1000);
+        }
+        display.innerHTML = `<div class="message-bubble">${splitContent}</div>`
         return display;
     },
     displayPopup: function(content, ms, onEndFn, isReveal){
@@ -5660,7 +5697,7 @@ const App = {
         if(forCurrentUser){
             return +(
                 App.getDayId() + (App.userId || 1234)
-            ).toString().slice(0, 16);
+            ).toString().slice(0, 10);
         }
 
         const date = new Date();
@@ -5698,6 +5735,21 @@ const App = {
         } else {
             return current >= start || current < end;
         }
+    },
+    getOutOfStockCounter: (seed = random(1, 999999999)) => {
+        pRandom.save();
+        pRandom.seed = seed;
+        const randomArray = new Array(100).fill(50).map(() => pRandom.getIntBetween(0, 100)).reverse();
+        pRandom.load();
+        let pointer = 0;
+
+        const isOutOfStock = (percent) => {
+            pointer += 1;
+            if(pointer >= randomArray.length) pointer = 0;
+            return (randomArray.at(pointer) || 50) < percent;
+        }
+
+        return isOutOfStock;
     },
     clampWithin24HourFormat: function(hour){
         return ((hour % 24) + 24) % 24;
@@ -5874,11 +5926,24 @@ const App = {
             }
         };
     },
-    save: function(noIndicator){
-        const setItem = (key, value) => {
-            return App.dbStore.setItem(key, value);
+    handleSequentiallyLoad: async function(loaders){
+        const isValid = (data) => !!(data?.lastTime && data.pet?.name);
+
+        let mainData;
+        for (const loader of loaders) {
+            const data = await loader();
+            if(!mainData) mainData = data; // first loader is main data
+            if (isValid(data)) return data;
         }
-        // setCookie('pet', App.pet.serializeStats(), 365);
+
+        return mainData;
+    },
+    save: function(noIndicator){
+        let savingData = [];
+
+        const setItem = (key, value) => {
+            savingData = [...savingData, [key, value]];
+        }
         setItem('pet', App.pet.serializeStats());
         setItem('settings', (App.settings));
         setItem('last_time', Date.now());
@@ -5922,8 +5987,59 @@ const App = {
             saveIcon.style.display = '';
             setTimeout(() => saveIcon.style.display = 'none', 2000);
         }
+
+        idbKeyval.setMany(savingData);
     },
     load: async function() {
+        const getItem = async (key, defaultValue) => {
+            const value = await idbKeyval.get(key);
+            return value !== null && value !== undefined ? value : defaultValue;
+        }
+    
+        const pet = await getItem('pet', {});
+        const settings = await getItem('settings', null);
+        const lastTime = await getItem('last_time', false);
+        const eventsHistory = await getItem('ingame_events_history', null);
+        const roomCustomizations = await getItem('room_customization', null);
+        const mods = await getItem('mods', App.mods);
+        const records = await getItem('records', App.records);
+    
+        const userId = await getItem('user_id', random(100000000000, 999999999999));
+        App.userId = userId;
+    
+        const userName = await getItem('user_name', null);
+        App.userName = userName === 'null' ? null : userName;
+    
+        App.playTime = parseInt(await getItem('play_time', 0), 10);
+    
+        const shellBackground = await getItem('shell_background_v2.1', 
+            App.definitions.shell_background.find(shell => shell.isDefault).image ||
+            App.definitions.shell_background[1].image);
+    
+        const missions = await getItem('missions', {});
+        const furniture = await getItem('furniture', false);
+        const plants = await getItem('plants', App.plants);
+        const animals = await getItem('animals', App.animals);
+
+        App.loadedData = {
+            pet,
+            settings,
+            lastTime,
+            eventsHistory,
+            roomCustomizations,
+            shellBackground,
+            playTime: App.playTime,
+            mods,
+            records,
+            missions,
+            furniture,
+            plants,
+            animals,
+        };
+    
+        return App.loadedData;
+    },
+    localforage_load: async function() {
         const getItem = async (key, defaultValue) => {
             const value = await App.dbStore.getItem(key);
             return value !== null ? value : defaultValue;
@@ -5973,11 +6089,14 @@ const App = {
         return App.loadedData;
     },
     getDBItems: async function(){
-        const keys = await App.dbStore.keys();
+        const entries = await idbKeyval.entries();
+        return entries.reduce((acc, [key, value]) => acc = {...acc, [key]: value}, {});
+
+        const keys = await idbKeyval.keys();
         const items = {};
 
         for (const key of keys) {
-            items[key] = await App.dbStore.getItem(key);
+            items[key] = await idbKeyval.get(key);
         }
     
         return items;
@@ -6046,18 +6165,25 @@ const App = {
             'play_time',
             'last_time',
             'mods',
+            'shell_background_v2.1',
         ]
         App.save();
         App.save = () => {};
+
+        // handle animals to update their lastStatsUpdate time to now
+        json.animals?.list?.forEach(a => {
+            a.lastStatsUpdate = Date.now();
+        });
+
         for(let key of Object.keys(json)){
             if(ignoreKeys.includes(key)) continue;
-            await App.dbStore.setItem(key, json[key]);
+            await idbKeyval.set(key, json[key]);
         }
         const allowedKeys = [...Object.keys(json), ...ignoreKeys];
-        const currentKeys = await App.dbStore.keys();
+        const currentKeys = await idbKeyval.keys();
         for(let key of currentKeys){
             if(!allowedKeys.includes(key)){
-                await App.dbStore.removeItem(key);
+                await idbKeyval.del(key);
             }
         }
 
