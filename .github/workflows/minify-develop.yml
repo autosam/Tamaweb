@@ -31,4 +31,4 @@ jobs:
           git config user.name autosam
           git config user.email autosam.sm@gmail.com
           git commit -am 'Automated minify of ${{ github.sha }}'
-          git push --force -u origin main:minified-develop
+          git push --force -u origin develop:minified-develop
