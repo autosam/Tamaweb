@@ -2362,6 +2362,7 @@ const App = {
                             <span>Manual Save</span>
                             <small style="font-size: x-small">auto-saves every ${App.constants.AUTO_SAVE_INTERVAL_SECS} secs</small> 
                         </span>
+                        ${App.getBadge()}
                         `,
                     onclick: (me) => {
                         App.save();
@@ -2507,7 +2508,7 @@ const App = {
                 },
                 { type: 'separator', _ignore: ignoreFirstDivider },
                 {
-                    name: `gameplay settings`,
+                    name: `gameplay settings ${App.getBadge()}`,
                     onclick: () => {
                         return App.displayList([
                             {
@@ -2598,7 +2599,7 @@ const App = {
                                 }
                             },
                             {
-                                _mount: (e) => e.innerHTML = `show want name: <i>${App.settings.showWantName ? 'On' : 'Off'}</i>`,
+                                _mount: (e) => e.innerHTML = `show want name: <i>${App.settings.showWantName ? 'On' : 'Off'}</i> ${App.getBadge()}`,
                                 onclick: (item) => {
                                     App.settings.showWantName = !App.settings.showWantName;
                                     App.applySettings();
