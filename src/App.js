@@ -5469,7 +5469,7 @@ const App = {
                     }
                 };
             
-            let animationStart = diff < 0 ? 'slider-item-anim-in-right' : 'slider-item-anim-in-left';
+            let animationStart = diff < 0 ?  'slider-item-anim-in-left' : 'slider-item-anim-in-right';
             button.style.animation = `${diff ? animationStart : ''} 0.1s linear forwards`;
 
             contentElement.innerHTML = '';
@@ -5477,11 +5477,11 @@ const App = {
         }
 
         list.querySelector('.slide-left').onclick = () => {
-            contentElement.querySelector('.slider-item').style.animation = 'slider-item-anim-out-left 0.1s linear forwards';
+            contentElement.querySelector('.slider-item').style.animation = 'slider-item-anim-out-right 0.1s linear forwards';
             setTimeout(() => changeIndex(-1), 150);
         }
         list.querySelector('.slide-right').onclick = () => {
-            contentElement.querySelector('.slider-item').style.animation = 'slider-item-anim-out-right 0.1s linear forwards';
+            contentElement.querySelector('.slider-item').style.animation = 'slider-item-anim-out-left 0.1s linear forwards';
             setTimeout(() => changeIndex(1), 150);
         }
 
