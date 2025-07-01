@@ -739,6 +739,17 @@ const App = {
                     });
                 })) return showAlreadyUsed();
                 break;
+            case "GETLFDBDATA":
+                const waitDisplay = App.displayPopup('Please wait...');
+                const getter = async () => {
+                    const dbStoreStorage = await App.localforage_getDBItems();
+                    const saveCode = await App.getSaveCode(dbStoreStorage);
+                    App.exportSaveCode(saveCode);
+                    App.displayPopup('exported!');
+                    waitDisplay.close();
+                }
+                getter();
+                break;
             default:
                 const showInvalidError = () => {
                     App.displayPopup(`Invalid code`);
@@ -2872,7 +2883,7 @@ const App = {
                             },
                             {
                                 name: `<i class="fa-solid fa-upload icon"></i> Export`,
-                                onclick: App.exportSaveCode
+                                onclick: () => App.exportSaveCode()
                             },
                             {
                                 name: `<i class="fa-solid fa-copy icon"></i> copy`,
@@ -5930,10 +5941,28 @@ const App = {
         const isValid = (data) => !!(data?.lastTime && data.pet?.name);
 
         let mainData;
-        for (const loader of loaders) {
-            const data = await loader();
-            if(!mainData) mainData = data; // first loader is main data
-            if (isValid(data)) return data;
+        try {
+            for (const loader of loaders) {
+                const data = await loader();
+                if(!mainData) mainData = data; // first loader is main data
+                if (isValid(data)) return data;
+            }
+        } catch(e) {
+            const display = App.displayConfirm(`${App.getIcon('warning')} Something went wrong when trying to initialize the load system.`, [
+                {
+                    name: 'Reload',
+                    class: 'back-btn',
+                    onclick: () => {
+                        window.location.reload();
+                        return true;
+                    }
+                }
+            ])
+            App.sendFeedback(`LoaderError: ${e}`);
+            display.style.zIndex = 999999;
+            console.log({display})
+            App.save = () => {};
+            return null;
         }
 
         return mainData;
@@ -6088,6 +6117,16 @@ const App = {
     
         return App.loadedData;
     },
+    localforage_getDBItems: async function(){
+        const keys = await App.dbStore.keys();
+        const items = {};
+
+        for (const key of keys) {
+            items[key] = await App.dbStore.getItem(key);
+        }
+    
+        return items;
+    },
     getDBItems: async function(){
         const entries = await idbKeyval.entries();
         return entries.reduce((acc, [key, value]) => acc = {...acc, [key]: value}, {});
@@ -6189,19 +6228,19 @@ const App = {
 
         callbackFn?.();
     },
-    getSaveCode: async function(){
+    getSaveCode: async function(providedStorage){
         // let charCode = 'save:' + btoa(JSON.stringify(window.localStorage));
         // let charCode = `save:${btoa(encodeURIComponent(JSON.stringify(window.localStorage)))}:endsave`;
-        const storage = await App.getDBItems();
+        const storage = providedStorage ?? await App.getDBItems();
         const serializableStorage = Object.assign({}, storage);
         const unserializableAttributes = ['shell_background_v2.1', 'mods'];
         unserializableAttributes.forEach(attribute => delete serializableStorage[attribute]);
         const charCode = `save:${btoa(encodeURIComponent(JSON.stringify(serializableStorage)))}:endsave`;
         return charCode;
     },
-    exportSaveCode: async function(){
+    exportSaveCode: async function(providedCode){
         const loadingPopup = App.displayPopup('loading...');
-        const code = await App.getSaveCode();
+        const code = providedCode ?? await App.getSaveCode();
         loadingPopup.close();
         downloadTextFile(`${App.petDefinition.name}_${generateTimestamp()}.tws`, code);
     },
