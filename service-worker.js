@@ -32,6 +32,7 @@ const ASSETS = [
   "src/Animal.js",
   // libs
   "src/libs/moment.js",
+  "src/libs/idb-keyval.js",
   // cdn
   "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css",
   "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css",
