@@ -2942,7 +2942,7 @@ const App = {
 
                                     window.localStorage.clear();
                                     await App.dbStore.clear();
-                                    await idbKeyval.delMany(['last_time', 'pet']);
+                                    await window.idbKeyval.delMany(['last_time', 'pet']);
 
                                     location.reload();
                                     return false;
@@ -2972,7 +2972,7 @@ const App = {
                                                 App.displayPopup('resetting...', App.INF);
                                                 window.localStorage.clear();
                                                 await App.dbStore.clear();
-                                                await idbKeyval.clear();
+                                                await window.idbKeyval.clear();
                                                 location.reload();
                                                 return false;
                                             }
@@ -4661,7 +4661,7 @@ const App = {
                                 name: 'get code',
                                 onclick: async () => {
                                     const loading = App.displayPopup('Loading...', App.INF);
-                                    const pet = await idbKeyval.get('pet');
+                                    const pet = await window.idbKeyval.get('pet');
                                     loading.close();
                                     let charCode = 'friend:' + btoa(encodeURIComponent(JSON.stringify({ user_id: App.userId, pet })));
                                     navigator.clipboard.writeText(charCode);
@@ -5945,9 +5945,12 @@ const App = {
             for (const loader of loaders) {
                 const data = await loader();
                 if(!mainData) mainData = data; // first loader is main data
+                if(data.hasLoadError) throw 'LoadError7520';
                 if (isValid(data)) return data;
             }
         } catch(e) {
+            const _save = App.save;
+            App.save = () => {};
             const display = App.displayConfirm(`${App.getIcon('warning')} Something went wrong when trying to initialize the load system.`, [
                 {
                     name: 'Reload',
@@ -5956,13 +5959,42 @@ const App = {
                         window.location.reload();
                         return true;
                     }
+                },
+                {
+                    name: 'Continue (Unsafe)',
+                    onclick: () => {
+                        return App.displayConfirm(`You might lose your progress if you continue!`, [
+                            {
+                                name: 'Continue',
+                                onclick: () => {
+                                    App.save = _save;
+                                    display.close();
+                                    return false;
+                                }
+                            },
+                            {
+                                name: 'Cancel',
+                                class: 'back-btn',
+                                onclick: () => {}
+                            }
+                        ])
+                    }
+                },
+                {
+                    name: 'View Error',
+                    onclick: () => {
+                        return App.displayConfirm(e, [
+                            {
+                                name: 'ok', 
+                                onclick: () => {}
+                            }
+                        ])
+                    }
                 }
             ])
-            App.sendFeedback(`LoaderError: ${e}`);
-            display.style.zIndex = 999999;
-            console.log({display})
-            App.save = () => {};
-            return null;
+            console.error(e)
+            App.sendAnalytics('LoaderError', `${e} - ${navigator?.userAgent}`);
+            UI.fadeOut(document.querySelector('.loading-text'));
         }
 
         return mainData;
@@ -6017,11 +6049,17 @@ const App = {
             setTimeout(() => saveIcon.style.display = 'none', 2000);
         }
 
-        idbKeyval.setMany(savingData);
+        window.idbKeyval?.setMany(savingData);
     },
     load: async function() {
+        console.log('load called')
+        let hasLoadError = false;
         const getItem = async (key, defaultValue) => {
-            const value = await idbKeyval.get(key);
+            if(!window.idbKeyval) {
+                hasLoadError = true;
+                return defaultValue;
+            }
+            const value = await window.idbKeyval.get(key);
             return value !== null && value !== undefined ? value : defaultValue;
         }
     
@@ -6064,6 +6102,7 @@ const App = {
             furniture,
             plants,
             animals,
+            hasLoadError
         };
     
         return App.loadedData;
@@ -6128,14 +6167,14 @@ const App = {
         return items;
     },
     getDBItems: async function(){
-        const entries = await idbKeyval.entries();
+        const entries = await window.idbKeyval.entries();
         return entries.reduce((acc, [key, value]) => acc = {...acc, [key]: value}, {});
 
-        const keys = await idbKeyval.keys();
+        const keys = await window.idbKeyval.keys();
         const items = {};
 
         for (const key of keys) {
-            items[key] = await idbKeyval.get(key);
+            items[key] = await window.idbKeyval.get(key);
         }
     
         return items;
@@ -6216,13 +6255,13 @@ const App = {
 
         for(let key of Object.keys(json)){
             if(ignoreKeys.includes(key)) continue;
-            await idbKeyval.set(key, json[key]);
+            await window.idbKeyval.set(key, json[key]);
         }
         const allowedKeys = [...Object.keys(json), ...ignoreKeys];
-        const currentKeys = await idbKeyval.keys();
+        const currentKeys = await window.idbKeyval.keys();
         for(let key of currentKeys){
             if(!allowedKeys.includes(key)){
-                await idbKeyval.del(key);
+                await window.idbKeyval.del(key);
             }
         }
 
