@@ -60,7 +60,7 @@
     <link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
     <link rel="manifest" href="manifest.webmanifest">
-    <meta name="msapplication-TileColor" content="#ffdead">
+    <meta name="msapplication-TileColor" content="#000000">
     <meta name="msapplication-TileImage" content="ms-icon-144x144.png">
     <meta name="theme-color" content="#000000">
     <link rel="stylesheet" href="themes.css">
@@ -80,10 +80,19 @@
 
         <!-- loading text -->
         <div class="loading-text">
-            <!-- <b style="font-size: small;">LOADING...</b> -->
             <img class="loading-logo blink" src="resources/img/ui/logo_trans_01.png"></img>
+            <b id="loading-error"style="font-size: small;"></b>
             <i class="fa-solid fa-circle-notch fa-spin loading-spinner"></i>
         </div>
+
+        <!-- error -->
+         <div class="error-container" style="display: none;">
+            <i class="fa-solid fa-warning"></i>
+            <span id="error-message"></span>
+            <div onclick="document.querySelector('.error-container').style.display = 'none'" class="close flex-center cursor-pointer">
+                <i class="fa-solid fa-times"></i>
+            </div>
+         </div>
 
         <div class="dom-shell" style="display: none;">
             <img class="logo" src="resources/img/ui/logo_trans_01.png"></img>
