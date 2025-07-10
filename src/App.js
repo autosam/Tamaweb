@@ -447,7 +447,7 @@ const App = {
         }
 
 
-        if ("persist" in navigator.storage) {
+        if (navigator.storage && "persist" in navigator.storage) {
             navigator.storage.persist().then((persistent) => {
                 App.isStoragePersistent = persistent;
             });
@@ -459,23 +459,23 @@ const App = {
                 session_id: App.sessionId,
                 play_time_mins: (Math.round(App.playTime) / 1000 / 60).toFixed(2),
                 away: (App.awayTime || -1),
-                sprite: App.petDefinition.sprite,
-                is_egg: App.pet.stats.is_egg,
-                gold: App.pet.stats.gold,
+                sprite: App.petDefinition?.sprite,
+                is_egg: App.pet?.stats.is_egg,
+                gold: App.pet?.stats.gold,
                 ver: VERSION
             }
             App.sendAnalytics('login', JSON.stringify(analyticsData));
         } else {
             const analyticsData = {
                 session_id: App.sessionId,
-                hunger: Math.round(App.pet.stats.current_hunger),
-                fun: Math.round(App.pet.stats.current_fun),
-                health: Math.round(App.pet.stats.current_health),
-                sleep: Math.round(App.pet.stats.current_sleep),
-                bladder: Math.round(App.pet.stats.current_bladder),
-                is_egg: App.pet.stats.is_egg,
-                has_poop_out: App.pet.stats.has_poop_out,
-                is_sleeping: App.pet.stats.is_sleeping,
+                hunger: Math.round(App.pet?.stats.current_hunger),
+                fun: Math.round(App.pet?.stats.current_fun),
+                health: Math.round(App.pet?.stats.current_health),
+                sleep: Math.round(App.pet?.stats.current_sleep),
+                bladder: Math.round(App.pet?.stats.current_bladder),
+                is_egg: App.pet?.stats.is_egg,
+                has_poop_out: App.pet?.stats.has_poop_out,
+                is_sleeping: App.pet?.stats.is_sleeping,
             }
             App.sendAnalytics('logout', JSON.stringify(analyticsData));
         }
@@ -5947,7 +5947,6 @@ const App = {
     },
     handleSequentiallyLoad: async function(loaders){
         const isValid = (data) => !!(data?.lastTime && data.pet?.name);
-
         let mainData;
         try {
             for (const loader of loaders) {
@@ -6009,6 +6008,7 @@ const App = {
     },
     save: function(noIndicator){
         let savingData = [];
+        if(!App.pet) return;
 
         const setItem = (key, value) => {
             savingData = [...savingData, [key, value]];
