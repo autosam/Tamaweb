@@ -96,6 +96,7 @@ const App = {
             refeedingTolerance: 10,
             bufferSize: 16,
         },
+        ONLINE_FOOD_ORDER_MARKUP: 1.25,
         // z-index
         ACTIVE_PET_Z: 5,
         NPC_PET_Z: 4.6,
@@ -3235,7 +3236,18 @@ const App = {
             list.appendChild(content);
             App.sendAnalytics('opened_family_tree');
         },
-        open_food_list: function(buyMode, activeIndex, filterType, sellMode, useMode, age = App.petDefinition.lifeStage){
+        open_food_list: function(props = {}){
+            const {
+                buyMode, 
+                activeIndex, 
+                filterType, 
+                sellMode, 
+                useMode, 
+                age = App.petDefinition.lifeStage,
+                getListOnly,
+                allowCookableOnly,
+            } = props;
+
             let list = [];
             let sliderInstance;
             const salesDay = App.isSalesDay();
@@ -3249,7 +3261,7 @@ const App = {
                 if('age' in current && !current.age.includes(age)) continue;
 
                 // buy mode and is free
-                if(buyMode && (current.price === 0 || current.cookableOnly)) continue;
+                if(buyMode && (current.price === 0 || (!allowCookableOnly && current.cookableOnly))) continue;
 
                 // filter check
                 if(filterType && currentType !== filterType) continue;
@@ -3273,7 +3285,9 @@ const App = {
                 if(salesDay) price = Math.round(price / 2);
 
                 list.push({
-                    disabled: isOutOfStock,
+                    disabled: Boolean(isOutOfStock),
+                    current,
+                    foodName: food,
                     name: `
                         ${App.getFoodCSprite(current.sprite)} 
                         ${current.cookableOnly ? '★ ' : ''}
@@ -3308,9 +3322,7 @@ const App = {
                                 Missions.done(Missions.TYPES.buy_food);
                             }
 
-                            // console.log(list.scrollTop);
-                            let nList = App.handlers.open_food_list(buyMode, sliderInstance?.getCurrentIndex(), filterType, sellMode, useMode);
-                                // nList.scrollTop = list.scrollTop;
+                            App.handlers.open_food_list({...props, activeIndex: sliderInstance?.getCurrentIndex()});
                             return false;
                         }
 
@@ -3328,10 +3340,8 @@ const App = {
                         // eat mode
                         const reopenFn = (noLongerHungry) => {
                             if(noLongerHungry && currentType == 'food') return;
-
-                            console.log(sliderInstance?.getCurrentIndex(), currentType)
                             App.handlers.open_feeding_menu();
-                            App.handlers.open_food_list(false, sliderInstance?.getCurrentIndex(), currentType);
+                            App.handlers.open_food_list({...props, activeIndex: sliderInstance?.getCurrentIndex()});
                         }
 
                         App.closeAllDisplays();
@@ -3348,6 +3358,10 @@ const App = {
                         }
                     }
                 })
+            }
+
+            if(getListOnly){
+                return list;
             }
 
             if(!list.length){
@@ -3442,21 +3456,21 @@ const App = {
                 {
                     name: 'food',
                     onclick: () => {
-                        App.handlers.open_food_list(null, null, 'food');
+                        App.handlers.open_food_list({filterType: 'food'});
                         return true;
                     }
                 },
                 {
                     name: 'snacks',
                     onclick: () => {
-                        App.handlers.open_food_list(null, null, 'treat');
+                        App.handlers.open_food_list({filterType: 'treat'});
                         return true;
                     }
                 },
                 {
                     name: 'meds',
                     onclick: () => {
-                        App.handlers.open_food_list(null, null, 'med');
+                        App.handlers.open_food_list({filterType: 'med'});
                         return true;
                     }
                 },
@@ -4571,6 +4585,120 @@ const App = {
                     }
                 },
                 {
+                    name: `<span style="color: mediumvioletred"> <i class="fa-solid fa-burger icon"></i> SnapMeal </span> ${App.getBadge()}`,
+                    onclick: () => {
+                        let list = [
+                            ...App.handlers.open_food_list({buyMode: true, getListOnly: true, filterType: 'food'}),
+                            ...App.handlers.open_food_list({buyMode: true, getListOnly: true, filterType: 'treat'}),
+                            ...App.handlers.open_food_list({
+                                buyMode: true, 
+                                getListOnly: true, 
+                                filterType: 'food', 
+                                allowCookableOnly: true
+                            }).filter(item => item.current.cookableOnly),
+                        ]
+                        .filter(item => item.disabled)
+                        .map((food) => ({
+                            current: {
+                                ...food.current,
+                                price: Math.floor(food.current.price * App.constants.ONLINE_FOOD_ORDER_MARKUP)
+                            },
+                            foodName: food.foodName
+                        }))
+
+                        // make list length odd
+                        if(list.length % 2 === 0){
+                            list = list.slice(0, -1);
+                        }
+
+                        if(!list.length){
+                            return App.displayPopup('Sorry but <b>Snapmeal</b> is out of operation today!<br> <small>Please comeback tomorrow!</small>', 5000);
+                        }
+
+                        const getOrders = () => list.filter(item => item.current.orderAmount > 0);
+                        const getTotalPrice = () => getOrders().reduce(
+                                (acc, {current}) => acc + (current.price * current.orderAmount),
+                                0
+                            )
+
+                        const parentContainer = UI.genericListContainer();
+                        const content = UI.create({
+                            className: 'flex-grid-2x',
+                            parent: parentContainer,
+                            children: [
+                                ...list.map(({current, foodName}) => 
+                                    ({
+                                        innerHTML: `
+                                            <div>
+                                                <div class="x2"> ${App.getFoodCSprite(current.sprite)} </div>
+                                                <div class="flex-grid-2x__content">
+                                                    <span>X</span>
+                                                    <span id="order-amount">0</span>
+                                                </div>
+                                                <div class="flex-grid-2x__title">
+                                                    <small>
+                                                        <i>$${current.price}</i>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        `,
+                                        componentType: 'button',
+                                        className: 'generic-btn stylized',
+                                        onClick: (me) => {
+                                            const orderAmountElement = me.querySelector('#order-amount');
+                                            const orderAmount = Number(orderAmountElement.textContent);
+                                            const newOrderAmount = (orderAmount + 1) % 4;
+                                            orderAmountElement.textContent = newOrderAmount;
+                                            current.orderAmount = newOrderAmount;
+
+                                            parentContainer.querySelector('#submit-order')._mount();
+                                        }
+                                    })
+                                ),
+                                {
+                                    innerHTML: App.getIcon('spinner fa-spin-pulse', true),
+                                    _mount: (me) => {
+                                        const totalPrice = getTotalPrice();
+                                        me.disabled = !totalPrice;
+                                        me.innerHTML = `
+                                            <div class="x2"> 
+                                                ${App.getIcon('basket-shopping', true)}
+                                            </div>
+                                            <div class="flex-grid-2x__content">
+                                                $${totalPrice}
+                                            </div>
+                                        `
+                                        if(totalPrice){
+                                            me.innerHTML += App.getBadge(`Order!`);
+                                        }
+                                    },
+                                    componentType: 'button',
+                                    className: 'generic-btn stylized primary solid',
+                                    id: 'submit-order',
+                                    disabled: true,
+                                    onClick: () => {
+                                        return App.displayConfirm(`Are you sure you want to place an order for <b>$${getTotalPrice()}</b>?`, [
+                                            {
+                                                name: 'Yes',
+                                                onclick: () => {
+                                                    App.closeAllDisplays();
+                                                }
+                                            },
+                                            {
+                                                name: 'No',
+                                                class: 'back-btn',
+                                                onclick: () => {}
+                                            }
+                                        ])
+                                    }
+                                }
+                            ]
+                        })
+
+                        return true;
+                    }
+                },
+                {
                     name: `friends`,
                     onclick: () => {
                         App.handlers.open_friends_list(null, null, [
@@ -5042,28 +5170,28 @@ const App = {
                 {
                     name: 'purchase food',
                     onclick: () => {
-                        App.handlers.open_food_list(true, null, "food");
+                        App.handlers.open_food_list({buyMode: true, filterType: 'food'});
                         return true;
                     }
                 },
                 {
                     name: 'purchase snacks',
                     onclick: () => {
-                        App.handlers.open_food_list(true, null, "treat");
+                        App.handlers.open_food_list({buyMode: true, filterType: 'treat'});
                         return true;
                     }
                 },
                 {
                     name: 'purchase meds',
                     onclick: () => {
-                        App.handlers.open_food_list(true, null, "med");
+                        App.handlers.open_food_list({buyMode: true, filterType: 'med'});
                         return true;
                     }
                 },
                 {
                     name: `purchase seeds`,
                     onclick: () => {
-                        App.handlers.open_seed_list(true, null, "med");
+                        App.handlers.open_seed_list(true);
                         return true;
                     }
                 },
@@ -5085,7 +5213,7 @@ const App = {
                 {
                     name: 'food',
                     onclick: () => {
-                        App.handlers.open_food_list(false, false, false, true);
+                        App.handlers.open_food_list({sellMode: true});
                         return true;
                     }
                 },

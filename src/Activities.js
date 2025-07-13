@@ -1225,7 +1225,7 @@ class Activities {
                                                     Missions.done(Missions.TYPES.feed_animal);
                                                     return true;
                                                 }
-                                                return App.handlers.open_food_list(false, false, 'food', false, onUseFn, PetDefinition.LIFE_STAGE.adult);
+                                                return App.handlers.open_food_list({buyMode: false, filterType: 'food', useMode: onUseFn, age: PetDefinition.LIFE_STAGE.adult});
                                             }
                                         },
                                         {
@@ -1308,7 +1308,7 @@ class Activities {
                                                     App.displayPopup("The food has been placed!<br><br>Check back in a few hours to see if you've gotten a visitor!", 4000);
                                                     return true;
                                                 }
-                                                return App.handlers.open_food_list(false, false, 'food', false, onUseFn, PetDefinition.LIFE_STAGE.adult);
+                                                return App.handlers.open_food_list({buyMode: false, filterType: 'food', useMode: onUseFn, age: PetDefinition.LIFE_STAGE.adult});
                                             }
                                         },
                                         {

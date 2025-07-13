@@ -3,6 +3,8 @@ const UI = {
         'componentType',
         'parent',
         'children',
+        'onClick',
+        '_mount',
     ],
     create: (props) => {
         return UI.ce(props);
@@ -28,10 +30,17 @@ const UI = {
                         else
                             props.parent.appendChild(e);
                         break;
+                    case 'onClick':
+                        e.onclick = () => props.onClick(e)
+                        break;
+                    case '_mount':
+                        e._mount = () => props._mount(e);
+                        break;
                 }
                 return;
             }
 
+            e._mount?.()
             e[propName] = props[propName];
             // e.setAttribute(prop, props[prop]);
         })
