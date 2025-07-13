@@ -1392,7 +1392,7 @@ a.generic-btn:before {
 
 .generic-btn.sticky-top {
     position: sticky;
-    left: 0;
+    /* left: 0; */
     top: 0;
     z-index: 2;
     margin: -4px -4px 4px -4px;
@@ -1969,4 +1969,34 @@ a.generic-btn:before {
 .message-bubble > span {
     animation: fade-in 0.1s ease forwards;
     opacity: 0;
+}
+
+.flex-grid-2x {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+}
+.flex-grid-2x > * {
+    width: 40%;
+    flex-grow: 1;
+    aspect-ratio: 1;
+    height: auto;
+    box-sizing: border-box;
+    margin: 0 !important;
+    padding: 0;
+    justify-content: center;
+    overflow: hidden;
+}
+.flex-grid-2x__content {
+    position: absolute;
+    display: inline-flex;
+    right: 4px;
+    bottom: 0;
+}
+.flex-grid-2x__title {
+    position: absolute;
+    display: inline-flex;
+    left: 4px;
+    top: 0;
 }

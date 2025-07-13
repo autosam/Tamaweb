@@ -435,10 +435,6 @@ class Pet extends Object2d {
                         App.closeAllDisplays();
                         App.toggleGameplayControls(true);
                         App.setScene(App.scene.home);
-                        // if(!noLongerHungry){
-                        //     App.handlers.open_feeding_menu();
-                        //     App.handlers.open_food_list(null, null, type);
-                        // }
                         onEndFn?.(noLongerHungry);
                     }
                     if(this.hasMoodlet('full')){
