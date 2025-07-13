@@ -1,15 +1,15 @@
 App.definitions = (() => {
     const _ls = PetDefinition.LIFE_STAGE;
-    return  {
+    return {
         /* THEMES */
         themes: [
-            'default', 
-            'sunset', 
-            'uni', 
+            'default',
+            'sunset',
+            'uni',
             'color pink',
             'color azure',
             'color gray',
-            'color red', 
+            'color red',
             'color blue',
             'color green',
             'color purple',
@@ -127,7 +127,7 @@ App.definitions = (() => {
                 onEnter: () => App.handlers.open_works_list(),
             },
         ],
-    
+
         /* FOOD AND SNACKS */
         food: {
             // foods
@@ -523,8 +523,8 @@ App.definitions = (() => {
                 cookableOnly: true,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
-    
-    
+
+
             // treats
             "koluche": {
                 sprite: 1030,
@@ -671,9 +671,9 @@ App.definitions = (() => {
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 type: 'treat',
             },
-    
-    
-    
+
+
+
             // groc
             /* "broccoli": {
                 sprite: 632,
@@ -683,9 +683,9 @@ App.definitions = (() => {
                 price: 3,
                 age: [__ls.teen, __ls.adult, __ls.elder],
             }, */
-    
-    
-    
+
+
+
             // other
             "milk": {
                 sprite: 1036,
@@ -713,7 +713,7 @@ App.definitions = (() => {
                 type: 'med',
             },
         },
-    
+
         /* ITEMS */
         item: {
             "rattle": {
@@ -800,7 +800,7 @@ App.definitions = (() => {
                 interruptable: true,
             },
         },
-    
+
         /* GARDENING PLANTS */
         plant: {
             // wateredDuration: minutes
@@ -901,7 +901,7 @@ App.definitions = (() => {
                 inedible: true,
             },
         },
-    
+
         /* ROOM BACKGROUNDS */
         room_background: {
             "blue": {
@@ -1026,7 +1026,7 @@ App.definitions = (() => {
                 type: 'kitchen',
             },
         },
-    
+
         /* ROOM PLACEABLE FURNITURE */
         furniture: [
             // valentine set
@@ -1065,7 +1065,7 @@ App.definitions = (() => {
                 price: 150,
                 isNew: false,
             },
-    
+
             // gothic set
             {
                 name: 'Gothic Bookcase',
@@ -1097,7 +1097,7 @@ App.definitions = (() => {
                 id: "statue_gothic",
                 price: 150,
             },
-    
+
             // arcade
             {
                 name: 'Arcade Machines',
@@ -1123,7 +1123,7 @@ App.definitions = (() => {
                 id: "sofa_arcade",
                 price: 120,
             },
-    
+
             {
                 name: 'CLR bookshelf',
                 image: 'resources/img/furniture/bookcase_colorful.png',
@@ -1136,7 +1136,7 @@ App.definitions = (() => {
                 id: "sofa_pink",
                 price: 150,
             },
-    
+
             {
                 name: 'Wooden bookshelf',
                 image: 'resources/img/furniture/bookcase_wooden.png',
@@ -1149,7 +1149,7 @@ App.definitions = (() => {
                 id: "sofa_woodleather",
                 price: 120,
             },
-    
+
             {
                 name: 'Peachy Pot',
                 image: 'resources/img/furniture/pot_peachy.png',
@@ -1162,7 +1162,7 @@ App.definitions = (() => {
                 id: "sofa_peachy",
                 price: 150,
             },
-    
+
             {
                 name: 'Blue Stand',
                 image: 'resources/img/furniture/stand_blue.png',
@@ -1175,7 +1175,7 @@ App.definitions = (() => {
                 id: "sofa_blue",
                 price: 80,
             },
-    
+
             {
                 name: 'Lite Stand',
                 image: 'resources/img/furniture/stand_rainbow.png',
@@ -1200,7 +1200,7 @@ App.definitions = (() => {
                 id: "pot_astra",
                 price: 120,
             },
-    
+
             // misc
             {
                 name: 'Pink Pillow Pile',
@@ -1280,7 +1280,7 @@ App.definitions = (() => {
                 id: "sofa_futura",
                 price: 120,
             },
-    
+
             // craftables
             {
                 name: 'Bird Stand',
@@ -1318,7 +1318,7 @@ App.definitions = (() => {
                 craftingRecipe: ['orange tulip', 'bamboo', 'purple tulip'],
             },
         ],
-    
+
         /* SHELL BACKGROUNDS */
         shell_background: [
             {
@@ -1385,7 +1385,7 @@ App.definitions = (() => {
                 unlockKey: 'unlock_cloof_shell_bg',
             },
         ],
-    
+
         /* ACCESSORIES */
         accessories: {
             "crown": {
@@ -1452,8 +1452,8 @@ App.definitions = (() => {
                                 }
                                 // me.movementMultDirection = followsParent ? 1 : -1;
                             }
-    
-    
+
+
                             if (me.lastScene != App.currentScene) {
                                 me.lastScene = App.currentScene;
                                 me.currentPosition.y = -40;
@@ -1463,21 +1463,21 @@ App.definitions = (() => {
                                 me.y = -100;
                                 return;
                             }
-    
+
                             me.animationFloat += (0.005 * App.deltaTime) % App.PI2;
                             me.bodyAnimationFloat += (0.0025 * App.deltaTime) % App.PI2;
                             me.currentPosition.x = lerp(me.currentPosition.x, me.targetPosition.x, 0.0005 * App.deltaTime);
                             me.x = me.currentPosition.x;
                             me.currentPosition.y = lerp(me.currentPosition.y, me.targetPosition.y, 0.0005 * App.deltaTime);
                             me.y = me.currentPosition.y + Math.sin(me.animationFloat);
-    
+
                             const xDiff = Math.abs(me.currentPosition.x - me.targetPosition.x);
                             const yDiff = Math.abs(me.currentPosition.y - me.targetPosition.y);
                             me.targetMovementMult = Math.max((xDiff + yDiff) * 0.1, 1);
                             me.movementMult = lerp(me.movementMult, me.targetMovementMult * me.movementMultDirection, 0.01 * App.deltaTime);
                         }
                     })
-    
+
                     /* body */
                     const handleBody = (me, i) => {
                         const spread = 6 + (secretary.movementMult * 0.5);
@@ -1488,12 +1488,12 @@ App.definitions = (() => {
                         const localPosition = {
                             x: 0, y: 0,
                         }
-    
+
                         switch (i) {
                             case (0):
                                 localPosition.x = -spread;
                                 localPosition.y = -spread;
-    
+
                                 break;
                             case (1):
                                 localPosition.x = -spread;
@@ -1512,12 +1512,12 @@ App.definitions = (() => {
                                 me.rotation = 180;
                                 break;
                         }
-    
+
                         localPosition.y += Math.sin(secretary.bodyAnimationFloat + i) * 0.55;
                         localPosition.y += Math.sin(secretary.bodyAnimationFloat + i) * 0.55;
-    
+
                         // me.rotation = i * 90;
-    
+
                         me.x = localPosition.x + basePosition.x;
                         me.y = localPosition.y + basePosition.y;
                     }
@@ -1534,7 +1534,7 @@ App.definitions = (() => {
                             // composite: "darken"
                         })
                     }
-    
+
                     /* body */
                     const handleArrows = (me, i) => {
                         const spread = 13 + secretary.movementMult;
@@ -1545,7 +1545,7 @@ App.definitions = (() => {
                         const localPosition = {
                             x: 0, y: 0
                         }
-    
+
                         const offsetMult = 10, strength = 0.8 + (-secretary.movementMult * 0.25);
                         switch (i) {
                             case (0):
@@ -1577,10 +1577,10 @@ App.definitions = (() => {
                                 localPosition.y -= Math.sin(secretary.animationFloat - i * offsetMult) * strength;
                                 break;
                         }
-    
+
                         localPosition.y += Math.sin(secretary.bodyAnimationFloat + i) * 0.55;
                         localPosition.y += Math.sin(secretary.bodyAnimationFloat + i) * 0.55;
-    
+
                         me.x = localPosition.x + basePosition.x;
                         me.y = localPosition.y + basePosition.y;
                     }
@@ -1596,7 +1596,7 @@ App.definitions = (() => {
                             // composite: "darken"
                         })
                     }
-    
+
                     /* head */
                     new Object2d({
                         parent: secretary,
@@ -1612,7 +1612,7 @@ App.definitions = (() => {
                         },
                         // composite: "darken"
                     })
-    
+
                     /* light */
                     new Object2d({
                         parent: secretary,
@@ -1631,7 +1631,7 @@ App.definitions = (() => {
                         composite: "lighten",
                         opacity: 0.1,
                     })
-    
+
                     return secretary;
                 }
             },
@@ -1677,7 +1677,7 @@ App.definitions = (() => {
                             const additionalMotionY = Math.sin(me.animationFloatY) * 3;
                             me.x = parent.x + additionalMotionX;
                             me.y = parent.y - 40 - (App.pet.spritesheet.offsetY ?? 0) + additionalMotionY;
-    
+
                             if (!App.isCompanionAllowed()) {
                                 me.x = -100;
                                 me.y = -100;
@@ -1685,7 +1685,7 @@ App.definitions = (() => {
                             }
                         }
                     })
-    
+
                     return cloof;
                 }
             },
@@ -1761,7 +1761,7 @@ App.definitions = (() => {
                 price: -1, // makes it not buyable
             },
         },
-    
+
         /* ACHIEVEMENTS */
         achievements: {
             pat_x_times: {
@@ -1861,7 +1861,7 @@ App.definitions = (() => {
                 advance: (amount) => App.addRecord('harvestable_cooked_x_times', amount),
                 getReward: () => {
                     const [rewardFoodName, rewardFoodInfo] = shuffleArray(Object.entries(App.definitions.food))
-                        .find( ([_, info]) => info.cookableOnly );
+                        .find(([_, info]) => info.cookableOnly);
                     App.pet.stats.gold += 200;
                     App.addNumToObject(App.pet.inventory.food, rewardFoodName, 10);
                     App.displayPopup(`You've received $200 and <br>${App.getFoodCSprite(rewardFoodInfo.sprite)}<br> <b>${rewardFoodName}</b> <small>x5</small>`);
@@ -1874,13 +1874,13 @@ App.definitions = (() => {
                 advance: (amount) => App.addRecord('camera_cooked_x_times', amount),
                 getReward: () => {
                     const [rewardFoodName, rewardFoodInfo] = shuffleArray(Object.entries(App.definitions.food))
-                        .find( ([_, info]) => info.cookableOnly );
+                        .find(([_, info]) => info.cookableOnly);
                     App.pet.stats.gold += 200;
                     App.addNumToObject(App.pet.inventory.food, rewardFoodName, 5);
                     App.displayPopup(`You've received $200 and <br>${App.getFoodCSprite(rewardFoodInfo.sprite)}<br> <b>${rewardFoodName}</b> <small>x5</small>`);
                 }
             },
-    
+
             // minigames
             perfect_minigame_rodrush_win_x_times: {
                 name: 'Rod Rush Pro',
@@ -1934,7 +1934,7 @@ App.definitions = (() => {
                 }
             },
         },
-    
+
         /* MAIL */
         mail: {
             affirmations: [
@@ -2134,7 +2134,7 @@ App.definitions = (() => {
                 ],
             ]
         },
-    
+
         /* TWEETS */
         tweets: {
             generic: [
@@ -2180,7 +2180,7 @@ App.definitions = (() => {
                 ['Feeling like a cloud. Soft and fluffy. #CloudVibes', 8, "resources/img/background/sky/afternoon.png"]
             ]
         },
-    
+
         /* RABBIT HOLE ACTIVITIES */
         rabbit_hole_activities: [
             {
@@ -2311,6 +2311,88 @@ App.definitions = (() => {
                 description: 'Makes plants grow faster.',
                 type: 'garden',
             },
-        }
+        },
+
+        /* PET TRAITS */
+        traits: {
+            gourmand: {
+                name: 'Gourmand',
+                description: 'food need drops 50% faster',
+                incompatible: ['picky_eater'],
+            },
+            picky_eater: {
+                name: 'Picky Eater',
+                description: 'food need drops 50% slower',
+                incompatible: ['gourmand'],
+            },
+
+            fleeting_focus: {
+                name: 'Fleeting Focus',
+                description: 'fun need drops 50% faster',
+                incompatible: ['long_attention'],
+            },
+            long_attention: {
+                name: 'Long Attention',
+                description: 'fun need drops 50% slower',
+                incompatible: ['fleeting_focus'],
+            },
+
+            tiny_tank: {
+                name: 'Tiny Tank',
+                description: 'bladder need drops 50% faster',
+                incompatible: ['big_reserve'],
+            },
+            big_reserve: {
+                name: 'Big Reserve',
+                description: 'bladder need drops 50% slower',
+                incompatible: ['tiny_tank'],
+            },
+
+            grime_guru: {
+                name: 'Grime Guru',
+                description: 'cleanliness need drops 50% faster',
+                incompatible: ['tidy_tail'],
+            },
+            tidy_tail: {
+                name: 'Tidy Tail',
+                description: 'cleanliness need drops 50% slower',
+                incompatible: ['grime_guru'],
+            },
+
+            romantical: {
+                name: 'Romantical',
+                description: 'way better chance at succeeding in dates',
+                incompatible: ['love_blind'],
+            },
+            love_blind: {
+                name: 'Love Blind',
+                description: 'struggles with romantic interactions',
+                incompatible: ['romantical'],
+            },
+
+            shy: {
+                name: 'Shy',
+                description: 'gets negative fun when interacting with strangers, but gains more positive fun from interacting with familiar faces',
+                incompatible: ['outgoing'],
+            },
+            outgoing: {
+                name: 'Outgoing',
+                description: 'gains more fun from interacting with strangers, less from familiar faces',
+                incompatible: ['shy'],
+            },
+            immortal: {
+                name: 'Immortal',
+                description: 'These pets never die',
+            },
+            coin_magnet: {
+                name: 'Coin Magnet',
+                description: 'slightly increases chance of finding coins during activities',
+            },
+            picky_eater: {
+                name: 'Picky Eater',
+                description: ""
+            }
+
+        },
     }
 })()

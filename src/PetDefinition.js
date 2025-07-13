@@ -250,6 +250,7 @@ class PetDefinition {
         harvests: {}, seeds: {},
     }
     accessories = [];
+    traits = [];
 
     constructor(config) {
         if(config){
