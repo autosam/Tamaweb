@@ -5101,6 +5101,14 @@ const App = {
                     true;
                 return App.definitions.item[key].isNew && isUnlocked;
             });
+            const hasNewFurniture = Object.keys(App.definitions.furniture).some(key => {
+                const furniture = App.definitions.furniture[key];
+                const isUnlocked = 
+                    furniture.unlockKey ? 
+                    App.getRecord(furniture.unlockKey) : 
+                    true;
+                return furniture.isNew && isUnlocked && !furniture.isCraftable;
+            });
 
             const backFn = () => {
                 if(App.temp.purchasedMallItem){
@@ -5138,15 +5146,15 @@ const App = {
                         }
                         return App.displayList([
                             {
-                                name: `main room`,
+                                name: `main room ${hasNewDecor ? App.getBadge('new!') : ''}`,
                                 onclick: () => {
                                     return App.displayList([
                                         {
-                                            name: 'Pre-furnished',
+                                            name: `Pre-furnished ${hasNewDecor ? App.getBadge('new!') : ''}`,
                                             onclick: () => App.handlers.open_room_background_list(false, createFilterFn()),
                                         },
                                         {
-                                            name: 'Customizable',
+                                            name: `Customizable ${hasNewDecor ? App.getBadge('new!') : ''}`,
                                             onclick: () => App.handlers.open_room_background_list(true, createFilterFn())
                                         },
                                         {
@@ -5169,7 +5177,7 @@ const App = {
                     }
                 },
                 {
-                    name: `Buy furniture`,
+                    name: `Buy furniture ${hasNewFurniture ? App.getBadge('new!') : ''}`,
                     onclick: () => {
                         App.handlers.open_furniture_list();
                         return true;
