@@ -28,6 +28,7 @@ const Missions = {
         water_crop: 'water_crop',
         play_with_animal: 'play_with_animal',
         feed_animal: 'feed_animal',
+        order_food: 'order_food',
     },
     TYPE_DESCRIPTIONS: {
         food: 'Eat food',
@@ -53,6 +54,7 @@ const Missions = {
         water_crop: 'Water your garden plant',
         play_with_animal: 'Play with your pet animal',
         feed_animal: 'Feed your pet animal',
+        order_food: 'Order something on Snapmeal',
     },
     init: function(data){
         if(data?.current) this.current = data?.current;
