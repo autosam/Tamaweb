@@ -855,10 +855,10 @@ const App = {
                         App.settings.isTester = commandPayload === '1';
                         App.displayPopup(`Set tester: ${App.settings.isTester}`, 1000, () => window.location.reload());
                         break;
-                    default: showInvalidError();
                     case 'activity:reckoning':
                         Activities.reckoning(true);
                         break;
+                    default: showInvalidError();
                 }
         }
     },
@@ -4596,20 +4596,23 @@ const App = {
                     name: `<span style="color: mediumvioletred"> <i class="fa-solid fa-burger icon"></i> SnapMeal </span> ${App.getBadge()}`,
                     onclick: () => {
                         let list = [
-                            ...App.handlers.open_food_list({buyMode: true, getListOnly: true, filterType: 'food'}),
-                            ...App.handlers.open_food_list({buyMode: true, getListOnly: true, filterType: 'treat'}),
+                            ...App.handlers.open_food_list({buyMode: true, getListOnly: true, filterType: 'food', age: PetDefinition.LIFE_STAGE.adult}),
+                            ...App.handlers.open_food_list({buyMode: true, getListOnly: true, filterType: 'treat', age: PetDefinition.LIFE_STAGE.adult}),
                             ...App.handlers.open_food_list({
                                 buyMode: true, 
                                 getListOnly: true, 
                                 filterType: 'food', 
-                                allowCookableOnly: true
+                                allowCookableOnly: true,
+                                age: PetDefinition.LIFE_STAGE.adult
                             }).filter(item => item.current.cookableOnly),
                         ]
                         .filter(item => item.disabled)
                         .map((food) => ({
                             current: {
                                 ...food.current,
-                                price: Math.floor(food.current.price * App.constants.ONLINE_FOOD_ORDER_MARKUP)
+                                price: food.current.cookableOnly 
+                                    ? Math.floor(food.current.price * 10)
+                                    : Math.floor(food.current.price * App.constants.ONLINE_FOOD_ORDER_MARKUP),
                             },
                             foodName: food.foodName
                         }))
@@ -4636,29 +4639,29 @@ const App = {
                             children: [
                                 ...list.map(({current, foodName}) => 
                                     ({
-                                        innerHTML: `
-                                            <div>
-                                                <div class="x2"> ${App.getFoodCSprite(current.sprite)} </div>
-                                                <div class="flex-grid-2x__content">
-                                                    <span>X</span>
-                                                    <span id="order-amount">0</span>
+                                        _mount: (me) => {
+                                            me.innerHTML = `
+                                                <div class="pointer-events-none">
+                                                    <div class="x2"> ${App.getFoodCSprite(current.sprite)} </div>
+                                                    <div class="flex-grid-2x__content ${!current.orderAmount ? 'opacity-half' : ''}">
+                                                        <span>X</span>
+                                                        <span id="order-amount">${current.orderAmount || 0}</span>
+                                                    </div>
+                                                    <div class="flex-grid-2x__title">
+                                                        <small>
+                                                            <i>$${current.price}</i>
+                                                            ${current.cookableOnly ? '★' : ''}
+                                                        </small>
+                                                    </div>
                                                 </div>
-                                                <div class="flex-grid-2x__title">
-                                                    <small>
-                                                        <i>$${current.price}</i>
-                                                    </small>
-                                                </div>
-                                            </div>
-                                        `,
+                                            `;
+                                        },
                                         componentType: 'button',
                                         className: 'generic-btn stylized',
                                         onClick: (me) => {
-                                            const orderAmountElement = me.querySelector('#order-amount');
-                                            const orderAmount = Number(orderAmountElement.textContent);
-                                            const newOrderAmount = (orderAmount + 1) % 4;
-                                            orderAmountElement.textContent = newOrderAmount;
+                                            const newOrderAmount = ((current.orderAmount || 0) + 1) % 4;
                                             current.orderAmount = newOrderAmount;
-
+                                            me._mount();
                                             parentContainer.querySelector('#submit-order')._mount();
                                         }
                                     })
@@ -4685,11 +4688,23 @@ const App = {
                                     id: 'submit-order',
                                     disabled: true,
                                     onClick: () => {
-                                        return App.displayConfirm(`Are you sure you want to place an order for <b>$${getTotalPrice()}</b>?`, [
+                                        const totalPrice = getTotalPrice();
+                                        return App.displayConfirm(`Are you sure you want to place your order for <b>$${getTotalPrice()}</b>?`, [
                                             {
                                                 name: 'Yes',
                                                 onclick: () => {
-                                                    App.closeAllDisplays();
+                                                    if(!App.pay(totalPrice)) return false;
+                                                    getOrders().forEach(order => {
+                                                        App.addNumToObject(App.pet.inventory.food, order.foodName, order.current.orderAmount);
+                                                    })
+                                                    App.displayPopup(
+                                                        `${App.getIcon('check-circle', true)} <br> Thanks for ordering! <br> <small>Your order will arrive shortly!</small>`, 
+                                                        2500, 
+                                                        () => {
+                                                            App.closeAllDisplays();
+                                                            Activities.receiveOrderedFood();
+                                                        }
+                                                    );
                                                 }
                                             },
                                             {
@@ -5647,7 +5662,7 @@ const App = {
 
         return list;
     },
-    displayMessageBubble: function(content){
+    displayMessageBubble: function(content, icon = ''){
         const splitContent = content.split('')
             .map((letter, index) => `<span style="animation-delay: ${index * 0.05}s">${letter}</span>`)
             .join('');
@@ -5656,7 +5671,10 @@ const App = {
             UI.fadeOut(display.querySelector('.message-bubble'));
             setTimeout(() => display.remove(), 1000);
         }
-        display.innerHTML = `<div class="message-bubble">${splitContent}</div>`
+
+        const iconContent = !icon ? '' : `<div class="message-bubble_icon">${icon}</div>`;
+
+        display.innerHTML = `<div class="message-bubble">${iconContent}${splitContent}</div>`
         return display;
     },
     displayPopup: function(content, ms, onEndFn, isReveal){
@@ -6725,3 +6743,20 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
     checkForAwayTimeAndInit();
 });
+
+
+const debug_spawn = () => {
+    const deliveryNpc = new Pet(
+        new PetDefinition({
+            sprite: 'resources/img/character/delivery_npc_01.png',
+        }),
+        {
+            spritesheet: {
+                cellNumber: 0,
+                cellSize: 36,
+                rows: 4,
+                columns: 4,
+            }
+        }
+    )
+}

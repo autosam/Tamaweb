@@ -403,6 +403,7 @@ const NPC_CHARACTERS = [
     "resources/img/character/chara_247c.png",
     "resources/img/character/mailman_01.png",
     "resources/img/character/mall_npc_01.png",
+    "resources/img/character/delivery_npc_01.png",
 ];
 
 const ANIMAL_CHARACTERS = [
