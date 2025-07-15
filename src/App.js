@@ -5078,8 +5078,27 @@ const App = {
             ])
         },
         open_mall_activity_list: function(){
-            const hasNewDecor = Object.keys(App.definitions.room_background).some(key => {
+            const hasNewMainDecor = Object.keys(App.definitions.room_background).some(key => {
                 const room = App.definitions.room_background[key];
+                if(room.type) return false;
+                const isUnlocked = 
+                    room.unlockKey ? 
+                    App.getRecord(room.unlockKey) : 
+                    true;
+                return room.isNew && isUnlocked && !room.isCraftable;
+            });
+            const hasNewKitchenDecor = Object.keys(App.definitions.room_background).some(key => {
+                const room = App.definitions.room_background[key];
+                if(room.type !== 'kitchen') return false;
+                const isUnlocked = 
+                    room.unlockKey ? 
+                    App.getRecord(room.unlockKey) : 
+                    true;
+                return room.isNew && isUnlocked && !room.isCraftable;
+            });
+            const hasNewBathroomDecor = Object.keys(App.definitions.room_background).some(key => {
+                const room = App.definitions.room_background[key];
+                if(room.type !== 'bathroom') return false;
                 const isUnlocked = 
                     room.unlockKey ? 
                     App.getRecord(room.unlockKey) : 
@@ -5139,22 +5158,22 @@ const App = {
                     }
                 },
                 {
-                    name: `redécor room ${hasNewDecor ? App.getBadge('new!') : ''}`,
+                    name: `redécor room ${hasNewMainDecor ? App.getBadge('new!') : ''}`,
                     onclick: () => {
                         const createFilterFn = (type) => {
                             return (e) => e.type === type && !e.isCraftable;
                         }
                         return App.displayList([
                             {
-                                name: `main room ${hasNewDecor ? App.getBadge('new!') : ''}`,
+                                name: `main room ${hasNewMainDecor ? App.getBadge('new!') : ''}`,
                                 onclick: () => {
                                     return App.displayList([
                                         {
-                                            name: `Pre-furnished ${hasNewDecor ? App.getBadge('new!') : ''}`,
+                                            name: `Pre-furnished ${hasNewMainDecor ? App.getBadge('new!') : ''}`,
                                             onclick: () => App.handlers.open_room_background_list(false, createFilterFn()),
                                         },
                                         {
-                                            name: `Customizable ${hasNewDecor ? App.getBadge('new!') : ''}`,
+                                            name: `Customizable ${hasNewMainDecor ? App.getBadge('new!') : ''}`,
                                             onclick: () => App.handlers.open_room_background_list(true, createFilterFn())
                                         },
                                         {
@@ -5165,11 +5184,11 @@ const App = {
                                 }
                             },
                             {
-                                name: `bathroom`,
+                                name: `bathroom ${hasNewBathroomDecor ? App.getBadge('new!') : ''}`,
                                 onclick: () => App.handlers.open_room_background_list(false, createFilterFn('bathroom')),
                             },
                             {
-                                name: `kitchen`,
+                                name: `kitchen ${hasNewKitchenDecor ? App.getBadge('new!') : ''}`,
                                 onclick: () => App.handlers.open_room_background_list(false, createFilterFn('kitchen')),
                             }
                         ])
