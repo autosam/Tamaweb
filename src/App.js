@@ -3407,7 +3407,7 @@ const App = {
                 }
 
                 // some entries become randomly unavailable to buy for the day
-                const isOutOfStock = ++index && buyMode && getIsOutOfStock(10);
+                const isOutOfStock = ++index && buyMode && getIsOutOfStock(0);
 
                 // 50% off on sales day
                 let price = current.price;
