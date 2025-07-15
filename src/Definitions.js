@@ -988,6 +988,11 @@ App.definitions = (() => {
                 price: 250,
                 isNew: true,
             },
+            "mush-room": {
+                image: 'resources/img/background/house/cc_08.png',
+                price: 350,
+                isNew: true,
+            },
 
             // craftables
             "collage": {
@@ -1030,10 +1035,38 @@ App.definitions = (() => {
                 isNew: false,
                 type: 'kitchen',
             },
+            "mush-kitchen": {
+                image: 'resources/img/background/house/kitchen_cc_02.png',
+                price: 350,
+                isNew: true,
+                type: 'kitchen',
+            },
         },
     
         /* ROOM PLACEABLE FURNITURE */
         furniture: [
+            // mushroom set
+            {
+                name: 'Mushroom Couch',
+                image: 'resources/img/furniture/mushroom_couch.png',
+                id: "mushroom_couch",
+                price: 200,
+                isNew: true,
+            },
+            {
+                name: 'Mushroom Pot',
+                image: 'resources/img/furniture/mushroom_pot.png',
+                id: "mushroom_pot",
+                price: 150,
+                isNew: true,
+            },
+            {
+                name: 'Mushroom Lamp',
+                image: 'resources/img/furniture/mushroom_lamp.png',
+                id: "mushroom_lamp",
+                price: 200,
+            },
+
             // vintage orange set
             {
                 name: 'Vintage Couch',
@@ -1265,12 +1298,6 @@ App.definitions = (() => {
                 image: 'resources/img/furniture/table_01.png',
                 id: "table_01",
                 price: 250,
-            },
-            {
-                name: 'Mushroom Lamp',
-                image: 'resources/img/furniture/mushroom_lamp.png',
-                id: "mushroom_lamp",
-                price: 200,
             },
             {
                 name: 'Pink Fan',
