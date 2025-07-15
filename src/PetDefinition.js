@@ -260,6 +260,11 @@ class PetDefinition {
     }
 
     getSpritesheetDefinition(){
+        if(this.spritesheet) {
+            this.spritesheet = {
+                ...this.spritesheet
+            }
+        }
         this.spritesheet = this.spritesheetDefinitions[this.lifeStage + ''];
     }
     

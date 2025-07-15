@@ -1970,6 +1970,26 @@ a.generic-btn:before {
     animation: fade-in 0.1s ease forwards;
     opacity: 0;
 }
+.message-bubble_icon {
+    width: fit-content;
+    /* background: white; */
+    display: inline-flex;
+    justify-content: center;
+    align-items: flex-end;
+    width: 28px;
+    height: 28px;
+    position: absolute;
+    top: -29px;
+    left: 12px;
+    /* border-radius: 100%;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0; */
+    overflow: hidden;
+}
+.message-bubble_icon > * {
+    padding: 0 !important;
+    margin: 0 !important;
+}
 
 .flex-grid-2x {
     display: flex;
