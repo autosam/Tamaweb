@@ -2366,7 +2366,6 @@ const App = {
                             <span>Manual Save</span>
                             <small style="font-size: x-small">auto-saves every ${App.constants.AUTO_SAVE_INTERVAL_SECS} secs</small> 
                         </span>
-                        ${App.getBadge()}
                         `,
                     onclick: (me) => {
                         App.save();
@@ -2512,7 +2511,7 @@ const App = {
                 },
                 { type: 'separator', _ignore: ignoreFirstDivider },
                 {
-                    name: `gameplay settings ${App.getBadge()}`,
+                    name: `gameplay settings`,
                     onclick: () => {
                         return App.displayList([
                             {
@@ -2603,7 +2602,7 @@ const App = {
                                 }
                             },
                             {
-                                _mount: (e) => e.innerHTML = `show want name: <i>${App.settings.showWantName ? 'On' : 'Off'}</i> ${App.getBadge()}`,
+                                _mount: (e) => e.innerHTML = `show want name: <i>${App.settings.showWantName ? 'On' : 'Off'}</i>`,
                                 onclick: (item) => {
                                     App.settings.showWantName = !App.settings.showWantName;
                                     App.applySettings();
@@ -4688,6 +4687,7 @@ const App = {
                                                     if(!App.pay(totalPrice)) return false;
                                                     getOrders().forEach(order => {
                                                         App.addNumToObject(App.pet.inventory.food, order.foodName, order.current.orderAmount);
+                                                        Missions.done(Missions.TYPES.order_food);
                                                     })
                                                     App.displayPopup(
                                                         `${App.getIcon('check-circle', true)} <br> Thanks for ordering! <br> <small>Your order will arrive shortly!</small>`, 
