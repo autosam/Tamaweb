@@ -4592,6 +4592,7 @@ const App = {
                     }
                 },
                 {
+                    _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby,
                     name: `<span style="color: mediumvioletred"> <i class="fa-solid fa-burger icon"></i> SnapMeal </span> ${App.getBadge()}`,
                     onclick: () => {
                         let list = [
