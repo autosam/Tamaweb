@@ -983,6 +983,11 @@ App.definitions = (() => {
                 price: 350,
                 isNew: false,
             },
+            "vintage orange": {
+                image: 'resources/img/background/house/cc_07.png',
+                price: 250,
+                isNew: true,
+            },
 
             // craftables
             "collage": {
@@ -1029,6 +1034,29 @@ App.definitions = (() => {
     
         /* ROOM PLACEABLE FURNITURE */
         furniture: [
+            // vintage orange set
+            {
+                name: 'Vintage Couch',
+                image: 'resources/img/furniture/vintage_couch.png',
+                id: "vintage_couch",
+                price: 200,
+                isNew: true,
+            },
+            {
+                name: 'Vintage Cabinet',
+                image: 'resources/img/furniture/vintage_cabinet.png',
+                id: "vintage_cabinet",
+                price: 150,
+                isNew: true,
+            },
+            {
+                name: 'Vintage Plant',
+                image: 'resources/img/furniture/vintage_plant.png',
+                id: "vintage_plant",
+                price: 150,
+                isNew: true,
+            },
+
             // valentine set
             {
                 name: 'Valentine Bear',
