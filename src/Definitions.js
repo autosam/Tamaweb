@@ -799,6 +799,23 @@ App.definitions = (() => {
                 interaction_time: 60000,
                 interruptable: true,
             },
+            "rubicube": {
+                sprite: 12,
+                fun_replenish: 15,
+                price: 150,
+                interaction_time: 30000,
+                interruptable: true,
+                isNew: true,
+            },
+            "fidget spinner": {
+                sprite: 13,
+                fun_replenish: 20,
+                price: 250,
+                interaction_time: 30000,
+                interruptable: true,
+                isNew: true,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+            },
         },
     
         /* GARDENING PLANTS */
