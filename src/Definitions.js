@@ -1000,14 +1000,14 @@ App.definitions = (() => {
                 price: 350,
                 isNew: false,
             },
-            "vintage orange": {
-                image: 'resources/img/background/house/cc_07.png',
-                price: 250,
-                isNew: true,
-            },
             "mush-room": {
                 image: 'resources/img/background/house/cc_08.png',
                 price: 350,
+                isNew: true,
+            },
+            "vintage orange": {
+                image: 'resources/img/background/house/cc_07.png',
+                price: 250,
                 isNew: true,
             },
 
@@ -1388,6 +1388,30 @@ App.definitions = (() => {
                 id: 'sofa_cloud',
                 isCraftable: true,
                 craftingRecipe: ['orange tulip', 'bamboo', 'purple tulip'],
+            },
+            {
+                name: 'City Couch',
+                image: 'resources/img/furniture/couch_city.png',
+                id: "couch_city",
+                isCraftable: true,
+                isNew: true,
+                craftingRecipe: ['tetrocana', 'orange tulip', 'lucrios'],
+            },
+            {
+                name: 'City Toy Car',
+                image: 'resources/img/furniture/city_toy_car.png',
+                id: "city_toy_car",
+                isCraftable: true,
+                isNew: true,
+                craftingRecipe: ['lucrios', 'tetrocana', 'yellow tulip'],
+            },
+            {
+                name: 'City Plant',
+                image: 'resources/img/furniture/plant_city.png',
+                id: "plant_city",
+                isCraftable: true,
+                isNew: true,
+                craftingRecipe: ['green tulip', 'hephasto', 'bamboo'],
             },
         ],
     
