@@ -649,16 +649,35 @@ class Pet extends Object2d {
         stats.current_bladder -= bladder_depletion_rate;
         if(stats.current_bladder <= 0){
             stats.current_bladder = stats.max_bladder;
-            if(!stats.is_potty_trained)
-                this.stats.has_poop_out = true;
+            if(!stats.is_potty_trained){
+                if(!this.stats.has_poop_out) this.stats.has_poop_out = 1;
+                else this.stats.has_poop_out += 1;
+            }
             else if(!isOfflineProgression) {
                 App.queueEvent(() => {
                     Activities.poop(true);
                 }, 'poop');
             }
         }
+        // spawning poop objects
+        const spawnedPoopObjects = App.drawer.selectObjects('poop');
+        const poopObjectsToBeSpawned = this.stats.has_poop_out - spawnedPoopObjects.length;
+        if(poopObjectsToBeSpawned > 0 && spawnedPoopObjects.length < App.constants.POOP_POSITIONS.length){
+            for(let i = 0; i < poopObjectsToBeSpawned; i++){
+                const position = App.constants.POOP_POSITIONS.at(i + spawnedPoopObjects.length);
+                if(!position) break;
+                new Object2d({
+                    image: App.preloadedResources["resources/img/misc/poop.png"],
+                    ...position,
+                    selector: 'poop',
+                    onDraw: (me) => {
+                        Object2d.animations.flip(me, 300);
+                    }
+                })
+            }
+        }
+
         this.needsToiletOverlay.hidden = stats.current_bladder > stats.max_bladder / 4;
-        App.poop.hidden = !this.stats.has_poop_out;
         stats.current_cleanliness -= cleanliness_depletion_rate;
         if(stats.current_cleanliness <= 0){
             stats.current_cleanliness = 0;
