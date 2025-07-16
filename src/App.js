@@ -100,7 +100,12 @@ const App = {
         // z-index
         ACTIVE_PET_Z: 5,
         NPC_PET_Z: 4.6,
-        POOP_Z: 4.59,
+        POOP_POSITIONS: [
+            {x: '75%', y: '78%', z: 4.59},
+            {x: '85%', y: '84%', z: 4.592},
+            {x: '25%', y: '80%', z: 4.593},
+            {x: '15%', y: '82%', z: 4.594},
+        ],
         ACTIVE_ITEM_Z: 4.595,
         CHRISTMAS_TREE_Z: 4.58,
         BACKGROUND_Z: -10,
@@ -242,14 +247,6 @@ const App = {
                 const currentOpacity = lerp(me.opacity, targetOpacity, 0.015 * App.deltaTime);
                 me.opacity = clamp(currentOpacity, 0, 1);
                 me.isVisible = me.opacity > 0.2;
-            }
-        })
-        App.poop = new Object2d({
-            image: App.preloadedResources["resources/img/misc/poop.png"],
-            x: '80%', y: '80%', z: App.constants.POOP_Z,
-            hidden: true,
-            onDraw: (me) => {
-                Object2d.animations.flip(me, 300);
             }
         })
         App.sky = new Object2d({
@@ -986,7 +983,7 @@ const App = {
             image: 'resources/img/background/house/02.png',
             petX: '50%', petY: '100%',
             onLoad: () => {
-                App.poop.absHidden = false;
+                App.drawer.selectObjects('poop').forEach(p => p.absHidden = false);
                 App.pet.staticShadow = false;
                 if(App.pet.sicknessOverlay){
                     App.pet.sicknessOverlay.absHidden = false;
@@ -1006,7 +1003,7 @@ const App = {
                 App.handleFurnitureSpawn();
             },
             onUnload: () => {
-                App.poop.absHidden = true;
+                App.drawer.selectObjects('poop').forEach(p => p.absHidden = true);
                 App.pet.staticShadow = true;
                 if(App.pet.sicknessOverlay){
                     App.pet.sicknessOverlay.absHidden = true;
@@ -5372,7 +5369,6 @@ const App = {
             App.pet.y = App.scene.home.petY;
             App.toggleGameplayControls(false);
             Missions.done(Missions.TYPES.clean_room);
-            const poopDefaultPosition = App.poop.x;
 
             const dragObjectWithMop = (object2d, size) => {
                 if(object2d.x <= mop.x + mop.width){
@@ -5388,6 +5384,8 @@ const App = {
                 } else delete object2d._dragStart;
             }
 
+            const poopObjects = App.drawer.selectObjects('poop');
+
             const mop = new Object2d({
                 image: App.preloadedResources["resources/img/misc/cleaner.png"],
                 x: -100,
@@ -5400,7 +5398,7 @@ const App = {
                     this.x += 1;
 
                     dragObjectWithMop(App.pet, App.petDefinition.spritesheet.cellSize);
-                    dragObjectWithMop(App.poop, App.poop.image.naturalWidth);
+                    poopObjects.forEach(poop => dragObjectWithMop(poop));
 
                     if(this.x >= mop.width/1.5){
                         me.hidden = true;
@@ -5414,8 +5412,7 @@ const App = {
                                 App.pet.x = '50%';
                                 App.pet.playCheeringAnimationIfTrue(App.pet.stats.has_poop_out, () => {});
                                 App.pet.stats.has_poop_out = false;
-                                App.poop.hidden = true;
-                                App.poop.x = poopDefaultPosition;
+                                poopObjects.forEach(poop => poop.removeObject())
                             }
                         })
                     }
