@@ -5372,24 +5372,52 @@ const App = {
             App.pet.y = App.scene.home.petY;
             App.toggleGameplayControls(false);
             Missions.done(Missions.TYPES.clean_room);
+            const poopDefaultPosition = App.poop.x;
+
+            const dragObjectWithMop = (object2d, size) => {
+                if(object2d.x <= mop.x + mop.width){
+                    object2d.x = mop.x + mop.width;
+                    if(!object2d._dragStart){
+                        object2d._dragStart = App.time;
+                    }
+                    object2d.setState?.(
+                        App.time - object2d._dragStart < 500 
+                        ? 'shocked'
+                        : App.pet.stats.has_poop_out ? 'idle' : 'mild_uncomfortable'
+                    );
+                } else delete object2d._dragStart;
+            }
+
             const mop = new Object2d({
                 image: App.preloadedResources["resources/img/misc/cleaner.png"],
-                x: 0,
-                y: -100,
+                x: -100,
+                y: 0,
                 z: 100,
+                rotation: -90,
                 width: 96, height: 96,
                 onDraw: function(me){
                     Object2d.animations.flip(me);
-                    this.y += 1;
-                    if(this.y >= 50){
-                        App.pet.stopScriptedState();
-                        App.drawer.removeObject(this);
-                        App.toggleGameplayControls(true);
-                        App.pet.x = '50%';
-                        // App.poop.hidden = true;
-                        App.pet.playCheeringAnimationIfTrue(App.pet.stats.has_poop_out, () => {});
-                        App.pet.stats.has_poop_out = false;
-                        App.poop.hidden = true;
+                    this.x += 1;
+
+                    dragObjectWithMop(App.pet, App.petDefinition.spritesheet.cellSize);
+                    dragObjectWithMop(App.poop, App.poop.image.naturalWidth);
+
+                    if(this.x >= mop.width/1.5){
+                        me.hidden = true;
+                        App.pet.setState('idle');
+
+                        App.fadeScreen({
+                            middleFn: () => {
+                                App.pet.stopScriptedState();
+                                App.drawer.removeObject(this);
+                                App.toggleGameplayControls(true);
+                                App.pet.x = '50%';
+                                App.pet.playCheeringAnimationIfTrue(App.pet.stats.has_poop_out, () => {});
+                                App.pet.stats.has_poop_out = false;
+                                App.poop.hidden = true;
+                                App.poop.x = poopDefaultPosition;
+                            }
+                        })
                     }
                 }
             })
@@ -6659,8 +6687,30 @@ const App = {
     wait: function(ms = 0){
         return new Promise(resolve => setTimeout(resolve, ms))
     },
-    fadeScreen: function({ middleFn, time = 1000 } = {}){
-        
+    fadeScreen: function({ middleFn, speed = 0.005 } = {}) {
+        let phase = 'fadeIn';
+        new Object2d({
+            image: App.getPreloadedResource('resources/img/misc/black_overlay_01.png'),
+            opacity: 0,
+            x: 0, y: 0, z: 100,
+            onDraw: (me) => {
+                const step = speed * App.deltaTime;
+
+                if (phase === 'fadeIn') {
+                    me.opacity += step;
+                    if (me.opacity >= 1.75) {
+                        me.opacity = 1.75;
+                        middleFn?.();
+                        phase = 'fadeOut';
+                    }
+                } else if (phase === 'fadeOut') {
+                    me.opacity -= step;
+                    if (me.opacity <= 0) {
+                        me.removeObject();
+                    }
+                }
+            }
+        });
     },
     apiService: {
         ENDPOINT: 'https://script.google.com/macros/s/AKfycbxCa6Yo_VdK5t9T7ZCHabxT1EY-xACEC3VUDHgkkwGdduF2U5VMGlp0KXBu9CtE8cWv9Q/exec',
