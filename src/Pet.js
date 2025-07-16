@@ -1260,12 +1260,14 @@ class Pet extends Object2d {
             }
         },
         playingWithItem: function(){ // this.pet, this.item, this.itemObject
-            const skipLimitedFpsItems = ['grimoire', 'skate'];
+            const skipLimitedFpsItems = ['grimoire', 'skate', 'fidget spinner'];
 
             if(!skipLimitedFpsItems.includes(this.item?.name)){
                 if(this.lastMs && App.time <= this.lastMs + 500) return;
                 this.lastMs = App.time;
             }
+
+            const me = this;
 
             switch(this.item?.name){
                 case "skate":
@@ -1352,12 +1354,14 @@ class Pet extends Object2d {
                         this.rotation = 0 + (Math.sin(this._animFloat) * 25);
                     }
                     break;
-
+                
+                case "rubicube":
                 case "smartphone":
                 case "magazine":
                     this.pet.setState(randomFromArray(['sitting', 'sitting', this.item?.name === 'smartphone' ? 'eating' : 'sitting', 'shocked', 'blush']));
                     this.itemObject.x = this.pet.x + App.petDefinition.spritesheet.cellSize / 1.5;
                     this.itemObject.y = ((this.pet.y - 13) + random(-2, 2));
+                    if(this.item?.name === 'rubicube') this.itemObject.inverted = !this.itemObject.inverted;
                     break;
 
                 case "ball":
@@ -1395,11 +1399,31 @@ class Pet extends Object2d {
                 case "foxy":
                 case "bear":
                     this.pet.setState(randomFromArray(['cheering', 'shocked', 'blush']));
-                    const xOffset = (App.petDefinition.spritesheet.cellSize / 2) * (random(0, 1) ? -0.5 : 1);
+                    const xOffset = (this.pet.petDefinition.spritesheet.cellSize / 2) * (random(0, 1) ? -0.5 : 1);
                     this.itemObject.z = this.pet.z + 0.1;
                     this.itemObject.x = this.pet.x + xOffset;
                     this.itemObject.y = ((this.pet.y - 10) + random(-2, 2));
                     this.itemObject.inverted = !this.itemObject.inverted;
+                    break;
+                case "fidget spinner":
+                    if(!this.itemObject._speed) this.itemObject._speed = -10;
+                    this.itemObject._speed = lerp(this.itemObject._speed, -5, 0.0005 * App.deltaTime);
+
+                    if(this.itemObject._speed < 0){
+                        this.pet.setState('mild_uncomfortable');
+                    }
+                    if(this.itemObject._speed <= -2){
+                        this.pet.setState(randomFromArray(['cheering', 'shocked', 'blush']));
+                        setTimeout(() => this.pet.setState('idle'), 500);
+                        this.itemObject._speed = random(5, 50);
+                        const xOffset = (this.pet.petDefinition.spritesheet.cellSize / 2.5) * randomFromArray([-0.5, 0.25, 1]);
+                        this.itemObject.x = this.pet.x + xOffset;
+                    }
+                    
+                    const cappedSpeed = clamp(this.itemObject._speed, 0, 999);
+                    this.itemObject.z = this.pet.z + 0.1;
+                    this.itemObject.y = this.pet.y - 6;
+                    this.itemObject.rotation += cappedSpeed * App.deltaTime;
                     break;
                 case "rattle":
                     this.pet.y = '100%';
@@ -1416,11 +1440,6 @@ class Pet extends Object2d {
                         const possibleStates = ['cheering', 'eating', 'shocked', 'sitting', 'blush'];
                         this.pet.setState(randomFromArray(possibleStates));
                         this.pet.inverted = random(0, 1) ? true : false;
-                        // if(this.pet.inverted){
-                        //     this.itemObject.x = '75%';
-                        // } else {
-                        //     this.itemObject.x = '25%';
-                        // }
                     }
             }
         }
