@@ -96,7 +96,7 @@ const App = {
             refeedingTolerance: 10,
             bufferSize: 16,
         },
-        ONLINE_FOOD_ORDER_MARKUP: 1.25,
+        ONLINE_FOOD_ORDER_MARKUP: 2,
         // z-index
         ACTIVE_PET_Z: 5,
         NPC_PET_Z: 4.6,
@@ -2176,7 +2176,7 @@ const App = {
                     }
                 },
                 {
-                    name: `craft`,
+                    name: `craft ${App.getBadge()}`,
                     onclick: () => {
                         App.handlers.open_craftables_list();
                         return true;
@@ -3940,18 +3940,22 @@ const App = {
             }
 
             const getCraftableUIDef = (current, type, owned) => ({
+                current,
                 isNew: !!current.isNew,
                 name: `
                     ${
                         current.icon ??
-                        `<img style="min-height: 64px" src="${App.checkResourceOverride(current.image)}"></img>`
+                        `<img style="
+                            width: min-content;
+                            align-self: center;
+                        " src="${App.checkResourceOverride(current.image)}"></img>`
                     }
                     ${current.name.toUpperCase()} 
                     <small>${type}</small>
                     <b class="flex-center flex-dir-row">
                     ${
                         owned ? 'OWNED'
-                            : App.getHarvestIcons(current.craftingRecipe, undefined, 'opacity-third')
+                            : App.getHarvestIcons(current.craftingRecipe, undefined, 'opacity-half')
                     }
                     </b> 
                     ${current.isNew ? App.getBadge('new!') : ''}
@@ -4010,6 +4014,18 @@ const App = {
                 ...furniture,
                 ...accessories,
             ].sort((a, b) => b.isNew - a.isNew)
+
+            
+            if(App.isTester()){
+                const ingredientUsageMap = {};
+                Object.keys(App.definitions.plant).forEach(ing => {
+                    if(App.definitions.plant[ing].inedible) App.addNumToObject(ingredientUsageMap, ing, 0)
+                })
+                list.forEach(item => {
+                    item.current.craftingRecipe.forEach(ing => App.addNumToObject(ingredientUsageMap, ing, 1))
+                })
+                console.log({ingredientUsageMap})
+            }
 
             sliderInstance = App.displaySlider(list, null, {accept: 'Craft'});
             return sliderInstance;
