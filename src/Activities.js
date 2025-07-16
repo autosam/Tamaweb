@@ -60,7 +60,7 @@ class Activities {
                 if(me.opacity <= 0) me.removeObject();
             }
         })
-        await deliveryMan.bob({animation: 'idle', maxCycles: 1});
+        await deliveryMan.bob({animation: 'idle', maxCycles: 1, sound: 'resources/sounds/walk_01.ogg'});
         if(negativeReaction){
             deliveryMan.lookAt(false);
             deliveryMan.setState('shocked');
@@ -69,7 +69,7 @@ class Activities {
         main.setState('idle_side');
         await TimelineDirector.wait(250);
         if(!negativeReaction){
-            await deliveryMan.bob({animation: 'cheering', maxCycles: 1})
+            await deliveryMan.bob({animation: 'cheering', maxCycles: 1, sound: 'resources/sounds/task_complete.ogg'})
         }
         deliveryMan.moveTo({x: '-20%', speed: 0.025});
         await TimelineDirector.wait(200);
@@ -3881,6 +3881,7 @@ class Activities {
         const moneyBag = new Object2d({
             img: 'resources/img/misc/money_bag_01.png',
             x: '50%', y: '0%', width: 24, height: 24,
+            opacity: amount ? 1 : 0,
             targetY: 67,
             onDraw: (me) => me.moveToTarget(0.025),
         })
@@ -3976,7 +3977,14 @@ class TimelineDirector {
         return this.actor?.x;
     }
     getSize = () => this.actor?.spritesheet.cellSize;
-    bob = ({speed = 0.011, strength = 5, maxCycles = 3, animation = 'cheering', landAnimation} = {}) => {
+    bob = ({
+        speed = 0.011, 
+        strength = 5, 
+        maxCycles = 3, 
+        animation = 'cheering', 
+        landAnimation,
+        sound
+    } = {}) => {
         if(!landAnimation) landAnimation = animation;
         return new Promise(resolve => {
             if(!this.actor) return resolve();
@@ -4000,6 +4008,7 @@ class TimelineDirector {
                     if(!cycleCounted) {
                         cycleCounted = true;
                         currentCycles++;
+                        if(sound) App.playSound(sound, true);
                     }
                     actor.setState(landAnimation);
                     if(currentCycles >= maxCycles){

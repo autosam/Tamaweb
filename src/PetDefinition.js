@@ -90,11 +90,19 @@ class PetDefinition {
             start: 7,
             end: 8,
             frameTime: 250,
+            sound: {
+                file: 'shock.ogg',
+                interval: 2,
+            },
         },
         blush: {
             start: 8,
             end: 9,
             frameTime: 250,
+            sound: {
+                file: 'blush.ogg',
+                interval: 2,
+            },
         },
         cheering: {
             start: 2,
