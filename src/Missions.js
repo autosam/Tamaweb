@@ -159,6 +159,7 @@ const Missions = {
             let count = random(min, max) * (isGoldPull ? 5 : 1);
             if(App.isDuringChristmas()) count *= 2;
             randomPull.onClaim?.(count);
+            setTimeout(() => App.playSound('resources/sounds/task_complete_02.ogg', true), 450)
             App.displayPopup(`
                 <div class="pulse">
                     ${randomPull.icon}
@@ -233,9 +234,11 @@ const Missions = {
             .map(chest => {
                 return {
                     name: 
-                        chest.name 
+                        '<div class="pointer-events-none">'
+                        + chest.name 
                         + `<br><small class="inline-list">${chest.info }<small>`
-                        + App.getBadge(`${App.getIcon('coins', true)} <span style="margin-left: 3px">${chest.price}</span>`),
+                        + App.getBadge(`${App.getIcon('coins', true)} <span style="margin-left: 3px">${chest.price}</span>`)
+                        + '</div>',
                     _disable: chest.price > Missions.currentPts,
                     class: 'large',
                     onclick: () => {
@@ -308,7 +311,7 @@ const Missions = {
                     name: `
                         <div 
                         style="max-width: 100%; align-items: center;" 
-                        class="flex-between width-full"
+                        class="flex-between width-full pointer-events-none"
                         >
 
                         <span class="overflow-hidden" style="margin-right: 10px">
@@ -326,6 +329,7 @@ const Missions = {
                         btn?.remove();
                         m.isClaimed = true;
                         App.sendAnalytics('mission_done', m.type);
+                        setTimeout(() => App.playSound('resources/sounds/ui_click_03.ogg', true))
                         if(Missions.currentStep < Missions.MAX_STEPS){
                             Missions.currentPts += m.pts;
                             Missions.currentStep ++;
