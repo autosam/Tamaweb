@@ -386,6 +386,7 @@ const App = {
         // hide loading
         setTimeout(() => {
             UI.fadeOut(document.querySelector('.loading-text'));
+            App.loadingEnded = true;
         })
 
         // rudder stack
@@ -5881,7 +5882,9 @@ const App = {
     },
     initSound: function(){
         // audio channel
-        this.audioChannel = new AudioChannel();
+        this.audioChannel = new AudioChannel({
+            preloadList: SOUNDS
+        });
 
         // button click event
         const clickSoundClassNames = ['click-sound', 'list-item'];
@@ -6200,7 +6203,7 @@ const App = {
     },
     save: function(noIndicator){
         let savingData = [];
-        if(!App.pet) return;
+        if(!App.pet || !App.loadingEnded) return;
 
         const setItem = (key, value) => {
             savingData = [...savingData, [key, value]];
