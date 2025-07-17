@@ -2711,11 +2711,12 @@ const App = {
                     }
                 },
                 {
-                    name: `Change Theme`,
+                    name: `Change Theme ${App.getBadge()}`,
                     onclick: () => {
+                        const newThemes = ['pardis'];
                         return App.displayList(
                             App.definitions.themes.map(themeName => ({
-                                name: themeName,
+                                name: `${themeName} ${newThemes.includes(themeName) ? App.getBadge('new!') : ''}`,
                                 // class: `theme-${themeName}`,
                                 onclick: () => {
                                     App.settings.theme = themeName;
