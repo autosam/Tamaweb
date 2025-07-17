@@ -1,7 +1,8 @@
 self.importScripts(
   "src/Version.js",
   "resources/data/CharacterDefinitions.js",
-  "resources/data/SpriteDefinitions.js"
+  "resources/data/SpriteDefinitions.js",
+  "resources/data/SoundDefinitions.js"
 );
 
 const channel = new BroadcastChannel("sw-messages");
@@ -37,32 +38,6 @@ const ASSETS = [
   "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css",
   "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css",
   "https://cdn.jsdelivr.net/npm/profanity-cleaner@latest",
-  // sounds
-  "resources/sounds/angry.ogg",
-  "resources/sounds/birthday_song_01.ogg",
-  "resources/sounds/cheer.ogg",
-  "resources/sounds/cheer_success.ogg",
-  "resources/sounds/eat.ogg",
-  "resources/sounds/refuse.ogg",
-  "resources/sounds/sad.ogg",
-  "resources/sounds/cute.ogg",
-  "resources/sounds/jump.ogg",
-  "resources/sounds/blush.ogg",
-  "resources/sounds/shock.ogg",
-  "resources/sounds/task_complete.ogg",
-  "resources/sounds/task_complete_02.ogg",
-  "resources/sounds/task_fail_01.ogg",
-  "resources/sounds/ui_click_01.ogg",
-  "resources/sounds/ui_click_02.ogg",
-  "resources/sounds/ui_click_03.ogg",
-  "resources/sounds/ui_click_04.ogg",
-  "resources/sounds/walk_01.ogg",
-  "resources/sounds/wedding_song_01.ogg",
-  "resources/sounds/online_hub_transition_01.ogg",
-  "resources/sounds/camera_shutter_01.ogg",
-  "resources/sounds/revival_01.ogg",
-  "resources/sounds/vacation_track_01.ogg",
-  "resources/sounds/work_track_01.ogg",
   // other
   "resources/font/PixelifySans-VariableFont_wght.ttf",
   "resources/font/PixelColeco.otf",
@@ -70,6 +45,7 @@ const ASSETS = [
   "resources/data/CharacterDefinitions.js",
   "resources/data/SpriteDefinitions.js",
   "resources/data/GrowthChart.js",
+  "resources/data/SoundDefinitions.js",
   ...SPRITES,
   ...PET_ELDER_CHARACTERS,
   ...PET_ADULT_CHARACTERS,
@@ -78,6 +54,7 @@ const ASSETS = [
   ...PET_BABY_CHARACTERS,
   ...NPC_CHARACTERS,
   ...ANIMAL_CHARACTERS,
+  ...SOUNDS,
 ];
 
 self.addEventListener("install", (e) => {

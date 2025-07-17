@@ -51,6 +51,14 @@ class AudioChannel {
     audioBufferCache = new Map();
     currentSource = null;
     isBusy = false;
+    constructor(props = {}){
+        const { preloadList } = props;
+
+        if(preloadList){
+            preloadList.forEach(path => this.load(path));
+        }
+
+    }
     async load(path){
         const response = await fetch(path);
         const arrayBuffer = await response.arrayBuffer();
