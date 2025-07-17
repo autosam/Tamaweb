@@ -4,6 +4,7 @@ App.definitions = (() => {
         /* THEMES */
         themes: [
             'default', 
+            'pardis', 
             'sunset', 
             'uni', 
             'color pink',
