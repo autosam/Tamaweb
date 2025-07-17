@@ -2268,6 +2268,9 @@ const App = {
                                 Teddie
                             </a>
                         </div>
+                        <div class="credit-author">
+                            Thunderputz
+                        </div>
                     `
                 },
                 {

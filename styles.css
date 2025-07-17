@@ -1800,7 +1800,11 @@ a.generic-btn:before {
     margin: 5px -10px;
     padding: 5px 10px;
     border-radius: 16px;
-    background: #f5deb39c;
+    background-color: rgba(255, 255, 255, 0.5);
+    color: rgb(33, 33, 33);
+}
+.credit-author a {
+    color: rgb(0, 4, 255) !important;
 }
 
 /* fullscreen mode */
