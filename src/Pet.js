@@ -435,10 +435,6 @@ class Pet extends Object2d {
                         App.closeAllDisplays();
                         App.toggleGameplayControls(true);
                         App.setScene(App.scene.home);
-                        // if(!noLongerHungry){
-                        //     App.handlers.open_feeding_menu();
-                        //     App.handlers.open_food_list(null, null, type);
-                        // }
                         onEndFn?.(noLongerHungry);
                     }
                     if(this.hasMoodlet('full')){
@@ -468,11 +464,11 @@ class Pet extends Object2d {
         else
             if(onEndFn) onEndFn();
     }
-    playCheeringAnimation(onEndFn, noSoundAndIcon){
+    playCheeringAnimation(onEndFn, noSoundAndIcon, ms = 2000){
         this.stopMove();
         if(!noSoundAndIcon) setTimeout(() => this.playSound('resources/sounds/cheer_success.ogg', true));
         const stateName = !noSoundAndIcon ? 'cheering_with_icon' : 'cheering';
-        this.triggerScriptedState(stateName, 2000, null, true, () => {
+        this.triggerScriptedState(stateName, ms, null, true, () => {
             if(onEndFn) onEndFn();
         });
     }
@@ -653,16 +649,35 @@ class Pet extends Object2d {
         stats.current_bladder -= bladder_depletion_rate;
         if(stats.current_bladder <= 0){
             stats.current_bladder = stats.max_bladder;
-            if(!stats.is_potty_trained)
-                this.stats.has_poop_out = true;
+            if(!stats.is_potty_trained){
+                if(!this.stats.has_poop_out) this.stats.has_poop_out = 1;
+                else this.stats.has_poop_out += 1;
+            }
             else if(!isOfflineProgression) {
                 App.queueEvent(() => {
                     Activities.poop(true);
                 }, 'poop');
             }
         }
+        // spawning poop objects
+        const spawnedPoopObjects = App.drawer.selectObjects('poop');
+        const poopObjectsToBeSpawned = this.stats.has_poop_out - spawnedPoopObjects.length;
+        if(poopObjectsToBeSpawned > 0 && spawnedPoopObjects.length < App.constants.POOP_POSITIONS.length){
+            for(let i = 0; i < poopObjectsToBeSpawned; i++){
+                const position = App.constants.POOP_POSITIONS.at(i + spawnedPoopObjects.length);
+                if(!position) break;
+                new Object2d({
+                    image: App.preloadedResources["resources/img/misc/poop.png"],
+                    ...position,
+                    selector: 'poop',
+                    onDraw: (me) => {
+                        Object2d.animations.flip(me, 300);
+                    }
+                })
+            }
+        }
+
         this.needsToiletOverlay.hidden = stats.current_bladder > stats.max_bladder / 4;
-        App.poop.hidden = !this.stats.has_poop_out;
         stats.current_cleanliness -= cleanliness_depletion_rate;
         if(stats.current_cleanliness <= 0){
             stats.current_cleanliness = 0;
@@ -1245,12 +1260,14 @@ class Pet extends Object2d {
             }
         },
         playingWithItem: function(){ // this.pet, this.item, this.itemObject
-            const skipLimitedFpsItems = ['grimoire', 'skate'];
+            const skipLimitedFpsItems = ['grimoire', 'skate', 'fidget spinner'];
 
             if(!skipLimitedFpsItems.includes(this.item?.name)){
                 if(this.lastMs && App.time <= this.lastMs + 500) return;
                 this.lastMs = App.time;
             }
+
+            const me = this;
 
             switch(this.item?.name){
                 case "skate":
@@ -1337,12 +1354,21 @@ class Pet extends Object2d {
                         this.rotation = 0 + (Math.sin(this._animFloat) * 25);
                     }
                     break;
-
+                
+                case "rubicube":
                 case "smartphone":
                 case "magazine":
-                    this.pet.setState(randomFromArray(['sitting', 'sitting', this.item?.name === 'smartphone' ? 'eating' : 'sitting', 'shocked', 'blush']));
+                case "retroboy":
+                    const extendedAnimationItems = ['smartphone', 'retroboy'];
+                    this.pet.setState(
+                        randomFromArray([
+                            'sitting', 'sitting', 
+                            extendedAnimationItems.includes(this.item?.name) ? 'eating' : 'sitting', 'shocked', 'blush'
+                        ])
+                    );
                     this.itemObject.x = this.pet.x + App.petDefinition.spritesheet.cellSize / 1.5;
                     this.itemObject.y = ((this.pet.y - 13) + random(-2, 2));
+                    if(this.item?.name === 'rubicube') this.itemObject.inverted = !this.itemObject.inverted;
                     break;
 
                 case "ball":
@@ -1380,11 +1406,31 @@ class Pet extends Object2d {
                 case "foxy":
                 case "bear":
                     this.pet.setState(randomFromArray(['cheering', 'shocked', 'blush']));
-                    const xOffset = (App.petDefinition.spritesheet.cellSize / 2) * (random(0, 1) ? -0.5 : 1);
+                    const xOffset = (this.pet.petDefinition.spritesheet.cellSize / 2) * (random(0, 1) ? -0.5 : 1);
                     this.itemObject.z = this.pet.z + 0.1;
                     this.itemObject.x = this.pet.x + xOffset;
                     this.itemObject.y = ((this.pet.y - 10) + random(-2, 2));
                     this.itemObject.inverted = !this.itemObject.inverted;
+                    break;
+                case "fidget spinner":
+                    if(!this.itemObject._speed) this.itemObject._speed = -10;
+                    this.itemObject._speed = lerp(this.itemObject._speed, -5, 0.0005 * App.deltaTime);
+
+                    if(this.itemObject._speed < 0){
+                        this.pet.setState('mild_uncomfortable');
+                    }
+                    if(this.itemObject._speed <= -2){
+                        this.pet.setState(randomFromArray(['cheering', 'shocked', 'blush']));
+                        setTimeout(() => this.pet.setState('idle'), 500);
+                        this.itemObject._speed = random(5, 50);
+                        const xOffset = (this.pet.petDefinition.spritesheet.cellSize / 2.5) * randomFromArray([-0.5, 0.25, 1]);
+                        this.itemObject.x = this.pet.x + xOffset;
+                    }
+                    
+                    const cappedSpeed = clamp(this.itemObject._speed, 0, 999);
+                    this.itemObject.z = this.pet.z + 0.1;
+                    this.itemObject.y = this.pet.y - 6;
+                    this.itemObject.rotation += cappedSpeed * App.deltaTime;
                     break;
                 case "rattle":
                     this.pet.y = '100%';
@@ -1396,16 +1442,46 @@ class Pet extends Object2d {
                     this.itemObject.y = randomFromArray(possibleItemPositions);
                     this.itemObject.inverted = !this.itemObject.inverted;
                     break;
+                case "robotty":
+                    if(this.stateIndex === undefined){
+                        this.pet.y = '80%';
+                        this.pet.x = '50%';
+                        this.pet.setState('idle');
+                        this.itemObject.z = this.pet.z + 0.1;
+                        this.stateIndex = -1;
+                        this.positions = ['20%', '30%', '40%', '50%', '60%', '70%', '80%'];
+                    } else {
+                        App.playSound(`resources/sounds/ui_click_04.ogg`, true);
+                    }
+
+                    if(this.stateIndex % 3 === 0){
+                        this.pet.inverted = Boolean(random(0, 1));
+                        this.pet.setState( randomFromArray( ['cheering', 'shocked', 'idle_side', 'jumping', 'jumping', 'idle'] ) );
+                        setTimeout(() => this.pet.setState('idle'), 350);
+                    }
+                    
+                    this.stateIndex++;
+                    if(this.stateIndex >= this.positions.length){
+                        this.positions.reverse();
+                        this.stateIndex = 0;
+                    }
+                    this.itemObject.x = this.positions.at(this.stateIndex);
+                    switch(this.stateIndex % 4){
+                        case 0: this.itemObject.rotation = -5; break;
+                        case 1: this.itemObject.rotation = 0; break;
+                        case 2: this.itemObject.rotation = 5; break;
+                        case 3: this.itemObject.rotation = 0; break;
+                    }
+                    switch(this.stateIndex % 2){
+                        case 0: this.itemObject.y = '85%'; break;
+                        case 1: this.itemObject.y = '80%'; break;
+                    }
+                    break;
                 default:
                     if(Math.random() < 0.5){
                         const possibleStates = ['cheering', 'eating', 'shocked', 'sitting', 'blush'];
                         this.pet.setState(randomFromArray(possibleStates));
                         this.pet.inverted = random(0, 1) ? true : false;
-                        // if(this.pet.inverted){
-                        //     this.itemObject.x = '75%';
-                        // } else {
-                        //     this.itemObject.x = '25%';
-                        // }
                     }
             }
         }

@@ -96,10 +96,16 @@ const App = {
             refeedingTolerance: 10,
             bufferSize: 16,
         },
+        ONLINE_FOOD_ORDER_MARKUP: 2,
         // z-index
         ACTIVE_PET_Z: 5,
         NPC_PET_Z: 4.6,
-        POOP_Z: 4.59,
+        POOP_POSITIONS: [
+            {x: '75%', y: '78%', z: 4.59},
+            {x: '85%', y: '84%', z: 4.592},
+            {x: '25%', y: '80%', z: 4.593},
+            {x: '15%', y: '82%', z: 4.594},
+        ],
         ACTIVE_ITEM_Z: 4.595,
         CHRISTMAS_TREE_Z: 4.58,
         BACKGROUND_Z: -10,
@@ -243,14 +249,6 @@ const App = {
                 me.isVisible = me.opacity > 0.2;
             }
         })
-        App.poop = new Object2d({
-            image: App.preloadedResources["resources/img/misc/poop.png"],
-            x: '80%', y: '80%', z: App.constants.POOP_Z,
-            hidden: true,
-            onDraw: (me) => {
-                Object2d.animations.flip(me, 300);
-            }
-        })
         App.sky = new Object2d({
             image: App.preloadedResources["resources/img/background/sky/night.png"],
             x: 0, y: 0, z: 99999,
@@ -388,6 +386,7 @@ const App = {
         // hide loading
         setTimeout(() => {
             UI.fadeOut(document.querySelector('.loading-text'));
+            App.loadingEnded = true;
         })
 
         // rudder stack
@@ -854,10 +853,10 @@ const App = {
                         App.settings.isTester = commandPayload === '1';
                         App.displayPopup(`Set tester: ${App.settings.isTester}`, 1000, () => window.location.reload());
                         break;
-                    default: showInvalidError();
                     case 'activity:reckoning':
                         Activities.reckoning(true);
                         break;
+                    default: showInvalidError();
                 }
         }
     },
@@ -884,7 +883,7 @@ const App = {
         //     ])
         // })) return;
 
-        if(addEvent(`update_17_notice`, () => {
+        if(addEvent(`update_18_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
@@ -893,7 +892,7 @@ const App = {
                     bold: true,
                 },
                 {
-                    name: `Check out the new Mini-games, customizable bathroom and kitchen, UI themes, travel system and more!`,
+                    name: `Check out the food delivery app, items, room background sets and much more!`,
                     type: 'text',
                 },
                 {
@@ -985,7 +984,7 @@ const App = {
             image: 'resources/img/background/house/02.png',
             petX: '50%', petY: '100%',
             onLoad: () => {
-                App.poop.absHidden = false;
+                App.drawer.selectObjects('poop').forEach(p => p.absHidden = false);
                 App.pet.staticShadow = false;
                 if(App.pet.sicknessOverlay){
                     App.pet.sicknessOverlay.absHidden = false;
@@ -1005,7 +1004,7 @@ const App = {
                 App.handleFurnitureSpawn();
             },
             onUnload: () => {
-                App.poop.absHidden = true;
+                App.drawer.selectObjects('poop').forEach(p => p.absHidden = true);
                 App.pet.staticShadow = true;
                 if(App.pet.sicknessOverlay){
                     App.pet.sicknessOverlay.absHidden = true;
@@ -2178,7 +2177,7 @@ const App = {
                     }
                 },
                 {
-                    name: `craft`,
+                    name: `craft ${App.getBadge()}`,
                     onclick: () => {
                         App.handlers.open_craftables_list();
                         return true;
@@ -2260,6 +2259,9 @@ const App = {
                             <a href="https://bsky.app/profile/teddieursa.bsky.social" target="_blank">
                                 Teddie
                             </a>
+                        </div>
+                        <div class="credit-author">
+                            Thunderputz
                         </div>
                     `
                 },
@@ -2365,7 +2367,6 @@ const App = {
                             <span>Manual Save</span>
                             <small style="font-size: x-small">auto-saves every ${App.constants.AUTO_SAVE_INTERVAL_SECS} secs</small> 
                         </span>
-                        ${App.getBadge()}
                         `,
                     onclick: (me) => {
                         App.save();
@@ -2511,7 +2512,7 @@ const App = {
                 },
                 { type: 'separator', _ignore: ignoreFirstDivider },
                 {
-                    name: `gameplay settings ${App.getBadge()}`,
+                    name: `gameplay settings`,
                     onclick: () => {
                         return App.displayList([
                             {
@@ -2602,7 +2603,7 @@ const App = {
                                 }
                             },
                             {
-                                _mount: (e) => e.innerHTML = `show want name: <i>${App.settings.showWantName ? 'On' : 'Off'}</i> ${App.getBadge()}`,
+                                _mount: (e) => e.innerHTML = `show want name: <i>${App.settings.showWantName ? 'On' : 'Off'}</i>`,
                                 onclick: (item) => {
                                     App.settings.showWantName = !App.settings.showWantName;
                                     App.applySettings();
@@ -2702,11 +2703,12 @@ const App = {
                     }
                 },
                 {
-                    name: `Change Theme`,
+                    name: `Change Theme ${App.getBadge()}`,
                     onclick: () => {
+                        const newThemes = ['pardis'];
                         return App.displayList(
                             App.definitions.themes.map(themeName => ({
-                                name: themeName,
+                                name: `${themeName} ${newThemes.includes(themeName) ? App.getBadge('new!') : ''}`,
                                 // class: `theme-${themeName}`,
                                 onclick: () => {
                                     App.settings.theme = themeName;
@@ -3235,7 +3237,18 @@ const App = {
             list.appendChild(content);
             App.sendAnalytics('opened_family_tree');
         },
-        open_food_list: function(buyMode, activeIndex, filterType, sellMode, useMode, age = App.petDefinition.lifeStage){
+        open_food_list: function(props = {}){
+            const {
+                buyMode, 
+                activeIndex, 
+                filterType, 
+                sellMode, 
+                useMode, 
+                age = App.petDefinition.lifeStage,
+                getListOnly,
+                allowCookableOnly,
+            } = props;
+
             let list = [];
             let sliderInstance;
             const salesDay = App.isSalesDay();
@@ -3249,7 +3262,7 @@ const App = {
                 if('age' in current && !current.age.includes(age)) continue;
 
                 // buy mode and is free
-                if(buyMode && (current.price === 0 || current.cookableOnly)) continue;
+                if(buyMode && (current.price === 0 || (!allowCookableOnly && current.cookableOnly))) continue;
 
                 // filter check
                 if(filterType && currentType !== filterType) continue;
@@ -3273,7 +3286,9 @@ const App = {
                 if(salesDay) price = Math.round(price / 2);
 
                 list.push({
-                    disabled: isOutOfStock,
+                    disabled: Boolean(isOutOfStock),
+                    current,
+                    foodName: food,
                     name: `
                         ${App.getFoodCSprite(current.sprite)} 
                         ${current.cookableOnly ? '★ ' : ''}
@@ -3308,9 +3323,7 @@ const App = {
                                 Missions.done(Missions.TYPES.buy_food);
                             }
 
-                            // console.log(list.scrollTop);
-                            let nList = App.handlers.open_food_list(buyMode, sliderInstance?.getCurrentIndex(), filterType, sellMode, useMode);
-                                // nList.scrollTop = list.scrollTop;
+                            App.handlers.open_food_list({...props, activeIndex: sliderInstance?.getCurrentIndex()});
                             return false;
                         }
 
@@ -3328,10 +3341,8 @@ const App = {
                         // eat mode
                         const reopenFn = (noLongerHungry) => {
                             if(noLongerHungry && currentType == 'food') return;
-
-                            console.log(sliderInstance?.getCurrentIndex(), currentType)
                             App.handlers.open_feeding_menu();
-                            App.handlers.open_food_list(false, sliderInstance?.getCurrentIndex(), currentType);
+                            App.handlers.open_food_list({...props, activeIndex: sliderInstance?.getCurrentIndex()});
                         }
 
                         App.closeAllDisplays();
@@ -3348,6 +3359,10 @@ const App = {
                         }
                     }
                 })
+            }
+
+            if(getListOnly){
+                return list;
             }
 
             if(!list.length){
@@ -3386,7 +3401,7 @@ const App = {
                 }
 
                 // some entries become randomly unavailable to buy for the day
-                const isOutOfStock = ++index && buyMode && getIsOutOfStock(10);
+                const isOutOfStock = ++index && buyMode && getIsOutOfStock(0);
 
                 // 50% off on sales day
                 let price = current.price;
@@ -3442,21 +3457,21 @@ const App = {
                 {
                     name: 'food',
                     onclick: () => {
-                        App.handlers.open_food_list(null, null, 'food');
+                        App.handlers.open_food_list({filterType: 'food'});
                         return true;
                     }
                 },
                 {
                     name: 'snacks',
                     onclick: () => {
-                        App.handlers.open_food_list(null, null, 'treat');
+                        App.handlers.open_food_list({filterType: 'treat'});
                         return true;
                     }
                 },
                 {
                     name: 'meds',
                     onclick: () => {
-                        App.handlers.open_food_list(null, null, 'med');
+                        App.handlers.open_food_list({filterType: 'med'});
                         return true;
                     }
                 },
@@ -3930,18 +3945,22 @@ const App = {
             }
 
             const getCraftableUIDef = (current, type, owned) => ({
+                current,
                 isNew: !!current.isNew,
                 name: `
                     ${
                         current.icon ??
-                        `<img style="min-height: 64px" src="${App.checkResourceOverride(current.image)}"></img>`
+                        `<img style="
+                            width: min-content;
+                            align-self: center;
+                        " src="${App.checkResourceOverride(current.image)}"></img>`
                     }
                     ${current.name.toUpperCase()} 
                     <small>${type}</small>
                     <b class="flex-center flex-dir-row">
                     ${
                         owned ? 'OWNED'
-                            : App.getHarvestIcons(current.craftingRecipe, undefined, 'opacity-third')
+                            : App.getHarvestIcons(current.craftingRecipe, undefined, 'opacity-half')
                     }
                     </b> 
                     ${current.isNew ? App.getBadge('new!') : ''}
@@ -4000,6 +4019,18 @@ const App = {
                 ...furniture,
                 ...accessories,
             ].sort((a, b) => b.isNew - a.isNew)
+
+            
+            if(App.isTester()){
+                const ingredientUsageMap = {};
+                Object.keys(App.definitions.plant).forEach(ing => {
+                    if(App.definitions.plant[ing].inedible) App.addNumToObject(ingredientUsageMap, ing, 0)
+                })
+                list.forEach(item => {
+                    item.current.craftingRecipe.forEach(ing => App.addNumToObject(ingredientUsageMap, ing, 1))
+                })
+                console.log({ingredientUsageMap})
+            }
 
             sliderInstance = App.displaySlider(list, null, {accept: 'Craft'});
             return sliderInstance;
@@ -4571,6 +4602,137 @@ const App = {
                     }
                 },
                 {
+                    _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby,
+                    name: `<span style="color: mediumvioletred"> <i class="fa-solid fa-burger icon"></i> SnapMeal </span> ${App.getBadge()}`,
+                    onclick: () => {
+                        let list = [
+                            ...App.handlers.open_food_list({buyMode: true, getListOnly: true, filterType: 'food', age: PetDefinition.LIFE_STAGE.adult}),
+                            ...App.handlers.open_food_list({buyMode: true, getListOnly: true, filterType: 'treat', age: PetDefinition.LIFE_STAGE.adult}),
+                            ...App.handlers.open_food_list({
+                                buyMode: true, 
+                                getListOnly: true, 
+                                filterType: 'food', 
+                                allowCookableOnly: true,
+                                age: PetDefinition.LIFE_STAGE.adult
+                            }).filter(item => item.current.cookableOnly),
+                        ]
+                        .filter(item => item.disabled)
+                        .map((food) => ({
+                            current: {
+                                ...food.current,
+                                price: food.current.cookableOnly 
+                                    ? Math.floor(food.current.price * 10)
+                                    : Math.floor(food.current.price * App.constants.ONLINE_FOOD_ORDER_MARKUP),
+                            },
+                            foodName: food.foodName
+                        }))
+
+                        // make list length odd
+                        if(list.length % 2 === 0){
+                            list = list.slice(0, -1);
+                        }
+
+                        if(!list.length){
+                            return App.displayPopup('Sorry but <b>Snapmeal</b> is out of operation today!<br> <small>Please comeback tomorrow!</small>', 5000);
+                        }
+
+                        const getOrders = () => list.filter(item => item.current.orderAmount > 0);
+                        const getTotalPrice = () => getOrders().reduce(
+                                (acc, {current}) => acc + (current.price * current.orderAmount),
+                                0
+                            )
+
+                        const parentContainer = UI.genericListContainer();
+                        const content = UI.create({
+                            className: 'flex-grid-2x',
+                            parent: parentContainer,
+                            children: [
+                                ...list.map(({current, foodName}) => 
+                                    ({
+                                        _mount: (me) => {
+                                            me.innerHTML = `
+                                                <div class="pointer-events-none">
+                                                    <div class="x2"> ${App.getFoodCSprite(current.sprite)} </div>
+                                                    <div class="flex-grid-2x__content ${!current.orderAmount ? 'opacity-half' : ''}">
+                                                        <span>X</span>
+                                                        <span id="order-amount">${current.orderAmount || 0}</span>
+                                                    </div>
+                                                    <div class="flex-grid-2x__title">
+                                                        <small>
+                                                            <i>$${current.price}</i>
+                                                            ${current.cookableOnly ? '★' : ''}
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            `;
+                                        },
+                                        componentType: 'button',
+                                        className: 'generic-btn stylized',
+                                        onClick: (me) => {
+                                            const newOrderAmount = ((current.orderAmount || 0) + 1) % 4;
+                                            current.orderAmount = newOrderAmount;
+                                            me._mount();
+                                            parentContainer.querySelector('#submit-order')._mount();
+                                        }
+                                    })
+                                ),
+                                {
+                                    innerHTML: App.getIcon('spinner fa-spin-pulse', true),
+                                    _mount: (me) => {
+                                        const totalPrice = getTotalPrice();
+                                        me.disabled = !totalPrice;
+                                        me.innerHTML = `
+                                            <div class="x2"> 
+                                                ${App.getIcon('basket-shopping', true)}
+                                            </div>
+                                            <div class="flex-grid-2x__content">
+                                                $${totalPrice}
+                                            </div>
+                                        `
+                                        if(totalPrice){
+                                            me.innerHTML += App.getBadge(`Order!`);
+                                        }
+                                    },
+                                    componentType: 'button',
+                                    className: 'generic-btn stylized primary solid',
+                                    id: 'submit-order',
+                                    disabled: true,
+                                    onClick: () => {
+                                        const totalPrice = getTotalPrice();
+                                        return App.displayConfirm(`Are you sure you want to place your order for <b>$${getTotalPrice()}</b>?`, [
+                                            {
+                                                name: 'Yes',
+                                                onclick: () => {
+                                                    if(!App.pay(totalPrice)) return false;
+                                                    getOrders().forEach(order => {
+                                                        App.addNumToObject(App.pet.inventory.food, order.foodName, order.current.orderAmount);
+                                                        Missions.done(Missions.TYPES.order_food);
+                                                    })
+                                                    App.displayPopup(
+                                                        `${App.getIcon('check-circle', true)} <br> Thanks for ordering! <br> <small>Your order will arrive shortly!</small>`, 
+                                                        2500, 
+                                                        () => {
+                                                            App.closeAllDisplays();
+                                                            Activities.receiveOrderedFood();
+                                                        }
+                                                    );
+                                                }
+                                            },
+                                            {
+                                                name: 'No',
+                                                class: 'back-btn',
+                                                onclick: () => {}
+                                            }
+                                        ])
+                                    }
+                                }
+                            ]
+                        })
+
+                        return true;
+                    }
+                },
+                {
                     name: `friends`,
                     onclick: () => {
                         App.handlers.open_friends_list(null, null, [
@@ -4934,8 +5096,27 @@ const App = {
             ])
         },
         open_mall_activity_list: function(){
-            const hasNewDecor = Object.keys(App.definitions.room_background).some(key => {
+            const hasNewMainDecor = Object.keys(App.definitions.room_background).some(key => {
                 const room = App.definitions.room_background[key];
+                if(room.type) return false;
+                const isUnlocked = 
+                    room.unlockKey ? 
+                    App.getRecord(room.unlockKey) : 
+                    true;
+                return room.isNew && isUnlocked && !room.isCraftable;
+            });
+            const hasNewKitchenDecor = Object.keys(App.definitions.room_background).some(key => {
+                const room = App.definitions.room_background[key];
+                if(room.type !== 'kitchen') return false;
+                const isUnlocked = 
+                    room.unlockKey ? 
+                    App.getRecord(room.unlockKey) : 
+                    true;
+                return room.isNew && isUnlocked && !room.isCraftable;
+            });
+            const hasNewBathroomDecor = Object.keys(App.definitions.room_background).some(key => {
+                const room = App.definitions.room_background[key];
+                if(room.type !== 'bathroom') return false;
                 const isUnlocked = 
                     room.unlockKey ? 
                     App.getRecord(room.unlockKey) : 
@@ -4956,6 +5137,14 @@ const App = {
                     App.getRecord(App.definitions.item[key].unlockKey) : 
                     true;
                 return App.definitions.item[key].isNew && isUnlocked;
+            });
+            const hasNewFurniture = Object.keys(App.definitions.furniture).some(key => {
+                const furniture = App.definitions.furniture[key];
+                const isUnlocked = 
+                    furniture.unlockKey ? 
+                    App.getRecord(furniture.unlockKey) : 
+                    true;
+                return furniture.isNew && isUnlocked && !furniture.isCraftable;
             });
 
             const backFn = () => {
@@ -4987,22 +5176,22 @@ const App = {
                     }
                 },
                 {
-                    name: `redécor room ${hasNewDecor ? App.getBadge('new!') : ''}`,
+                    name: `redécor room ${hasNewMainDecor ? App.getBadge('new!') : ''}`,
                     onclick: () => {
                         const createFilterFn = (type) => {
                             return (e) => e.type === type && !e.isCraftable;
                         }
                         return App.displayList([
                             {
-                                name: `main room`,
+                                name: `main room ${hasNewMainDecor ? App.getBadge('new!') : ''}`,
                                 onclick: () => {
                                     return App.displayList([
                                         {
-                                            name: 'Pre-furnished',
+                                            name: `Pre-furnished ${hasNewMainDecor ? App.getBadge('new!') : ''}`,
                                             onclick: () => App.handlers.open_room_background_list(false, createFilterFn()),
                                         },
                                         {
-                                            name: 'Customizable',
+                                            name: `Customizable ${hasNewMainDecor ? App.getBadge('new!') : ''}`,
                                             onclick: () => App.handlers.open_room_background_list(true, createFilterFn())
                                         },
                                         {
@@ -5013,11 +5202,11 @@ const App = {
                                 }
                             },
                             {
-                                name: `bathroom`,
+                                name: `bathroom ${hasNewBathroomDecor ? App.getBadge('new!') : ''}`,
                                 onclick: () => App.handlers.open_room_background_list(false, createFilterFn('bathroom')),
                             },
                             {
-                                name: `kitchen`,
+                                name: `kitchen ${hasNewKitchenDecor ? App.getBadge('new!') : ''}`,
                                 onclick: () => App.handlers.open_room_background_list(false, createFilterFn('kitchen')),
                             }
                         ])
@@ -5025,7 +5214,7 @@ const App = {
                     }
                 },
                 {
-                    name: `Buy furniture`,
+                    name: `Buy furniture ${hasNewFurniture ? App.getBadge('new!') : ''}`,
                     onclick: () => {
                         App.handlers.open_furniture_list();
                         return true;
@@ -5042,28 +5231,28 @@ const App = {
                 {
                     name: 'purchase food',
                     onclick: () => {
-                        App.handlers.open_food_list(true, null, "food");
+                        App.handlers.open_food_list({buyMode: true, filterType: 'food'});
                         return true;
                     }
                 },
                 {
                     name: 'purchase snacks',
                     onclick: () => {
-                        App.handlers.open_food_list(true, null, "treat");
+                        App.handlers.open_food_list({buyMode: true, filterType: 'treat'});
                         return true;
                     }
                 },
                 {
                     name: 'purchase meds',
                     onclick: () => {
-                        App.handlers.open_food_list(true, null, "med");
+                        App.handlers.open_food_list({buyMode: true, filterType: 'med'});
                         return true;
                     }
                 },
                 {
                     name: `purchase seeds`,
                     onclick: () => {
-                        App.handlers.open_seed_list(true, null, "med");
+                        App.handlers.open_seed_list(true);
                         return true;
                     }
                 },
@@ -5085,7 +5274,7 @@ const App = {
                 {
                     name: 'food',
                     onclick: () => {
-                        App.handlers.open_food_list(false, false, false, true);
+                        App.handlers.open_food_list({sellMode: true});
                         return true;
                     }
                 },
@@ -5193,24 +5382,52 @@ const App = {
             App.pet.y = App.scene.home.petY;
             App.toggleGameplayControls(false);
             Missions.done(Missions.TYPES.clean_room);
+
+            const dragObjectWithMop = (object2d, size) => {
+                if(object2d.x <= mop.x + mop.width){
+                    object2d.x = mop.x + mop.width;
+                    if(!object2d._dragStart){
+                        object2d._dragStart = App.time;
+                    }
+                    object2d.setState?.(
+                        App.time - object2d._dragStart < 500 
+                        ? 'shocked'
+                        : App.pet.stats.has_poop_out ? 'idle' : 'mild_uncomfortable'
+                    );
+                } else delete object2d._dragStart;
+            }
+
+            const poopObjects = App.drawer.selectObjects('poop');
+
             const mop = new Object2d({
                 image: App.preloadedResources["resources/img/misc/cleaner.png"],
-                x: 0,
-                y: -100,
+                x: -100,
+                y: 0,
                 z: 100,
+                rotation: -90,
                 width: 96, height: 96,
                 onDraw: function(me){
                     Object2d.animations.flip(me);
-                    this.y += 1;
-                    if(this.y >= 50){
-                        App.pet.stopScriptedState();
-                        App.drawer.removeObject(this);
-                        App.toggleGameplayControls(true);
-                        App.pet.x = '50%';
-                        // App.poop.hidden = true;
-                        App.pet.playCheeringAnimationIfTrue(App.pet.stats.has_poop_out, () => {});
-                        App.pet.stats.has_poop_out = false;
-                        App.poop.hidden = true;
+                    this.x += 1;
+
+                    dragObjectWithMop(App.pet, App.petDefinition.spritesheet.cellSize);
+                    poopObjects.forEach(poop => dragObjectWithMop(poop));
+
+                    if(this.x >= mop.width/1.5){
+                        me.hidden = true;
+                        App.pet.setState('idle');
+
+                        App.fadeScreen({
+                            middleFn: () => {
+                                App.pet.stopScriptedState();
+                                App.drawer.removeObject(this);
+                                App.toggleGameplayControls(true);
+                                App.pet.x = '50%';
+                                App.pet.playCheeringAnimationIfTrue(App.pet.stats.has_poop_out, () => {});
+                                App.pet.stats.has_poop_out = false;
+                                poopObjects.forEach(poop => poop.removeObject())
+                            }
+                        })
                     }
                 }
             })
@@ -5511,7 +5728,7 @@ const App = {
 
         return list;
     },
-    displayMessageBubble: function(content){
+    displayMessageBubble: function(content, icon = ''){
         const splitContent = content.split('')
             .map((letter, index) => `<span style="animation-delay: ${index * 0.05}s">${letter}</span>`)
             .join('');
@@ -5520,7 +5737,10 @@ const App = {
             UI.fadeOut(display.querySelector('.message-bubble'));
             setTimeout(() => display.remove(), 1000);
         }
-        display.innerHTML = `<div class="message-bubble">${splitContent}</div>`
+
+        const iconContent = !icon ? '' : `<div class="message-bubble_icon">${icon}</div>`;
+
+        display.innerHTML = `<div class="message-bubble">${iconContent}${splitContent}</div>`
         return display;
     },
     displayPopup: function(content, ms, onEndFn, isReveal){
@@ -5665,16 +5885,10 @@ const App = {
         })
     },
     initSound: function(){
-        this.audioChannelIsBusy = false;
-        this.audioElement = new Audio();
-        this.audioElement.volume = 0.5;
-        this.audioElement.addEventListener('ended', () => {
-            this.audioElement.currentTime = 0;
-            this.audioChannelIsBusy = false;
+        // audio channel
+        this.audioChannel = new AudioChannel({
+            preloadList: SOUNDS
         });
-
-        this.loopedAudioElement = new Audio();
-        this.loopedAudioElement
 
         // button click event
         const clickSoundClassNames = ['click-sound', 'list-item'];
@@ -5908,15 +6122,8 @@ const App = {
     },
     playSound: function(path, force){
         if(!App.settings.playSound) return;
-    
-        if(this.audioChannelIsBusy && !force) return false;
 
-        try {
-            if(this.audioElement.src != path)
-                this.audioElement.src = path;
-            this.audioElement.play();
-            this.audioChannelIsBusy = true;
-        } catch(e) {}
+        this.audioChannel.play(path, force);
     },
     playAdvancedSound: function(config){
         const audioElement = new Audio();
@@ -6000,7 +6207,7 @@ const App = {
     },
     save: function(noIndicator){
         let savingData = [];
-        if(!App.pet) return;
+        if(!App.pet || !App.loadingEnded) return;
 
         const setItem = (key, value) => {
             savingData = [...savingData, [key, value]];
@@ -6052,7 +6259,6 @@ const App = {
         window.idbKeyval?.setMany(savingData);
     },
     load: async function() {
-        console.log('load called')
         let hasLoadError = false;
         const getItem = async (key, defaultValue) => {
             if(!window.idbKeyval) {
@@ -6477,8 +6683,30 @@ const App = {
     wait: function(ms = 0){
         return new Promise(resolve => setTimeout(resolve, ms))
     },
-    fadeScreen: function({ middleFn, time = 1000 } = {}){
-        
+    fadeScreen: function({ middleFn, speed = 0.005 } = {}) {
+        let phase = 'fadeIn';
+        new Object2d({
+            image: App.getPreloadedResource('resources/img/misc/black_overlay_01.png'),
+            opacity: 0,
+            x: 0, y: 0, z: 100,
+            onDraw: (me) => {
+                const step = speed * App.deltaTime;
+
+                if (phase === 'fadeIn') {
+                    me.opacity += step;
+                    if (me.opacity >= 1.75) {
+                        me.opacity = 1.75;
+                        middleFn?.();
+                        phase = 'fadeOut';
+                    }
+                } else if (phase === 'fadeOut') {
+                    me.opacity -= step;
+                    if (me.opacity <= 0) {
+                        me.removeObject();
+                    }
+                }
+            }
+        });
     },
     apiService: {
         ENDPOINT: 'https://script.google.com/macros/s/AKfycbxCa6Yo_VdK5t9T7ZCHabxT1EY-xACEC3VUDHgkkwGdduF2U5VMGlp0KXBu9CtE8cWv9Q/exec',
@@ -6589,3 +6817,20 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
     checkForAwayTimeAndInit();
 });
+
+
+const debug_spawn = () => {
+    const deliveryNpc = new Pet(
+        new PetDefinition({
+            sprite: 'resources/img/character/delivery_npc_01.png',
+        }),
+        {
+            spritesheet: {
+                cellNumber: 0,
+                cellSize: 36,
+                rows: 4,
+                columns: 4,
+            }
+        }
+    )
+}

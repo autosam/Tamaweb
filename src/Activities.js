@@ -1,4 +1,92 @@
 class Activities {
+    static async receiveOrderedFood(){
+        App.setScene(App.scene.home);
+        App.toggleGameplayControls(false);
+
+        const main = new TimelineDirector(App.pet);
+        const deliveryMan = new TimelineDirector(
+            new Pet(
+                new PetDefinition({
+                    sprite: 'resources/img/character/delivery_npc_01.png',
+                }),
+                {
+                    spritesheet: {
+                        cellNumber: 0,
+                        cellSize: 36,
+                        rows: 4,
+                        columns: 4,
+                    },
+                    staticShadow: false,
+                }
+            )
+        )
+    
+        const negativeReaction = App.pet.stats.has_poop_out ? 'thought_poop' : false;
+
+        main.setState('idle_side');
+        main.setPosition({x: '75%'});
+        main.lookAt(false);
+        deliveryMan.setPosition({x: '-10%'});
+        await deliveryMan.moveTo({x: '25%', speed: 0.02});
+        deliveryMan.setState('idle');
+        await main.bob({animation: 'shocked', maxCycles: 1});
+        await TimelineDirector.wait(250);
+        if(negativeReaction){
+            deliveryMan.setState('shocked');
+            deliveryMan.think(negativeReaction, false, 1500);
+            await deliveryMan.bob({animation: 'shocked', maxCycles: 1});
+            await TimelineDirector.wait(1000);
+        }
+        deliveryMan.setState('cheering');
+        main.setState('cheering');
+        await TimelineDirector.wait(1000);
+        await main.bob({animation: 'idle_side', maxCycles: 1});
+        const message = negativeReaction ? 'Enjoy...?!' : 'Enjoy!';
+        const messageBubble = App.displayMessageBubble(message, deliveryMan.actor.petDefinition.getFullCSprite());
+        const bag = new Object2d({
+            img: 'resources/img/misc/food_bag_01.png',
+            x: '50%', y: '85%',
+            opacity: 1,
+        })
+        new Object2d({
+            img: 'resources/img/misc/foam_single.png',
+            x: '50%', y: '85%',
+            scale: 1, opacity: 1, z: 100,
+            onDraw: (me) => {
+                Object2d.animations.flip(me);
+                Object2d.animations.pulseScale(me, 0.1, 0.01);
+                me.scale -= 0.0009 * App.deltaTime;
+                me.opacity -= 0.0009 * App.deltaTime;
+                if(me.opacity <= 0) me.removeObject();
+            }
+        })
+        await deliveryMan.bob({animation: 'idle', maxCycles: 1, sound: 'resources/sounds/walk_01.ogg'});
+        if(negativeReaction){
+            deliveryMan.lookAt(false);
+            deliveryMan.setState('shocked');
+        }
+        await main.bob({animation: 'blush', maxCycles: 3, landAnimation: 'idle'});
+        main.setState('idle_side');
+        await TimelineDirector.wait(250);
+        if(!negativeReaction){
+            await deliveryMan.bob({animation: 'cheering', maxCycles: 1, sound: 'resources/sounds/task_complete.ogg'})
+        }
+        deliveryMan.moveTo({x: '-20%', speed: 0.025});
+        await TimelineDirector.wait(200);
+        messageBubble.close();
+        await main.moveTo({x: '50%', speed: 0.015});
+        main.setState('blush')
+        bag.onDraw = (me) => {
+            me.opacity -= 0.001 * App.deltaTime;
+            me.y -= 0.06 * App.deltaTime;
+        }
+        await TimelineDirector.wait(1000);
+        deliveryMan.remove();
+        main.release();
+        bag.removeObject();
+        App.pet.x = '50%';
+        App.pet.playCheeringAnimation(() => App.toggleGameplayControls(true));
+    }
     static async talkingSequence(otherPetDef = App.getRandomPetDef()) {
         App.closeAllDisplays();
 
@@ -203,13 +291,13 @@ class Activities {
             x: '60%', y: '85%', z: App.constants.ACTIVE_PET_Z + 0.1,
         });
 
-        App.pet.triggerScriptedState('cheering_with_icon', 3000, null, true, () => {
+        App.pet.playCheeringAnimation(() => {
             App.setScene(App.scene.home);
             mallNpc.removeObject();
             gift.removeObject();
             App.toggleGameplayControls(true);
             onEndFn?.();
-        });
+        }, false, 3000);
     }
     static goToMall(){
         App.toggleGameplayControls(false, () => {
@@ -1225,7 +1313,7 @@ class Activities {
                                                     Missions.done(Missions.TYPES.feed_animal);
                                                     return true;
                                                 }
-                                                return App.handlers.open_food_list(false, false, 'food', false, onUseFn, PetDefinition.LIFE_STAGE.adult);
+                                                return App.handlers.open_food_list({buyMode: false, filterType: 'food', useMode: onUseFn, age: PetDefinition.LIFE_STAGE.adult});
                                             }
                                         },
                                         {
@@ -1308,7 +1396,7 @@ class Activities {
                                                     App.displayPopup("The food has been placed!<br><br>Check back in a few hours to see if you've gotten a visitor!", 4000);
                                                     return true;
                                                 }
-                                                return App.handlers.open_food_list(false, false, 'food', false, onUseFn, PetDefinition.LIFE_STAGE.adult);
+                                                return App.handlers.open_food_list({buyMode: false, filterType: 'food', useMode: onUseFn, age: PetDefinition.LIFE_STAGE.adult});
                                             }
                                         },
                                         {
@@ -3150,7 +3238,6 @@ class Activities {
                     me.scale -= 0.0005 * App.deltaTime;
                     me.opacity -= 0.0005 * App.deltaTime;
                     if(me.opacity <= 0) me.removeObject();
-
                 }
             })
             score++;
@@ -3794,6 +3881,7 @@ class Activities {
         const moneyBag = new Object2d({
             img: 'resources/img/misc/money_bag_01.png',
             x: '50%', y: '0%', width: 24, height: 24,
+            opacity: amount ? 1 : 0,
             targetY: 67,
             onDraw: (me) => me.moveToTarget(0.025),
         })
@@ -3889,7 +3977,14 @@ class TimelineDirector {
         return this.actor?.x;
     }
     getSize = () => this.actor?.spritesheet.cellSize;
-    bob = ({speed = 0.011, strength = 5, maxCycles = 3, animation = 'cheering', landAnimation} = {}) => {
+    bob = ({
+        speed = 0.011, 
+        strength = 5, 
+        maxCycles = 3, 
+        animation = 'cheering', 
+        landAnimation,
+        sound
+    } = {}) => {
         if(!landAnimation) landAnimation = animation;
         return new Promise(resolve => {
             if(!this.actor) return resolve();
@@ -3913,6 +4008,7 @@ class TimelineDirector {
                     if(!cycleCounted) {
                         cycleCounted = true;
                         currentCycles++;
+                        if(sound) App.playSound(sound, true);
                     }
                     actor.setState(landAnimation);
                     if(currentCycles >= maxCycles){

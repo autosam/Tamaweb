@@ -1392,7 +1392,7 @@ a.generic-btn:before {
 
 .generic-btn.sticky-top {
     position: sticky;
-    left: 0;
+    /* left: 0; */
     top: 0;
     z-index: 2;
     margin: -4px -4px 4px -4px;
@@ -1800,7 +1800,11 @@ a.generic-btn:before {
     margin: 5px -10px;
     padding: 5px 10px;
     border-radius: 16px;
-    background: #f5deb39c;
+    background-color: rgba(255, 255, 255, 0.5);
+    color: rgb(33, 33, 33);
+}
+.credit-author a {
+    color: rgb(0, 4, 255) !important;
 }
 
 /* fullscreen mode */
@@ -1969,4 +1973,54 @@ a.generic-btn:before {
 .message-bubble > span {
     animation: fade-in 0.1s ease forwards;
     opacity: 0;
+}
+.message-bubble_icon {
+    width: fit-content;
+    /* background: white; */
+    display: inline-flex;
+    justify-content: center;
+    align-items: flex-end;
+    width: 28px;
+    height: 28px;
+    position: absolute;
+    top: -29px;
+    left: 12px;
+    /* border-radius: 100%;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0; */
+    overflow: hidden;
+}
+.message-bubble_icon > * {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.flex-grid-2x {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+}
+.flex-grid-2x > * {
+    width: 40%;
+    flex-grow: 1;
+    aspect-ratio: 1;
+    height: auto;
+    box-sizing: border-box;
+    margin: 0 !important;
+    padding: 0;
+    justify-content: center;
+    overflow: hidden;
+}
+.flex-grid-2x__content {
+    position: absolute;
+    display: inline-flex;
+    right: 4px;
+    bottom: 0;
+}
+.flex-grid-2x__title {
+    position: absolute;
+    display: inline-flex;
+    left: 4px;
+    top: 0;
 }

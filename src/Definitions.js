@@ -4,6 +4,7 @@ App.definitions = (() => {
         /* THEMES */
         themes: [
             'default', 
+            'pardis', 
             'sunset', 
             'uni', 
             'color pink',
@@ -799,6 +800,39 @@ App.definitions = (() => {
                 interaction_time: 60000,
                 interruptable: true,
             },
+            "rubicube": {
+                sprite: 12,
+                fun_replenish: 15,
+                price: 150,
+                interaction_time: 30000,
+                interruptable: true,
+                isNew: true,
+            },
+            "fidget spinner": {
+                sprite: 13,
+                fun_replenish: 20,
+                price: 250,
+                interaction_time: 30000,
+                interruptable: true,
+                isNew: true,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+            },
+            "retroboy": {
+                sprite: 14,
+                fun_replenish: 35,
+                price: 350,
+                interaction_time: 30000,
+                interruptable: true,
+                isNew: true,
+            },
+            "robotty": {
+                sprite: 15,
+                fun_replenish: 28,
+                price: 300,
+                interaction_time: 15000,
+                interruptable: true,
+                isNew: true,
+            },
         },
     
         /* GARDENING PLANTS */
@@ -983,6 +1017,16 @@ App.definitions = (() => {
                 price: 350,
                 isNew: false,
             },
+            "mush-room": {
+                image: 'resources/img/background/house/cc_08.png',
+                price: 350,
+                isNew: true,
+            },
+            "vintage orange": {
+                image: 'resources/img/background/house/cc_07.png',
+                price: 250,
+                isNew: true,
+            },
 
             // craftables
             "collage": {
@@ -1025,10 +1069,61 @@ App.definitions = (() => {
                 isNew: false,
                 type: 'kitchen',
             },
+            "mush-kitchen": {
+                image: 'resources/img/background/house/kitchen_cc_02.png',
+                price: 350,
+                isNew: true,
+                type: 'kitchen',
+            },
         },
     
         /* ROOM PLACEABLE FURNITURE */
         furniture: [
+            // mushroom set
+            {
+                name: 'Mushroom Couch',
+                image: 'resources/img/furniture/mushroom_couch.png',
+                id: "mushroom_couch",
+                price: 200,
+                isNew: true,
+            },
+            {
+                name: 'Mushroom Pot',
+                image: 'resources/img/furniture/mushroom_pot.png',
+                id: "mushroom_pot",
+                price: 150,
+                isNew: true,
+            },
+            {
+                name: 'Mushroom Lamp',
+                image: 'resources/img/furniture/mushroom_lamp.png',
+                id: "mushroom_lamp",
+                price: 200,
+            },
+
+            // vintage orange set
+            {
+                name: 'Vintage Couch',
+                image: 'resources/img/furniture/vintage_couch.png',
+                id: "vintage_couch",
+                price: 200,
+                isNew: true,
+            },
+            {
+                name: 'Vintage Cabinet',
+                image: 'resources/img/furniture/vintage_cabinet.png',
+                id: "vintage_cabinet",
+                price: 150,
+                isNew: true,
+            },
+            {
+                name: 'Vintage Plant',
+                image: 'resources/img/furniture/vintage_plant.png',
+                id: "vintage_plant",
+                price: 150,
+                isNew: true,
+            },
+
             // valentine set
             {
                 name: 'Valentine Bear',
@@ -1239,12 +1334,6 @@ App.definitions = (() => {
                 price: 250,
             },
             {
-                name: 'Mushroom Lamp',
-                image: 'resources/img/furniture/mushroom_lamp.png',
-                id: "mushroom_lamp",
-                price: 200,
-            },
-            {
                 name: 'Pink Fan',
                 image: 'resources/img/furniture/fan.png',
                 id: "pink_fan",
@@ -1316,6 +1405,30 @@ App.definitions = (() => {
                 id: 'sofa_cloud',
                 isCraftable: true,
                 craftingRecipe: ['orange tulip', 'bamboo', 'purple tulip'],
+            },
+            {
+                name: 'City Couch',
+                image: 'resources/img/furniture/couch_city.png',
+                id: "couch_city",
+                isCraftable: true,
+                isNew: true,
+                craftingRecipe: ['tetrocana', 'orange tulip', 'lucrios'],
+            },
+            {
+                name: 'City Toy Car',
+                image: 'resources/img/furniture/city_toy_car.png',
+                id: "city_toy_car",
+                isCraftable: true,
+                isNew: true,
+                craftingRecipe: ['lucrios', 'tetrocana', 'yellow tulip'],
+            },
+            {
+                name: 'City Plant',
+                image: 'resources/img/furniture/plant_city.png',
+                id: "plant_city",
+                isCraftable: true,
+                isNew: true,
+                craftingRecipe: ['green tulip', 'hephasto', 'bamboo'],
             },
         ],
     

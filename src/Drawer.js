@@ -294,4 +294,7 @@ class Drawer {
         this.cameraPosition.x = targetX;
         this.cameraPosition.y = targetY;
     }
+    selectObjects(selector){
+        return this.objects.filter((object) => object?.selector === selector);
+    }
 }
