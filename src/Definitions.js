@@ -816,6 +816,22 @@ App.definitions = (() => {
                 isNew: true,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
+            "retroboy": {
+                sprite: 14,
+                fun_replenish: 35,
+                price: 350,
+                interaction_time: 30000,
+                interruptable: true,
+                isNew: true,
+            },
+            "robotty": {
+                sprite: 15,
+                fun_replenish: 28,
+                price: 300,
+                interaction_time: 15000,
+                interruptable: true,
+                isNew: true,
+            },
         },
     
         /* GARDENING PLANTS */

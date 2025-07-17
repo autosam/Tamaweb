@@ -1358,7 +1358,14 @@ class Pet extends Object2d {
                 case "rubicube":
                 case "smartphone":
                 case "magazine":
-                    this.pet.setState(randomFromArray(['sitting', 'sitting', this.item?.name === 'smartphone' ? 'eating' : 'sitting', 'shocked', 'blush']));
+                case "retroboy":
+                    const extendedAnimationItems = ['smartphone', 'retroboy'];
+                    this.pet.setState(
+                        randomFromArray([
+                            'sitting', 'sitting', 
+                            extendedAnimationItems.includes(this.item?.name) ? 'eating' : 'sitting', 'shocked', 'blush'
+                        ])
+                    );
                     this.itemObject.x = this.pet.x + App.petDefinition.spritesheet.cellSize / 1.5;
                     this.itemObject.y = ((this.pet.y - 13) + random(-2, 2));
                     if(this.item?.name === 'rubicube') this.itemObject.inverted = !this.itemObject.inverted;
@@ -1434,6 +1441,41 @@ class Pet extends Object2d {
                     this.itemObject.x = randomFromArray(possibleItemPositions);
                     this.itemObject.y = randomFromArray(possibleItemPositions);
                     this.itemObject.inverted = !this.itemObject.inverted;
+                    break;
+                case "robotty":
+                    if(this.stateIndex === undefined){
+                        this.pet.y = '80%';
+                        this.pet.x = '50%';
+                        this.pet.setState('idle');
+                        this.itemObject.z = this.pet.z + 0.1;
+                        this.stateIndex = -1;
+                        this.positions = ['20%', '30%', '40%', '50%', '60%', '70%', '80%'];
+                    } else {
+                        App.playSound(`resources/sounds/ui_click_04.ogg`, true);
+                    }
+
+                    if(this.stateIndex % 3 === 0){
+                        this.pet.inverted = Boolean(random(0, 1));
+                        this.pet.setState( randomFromArray( ['cheering', 'shocked', 'idle_side', 'jumping', 'jumping', 'idle'] ) );
+                        setTimeout(() => this.pet.setState('idle'), 350);
+                    }
+                    
+                    this.stateIndex++;
+                    if(this.stateIndex >= this.positions.length){
+                        this.positions.reverse();
+                        this.stateIndex = 0;
+                    }
+                    this.itemObject.x = this.positions.at(this.stateIndex);
+                    switch(this.stateIndex % 4){
+                        case 0: this.itemObject.rotation = -5; break;
+                        case 1: this.itemObject.rotation = 0; break;
+                        case 2: this.itemObject.rotation = 5; break;
+                        case 3: this.itemObject.rotation = 0; break;
+                    }
+                    switch(this.stateIndex % 2){
+                        case 0: this.itemObject.y = '85%'; break;
+                        case 1: this.itemObject.y = '80%'; break;
+                    }
                     break;
                 default:
                     if(Math.random() < 0.5){
