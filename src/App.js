@@ -883,7 +883,7 @@ const App = {
         //     ])
         // })) return;
 
-        if(addEvent(`update_17_notice`, () => {
+        if(addEvent(`update_18_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
@@ -892,7 +892,7 @@ const App = {
                     bold: true,
                 },
                 {
-                    name: `Check out the new Mini-games, customizable bathroom and kitchen, UI themes, travel system and more!`,
+                    name: `Check out the food delivery app, items, room background sets and much more!`,
                     type: 'text',
                 },
                 {
