@@ -5888,16 +5888,8 @@ const App = {
         })
     },
     initSound: function(){
-        this.audioChannelIsBusy = false;
-        this.audioElement = new Audio();
-        this.audioElement.volume = 0.5;
-        this.audioElement.addEventListener('ended', () => {
-            this.audioElement.currentTime = 0;
-            this.audioChannelIsBusy = false;
-        });
-
-        this.loopedAudioElement = new Audio();
-        this.loopedAudioElement
+        // audio channel
+        this.audioChannel = new AudioChannel();
 
         // button click event
         const clickSoundClassNames = ['click-sound', 'list-item'];
@@ -6131,15 +6123,8 @@ const App = {
     },
     playSound: function(path, force){
         if(!App.settings.playSound) return;
-    
-        if(this.audioChannelIsBusy && !force) return false;
 
-        try {
-            if(this.audioElement.src != path)
-                this.audioElement.src = path;
-            this.audioElement.play();
-            this.audioChannelIsBusy = true;
-        } catch(e) {}
+        this.audioChannel.play(path, force);
     },
     playAdvancedSound: function(config){
         const audioElement = new Audio();
