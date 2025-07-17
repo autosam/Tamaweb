@@ -464,11 +464,11 @@ class Pet extends Object2d {
         else
             if(onEndFn) onEndFn();
     }
-    playCheeringAnimation(onEndFn, noSoundAndIcon){
+    playCheeringAnimation(onEndFn, noSoundAndIcon, ms = 2000){
         this.stopMove();
         if(!noSoundAndIcon) setTimeout(() => this.playSound('resources/sounds/cheer_success.ogg', true));
         const stateName = !noSoundAndIcon ? 'cheering_with_icon' : 'cheering';
-        this.triggerScriptedState(stateName, 2000, null, true, () => {
+        this.triggerScriptedState(stateName, ms, null, true, () => {
             if(onEndFn) onEndFn();
         });
     }

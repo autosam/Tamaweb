@@ -291,13 +291,13 @@ class Activities {
             x: '60%', y: '85%', z: App.constants.ACTIVE_PET_Z + 0.1,
         });
 
-        App.pet.triggerScriptedState('cheering_with_icon', 3000, null, true, () => {
+        App.pet.playCheeringAnimation(() => {
             App.setScene(App.scene.home);
             mallNpc.removeObject();
             gift.removeObject();
             App.toggleGameplayControls(true);
             onEndFn?.();
-        });
+        }, false, 3000);
     }
     static goToMall(){
         App.toggleGameplayControls(false, () => {
