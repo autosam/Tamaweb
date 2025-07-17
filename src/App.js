@@ -6258,7 +6258,6 @@ const App = {
         window.idbKeyval?.setMany(savingData);
     },
     load: async function() {
-        console.log('load called')
         let hasLoadError = false;
         const getItem = async (key, defaultValue) => {
             if(!window.idbKeyval) {
