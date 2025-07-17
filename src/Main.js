@@ -33,6 +33,7 @@ class SpriteElement extends HTMLElement {
         return ["src", "width", "height", "index"];
     }
 }
+customElements.define("c-sprite", SpriteElement);
 
 /* Object.defineProperty(HTMLElement.prototype, 'safeInnerHTML', {
     get: function() {
@@ -45,7 +46,44 @@ class SpriteElement extends HTMLElement {
     }
 }); */
 
-customElements.define("c-sprite", SpriteElement);
+class AudioChannel {
+    audioContext = new AudioContext();
+    audioBufferCache = new Map();
+    currentSource = null;
+    isBusy = false;
+    async load(path){
+        const response = await fetch(path);
+        const arrayBuffer = await response.arrayBuffer();
+        const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+        this.audioBufferCache.set(path, audioBuffer);
+        return audioBuffer;
+    }
+    async play(path, force) {
+        if (this.isBusy && !force) return;
+
+        const buffer = this.audioBufferCache.get(path) ?? await this.load(path);
+
+        if (force && this.currentSource) {
+            try {
+                this.currentSource.stop();
+            } catch (e) {}
+            this.currentSource.disconnect();
+        }
+
+        const source = this.audioContext.createBufferSource();
+        source.buffer = buffer;
+        source.connect(this.audioContext.destination);
+        source.start(0);
+
+        this.currentSource = source;
+        this.isBusy = true;
+
+        source.onended = () => {
+            this.isBusy = false;
+            this.currentSource = null;
+        };
+    }
+}
 
 function handleServiceWorker(){
     const isOnItch = location.host.indexOf('itch') !== -1;
