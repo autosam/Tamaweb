@@ -92,7 +92,7 @@ class PetDefinition {
             frameTime: 250,
             sound: {
                 file: 'shock.ogg',
-                interval: 2,
+                interval: 0, // plays once
             },
         },
         blush: {
@@ -101,7 +101,7 @@ class PetDefinition {
             frameTime: 250,
             sound: {
                 file: 'blush.ogg',
-                interval: 2,
+                interval: 0, // plays once
             },
         },
         cheering: {

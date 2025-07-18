@@ -826,6 +826,10 @@ class Pet extends Object2d {
             this.animation.currentFrame = 0;
             this.animation.nextFrameTime = 0;
             this.animation.set = this.animations[newState];
+            const {set} = this.animation;
+            if(set?.sound?.interval === 0){
+                set.sound._played = false;
+            }
 
             this.state = newState;
         }
@@ -895,9 +899,9 @@ class Pet extends Object2d {
 
         if(!this.animation.set) return;
 
-        let set = this.animation.set;
+        const { set } = this.animation;
 
-        let frameRound = set.end - set.start;
+        const frameRound = set.end - set.start;
 
         if(this.animation.nextFrameTime < App.lastTime){ // go to next frame
 
@@ -917,10 +921,19 @@ class Pet extends Object2d {
             this.spritesheet.cellNumber = set.start + this.animation.currentFrame;
 
             if(set.sound){
-                if(!set.sound._counter) set.sound._counter = 0;
-                if(++set.sound._counter == set.sound.interval){
-                    set.sound._counter = 0;
-                    this.playSound(`resources/sounds/${set.sound.file}`);
+                const filePath = `resources/sounds/${set.sound.file}`;
+
+                if(set.sound.interval === 0){
+                    if(!set.sound._played){
+                        set.sound._played = true;
+                        this.playSound(filePath);
+                    }
+                } else {
+                    set.sound._counter = (set.sound._counter || 0) + 1;
+                    if(set.sound._counter === set.sound.interval){
+                        set.sound._counter = 0;
+                        this.playSound(filePath);
+                    }
                 }
             }
 
