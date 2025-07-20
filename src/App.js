@@ -738,6 +738,14 @@ const App = {
                     });
                 })) return showAlreadyUsed();
                 break;
+            case "DISCORD2000":
+                if(!addEvent(codeEventId, () => {
+                    App.displayPopup(`You've redeemed <b>$2000</b> and <b>500 Mission pts</b>!<br><br> Thanks for playing!`, 5000, () => {
+                        App.pet.stats.gold += 2000;
+                        Missions.currentPts += 500;
+                    });
+                })) return showAlreadyUsed();
+                break;
             case "GETLFDBDATA":
                 const waitDisplay = App.displayPopup('Please wait...');
                 const getter = async () => {
