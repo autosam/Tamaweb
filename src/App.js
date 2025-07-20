@@ -5894,9 +5894,11 @@ const App = {
     },
     initSound: function(){
         // audio channel
-        this.audioChannel = new AudioChannel({
-            preloadList: SOUNDS
-        });
+        try {
+            this.audioChannel = new AudioChannel({
+                preloadList: SOUNDS
+            });
+        } catch(e) {}
 
         // button click event
         const clickSoundClassNames = ['click-sound', 'list-item'];
@@ -6131,7 +6133,7 @@ const App = {
     playSound: function(path, force){
         if(!App.settings.playSound) return;
 
-        this.audioChannel.play(path, force);
+        this.audioChannel?.play(path, force);
     },
     playAdvancedSound: function(config){
         const audioElement = new Audio();
