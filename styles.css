@@ -1128,6 +1128,7 @@ input#background-color-picker {
     border-bottom-right-radius: 0px;
     font-weight: bold;
     cursor: pointer;
+    z-index: 999999;
 }
 
 .side-icon {
