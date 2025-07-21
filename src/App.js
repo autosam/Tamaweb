@@ -740,6 +740,7 @@ const App = {
                 break;
             case "DISCORD2000":
                 if(!addEvent(codeEventId, () => {
+                    App.sendAnalytics('input_code', code);
                     App.displayPopup(`You've redeemed <b>$2000</b> and <b>500 Mission pts</b>!<br><br> Thanks for playing!`, 5000, () => {
                         App.pet.stats.gold += 2000;
                         Missions.currentPts += 500;
@@ -4720,6 +4721,7 @@ const App = {
                                                 name: 'Yes',
                                                 onclick: () => {
                                                     if(!App.pay(totalPrice)) return false;
+                                                    App.sendAnalytics('online_food_order', totalPrice);
                                                     getOrders().forEach(order => {
                                                         App.addNumToObject(App.pet.inventory.food, order.foodName, order.current.orderAmount);
                                                         Missions.done(Missions.TYPES.order_food);
