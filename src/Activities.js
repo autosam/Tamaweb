@@ -3992,7 +3992,8 @@ class Activities {
                 const col = i % maxCols;
                 const row = Math.floor(i / maxCols);
                 card.style.position = 'absolute';
-                card.style.top = `${6 + row * (card.clientHeight + gap)}px`;
+                card.style.top = `${-100 * (col + 1)}px`;
+                setTimeout(() => card.style.top = `${6 + row * (card.clientHeight + gap)}px`);
                 card.style.left = `${8 + col * (card.clientWidth + gap)}px`;
                 cards.push(card);
             }
