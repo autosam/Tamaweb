@@ -1247,13 +1247,10 @@ input#background-color-picker {
     border-radius: 4px;
     color: #ff5e00;
     transition: all 0.3s ease;
-    cursor: pointer;
-    /* font-size: 16px; */
-}
-.cards-container > .card {
     position: absolute;
-    top: -50px;
-    left: -50px;
+    font-size: 22px;
+    overflow: hidden;
+    box-shadow: inset -2px -2px 0px 0 #00000038;
 }
 .cards-container > .card.disabled {
     pointer-events: none;
@@ -1268,6 +1265,8 @@ input#background-color-picker {
     background: repeating-linear-gradient(-45deg, #4a8a5c 0 10px, #5DA271 10px 20px);;
     border-color: #dadada;
     color: transparent;
+    box-shadow: inset -2px 2px 0px 0 #ffffff38, inset 2px -2px 0px 0 #00000038;
+    cursor: pointer;
 }
 .cards-container > .card > * {
     pointer-events: none;
