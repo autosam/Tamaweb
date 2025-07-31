@@ -3751,6 +3751,137 @@ class Activities {
         return false;  
     }
 
+    // school
+    static async school_LogicGame(activeCards = 2, maxCards = 12){
+        const maxAttempts = 4;
+
+        App.pet.triggerScriptedState('idle', App.INF, null, true);
+        const screen = App.displayEmpty();
+        screen.innerHTML = `
+        <div class="height-100p school-logic-container">
+            <div class="mini-game-ui flex hidden">
+                <span id="counter">0</span>
+                <span>/${maxAttempts}</span>
+            </div>
+            <div class="cards-container">
+
+            </div>
+        </div>
+        `;
+
+        const cardsContainer = screen.querySelector('.cards-container');
+        const miniGameUI = screen.querySelector('.mini-game-ui');
+        const counter = screen.querySelector('.mini-game-ui #counter');
+
+        let cards;
+        let totalTurnedCards = 0, correctCards = 0;
+        const handleCardSelect = (card) => {
+            if(!card.classList.contains('turning')) return; // already turned
+            totalTurnedCards++;
+            card.classList.remove('turning');
+            if(card.isTarget){
+                correctCards++;
+            }
+            
+            const animationDelay = 350;
+            counter.textContent = totalTurnedCards;
+
+            cardsContainer.classList.add('disabled');
+            setTimeout(() => {
+                cardsContainer.classList.remove('disabled');
+            }, animationDelay);
+            setTimeout(() => {
+                if(correctCards === activeCards){
+                    screen.close();
+                    App.displayPopup(`You've won!`);
+                } else if(totalTurnedCards >= maxAttempts){
+                    miniGameUI.classList.add('hidden');
+                    cardsContainer.classList.add('disabled');
+                    cards.forEach(card => card.classList.remove('turning'))
+                    setTimeout(() => {
+                        screen.close();
+                        App.displayPopup(`You've lost!`);
+                    }, 2000);
+                }
+            }, animationDelay);
+        }
+
+        let totalSwaps = 2;
+        const swapCards = (a, b) => {
+            const aLeft = a.style.left;
+            const aTop = a.style.top;
+
+            const bLeft = b.style.left;
+            const bTop = b.style.top;
+
+            a.style.left = bLeft;
+            a.style.top = bTop;
+            b.style.left = aLeft;
+            b.style.top = aTop;
+
+            a.style.zIndex = totalSwaps;
+            b.style.zIndex = ++totalSwaps;
+        }
+        const generateCards = (activeAmount, maxAmount) => {
+            const randomPositions = new Array(maxAmount)
+                .fill(null)
+                .map((_, i) => ( {index: i, weight: Math.random()} ))
+                .sort((a, b) => a.weight - b.weight)
+                .map(item => item.index)
+                .slice(0, activeAmount);
+            const cards = [];
+            for(let i = 0; i < maxAmount; i++){
+                const isTarget = randomPositions.includes(i);
+                const card = UI.ce({
+                    componentType: 'div',
+                    className: 'card flex flex-center disabled',
+                    parent: cardsContainer,
+                    innerHTML: isTarget ? App.getIcon('star', true) : `<span class="opacity-third">${App.getIcon('poop', true)}</span>`,
+                    isTarget,
+                    onclick: () => {
+                        handleCardSelect(card);
+                    }
+                })
+                const maxCols = 4;
+                const gap = 10;
+                const col = i % maxCols;
+                const row = Math.floor(i / maxCols);
+                card.style.position = 'absolute';
+                card.style.top = `${6 + row * (card.clientHeight + gap)}px`;
+                card.style.left = `${8 + col * (card.clientWidth + gap)}px`;
+                cards.push(card);
+            }
+            return cards;
+        }
+        cards = generateCards(activeCards, 12);
+        await App.wait(3000);
+        for(let i = 0; i < cards.length; i++){
+            await App.wait(150);
+            const card = cards.at(i);
+            card.classList.add('turning')
+        }
+        await App.wait(1000);
+
+        // swapping
+        const scrambledCards = shuffleArray([
+            ...shuffleArray(cards).slice(0, cards.length/1.5), 
+            cards.find(c => c.isTarget)
+        ]);
+        for(let i = 0; i < scrambledCards.length; i++){
+            const card = scrambledCards.at(i);
+            let target;
+            while(true){
+                target = randomFromArray(scrambledCards);
+                if(target !== card) break;
+            }
+            await App.wait(400);
+            swapCards(card, target);
+        }
+        await App.wait(500);
+        cards.forEach(card => card.classList.remove('disabled'))
+        miniGameUI.classList.remove('hidden');
+    }
+
 
     // utils
     static task_foam(middleFn, endFn){

@@ -1176,26 +1176,21 @@ input#background-color-picker {
     position: relative;
     border: 4px solid rgb(0, 0, 0);
 }
-
 .timing-bar-rod {
     height: 100%;
 }
-
 .timing-bar-rod:nth-child(1) {
     background-color: greenyellow;
     width: 70%;
 }
-
 .timing-bar-rod:nth-child(2) {
     background-color: orange;
     width: 20%;
 }
-
 .timing-bar-rod:nth-child(3) {
     background-color: red;
     width: 10%;
 }
-
 .timing-bar-cursor {
     width: 6px;
     height: 15px;
@@ -1205,18 +1200,6 @@ input#background-color-picker {
     bottom: -3px;
     outline: 2px solid black;
 }
-
-/* .dog-washing-button {
-    border-radius: 100%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    outline: 2px solid;
-    color: #ff6b85;
-    background: pink;
-    position: absolute;
-    transition: all 0.1s;
-} */
 
 .dog-washing-button {
     border-radius: 100%;
@@ -1237,6 +1220,57 @@ input#background-color-picker {
     to {
         transform: scale(0.8);
     }
+}
+
+.school-logic-container{
+    background-color: #FFAE21;
+}
+.school-logic-container > .mini-game-ui {
+    position: absolute;
+    left: 4px;
+    top: 0;
+    z-index: 30;
+}
+.cards-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+.cards-container.disabled {
+    pointer-events: none;
+}
+.cards-container > .card {
+    background: repeating-linear-gradient(-45deg, #ffd8ae 0 10px, #ffe5ca 10px 20px);
+    width: 35px;
+    height: 52px;
+    border: 2px solid rgb(255, 231, 206);
+    border-radius: 4px;
+    color: #ff5e00;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    /* font-size: 16px; */
+}
+.cards-container > .card {
+    position: absolute;
+    top: -50px;
+    left: -50px;
+}
+.cards-container > .card.disabled {
+    pointer-events: none;
+}
+.cards-container > .card.turning.disabled {
+    background-color: #87A0B2;
+    background: repeating-linear-gradient(-45deg, #87A0B2 0 10px, #98b1c2 10px 20px);
+}
+.cards-container > .card.turning {
+    transform: rotateY(180deg);
+    background: #5DA271;
+    background: repeating-linear-gradient(-45deg, #4a8a5c 0 10px, #5DA271 10px 20px);;
+    border-color: #dadada;
+    color: transparent;
+}
+.cards-container > .card > * {
+    pointer-events: none;
 }
 
 .webcam-container {
