@@ -3075,7 +3075,7 @@ const App = {
                 const style = i >= App.pet.stats.current_care ? 'opacity: 0.5; filter:grayscale()' : 'filter:hue-rotate(310deg)';
                 return `<img style="margin-top: 2px; ${style}" src="resources/img/misc/star_01.png"></img>`
             }).join(' ')
-            content.innerHTML = `
+            /* content.innerHTML = `
             <div class="inner-padding b-radius-10 m surface-stylized">
                 <div>
                     <b>GOLD:</b> $${App.pet.stats.gold}
@@ -3097,7 +3097,53 @@ const App = {
                     <b>CARE:</b> <div style="display: inline-flex; gap: 1px">${careRatingIcons}</div>
                 </div>
             </div>
+            `; */
+            content.innerHTML = `
+            <div class="tabs">
+                <div class="tab-titles">
+                    <div for="tab-1" class="tab-title">${App.getIcon('bar-chart', true)}</div>
+                    <div for="tab-2" class="tab-title">${App.getIcon('star', true)}</div>
+                </div>
+                <div class="tab-contents">
+                    <div id="tab-1" class="tab">
+                        <div class="tab-content">
+                            <div class="inner-padding b-radius-10 flex-gap-1 flex flex-dir-col m">
+                                <div class="flex flex-dir-row align-center flex-gap-1">
+                                <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:gold')}</b> 
+                                <b>$${App.pet.stats.gold}</b>
+                                </div>
+                                <div class="flex flex-dir-row align-center flex-gap-1">
+                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:food')}</b> 
+                                    ${App.createProgressbar( App.pet.stats.current_hunger / App.pet.stats.max_hunger * 100 ).node.outerHTML}
+                                </div>
+                                <div class="flex flex-dir-row align-center flex-gap-1">
+                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:fun')}</b> 
+                                    ${App.createProgressbar( App.pet.stats.current_fun / App.pet.stats.max_fun * 100 ).node.outerHTML}
+                                </div>
+                                <div class="flex flex-dir-row align-center flex-gap-1">
+                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:sleep')}</b> 
+                                    ${App.createProgressbar( App.pet.stats.current_sleep / App.pet.stats.max_sleep * 100 ).node.outerHTML}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="tab-2" class="tab">
+                        <div class="tab-content">
+                            <div class="inner-padding b-radius-10 flex-gap-1 flex flex-dir-col m">
+                                <div style="
+                                    display: flex;
+                                    justify-content: space-between;
+                                    align-items: center;
+                                ">
+                                    <b>CARE:</b> <div style="display: inline-flex; gap: 1px">${careRatingIcons}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             `;
+            App.initTab(content);
             list.appendChild(content);
         },
         open_food_stats: function(foodName){
@@ -5535,6 +5581,24 @@ const App = {
     haveAnyDisplays: function(){
         return !![...document.querySelectorAll('.screen-wrapper .display')].length;
     },
+    initTab: function(element){
+        const tabs = element.querySelector('.tabs');
+        if(!tabs) return;
+        const tabTitles = [...element.querySelectorAll('.tab-title')];
+        const tabContents = [...element.querySelectorAll('.tab')];
+        console.log({tabTitles, tabContents})
+        tabTitles.forEach(tabTitle => {
+            const forWhichElement = tabTitle.getAttribute('for');
+            const correspondingContent = tabContents.find(t => t.id === forWhichElement);
+            console.log(correspondingContent)
+            tabTitle.onclick = () => {
+                [...tabTitles, ...tabContents].forEach(e => e.classList.remove('active'));
+                tabTitle.classList.add('active');
+                correspondingContent.classList.add('active');
+            }
+        })
+        tabTitles.at(0).click();
+    },
     displayList: function(listItems, backFn, backFnTitle){
         // if(backFn !== false)
         //     listItems.push({
@@ -6698,6 +6762,9 @@ const App = {
         return encoded;
     },
     getIcon: function(iconName, noRightMargin){
+        if(iconName.startsWith('special:')){
+            return App.definitions.icons[iconName.replace('special:', '')];
+        }
         return `<i class="fa-solid fa-${iconName}" style="${!noRightMargin ? 'margin-right:10px' : ''}"></i>`
     },
     wait: function(ms = 0){

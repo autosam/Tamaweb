@@ -963,7 +963,7 @@ class Pet extends Object2d {
             this.nextRandomTargetSelect = 0;
         }
     }
-    jump(strength = 0.28, silent){
+    jump(strength = 0.28, silent, onEndFn){
         if(this.isJumping !== undefined) return false;
 
         this.isJumping = true;
@@ -981,6 +981,7 @@ class Pet extends Object2d {
             this.y -= velocity * App.deltaTime;
             if(this.y >= startY){
                 this.stopScriptedState();
+                onEndFn?.();
             }
         });
     }

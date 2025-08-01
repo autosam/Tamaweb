@@ -1,6 +1,16 @@
 App.definitions = (() => {
     const _ls = PetDefinition.LIFE_STAGE;
     return  {
+        /* ICONS */
+        icons: {
+            'gold': '<i style="color: orange" class="fa-solid fa-sack-dollar"></i>',
+            "expression": '<i style="color: pink" class="fa-solid fa-magic"></i>',
+            "logic": '<i style="color: lightblue" class="fa-solid fa-lightbulb"></i>',
+            "endurance": '<i style="color: green" class="fa-solid fa-dumbbell"></i>',
+            "food": '<i style="color: orange" class="fa-solid fa-burger"></i>',
+            "sleep": '<i style="color: white" class="fa-solid fa-moon"></i>',
+            "fun": '<i style="color: #b8ff0d" class="fa-solid fa-smile"></i>',
+        },
         /* THEMES */
         themes: [
             'default', 
