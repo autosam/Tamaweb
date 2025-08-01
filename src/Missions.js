@@ -29,6 +29,7 @@ const Missions = {
         play_with_animal: 'play_with_animal',
         feed_animal: 'feed_animal',
         order_food: 'order_food',
+        earn_school_points: 'earn_school_points',
     },
     TYPE_DESCRIPTIONS: {
         food: 'Eat food',
@@ -55,6 +56,7 @@ const Missions = {
         play_with_animal: 'Play with your pet animal',
         feed_animal: 'Feed your pet animal',
         order_food: 'Order something on Snapmeal',
+        earn_school_points: 'Earn points at school',
     },
     init: function(data){
         if(data?.current) this.current = data?.current;

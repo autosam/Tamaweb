@@ -1266,7 +1266,13 @@ const App = {
             image: 'resources/img/background/house/animal_bathroom_01.png'
         }),
         classroom: new Scene({
-            image: 'resources/img/background/house/classroom_01.png'
+            image: 'resources/img/background/house/classroom_01.png',
+            onLoad: () => {
+                App.pet.staticShadow = false;
+            },
+            onUnload: () => {
+                App.pet.staticShadow = true;
+            }
         }),
     },
     setScene(scene, noPositionChange, onLoadArg){
@@ -5212,9 +5218,9 @@ const App = {
                                 name: 'Flip Cards',
                                 onclick: () => Activities.school_LogicGame({
                                     ...getFlipCardsDifficulty(App.pet.stats.current_expression),
+                                    skillIcon: 'special:expression',
                                     onEndFn: (pts) => {
                                         App.pet.stats.current_expression += pts;
-                                        App.save();
                                     }
                                 })
                             }
@@ -5226,15 +5232,29 @@ const App = {
                     onclick: () => {
                         return App.displayList([
                             {
+                                name: 'Track',
+                                onclick: () => Activities.school_LogicGame({
+                                    activeCards: 1,
+                                    maxCards: 4,
+                                    swapDelay: 200,
+                                    maxSwaps: 10,
+                                    maxAttempts: 1,
+                                    skillIcon: 'special:logic',
+                                    onEndFn: (pts) => {
+                                        App.pet.stats.current_logic += pts;
+                                    }
+                                })
+                            },
+                            {
                                 name: 'Flip Cards',
                                 onclick: () => Activities.school_LogicGame({
                                     ...getFlipCardsDifficulty(App.pet.stats.current_logic),
+                                    skillIcon: 'special:logic',
                                     onEndFn: (pts) => {
                                         App.pet.stats.current_logic += pts;
-                                        App.save();
                                     }
                                 })
-                            }
+                            },
                         ])
                     }
                 },
@@ -5243,12 +5263,22 @@ const App = {
                     onclick: () => {
                         return App.displayList([
                             {
+                                name: 'Skipping Rope',
+                                onclick: () => {
+                                    Activities.school_EnduranceGame({
+                                        onEndFn: (pts) => {
+                                            App.pet.stats.current_endurance += pts;
+                                        }
+                                    })
+                                }
+                            },
+                            {
                                 name: 'Flip Cards',
                                 onclick: () => Activities.school_LogicGame({
                                     ...getFlipCardsDifficulty(App.pet.stats.current_endurance),
+                                    skillIcon: 'special:endurance',
                                     onEndFn: (pts) => {
                                         App.pet.stats.current_endurance += pts;
-                                        App.save();
                                     }
                                 })
                             }
@@ -5910,9 +5940,12 @@ const App = {
         return list;
     },
     displayMessageBubble: function(content, icon = ''){
-        const splitContent = content.split('')
-            .map((letter, index) => `<span style="animation-delay: ${index * 0.05}s">${letter}</span>`)
-            .join('');
+        let splitContent = content;
+        if(!containsHtmlTags(content)){
+            splitContent = content.split('')
+                .map((letter, index) => `<span style="animation-delay: ${index * 0.05}s">${letter}</span>`)
+                .join('');
+        }
         const display = App.displayEmpty('bg-transparent pointer-events-none');
         display.close = () => {
             UI.fadeOut(display.querySelector('.message-bubble'));
@@ -6861,7 +6894,6 @@ const App = {
         return encoded;
     },
     getIcon: function(iconName, noRightMargin, color){
-        console.log(iconName)
         if(iconName.startsWith('special:')){
             const iconDef = App.definitions.icons[iconName.replace('special:', '')];
             return App.getIcon(iconDef.icon, noRightMargin, iconDef.color);
