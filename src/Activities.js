@@ -1,4 +1,31 @@
 class Activities {
+    static async goToSchool(){
+        App.setScene(App.scene.classroom);
+        App.toggleGameplayControls(false)
+        const main = new TimelineDirector(App.pet);
+        const teacher = new TimelineDirector(new Pet(App.getRandomPetDef(), {
+            staticShadow: false,
+        }));
+        teacher.lookAt(false);
+        teacher.setPosition({x: '75%'});
+        teacher.setState('idle');
+        main.setPosition({x: '-5%'})
+
+        await main.moveTo({x: '25%', speed: 0.01});
+        await teacher.bob({animation: 'idle_side', maxCycles: 1});
+        const messageBubble = App.displayMessageBubble('Welcome!', teacher.actor.petDefinition.getFullCSprite());
+        main.setState('cheering');
+        teacher.setState('cheering');
+        await TimelineDirector.wait(2000);
+        messageBubble.close();
+        await TimelineDirector.wait(500);
+        App.handlers.open_school_activity_list();
+        teacher.remove();
+        main.release();
+        messageBubble?.close();
+        App.toggleGameplayControls(true);
+
+    }
     static async receiveOrderedFood(){
         App.setScene(App.scene.home);
         App.toggleGameplayControls(false);
@@ -3752,7 +3779,7 @@ class Activities {
     }
 
     // school
-    static async school_LogicGame(activeCards = 2, maxCards = 12){
+    static async school_LogicGame({activeCards = 2, maxCards = 12, onEndFn} = {}){
         const maxAttempts = 4;
 
         App.pet.triggerScriptedState('idle', App.INF, null, true);
@@ -3793,14 +3820,14 @@ class Activities {
             setTimeout(() => {
                 if(correctCards === activeCards){
                     screen.close();
-                    App.displayPopup(`You've won!`);
+                    App.displayPopup(`You've won!`, false, () => onEndFn?.(3));
                 } else if(totalTurnedCards >= maxAttempts){
                     miniGameUI.classList.add('hidden');
                     cardsContainer.classList.add('disabled');
                     cards.forEach(card => card.classList.remove('turning'))
                     setTimeout(() => {
                         screen.close();
-                        App.displayPopup(`You've lost!`);
+                        App.displayPopup(`You've lost!`, false, () => onEndFn?.(0));
                     }, 2000);
                 }
             }, animationDelay);
@@ -3854,7 +3881,7 @@ class Activities {
             }
             return cards;
         }
-        cards = generateCards(activeCards, 12);
+        cards = generateCards(activeCards, maxCards);
         await App.wait(3000);
         for(let i = 0; i < cards.length; i++){
             await App.wait(150);
