@@ -27,7 +27,7 @@ class Activities {
         teacher.setState('idle');
         main.setPosition({x: '-5%'})
 
-        await main.moveTo({x: '25%', speed: 0.01});
+        await main.moveTo({x: '25%', speed: 0.025});
         await teacher.bob({animation: 'idle_side', maxCycles: 1});
         const messageBubble = App.displayMessageBubble('Welcome!', teacher.actor.petDefinition.getFullCSprite());
         main.setState('cheering');

@@ -110,7 +110,7 @@ const App = {
         CHRISTMAS_TREE_Z: 4.58,
         BACKGROUND_Z: -10,
         INPUT_BASE_64: '0xffbx64',
-        MAX_SCHOOL_CLASSES_PER_DAY: 2,
+        MAX_SCHOOL_CLASSES_PER_DAY: 10,
     },
     routes: {
         BLOG: 'https://tamawebgame.github.io/blog/',
@@ -5189,16 +5189,19 @@ const App = {
                     return {
                         activeCards: 1,
                         maxCards: 4,
+                        maxAttempts: 2,
                     }
                 } else if(stat < 15){
                     return {
                         activeCards: 1,
                         maxCards: 8,
+                        maxAttempts: 3,
                     }
                 } else if(stat <= 30) {
                     return {
                         activeCards: 1,
                         maxCards: 12,
+                        maxAttempts: 3,
                     }
                 } else if(stat <= 60) {
                     return {
@@ -5209,6 +5212,7 @@ const App = {
                     return {
                         activeCards: 3,
                         maxCards: 12,
+                        maxAttempts: 6,
                     }
                 }
             }
