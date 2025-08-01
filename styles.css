@@ -630,6 +630,7 @@ button {
 .progressbar {
     border-radius: 5px;
     overflow: hidden;
+    flex-grow: 1;
 }
 
 .progressbar-background {
@@ -2057,4 +2058,68 @@ a.generic-btn:before {
     display: inline-flex;
     left: 4px;
     top: 0;
+}
+
+.outlined-icon {
+    text-shadow: 
+        1px 1px 0px #00014b, 
+        -1px -1px 0px #00014b,
+        1px -1px 0px #00014b,
+        -1px 1px 0px #00014b;
+}
+
+.tabs {
+    display: flex;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--prim-clr-b-bg);
+    flex-direction: column;
+    margin-top: 4px;
+    align-items: stretch;
+    border: 2px solid var(--prim-clr-b-border);
+}
+.tab.active {
+    color: var(--prim-clr-b-text);
+    display: block;
+}
+.tab-titles {
+    display: flex;
+    flex-grow: 1;
+    width: 100%;
+}
+.tab-title.active {
+    color: var(--prim-clr-b-text);
+    border-bottom: 4px solid;
+    background-color: color-mix(in srgb, var(--prim-clr-b-text) 15%, transparent)
+}
+.tab-title {
+    flex-grow: 1;
+    width: 10%;
+    padding: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 2px solid;
+    color: var(--prim-clr-b-border);
+    cursor: pointer;
+}
+.tab-title:hover {
+    background-color: color-mix(in srgb, var(--prim-clr-b-text) 10%, transparent)
+}
+.tab {
+    flex-grow: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+.tab .tab-content {
+    display: none;
+}
+.tab.active .tab-content {
+    display: inline;
+}
+
+.tab-contents {
+    display: contents;
 }
