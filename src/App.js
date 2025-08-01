@@ -110,6 +110,7 @@ const App = {
         CHRISTMAS_TREE_Z: 4.58,
         BACKGROUND_Z: -10,
         INPUT_BASE_64: '0xffbx64',
+        MAX_SCHOOL_CLASSES_PER_DAY: 2,
     },
     routes: {
         BLOG: 'https://tamawebgame.github.io/blog/',
@@ -1750,8 +1751,11 @@ const App = {
         go_to_clinic: function(){
             Activities.goToClinic(() => App.handlers.open_activity_list(true))
         },
+        show_attended_school_limit_message: function(){
+            return App.displayPopup(`<b>${App.petDefinition.name}</b> has attended all of their classes today!<br><br>Come back tomorrow at 7:00AM`, 4000);
+        },
         go_to_school: function(){
-            Activities.goToSchool()
+            Activities.goToSchool(() => App.handlers.open_activity_list(true))
         },
         open_works_list: function(){
             const backFn = () => {
@@ -5209,6 +5213,16 @@ const App = {
                 }
             }
 
+            const countClassVisit = (payload) => {
+                if(App.pet.stats.schoolClassesToday >= App.constants.MAX_SCHOOL_CLASSES_PER_DAY){
+                    App.handlers.show_attended_school_limit_message();
+                    return true;
+                }
+                App.pet.stats.schoolClassesToday += 1;
+                console.log(App.pet.stats.schoolClassesToday)
+                return payload();
+            }
+
             return App.displayList([
                 {
                     name: `${App.getIcon('special:expression')} Expression`,
@@ -5216,13 +5230,13 @@ const App = {
                         return App.displayList([
                             {
                                 name: 'Flip Cards',
-                                onclick: () => Activities.school_LogicGame({
+                                onclick: () => countClassVisit(() => Activities.school_CardShuffleGame({
                                     ...getFlipCardsDifficulty(App.pet.stats.current_expression),
                                     skillIcon: 'special:expression',
                                     onEndFn: (pts) => {
                                         App.pet.stats.current_expression += pts;
                                     }
-                                })
+                                }))
                             }
                         ])
                     }
@@ -5233,7 +5247,7 @@ const App = {
                         return App.displayList([
                             {
                                 name: 'Track',
-                                onclick: () => Activities.school_LogicGame({
+                                onclick: () => countClassVisit(() => Activities.school_CardShuffleGame({
                                     activeCards: 1,
                                     maxCards: 4,
                                     swapDelay: 200,
@@ -5243,17 +5257,17 @@ const App = {
                                     onEndFn: (pts) => {
                                         App.pet.stats.current_logic += pts;
                                     }
-                                })
+                                }))
                             },
                             {
                                 name: 'Flip Cards',
-                                onclick: () => Activities.school_LogicGame({
+                                onclick: () => countClassVisit(() => Activities.school_CardShuffleGame({
                                     ...getFlipCardsDifficulty(App.pet.stats.current_logic),
                                     skillIcon: 'special:logic',
                                     onEndFn: (pts) => {
                                         App.pet.stats.current_logic += pts;
                                     }
-                                })
+                                }))
                             },
                         ])
                     }
@@ -5265,22 +5279,22 @@ const App = {
                             {
                                 name: 'Skipping Rope',
                                 onclick: () => {
-                                    Activities.school_EnduranceGame({
+                                    countClassVisit(() => Activities.school_EnduranceGame({
                                         onEndFn: (pts) => {
                                             App.pet.stats.current_endurance += pts;
                                         }
-                                    })
+                                    }))
                                 }
                             },
                             {
                                 name: 'Flip Cards',
-                                onclick: () => Activities.school_LogicGame({
+                                onclick: () => countClassVisit(() => Activities.school_CardShuffleGame({
                                     ...getFlipCardsDifficulty(App.pet.stats.current_endurance),
                                     skillIcon: 'special:endurance',
                                     onEndFn: (pts) => {
                                         App.pet.stats.current_endurance += pts;
                                     }
-                                })
+                                }))
                             }
                         ])
                     }

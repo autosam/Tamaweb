@@ -1,5 +1,21 @@
 class Activities {
-    static async goToSchool(){
+    static async goToSchool(onFail){
+        // reset school attend limit of eligible
+        const lastReset = moment(App.pet.stats.lastSchoolClassLimitReset);
+        const nextReset = lastReset.clone().add(1, 'day').set({ hour: 7, minute: 0, second: 0 });
+        console.log({nextReset: nextReset.toISOString()})
+        if (moment().isSameOrAfter(nextReset)) {
+            App.pet.stats.schoolClassesToday = 0;
+            App.pet.stats.lastSchoolClassLimitReset = nextReset.toISOString();
+            console.log('school reset', App.pet.stats)
+        }
+
+        if(App.pet.stats.schoolClassesToday >= App.constants.MAX_SCHOOL_CLASSES_PER_DAY){
+            App.handlers.show_attended_school_limit_message();
+            onFail?.();
+            return false;
+        }
+
         App.setScene(App.scene.classroom);
         App.toggleGameplayControls(false)
         const main = new TimelineDirector(App.pet);
@@ -3787,28 +3803,33 @@ class Activities {
         App.pet.y = '100%';
         App.pet.triggerScriptedState('idle', App.INF, 0, true);
 
+        let jumpingRope;
+        let currentScore = 0, canScore = false, timeLeft = 10, firstJump = false;
+
         const screen = UI.empty();
         document.querySelector('.screen-wrapper').appendChild(screen);
         screen.innerHTML = `
-        <div class="width-full pointer-events-none" style="position: absolute; top: 0; left: 0;">
-            <div class="flex-container" style="justify-content: space-between; padding: 4px">
-                <div class="flex-container mini-game-ui">
-                    <div id="score"></div>
+        <div class="width-full pointer-events-none" style="position: absolute; bottom: 0; left: 0;">
+            <div class="mini-game-ui flex align-center justify-between">
+                <div class="flex align-center">
+                    <i style="margin-right: 4px;" class="fa-solid fa-stopwatch icon"></i>
+                    <div id="time-left">
+                        <span class="opacity-half">${timeLeft}</span>
+                    </div>
                 </div>
-                <div class="flex-container mini-game-ui">
-                    <div id="time-left"></div>
+                <div class="flex align-center">
+                    <div id="score">${currentScore}</div>
                 </div>
             </div>
         </div>
         `;
 
-        let jumpingRope;
-        let currentScore = 0, canScore = false, timeLeft = 10, firstJump = false;
         const checkProgress = (isScoring) => {
             if(isScoring){
                 firstJump = true;
                 if(canScore){
                     currentScore++;
+                    setTimeout(() => App.playSound('resources/sounds/ui_click_03.ogg', true));
                     updateUI();
                 }
             }
@@ -3866,7 +3887,6 @@ class Activities {
             screen.querySelector('#time-left').textContent = timeLeft;
             screen.querySelector('#score').textContent = currentScore;
         }
-        updateUI();
 
         let timerFn = setInterval(() => {
             if(!firstJump) return;
@@ -3887,7 +3907,7 @@ class Activities {
             })
         })
     }
-    static async school_LogicGame({
+    static async school_CardShuffleGame({
         activeCards = 2, 
         maxCards = 12, 
         onEndFn, 
@@ -3923,6 +3943,7 @@ class Activities {
             if(card.isTarget){
                 correctCards++;
             }
+            App.playSound(card.isTarget ? 'resources/sounds/ui_click_03.ogg' : 'resources/sounds/ui_click_01.ogg', true);
             
             const animationDelay = 350;
             counter.textContent = totalTurnedCards;
@@ -3972,6 +3993,8 @@ class Activities {
 
             a.style.zIndex = swappedIndex;
             b.style.zIndex = ++swappedIndex;
+
+            App.playSound('resources/sounds/ui_click_04.ogg', true);
         }
         const generateCards = (activeAmount, maxAmount) => {
             const randomPositions = new Array(maxAmount)
