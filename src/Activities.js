@@ -3924,9 +3924,123 @@ class Activities {
     }
 
     // school
-    static async school_LogicGame({activeCards = 2, maxCards = 12, onEndFn} = {}){
-        const maxAttempts = 4;
+    static async school_EnduranceGame({onEndFn} = {}){
+        App.closeAllDisplays();
+        App.setScene(App.scene.classroom);
+        App.pet.stopMove();
+        App.pet.x = '50%';
+        App.pet.y = '100%';
+        App.pet.triggerScriptedState('idle', App.INF, 0, true);
 
+        const screen = UI.empty();
+        document.querySelector('.screen-wrapper').appendChild(screen);
+        screen.innerHTML = `
+        <div class="width-full pointer-events-none" style="position: absolute; top: 0; left: 0;">
+            <div class="flex-container" style="justify-content: space-between; padding: 4px">
+                <div class="flex-container mini-game-ui">
+                    <div id="score"></div>
+                </div>
+                <div class="flex-container mini-game-ui">
+                    <div id="time-left"></div>
+                </div>
+            </div>
+        </div>
+        `;
+
+        let jumpingRope;
+        let currentScore = 0, canScore = false, timeLeft = 10, firstJump = false;
+        const checkProgress = (isScoring) => {
+            if(isScoring){
+                firstJump = true;
+                if(canScore){
+                    currentScore++;
+                    updateUI();
+                }
+            }
+            if(timeLeft <= 0){
+                App.toggleGameplayControls(false);
+                jumpingRope?.removeObject();
+                screen.remove();
+                App.pet.stopScriptedState();
+                App.pet.y = '100%';
+                const points = clamp(Math.floor(currentScore / 3), 0, 3);
+                onEndFn?.(points);
+                Activities.task_winSkillPointFromSchool({
+                    amount: points,
+                    hasWon: points > 1,
+                    icon: App.getIcon('special:endurance'),
+                })
+            }
+        }
+
+        jumpingRope = new Object2d({
+            img: 'resources/img/misc/jumping_rope_01.png',
+            x: 0, y: 0, z: App.pet.z + 0.1,
+            spritesheet: {
+                cellSize: App.drawer.bounds.width,
+                cellNumber: 1,
+                rows: 1,
+                columns: 4
+            },
+            onDraw: (me) => {
+                const speed = 135;
+                const previousAnimFrame = me.spritesheet.cellNumber;
+                Object2d.animations.cycleThroughFrames(me, speed, true);
+                const currentAnimFrame = me.spritesheet.cellNumber;
+                if(currentAnimFrame === 1){
+                    me.z = App.constants.ACTIVE_PET_Z + 0.1;
+                } else if(currentAnimFrame >= me.spritesheet.rows * me.spritesheet.columns){
+                    me.z = App.constants.ACTIVE_PET_Z - 0.1;
+                }
+
+                if(previousAnimFrame !== currentAnimFrame && currentAnimFrame === 3 && me.z > App.pet.z){
+                    App.pet.setState('jumping');
+                    App.pet.filter = 'brightness(1.2)';
+                    canScore = true;
+                    setTimeout(() => {
+                        App.pet.filter = '';
+                        canScore = false;
+                        if(!jumpingRope || jumpingRope.isRemoved) return;
+                        App.pet.setState('idle');
+                    }, speed);
+                }
+            }
+        })
+
+        const updateUI = () => {
+            screen.querySelector('#time-left').textContent = timeLeft;
+            screen.querySelector('#score').textContent = currentScore;
+        }
+        updateUI();
+
+        let timerFn = setInterval(() => {
+            if(!firstJump) return;
+            timeLeft -= 1;
+            if(timeLeft <= 0) {
+                clearInterval(timerFn);
+                checkProgress()
+            }
+            updateUI();
+        }, 1000);
+
+        App.toggleGameplayControls(false, () => {
+            App.pet.z = App.constants.ACTIVE_PET_Z + 0.2;
+            checkProgress(true);
+            App.pet.jump(0.28, false, () => {
+                App.pet.triggerScriptedState('idle', App.INF, 0, true)
+                App.pet.z = App.constants.ACTIVE_PET_Z;
+            })
+        })
+    }
+    static async school_LogicGame({
+        activeCards = 2, 
+        maxCards = 12, 
+        onEndFn, 
+        swapDelay = 400, 
+        maxSwaps,
+        maxAttempts = 4,
+        skillIcon,
+    } = {}){
         App.pet.triggerScriptedState('idle', App.INF, null, true);
         const screen = App.displayEmpty();
         screen.innerHTML = `
@@ -3965,20 +4079,30 @@ class Activities {
             setTimeout(() => {
                 if(correctCards === activeCards){
                     screen.close();
-                    App.displayPopup(`You've won!`, false, () => onEndFn?.(3));
+                    onEndFn?.(3);
+                    Activities.task_winSkillPointFromSchool({
+                        amount: 3,
+                        hasWon: true,
+                        icon: App.getIcon(skillIcon),
+                    })
                 } else if(totalTurnedCards >= maxAttempts){
                     miniGameUI.classList.add('hidden');
                     cardsContainer.classList.add('disabled');
                     cards.forEach(card => card.classList.remove('turning'))
                     setTimeout(() => {
                         screen.close();
-                        App.displayPopup(`You've lost!`, false, () => onEndFn?.(0));
+                        onEndFn?.(0);
+                        Activities.task_winSkillPointFromSchool({
+                            amount: 0,
+                            hasWon: false,
+                            icon: App.getIcon(skillIcon),
+                        })
                     }, 2000);
                 }
             }, animationDelay);
         }
 
-        let totalSwaps = 2;
+        let swappedIndex = 2;
         const swapCards = (a, b) => {
             const aLeft = a.style.left;
             const aTop = a.style.top;
@@ -3991,8 +4115,8 @@ class Activities {
             b.style.left = aLeft;
             b.style.top = aTop;
 
-            a.style.zIndex = totalSwaps;
-            b.style.zIndex = ++totalSwaps;
+            a.style.zIndex = swappedIndex;
+            b.style.zIndex = ++swappedIndex;
         }
         const generateCards = (activeAmount, maxAmount) => {
             const randomPositions = new Array(maxAmount)
@@ -4037,7 +4161,7 @@ class Activities {
 
         // swapping
         const scrambledCards = shuffleArray([
-            ...shuffleArray(cards).slice(0, cards.length/1.5), 
+            ...shuffleArray(cards).slice(0, maxSwaps ?? cards.length/1.5), 
             cards.find(c => c.isTarget)
         ]);
         for(let i = 0; i < scrambledCards.length; i++){
@@ -4047,7 +4171,7 @@ class Activities {
                 target = randomFromArray(scrambledCards);
                 if(target !== card) break;
             }
-            await App.wait(400);
+            await App.wait(swapDelay);
             swapCards(card, target);
         }
         await App.wait(500);
@@ -4175,6 +4299,52 @@ class Activities {
             })
             App.pet.stats.current_fun -= 100;
         }
+    }
+    static async task_winSkillPointFromSchool({
+            amount = 0, 
+            hasWon, 
+            npc = 'resources/img/character/chara_175b.png',
+            icon,
+        } = {}){
+        App.closeAllDisplays();
+        App.setScene(App.scene.classroom);
+        App.toggleGameplayControls(false);
+        App.pet.staticShadow = false;
+
+        if(hasWon) Missions.done(Missions.TYPES.earn_school_points);
+
+        const petMain = new TimelineDirector(App.pet);
+        const petClerk = new TimelineDirector(new Pet(new PetDefinition({
+            name: 'prize giver',
+            sprite: npc,
+        })));
+
+        petMain.setPosition({x: '75%'});
+        petMain.setState('idle')
+        petClerk.setPosition({x: '25%'});
+        petClerk.setState('idle')
+        await TimelineDirector.wait(500);
+        const messageBubble = App.displayMessageBubble(`<span class="outlined-icon">${icon}</span>+${amount}`);
+        await petMain.bob({maxCycles: 1, animation: 'shocked'});
+        if(hasWon){
+            setTimeout(() => App.pet.playSound('resources/sounds/cheer_success.ogg', true));
+            petMain.setState('cheering_with_icon');
+            petClerk.setState('cheering');
+        } else {
+            setTimeout(() => App.pet.playSound('resources/sounds/task_fail_01.ogg', true));
+            petMain.setState('uncomfortable');
+            petClerk.setState('mild_uncomfortable');
+        }
+        await TimelineDirector.wait(3000);
+
+        petMain.release();
+        petClerk.remove();
+
+        App.setScene(App.scene.home);
+        App.toggleGameplayControls(true);
+        UI.clearLastClicked();
+        messageBubble.close();
+        App.handlers.open_school_activity_list();
     }
     static async task_winMoneyFromArcade({
             amount = 0, 

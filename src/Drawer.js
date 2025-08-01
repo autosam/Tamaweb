@@ -273,6 +273,7 @@ class Drawer {
         }
 
         this.objects[object.drawerId] = null;
+        object.isRemoved = true;
         this.objects.forEach(otherObject => {
             if(otherObject?.parent?.drawerId === object.drawerId){
                 // this.objects[otherObject.drawerId] = null;

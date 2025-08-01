@@ -136,6 +136,10 @@ function shuffleArray(array) {
         .sort((a, b) => a.sort - b.sort)
         .map(({ value }) => value);
 }
+function containsHtmlTags(str) {
+    const htmlTagRegex = /<[a-z][\s\S]*>/i;
+    return htmlTagRegex.test(str);
+}
 function downloadUpscaledCanvasAsImage(canvas, imageName, scale = 1){
     const scaledCanvas = document.createElement("canvas");
     scaledCanvas.width = canvas.width * scale;
