@@ -3124,15 +3124,15 @@ const App = {
                             <div class="inner-padding b-radius-10 flex-gap-1 flex flex-dir-col m">
                                 <div class="flex flex-dir-row align-center flex-gap-1">
                                     <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:expression')}</b> 
-                                    ${App.createProgressbar( 50 / 100 * 100 ).node.outerHTML}
+                                    ${App.createProgressbar( App.pet.stats.current_expression / 100 * 100 ).node.outerHTML}
                                 </div>
                                 <div class="flex flex-dir-row align-center flex-gap-1">
                                     <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:logic')}</b> 
-                                    ${App.createProgressbar( 25 / 100 * 100 ).node.outerHTML}
+                                    ${App.createProgressbar( App.pet.stats.current_logic / 100 * 100 ).node.outerHTML}
                                 </div>
                                 <div class="flex flex-dir-row align-center flex-gap-1">
                                     <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:endurance')}</b> 
-                                    ${App.createProgressbar( 35 / 100 * 100 ).node.outerHTML}
+                                    ${App.createProgressbar( App.pet.stats.current_endurance / 100 * 100 ).node.outerHTML}
                                 </div>
                                 <div style="
                                     display: flex;

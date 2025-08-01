@@ -240,6 +240,11 @@ class PetDefinition {
         },
         is_revived_once: false,
         last_eaten: [],
+
+        // skill points
+        current_expression: 0,
+        current_logic: 0,
+        current_endurance: 0,
     }
     friends = [];
     family = [];
@@ -318,6 +323,9 @@ class PetDefinition {
                     current_rabbit_hole: this.stats.current_rabbit_hole,
                     is_revived_once: this.stats.is_revived_once,
                     last_eaten: this.stats.last_eaten,
+                    current_expression: this.stats.current_expression,
+                    current_logic: this.stats.current_logic,
+                    current_endurance: this.stats.current_endurance,
                 }
                 return;
             }
