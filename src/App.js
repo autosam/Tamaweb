@@ -1273,6 +1273,9 @@ const App = {
         animalBathroom: new Scene({
             image: 'resources/img/background/house/animal_bathroom_01.png'
         }),
+        classroom: new Scene({
+            image: 'resources/img/background/house/classroom_01.png'
+        }),
     },
     setScene(scene, noPositionChange, onLoadArg){
         App.currentScene?.onUnload?.(scene);
@@ -1748,6 +1751,9 @@ const App = {
         },
         go_to_clinic: function(){
             Activities.goToClinic(() => App.handlers.open_activity_list(true))
+        },
+        go_to_school: function(){
+            Activities.goToSchool()
         },
         open_works_list: function(){
             const backFn = () => {
@@ -3109,19 +3115,19 @@ const App = {
                         <div class="tab-content">
                             <div class="inner-padding b-radius-10 flex-gap-1 flex flex-dir-col m">
                                 <div class="flex flex-dir-row align-center flex-gap-1">
-                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:gold')}</b> 
+                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:gold', true)}</b> 
                                     <b>$${App.pet.stats.gold}</b>
                                 </div>
                                 <div class="flex flex-dir-row align-center flex-gap-1">
-                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:food')}</b> 
+                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:food', true)}</b> 
                                     ${App.createProgressbar( App.pet.stats.current_hunger / App.pet.stats.max_hunger * 100 ).node.outerHTML}
                                 </div>
                                 <div class="flex flex-dir-row align-center flex-gap-1">
-                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:fun')}</b> 
+                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:fun', true)}</b> 
                                     ${App.createProgressbar( App.pet.stats.current_fun / App.pet.stats.max_fun * 100 ).node.outerHTML}
                                 </div>
                                 <div class="flex flex-dir-row align-center flex-gap-1">
-                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:sleep')}</b> 
+                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:sleep', true)}</b> 
                                     ${App.createProgressbar( App.pet.stats.current_sleep / App.pet.stats.max_sleep * 100 ).node.outerHTML}
                                 </div>
                             </div>
@@ -3131,15 +3137,15 @@ const App = {
                         <div class="tab-content">
                             <div class="inner-padding b-radius-10 flex-gap-1 flex flex-dir-col m">
                                 <div class="flex flex-dir-row align-center flex-gap-1">
-                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:expression')}</b> 
+                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:expression', true)}</b> 
                                     ${App.createProgressbar( App.pet.stats.current_expression / 100 * 100 ).node.outerHTML}
                                 </div>
                                 <div class="flex flex-dir-row align-center flex-gap-1">
-                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:logic')}</b> 
+                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:logic', true)}</b> 
                                     ${App.createProgressbar( App.pet.stats.current_logic / 100 * 100 ).node.outerHTML}
                                 </div>
                                 <div class="flex flex-dir-row align-center flex-gap-1">
-                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:endurance')}</b> 
+                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:endurance', true)}</b> 
                                     ${App.createProgressbar( App.pet.stats.current_endurance / 100 * 100 ).node.outerHTML}
                                 </div>
                                 <div style="
@@ -5171,6 +5177,95 @@ const App = {
                 }
             ])
         },
+        open_school_activity_list: function(){
+            const backFn = () => {
+                App.handlers.open_activity_list(true);
+            }
+
+            const getFlipCardsDifficulty = (stat) => {
+                if(stat < 6){
+                    return {
+                        activeCards: 1,
+                        maxCards: 4,
+                    }
+                } else if(stat < 15){
+                    return {
+                        activeCards: 1,
+                        maxCards: 8,
+                    }
+                } else if(stat <= 30) {
+                    return {
+                        activeCards: 1,
+                        maxCards: 12,
+                    }
+                } else if(stat <= 60) {
+                    return {
+                        activeCards: 2,
+                        maxCards: 12,
+                    }
+                } else {
+                    return {
+                        activeCards: 3,
+                        maxCards: 12,
+                    }
+                }
+            }
+
+            return App.displayList([
+                {
+                    name: `${App.getIcon('special:expression')} Expression`,
+                    onclick: () => {
+                        return App.displayList([
+                            {
+                                name: 'Flip Cards',
+                                onclick: () => Activities.school_LogicGame({
+                                    ...getFlipCardsDifficulty(App.pet.stats.current_expression),
+                                    onEndFn: (pts) => {
+                                        App.pet.stats.current_expression += pts;
+                                        App.save();
+                                    }
+                                })
+                            }
+                        ])
+                    }
+                },
+                {
+                    name: `${App.getIcon('special:logic')} Logic`,
+                    onclick: () => {
+                        return App.displayList([
+                            {
+                                name: 'Flip Cards',
+                                onclick: () => Activities.school_LogicGame({
+                                    ...getFlipCardsDifficulty(App.pet.stats.current_logic),
+                                    onEndFn: (pts) => {
+                                        App.pet.stats.current_logic += pts;
+                                        App.save();
+                                    }
+                                })
+                            }
+                        ])
+                    }
+                },
+                {
+                    name: `${App.getIcon('special:endurance')} Endurance`,
+                    onclick: () => {
+                        return App.displayList([
+                            {
+                                name: 'Flip Cards',
+                                onclick: () => Activities.school_LogicGame({
+                                    ...getFlipCardsDifficulty(App.pet.stats.current_endurance),
+                                    onEndFn: (pts) => {
+                                        App.pet.stats.current_endurance += pts;
+                                        App.save();
+                                    }
+                                })
+                            }
+                        ])
+                    }
+                },
+
+            ], backFn)
+        },
         open_mall_activity_list: function(){
             const hasNewMainDecor = Object.keys(App.definitions.room_background).some(key => {
                 const room = App.definitions.room_background[key];
@@ -6773,11 +6868,17 @@ const App = {
         const encoded = `${App.constants.INPUT_BASE_64}${btoa(code)}`;
         return encoded;
     },
-    getIcon: function(iconName, noRightMargin){
+    getIcon: function(iconName, noRightMargin, color){
+        console.log(iconName)
         if(iconName.startsWith('special:')){
-            return App.definitions.icons[iconName.replace('special:', '')];
+            const iconDef = App.definitions.icons[iconName.replace('special:', '')];
+            return App.getIcon(iconDef.icon, noRightMargin, iconDef.color);
         }
-        return `<i class="fa-solid fa-${iconName}" style="${!noRightMargin ? 'margin-right:10px' : ''}"></i>`
+        const style = `
+            ${!noRightMargin ? 'margin-right:10px;' : ''}
+            ${color ? `color:${color};` : ''}
+        `
+        return `<i class="fa-solid fa-${iconName}" style="${style}"></i>`
     },
     wait: function(ms = 0){
         return new Promise(resolve => setTimeout(resolve, ms))
