@@ -245,6 +245,10 @@ class PetDefinition {
         current_expression: 0,
         current_logic: 0,
         current_endurance: 0,
+
+        // school class visits
+        schoolClassesToday: 0,
+        lastSchoolClassLimitReset: Date.now(),
     }
     friends = [];
     family = [];
@@ -323,6 +327,8 @@ class PetDefinition {
                     current_rabbit_hole: this.stats.current_rabbit_hole,
                     is_revived_once: this.stats.is_revived_once,
                     last_eaten: this.stats.last_eaten,
+                    schoolClassesToday: this.stats.schoolClassesToday,
+                    lastSchoolClassLimitReset: this.stats.lastSchoolClassLimitReset,
                     current_expression: this.stats.current_expression,
                     current_logic: this.stats.current_logic,
                     current_endurance: this.stats.current_endurance,
