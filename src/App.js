@@ -5733,11 +5733,9 @@ const App = {
         if(!tabs) return;
         const tabTitles = [...element.querySelectorAll('.tab-title')];
         const tabContents = [...element.querySelectorAll('.tab')];
-        console.log({tabTitles, tabContents})
         tabTitles.forEach(tabTitle => {
             const forWhichElement = tabTitle.getAttribute('for');
             const correspondingContent = tabContents.find(t => t.id === forWhichElement);
-            console.log(correspondingContent)
             tabTitle.onclick = () => {
                 [...tabTitles, ...tabContents].forEach(e => e.classList.remove('active'));
                 tabTitle.classList.add('active');
