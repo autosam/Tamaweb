@@ -717,6 +717,10 @@ class Activities {
                     }
                 ])
                 rabbitHoleDefinition?.onEnd?.();
+                // randomly increase skill points
+                App.pet.stats.current_expression += clamp(random(-2, 3), 0, 3);
+                App.pet.stats.current_logic += clamp(random(-2, 3), 0, 3);
+                App.pet.stats.current_endurance += clamp(random(-2, 3), 0, 3);
             }
 
             App.pet.stats.current_rabbit_hole.name = false;
@@ -887,6 +891,9 @@ class Activities {
 
             App.pet.stats.current_fun += item.fun_replenish || 0;
             App.pet.stats.current_sleep += item.sleep_replenish || 0;
+            App.pet.stats.current_expression += item.expression_increase || 0;
+            App.pet.stats.current_logic += item.logic_increase || 0;
+            App.pet.stats.current_endurance += item.endurance_increase || 0;
 
             App.pet.playCheeringAnimation();
 
@@ -1075,6 +1082,7 @@ class Activities {
                             Missions.done(Missions.TYPES.water_crop);
                         }
                         wateringCan.removeObject();
+                        App.pet.stats.current_expression += 0.5;
                         App.toggleGameplayControls(false, previousController);
                     }
                 },
@@ -1112,6 +1120,7 @@ class Activities {
                                         }
                                     ])
                                     App.sendAnalytics('harvest', plant.name);
+                                    App.pet.stats.current_logic += 0.25;
                                     return true;
                                 },
                                 filterFn: (plant) => plant.age === Plant.AGE.grown
@@ -1262,9 +1271,11 @@ class Activities {
                 });
                 App.animals.list.push(newAnimal);
                 App.displayPopup(`A new animal ${newAnimal.getFullCSprite()} has chosen your backyard as their new home. Take good care of them!`, 3000, () => openChooseNameDialog(newAnimal));
+                App.pet.stats.current_expression += 2;
                 App.sendAnalytics('animal_arrived');
             } else if(App.animals.treatBiteCount > 2) {
                 resetTreat();
+                App.pet.stats.current_endurance += 3;
                 App.displayConfirm(`The food you placed out earlier is gone.<br><br>Unfortunately, its visitor chose not to stay this time, maybe you'll meet them next time!`, [
                     {
                         name: 'ok',
@@ -2013,6 +2024,7 @@ class Activities {
         App.pet.triggerScriptedState('idle', App.INF, 0, false);
         App.sendAnalytics('cooking_game', resultFoodName || '');
         Missions.done(Missions.TYPES.cook);
+        App.pet.stats.current_expression += 1.5;
         // App.setScene(App.scene.kitchen);
 
         const potObject = new Object2d({
@@ -2171,6 +2183,7 @@ class Activities {
         await App.pet.triggerScriptedState('idle', 2000, 0, true);
         curtainObject.removeObject();
         App.pet.playCheeringAnimationIfTrue(cheer, () => {
+            App.pet.stats.current_expression += 2;
             App.toggleGameplayControls(true);
             onEndFn();
         });
@@ -2212,6 +2225,9 @@ class Activities {
             App.pet.shadowOffset = 0;
             App.pet.scale = 1;
             App.pet.playCheeringAnimation();
+            App.pet.stats.current_expression += 1;
+            App.pet.stats.current_endurance += 1;
+            App.pet.stats.current_logic += 1;
         });
     }
     static standWork(){
@@ -2437,6 +2453,7 @@ class Activities {
                         App.setScene(App.scene.home);
                         App.toggleGameplayControls(true);
                         onEndFn?.();
+                        App.pet.stats.current_endurance += 1;
                     }
 
                     if(state == 'very sick' || state == 'sick'){
@@ -2545,6 +2562,7 @@ class Activities {
 
         App.pet.needsToiletOverlay.hidden = false;
         App.pet.stats.current_bladder = App.pet.stats.max_bladder;
+        App.pet.stats.current_logic += 2;
         if(App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child && !force) {
             // make pet potty trained if used toilet more than 2 to 5 times and is baby/child
             if(++App.pet.stats.used_toilet > random(2, 5)){
@@ -2756,11 +2774,13 @@ class Activities {
     }
     static redecorRoom(callbackFn){
         App.toggleGameplayControls(false);
+        App.definitions.achievements.redecor_x_times.advance();
+        App.pet.stats.current_expression += 1;
+
         let otherPetDef = new PetDefinition({
             sprite: 'resources/img/character/chara_290b.png',
         })
         let otherPet = new Pet(otherPetDef);
-        App.definitions.achievements.redecor_x_times.advance();
 
         otherPet.stopMove();
         otherPet.x = '100%';
@@ -2871,6 +2891,8 @@ class Activities {
                 otherPet.stopScriptedState();
                 App.pet.x = '50%';
                 App.pet.stats.current_fun += 55;
+                App.pet.stats.current_expression += 2;
+                App.pet.stats.current_logic += 0.5;
                 App.pet.statsManager();
                 App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => App.setScene(App.scene.home));
                 App.drawer.removeObject(otherPet);
@@ -3124,6 +3146,11 @@ class Activities {
                 otherPet.stopScriptedState();
                 App.pet.x = '50%';
                 App.pet.stats.current_fun += 30;
+                switch(random(0, 2)){
+                    case 0: App.pet.stats.current_expression += 2; break;
+                    case 0: App.pet.stats.current_endurance += 2; break;
+                    case 0: App.pet.stats.current_logic += 2; break;
+                }
                 App.pet.statsManager();
                 App.drawer.removeObject(otherPet);
                 App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => {
@@ -3167,6 +3194,7 @@ class Activities {
             App.toggleGameplayControls(false);
             App.pet.x = '50%';
             App.pet.stats.current_fun += 15;
+            App.pet.stats.current_endurance += 0.5;
             App.pet.statsManager();
             App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => {
                 App.setScene(App.scene.home);
@@ -4109,6 +4137,8 @@ class Activities {
                 App.pet.stats.gold += clampedMoneyMade;
             } else clampedMoneyMade = 0;
             App.pet.stats.current_fun -= elapsedTime / 3.5;
+            App.pet.stats.current_expression -= 0.5;
+            App.pet.stats.current_logic += 3;
             App.displayConfirm(`${App.petDefinition.name} made $${clampedMoneyMade}`, [
                 {
                     name: 'ok',
@@ -4176,6 +4206,7 @@ class Activities {
                 App.animals.list.splice(App.animals.list.indexOf(a), 1);
             })
             App.pet.stats.current_fun -= 100;
+            App.pet.stats.current_expression -= 2;
         }
     }
     static async task_winSkillPointFromSchool({
