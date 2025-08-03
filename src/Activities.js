@@ -2,7 +2,7 @@ class Activities {
     static async goToSchool(onFail){
         // reset school attend limit of eligible
         const lastReset = moment(App.pet.stats.lastSchoolClassLimitReset);
-        const nextReset = lastReset.clone().add(1, 'day').set({ hour: 7, minute: 0, second: 0 });
+        const nextReset = lastReset.clone().add(1, 'day').set(App.constants.SCHOOL.resetTime);
         console.log({nextReset: nextReset.toISOString()})
         if (moment().isSameOrAfter(nextReset)) {
             App.pet.stats.schoolClassesToday = 0;
@@ -10,7 +10,7 @@ class Activities {
             console.log('school reset', App.pet.stats)
         }
 
-        if(App.pet.stats.schoolClassesToday >= App.constants.MAX_SCHOOL_CLASSES_PER_DAY){
+        if(App.pet.stats.schoolClassesToday >= App.constants.SCHOOL.maxClassesPerDay){
             App.handlers.show_attended_school_limit_message();
             onFail?.();
             return false;
