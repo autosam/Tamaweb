@@ -2210,7 +2210,7 @@ const App = {
                     }
                 },
                 {
-                    name: `craft ${App.getBadge()}`,
+                    name: `craft`,
                     onclick: () => {
                         App.handlers.open_craftables_list();
                         return true;
@@ -2736,7 +2736,7 @@ const App = {
                     }
                 },
                 {
-                    name: `Change Theme ${App.getBadge()}`,
+                    name: `Change Theme`,
                     onclick: () => {
                         const newThemes = ['pardis'];
                         return App.displayList(
@@ -4694,7 +4694,7 @@ const App = {
                 },
                 {
                     _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby,
-                    name: `<span style="color: mediumvioletred"> <i class="fa-solid fa-burger icon"></i> SnapMeal </span> ${App.getBadge()}`,
+                    name: `<span style="color: mediumvioletred"> <i class="fa-solid fa-burger icon"></i> SnapMeal </span>`,
                     onclick: () => {
                         let list = [
                             ...App.handlers.open_food_list({buyMode: true, getListOnly: true, filterType: 'food', age: PetDefinition.LIFE_STAGE.adult}),

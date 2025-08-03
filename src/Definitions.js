@@ -843,7 +843,7 @@ App.definitions = (() => {
                 price: 150,
                 interaction_time: 30000,
                 interruptable: true,
-                isNew: true,
+                isNew: false,
             },
             "fidget spinner": {
                 sprite: 13,
@@ -851,7 +851,7 @@ App.definitions = (() => {
                 price: 250,
                 interaction_time: 30000,
                 interruptable: true,
-                isNew: true,
+                isNew: false,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "retroboy": {
@@ -860,7 +860,7 @@ App.definitions = (() => {
                 price: 350,
                 interaction_time: 30000,
                 interruptable: true,
-                isNew: true,
+                isNew: false,
             },
             "robotty": {
                 sprite: 15,
@@ -868,7 +868,7 @@ App.definitions = (() => {
                 price: 300,
                 interaction_time: 15000,
                 interruptable: true,
-                isNew: true,
+                isNew: false,
             },
         },
     
@@ -1057,12 +1057,12 @@ App.definitions = (() => {
             "mush-room": {
                 image: 'resources/img/background/house/cc_08.png',
                 price: 350,
-                isNew: true,
+                isNew: false,
             },
             "vintage orange": {
                 image: 'resources/img/background/house/cc_07.png',
                 price: 250,
-                isNew: true,
+                isNew: false,
             },
 
             // craftables
@@ -1109,7 +1109,7 @@ App.definitions = (() => {
             "mush-kitchen": {
                 image: 'resources/img/background/house/kitchen_cc_02.png',
                 price: 350,
-                isNew: true,
+                isNew: false,
                 type: 'kitchen',
             },
         },
@@ -1122,14 +1122,14 @@ App.definitions = (() => {
                 image: 'resources/img/furniture/mushroom_couch.png',
                 id: "mushroom_couch",
                 price: 200,
-                isNew: true,
+                isNew: false,
             },
             {
                 name: 'Mushroom Pot',
                 image: 'resources/img/furniture/mushroom_pot.png',
                 id: "mushroom_pot",
                 price: 150,
-                isNew: true,
+                isNew: false,
             },
             {
                 name: 'Mushroom Lamp',
@@ -1144,21 +1144,21 @@ App.definitions = (() => {
                 image: 'resources/img/furniture/vintage_couch.png',
                 id: "vintage_couch",
                 price: 200,
-                isNew: true,
+                isNew: false,
             },
             {
                 name: 'Vintage Cabinet',
                 image: 'resources/img/furniture/vintage_cabinet.png',
                 id: "vintage_cabinet",
                 price: 150,
-                isNew: true,
+                isNew: false,
             },
             {
                 name: 'Vintage Plant',
                 image: 'resources/img/furniture/vintage_plant.png',
                 id: "vintage_plant",
                 price: 150,
-                isNew: true,
+                isNew: false,
             },
 
             // valentine set
@@ -1448,7 +1448,7 @@ App.definitions = (() => {
                 image: 'resources/img/furniture/couch_city.png',
                 id: "couch_city",
                 isCraftable: true,
-                isNew: true,
+                isNew: false,
                 craftingRecipe: ['tetrocana', 'orange tulip', 'lucrios'],
             },
             {
@@ -1456,7 +1456,7 @@ App.definitions = (() => {
                 image: 'resources/img/furniture/city_toy_car.png',
                 id: "city_toy_car",
                 isCraftable: true,
-                isNew: true,
+                isNew: false,
                 craftingRecipe: ['lucrios', 'tetrocana', 'yellow tulip'],
             },
             {
@@ -1464,7 +1464,7 @@ App.definitions = (() => {
                 image: 'resources/img/furniture/plant_city.png',
                 id: "plant_city",
                 isCraftable: true,
-                isNew: true,
+                isNew: false,
                 craftingRecipe: ['green tulip', 'hephasto', 'bamboo'],
             },
         ],
