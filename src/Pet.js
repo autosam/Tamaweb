@@ -492,6 +492,7 @@ class Pet extends Object2d {
     }
     think(){
         if(!this.nextThinkTime){
+            // think twice a second
             this.nextThinkTime = App.lastTime + 500;
         } else if(this.nextThinkTime < App.lastTime){
             this.nextThinkTime = 0;
@@ -510,6 +511,28 @@ class Pet extends Object2d {
             this.wander();
             this.handleRandomGestures();
             this.handleWants();
+            this.handleRandomSentences();
+        }
+    }
+    handleRandomSentences(){
+        if(!this.isMainPet) return;
+        if(this.stats.current_expression < 20) return;
+
+        const me = this;
+        const now = App.time || 0;
+        const setNextTime = (time) => {
+            me.nextRandomSentenceTime = time ?? now + App.constants.ONE_MINUTE * random(1, 5);
+        }
+        if(!this.nextRandomSentenceTime) setNextTime(App.constants.ONE_SECOND * random(20, 60));
+        if(this.nextRandomSentenceTime < now){
+            setNextTime();
+            if(!this.nextRandomSentenceQueued){
+                this.nextRandomSentenceQueued = true;
+                App.queueEvent(() => {
+                    me.say(generateRandomSentence());
+                    me.nextRandomSentenceQueued = false;
+                })
+            }
         }
     }
     handleRandomGestures(){
@@ -1234,6 +1257,10 @@ class Pet extends Object2d {
 
         otherObject.z = this.z;
         otherObject.localZ = localZ;
+    }
+    say(sentence, ms = 3000){
+        const message = App.displayMessageBubble(sentence, this.petDefinition.getFullCSprite());
+        setTimeout(() => message?.close(), ms);
     }
 
     static scriptedEventDrivers = {
