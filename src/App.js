@@ -3447,6 +3447,11 @@ const App = {
 
                             App.pet.stats.current_fun += current.fun_replenish ?? 0;
                             App.pet.stats.current_sleep += current.sleep_replenish ?? 0;
+
+                            App.pet.stats.current_expression += current.expression_increase ?? 0;
+                            App.pet.stats.current_logic += current.logic_increase ?? 0;
+                            App.pet.stats.current_endurance += current.endurance_increase ?? 0;
+                            
                             if(App.pet.hasMoodlet('healthy') && food === 'medicine')
                                 App.pet.stats.current_health = App.pet.stats.current_health * 0.6;
                             else
