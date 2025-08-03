@@ -760,7 +760,7 @@ App.definitions = (() => {
                 price: 50,
                 interaction_time: 8100,
                 age: [_ls.baby, _ls.child],
-                isNew: false,
+                logic_increase: 1,
             },
             "grimoire": {
                 sprite: 9,
@@ -768,8 +768,8 @@ App.definitions = (() => {
                 price: 200,
                 interaction_time: 8000,
                 interruptable: false,
-                isNew: false,
                 age: [_ls.teen, _ls.adult, _ls.elder],
+                endurance_increase: 1,
             },
             "bear": {
                 sprite: 10,
@@ -777,7 +777,7 @@ App.definitions = (() => {
                 price: 180,
                 interaction_time: 10000,
                 interruptable: true,
-                isNew: false,
+                expression_increase: 1,
             },
             "skate": {
                 sprite: 11,
@@ -788,6 +788,7 @@ App.definitions = (() => {
                 isNew: false,
                 onEnd: () => App.setScene(App.scene.home),
                 age: [_ls.teen, _ls.adult, _ls.elder],
+                endurance_increase: 1.5,
             },
             "foxy": {
                 sprite: 1,
@@ -795,17 +796,20 @@ App.definitions = (() => {
                 price: 50,
                 interaction_time: 12000,
                 interruptable: true,
+                expression_increase: 0.5,
             },
             "dumble": {
                 sprite: 2,
                 fun_replenish: 10,
                 price: 100,
                 age: [_ls.teen, _ls.adult],
+                endurance_increase: 2,
             },
             "music player": {
                 sprite: 3,
                 fun_replenish: 15,
-                price: 65
+                price: 65,
+                expression_increase: 1.5,
             },
             "ball": {
                 sprite: 4,
@@ -813,6 +817,7 @@ App.definitions = (() => {
                 price: 35,
                 interaction_time: 100000,
                 interruptable: true,
+                endurance_increase: 0.75,
             },
             "smartphone": {
                 sprite: 5,
@@ -821,6 +826,7 @@ App.definitions = (() => {
                 interaction_time: 100000,
                 interruptable: true,
                 age: [_ls.teen, _ls.adult, _ls.elder],
+                logic_increase: 2,
             },
             "magazine": {
                 sprite: 6,
@@ -829,6 +835,7 @@ App.definitions = (() => {
                 interaction_time: 60000,
                 interruptable: true,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                logic_increase: 1.5,
             },
             "microphone": {
                 sprite: 7,
@@ -836,6 +843,7 @@ App.definitions = (() => {
                 price: 75,
                 interaction_time: 60000,
                 interruptable: true,
+                expression_increase: 1.5,
             },
             "rubicube": {
                 sprite: 12,
@@ -844,6 +852,7 @@ App.definitions = (() => {
                 interaction_time: 30000,
                 interruptable: true,
                 isNew: false,
+                logic_increase: 1.5,
             },
             "fidget spinner": {
                 sprite: 13,
@@ -853,6 +862,7 @@ App.definitions = (() => {
                 interruptable: true,
                 isNew: false,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                expression_increase: 0.3,
             },
             "retroboy": {
                 sprite: 14,
@@ -861,6 +871,8 @@ App.definitions = (() => {
                 interaction_time: 30000,
                 interruptable: true,
                 isNew: false,
+                logic_increase: 0.4,
+                expression_increase: 0.5,
             },
             "robotty": {
                 sprite: 15,
@@ -869,6 +881,7 @@ App.definitions = (() => {
                 interaction_time: 15000,
                 interruptable: true,
                 isNew: false,
+                logic_increase: 0.75,
             },
         },
     

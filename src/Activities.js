@@ -3293,8 +3293,8 @@ class Activities {
                 App.pet.stats.current_fun += 30;
                 switch(random(0, 2)){
                     case 0: App.pet.stats.current_expression += 2; break;
-                    case 0: App.pet.stats.current_endurance += 2; break;
-                    case 0: App.pet.stats.current_logic += 2; break;
+                    case 1: App.pet.stats.current_endurance += 2; break;
+                    case 2: App.pet.stats.current_logic += 2; break;
                 }
                 App.pet.statsManager();
                 App.drawer.removeObject(otherPet);

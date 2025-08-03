@@ -3451,7 +3451,7 @@ const App = {
                             App.pet.stats.current_expression += current.expression_increase ?? 0;
                             App.pet.stats.current_logic += current.logic_increase ?? 0;
                             App.pet.stats.current_endurance += current.endurance_increase ?? 0;
-                            
+
                             if(App.pet.hasMoodlet('healthy') && food === 'medicine')
                                 App.pet.stats.current_health = App.pet.stats.current_health * 0.6;
                             else
@@ -4094,6 +4094,8 @@ const App = {
                     }
 
                     App.sendAnalytics('craft', current.name);
+                    App.pet.stats.current_expression += 2;
+                    App.pet.stats.current_logic += 3;
                 }
             });
 
@@ -5111,6 +5113,11 @@ const App = {
 
             const showRandomPost = () => {
                 App.petDefinition.stats.current_fun += random(0, 5);
+                switch(random(0, 2, 3)){
+                    case 0: App.pet.stats.current_expression += 0.5; break;
+                    case 1: App.pet.stats.current_endurance += 0.5; break;
+                    case 2: App.pet.stats.current_logic += 0.5; break;
+                }
                 let otherPetDef;
                 if(App.petDefinition.friends && App.petDefinition.friends.length){
                     otherPetDef = randomFromArray(App.petDefinition.friends);
@@ -5125,6 +5132,7 @@ const App = {
                     name: 'make post',
                     onclick: () => {
                         App.petDefinition.stats.current_fun += random(1, 5);
+                        App.pet.stats.current_expression += 0.5;
                         showPost(App.petDefinition, null, true);
                         return true;
                     }
@@ -5158,8 +5166,10 @@ const App = {
                                                     return;
                                                 }
                                                 let state = App.petDefinition.addFriend(otherPetDef);
-                                                if(state) App.displayPopup(`${otherPetDef.name} <b style="color: #87cf00">accepted</b> ${App.petDefinition.name}'s friend request!`);
-                                                else App.displayPopup(`${App.petDefinition.name} is already friends with ${otherPetDef.name}!`);
+                                                if(state) {
+                                                    App.displayPopup(`${otherPetDef.name} <b style="color: #87cf00">accepted</b> ${App.petDefinition.name}'s friend request!`);
+                                                    App.pet.stats.current_expression += 2;
+                                                } else App.displayPopup(`${App.petDefinition.name} is already friends with ${otherPetDef.name}!`);
                                             }
                                         },
                                         {
@@ -5190,6 +5200,7 @@ const App = {
                             App.displayPopup(`sent message to ${friendDef.name}!`, 3000);
                             friendDef.increaseFriendship(10);
                             friendDef.sentMessage = true;
+                            App.pet.stats.current_expression += 0.5;
                         })
                         return true;
                     }
