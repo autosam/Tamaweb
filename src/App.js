@@ -110,7 +110,10 @@ const App = {
         CHRISTMAS_TREE_Z: 4.58,
         BACKGROUND_Z: -10,
         INPUT_BASE_64: '0xffbx64',
-        MAX_SCHOOL_CLASSES_PER_DAY: 10,
+        SCHOOL: {
+            maxClassesPerDay: 10,
+            resetTime: { hour: 7, minute: 0, second: 0 }
+        }
     },
     routes: {
         BLOG: 'https://tamawebgame.github.io/blog/',
@@ -1760,7 +1763,8 @@ const App = {
             Activities.goToClinic(() => App.handlers.open_activity_list(true))
         },
         show_attended_school_limit_message: function(){
-            return App.displayPopup(`<b>${App.petDefinition.name}</b> has attended all of their classes today!<br><br>Come back tomorrow at 7:00AM`, 4000);
+            const formattedResetTime = moment(App.constants.SCHOOL.resetTime).format('h:mmA');
+            return App.displayPopup(`<b>${App.petDefinition.name}</b> has attended all of their classes today!<br><br>Come back tomorrow after <b>${formattedResetTime}</b>`, 4000);
         },
         go_to_school: function(){
             Activities.goToSchool(() => App.handlers.open_activity_list(true))
@@ -5226,7 +5230,7 @@ const App = {
             }
 
             const countClassVisit = (payload) => {
-                if(App.pet.stats.schoolClassesToday >= App.constants.MAX_SCHOOL_CLASSES_PER_DAY){
+                if(App.pet.stats.schoolClassesToday >= App.constants.SCHOOL.maxClassesPerDay){
                     App.handlers.show_attended_school_limit_message();
                     return true;
                 }
