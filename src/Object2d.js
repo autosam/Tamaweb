@@ -196,7 +196,7 @@ class Object2d {
             if(!bobStrength) bobStrength = 0.4;
             if(!me.bobFloat || me.bobFloat > App.PI2) me.bobFloat = 0;
             me.bobFloat += bobSpeed * App.deltaTime;
-            let currentFloat = Math.sin(me.bobFloat) * bobStrength;
+            const currentFloat = Math.sin(me.bobFloat) * bobStrength;
             me.y += currentFloat;
         },
         pixelBreath: function(me, speed, diffPixels){

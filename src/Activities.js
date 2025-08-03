@@ -3823,6 +3823,131 @@ class Activities {
     }
 
     // school
+    static async school_ExpressionGame({onEndFn} = {}){
+        App.closeAllDisplays();
+        App.setScene(App.scene.classroom);
+        App.pet.x = '75%';
+        App.pet.y = '100%';
+        App.pet.triggerScriptedState('idle', App.INF, 0, true);
+        App.toggleGameplayControls(false);
+
+        let timeLeft = 30, currentScore = 0;
+
+        const screen = UI.empty();
+        document.querySelector('.screen-wrapper').appendChild(screen);
+        screen.innerHTML = `
+        <div class="flex flex-dir-col justify-between height-100p width-full" style="position: absolute; top: 0; left: 0;">
+            <div class="mini-game-ui flex align-center justify-between">
+                <div class="flex align-center">
+                    <i style="margin-right: 4px;" class="fa-solid fa-stopwatch icon"></i>
+                    <div id="time-left">
+                        <span class="opacity-half">${timeLeft}</span>
+                    </div>
+                </div>
+                <div class="flex align-center">
+                    <div id="score">${currentScore}</div>
+                </div>
+            </div>
+            <div class="mix-colors-container">
+                <button id="reset" class="generic-btn stylized justify-center">
+                    <div class="color" style="background: white;"></div>
+                </button>
+                <button id="red" class="generic-btn stylized justify-center">
+                    <div class="color" style="background: red;"></div>
+                </button>
+                <button id="yellow" class="generic-btn stylized justify-center">
+                    <div class="color" style="background: yellow;"></div>
+                </button>
+                <button id="blue" class="generic-btn stylized justify-center">
+                    <div class="color" style="background: blue;"></div>
+                </button>
+            </div>
+        </div>
+        `;
+
+        const playerColorTaps = {
+            red: 0,
+            yellow: 0,
+            blue: 0
+        }
+        const COLORS = {
+            red:   { r: 255, g: 0,   b: 0   },
+            blue:  { r: 0,   g: 0,   b: 255 },
+            yellow:{ r: 255, g: 255, b: 0   }
+        };
+        const mixColors = (taps) => {
+            let total = taps.red + taps.blue + taps.yellow;
+            if (total === 0) return { r: 255, g: 255, b: 255 }; // default black
+
+            let r = (
+                COLORS.red.r * taps.red +
+                COLORS.blue.r * taps.blue +
+                COLORS.yellow.r * taps.yellow
+            ) / total;
+
+            let g = (
+                COLORS.red.g * taps.red +
+                COLORS.blue.g * taps.blue +
+                COLORS.yellow.g * taps.yellow
+            ) / total;
+
+            let b = (
+                COLORS.red.b * taps.red +
+                COLORS.blue.b * taps.blue +
+                COLORS.yellow.b * taps.yellow
+            ) / total;
+
+            return { r: Math.round(r), g: Math.round(g), b: Math.round(b) };
+        }
+        const getColorDistance = (c1, c2) => {
+            return Math.sqrt(
+                Math.pow(c1.r - c2.r, 2) +
+                Math.pow(c1.g - c2.g, 2) +
+                Math.pow(c1.b - c2.b, 2)
+            );
+        }
+
+        const targetPainting = new Object2d({
+            solidColor: {
+            r: random(0, 255),
+            g: random(0, 255),
+            b: random(0, 255)
+        },
+            width: 24,
+            height: 24,
+            x: '25%',
+            y: '50%',
+        })
+        const playerPainting = new Object2d({
+            solidColor: {
+                r: 255,
+                g: 255,
+                b: 255,
+            },
+            width: 24,
+            height: 24,
+            x: '75%',
+            y: '50%',
+            onDraw: (me) => {
+                me.solidColor = mixColors(playerColorTaps);
+                // console.log(playerColorTaps, me.solidColor)
+            }
+        })
+
+        const uiUpdateInterval = setInterval(() => {
+            screen.querySelector('#score').textContent = getColorDistance(playerPainting.solidColor, targetPainting.solidColor).toFixed(1);
+        }, 100)
+
+        const [resetButton, redButton, yellowButton, blueButton] = screen.querySelectorAll('#reset, #red, #yellow, #blue');
+        redButton.onclick = () => playerColorTaps.red ++;
+        yellowButton.onclick = () => playerColorTaps.yellow ++;
+        blueButton.onclick = () => playerColorTaps.blue ++;
+        resetButton.onclick = () => {
+            playerColorTaps.red = 0;
+            playerColorTaps.yellow = 0;
+            playerColorTaps.blue = 0;
+        }
+    }
     static async school_EnduranceGame({onEndFn} = {}){
         App.closeAllDisplays();
         App.setScene(App.scene.classroom);

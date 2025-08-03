@@ -1273,6 +1273,23 @@ input#background-color-picker {
     pointer-events: none;
 }
 
+.mix-colors-container {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+.mix-colors-container > button {
+    flex-grow: 1;
+    overflow: hidden;
+}
+.mix-colors-container .color {
+    width: 16px;
+    height: 16px;
+    border-radius: 100%;
+    scale: 3;
+}
+
+
 .webcam-container {
     overflow: hidden;
     background: black;
