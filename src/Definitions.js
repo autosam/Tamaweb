@@ -149,7 +149,7 @@ App.definitions = (() => {
             },
             {
                 isDisabled: () => !(App.petDefinition.lifeStage >= PetDefinition.LIFE_STAGE.child && App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.teen),
-                name: 'School',
+                name: `School ${App.getBadge()}`,
                 image: 'resources/img/misc/activity_building_school.png',
                 onEnter: () => App.handlers.go_to_school(),
             },
