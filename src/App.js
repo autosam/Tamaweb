@@ -63,6 +63,14 @@ const App = {
         MAX_PLANTS: 8,
         MIN_REVIVE_GOLDS: 250,
         MAX_REVIVE_GOLDS: 1000,
+        SKILL_EVOLUTION_EFFECTIVENESS: {
+            bounds: 30,
+            ratings: {
+                endurance: 1,
+                logic: 2,
+                expression: 3
+            }
+        },
         SLEEP_START: 21,
         SLEEP_END: 8,
         PARENT_DAYCARE_START: 8,
