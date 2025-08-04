@@ -523,7 +523,7 @@ class Pet extends Object2d {
         const setNextTime = (time) => {
             me.nextRandomSentenceTime = time ?? now + App.constants.ONE_MINUTE * random(1, 5);
         }
-        if(!this.nextRandomSentenceTime) setNextTime(App.constants.ONE_SECOND * random(20, 60));
+        if(!this.nextRandomSentenceTime) setNextTime(App.constants.ONE_SECOND * random(30, 180));
         if(this.nextRandomSentenceTime < now){
             setNextTime();
             if(!this.nextRandomSentenceQueued){
