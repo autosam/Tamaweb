@@ -263,8 +263,8 @@ hr {
 
 .list-text {
     margin: 5px 15px;
-    background: #222285;
-    color: white;
+    /* background: #222285;
+    color: white; */
 }
 
 .generic-slider-container {
@@ -583,6 +583,10 @@ button {
 .flex-between {
     display: flex;
     justify-content: space-between;
+}
+
+.no-width-children > * {
+    width: 0px;
 }
 
 .flex-wrap {
