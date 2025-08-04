@@ -3158,7 +3158,7 @@ const App = {
                             <div class="inner-padding b-radius-10 uppercase list-text surface-stylized">
                                 <small>
                                     <i class="fa-solid fa-info-circle"></i>
-                                    Skills will override care ratings above 1 when evolving if they are high enough.
+                                    High enough skills will override care ratings above 1 when evolving.
                                     <hr>
                                     <div>
                                         <span class="flex-between items-center no-width-children"> ${App.getIcon('special:endurance')}➜ ${getCareRatingIcons(1, undefined, 16)} </span>
