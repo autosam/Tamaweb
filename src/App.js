@@ -3089,35 +3089,16 @@ const App = {
             ], null, 'Settings')
         },
         open_stats: function(){
+            const getCareRatingIcons = (current = App.pet.stats.current_care, max = App.pet.stats.max_care, sizePx) => {
+                return new Array(max).fill('').map((_, i) => {
+                    const style = i >= current ? 'opacity: 0.5; filter:grayscale();' : 'filter:hue-rotate(310deg);';
+                    const finalStyle = `${style} ${sizePx ? `width: ${sizePx}px;` : ''}`;
+                    return `<img style="margin-top: 2px; ${finalStyle}" src="resources/img/misc/star_01.png"></img>`
+                }).join(' ')
+            }
+
             const list = UI.genericListContainer();
             const content = UI.empty();
-            const careRatingIcons = new Array(App.pet.stats.max_care).fill('').map((_, i) => {
-                const style = i >= App.pet.stats.current_care ? 'opacity: 0.5; filter:grayscale()' : 'filter:hue-rotate(310deg)';
-                return `<img style="margin-top: 2px; ${style}" src="resources/img/misc/star_01.png"></img>`
-            }).join(' ')
-            /* content.innerHTML = `
-            <div class="inner-padding b-radius-10 m surface-stylized">
-                <div>
-                    <b>GOLD:</b> $${App.pet.stats.gold}
-                </div>
-                <div>
-                    <b>HUNGER:</b> ${App.createProgressbar( App.pet.stats.current_hunger / App.pet.stats.max_hunger * 100 ).node.outerHTML}
-                </div>
-                <div>
-                    <b>SLEEP:</b> ${App.createProgressbar( App.pet.stats.current_sleep / App.pet.stats.max_sleep * 100 ).node.outerHTML}
-                </div>
-                <div>
-                    <b>FUN:</b> ${App.createProgressbar( App.pet.stats.current_fun / App.pet.stats.max_fun * 100 ).node.outerHTML}
-                </div>
-                <div style="
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                ">
-                    <b>CARE:</b> <div style="display: inline-flex; gap: 1px">${careRatingIcons}</div>
-                </div>
-            </div>
-            `; */
             content.innerHTML = `
             <div class="tabs">
                 <div class="tab-titles">
@@ -3162,13 +3143,21 @@ const App = {
                                     <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:endurance', true)}</b> 
                                     ${App.createProgressbar( App.pet.stats.current_endurance / 100 * 100 ).node.outerHTML}
                                 </div>
-                                <div style="
-                                    display: flex;
-                                    justify-content: space-between;
-                                    align-items: center;
-                                ">
-                                    <b>CARE:</b> <div style="display: inline-flex; gap: 1px">${careRatingIcons}</div>
+                                <div class="flex-between align-center">
+                                    <b>CARE:</b> <div style="display: inline-flex; gap: 1px">${getCareRatingIcons()}</div>
                                 </div>
+                            </div>
+                            <div class="inner-padding b-radius-10 uppercase list-text surface-stylized">
+                                <small>
+                                    <i class="fa-solid fa-info-circle"></i>
+                                    Skills will override care ratings above 1 when evolving if they are high enough.
+                                    <hr>
+                                    <div>
+                                        <span class="flex-between items-center no-width-children"> ${App.getIcon('special:endurance')}➜ ${getCareRatingIcons(1, undefined, 16)} </span>
+                                        <span class="flex-between items-center no-width-children"> ${App.getIcon('special:logic')}➜ ${getCareRatingIcons(2, undefined, 16)} </span>
+                                        <span class="flex-between items-center no-width-children"> ${App.getIcon('special:expression')}➜ ${getCareRatingIcons(3, undefined, 16)} </span>
+                                    </div>
+                                </small>
                             </div>
                         </div>
                     </div>
