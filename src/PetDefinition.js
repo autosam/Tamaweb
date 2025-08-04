@@ -492,6 +492,8 @@ class PetDefinition {
     }
 
     getPossibleEvolutions(isNpc, all){
+        const { bounds, ratings } = App.constants.SKILL_EVOLUTION_EFFECTIVENESS;
+ 
         const careRating = !isNpc ? this.stats.current_care : random(1, 3);
         let possibleEvolutions = GROWTH_CHART[this.sprite];
         if(!possibleEvolutions){
@@ -499,6 +501,22 @@ class PetDefinition {
         }
 
         if(all) return possibleEvolutions;
+
+        const skills =  {
+            endurance: this.stats.current_endurance,
+            logic: this.stats.current_logic,
+            expression: this.stats.current_expression,
+        }
+        const topSkill = Object.entries(skills).reduce((best, [key, value]) => {
+        if (value <= bounds) return best;
+        return !best || value > best[1] ? [key, value] : best;
+        }, null)?.[0];
+
+        let finalRating = careRating;
+        if(careRating > 1){
+            const topSkillRating = ratings[topSkill];
+            if(topSkillRating) finalRating = topSkillRating;
+        }
 
         switch(this.lifeStage){
             case PetDefinition.LIFE_STAGE.adult:
@@ -510,10 +528,10 @@ class PetDefinition {
             case PetDefinition.LIFE_STAGE.baby:
             case PetDefinition.LIFE_STAGE.child:
             case PetDefinition.LIFE_STAGE.teen:
-                switch(careRating){
-                    case 1: return [possibleEvolutions[0]]; // low care
-                    case 3: return [possibleEvolutions[2]]; // high care
-                    default: return [possibleEvolutions[1]]; // default medium care
+                switch(finalRating){
+                    case 1: return [possibleEvolutions[0]]; // low care, endurance skill
+                    case 3: return [possibleEvolutions[2]]; // high care, expression skill
+                    default: return [possibleEvolutions[1]]; // default medium care, logic skill
                 }
             default: return false;
         }
