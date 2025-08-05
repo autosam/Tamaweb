@@ -2098,20 +2098,26 @@ const App = {
                     type: 'element',
                     class: 'flex-between mt-2 mb-2 flex-gap-05',
                     innerHTML: UI.create({
-                        // style to keep sizing as other buttons
-                        // and still reset the button styles
                         children: [
                             {
                                 componentType: 'button',
                                 className: 'generic-btn stylized m-0 flex-1 flex-center flex-dir-row',
                                 style: `color: red;`,
                                 innerHTML: App.getIcon('face-angry') + App.getIcon('arrow-down', true),
+                                onclick: () => {
+                                    App.closeAllDisplays();
+                                    App.pet.scold();
+                                }
                             },
                             {
                                 componentType: 'button',
                                 style: `color: green;`,
                                 className: 'generic-btn stylized m-0 flex-1 flex-center flex-dir-row',
                                 innerHTML: App.getIcon('face-laugh-beam',)  + App.getIcon('arrow-up', true),
+                                onclick: () => {
+                                    App.closeAllDisplays();
+                                    App.pet.praise();
+                                }
                             }
                         ]
                     })
