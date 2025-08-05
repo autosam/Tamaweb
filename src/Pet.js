@@ -343,7 +343,7 @@ class Pet extends Object2d {
         if(this.stats.is_sleeping || App.currentScene !== App.scene.home) return;
         this.stopMove();
         this.x = '50%';
-        if(this.hasMoodlet('rested') && !App.isSleepHour()){
+        if(this.isMisbehaving || (this.hasMoodlet('rested') && !App.isSleepHour())){
             this.playRefuseAnimation();
             return;
         }
@@ -373,6 +373,10 @@ class Pet extends Object2d {
                 case "food": 
                     if(this.hasMoodlet('full')) return true;
                     break;
+            }
+
+            if(this.isMisbehaving){
+                if(random(0, 100) >= 10) return true;
             }
 
             // checking for over feeding the same item
@@ -491,20 +495,47 @@ class Pet extends Object2d {
         });
     }
     praise(){
-        this.x = '50%';
-        this.playCheeringAnimation();
+        this.stopMove();
+        App.reloadScene();
+        if(!this.isMisbehaving){
+            const perfectPraiseTolerance = this.stats.max_misbehave / 4;
+            const isPerfectPraise = this.stats.current_misbehave < perfectPraiseTolerance;
+            if(isPerfectPraise){
+                Activities.task_nonSwayingFloatingObjects(10, ['resources/img/misc/arrow_up_green_01.png'], [100, 150]);
+                this.stats.current_misbehave = perfectPraiseTolerance;
+            }
+            this.playCheeringAnimation(false, !isPerfectPraise);
+            this.stats.current_misbehave += random(5, 15);
+        } else {
+            const me = this;
+            this.triggerScriptedState('shocked', random(-200, 500), null, true, () => me.playCheeringAnimation(false, true));
+            if(!this.stats.current_want.type){ // has no want
+                this.petDefinition.refreshWant()
+                this.showCurrentWant();
+            }
+        }
     }
     scold(){
-        this.x = '50%';
+        this.stopMove();
+        App.reloadScene();
         if(this.isMisbehaving) {
-            this.playAngryAnimation();
-            this.isMisbehaving = random(0, 2) !== 0;
+            const isSuccessful = random(0, 2) !== 0;
+            if(isSuccessful) {
+                this.stats.current_misbehave = this.stats.max_misbehave;
+                this.triggerScriptedState('mild_uncomfortable', 2000, null, true);
+                Activities.task_nonSwayingFloatingObjects(10, ['resources/img/misc/arrow_up_green_01.png'], [100, 150]);
+            } else this.playAngryAnimation();
         } else {
             this.playUncomfortableAnimation();
             if(!random(0, 3)){ // 25% chance of care dropping
                 this.petDefinition.adjustCare(false);
+                setTimeout(() => this.showThought('thought_heart_broken'))
+            } else {
+                // to remove random want bubble showing up after scene reload
+                setTimeout(() => this.activeBubble?.removeObject?.());
             }
-            this.stats.current_fun -= random(4, 8);
+            this.stats.current_fun -= random(4, 10);
+            this.stats.current_misbehave -= random(2, 5);
         }
     }
     think(){
@@ -570,6 +601,18 @@ class Pet extends Object2d {
             }
             if(this.hasMoodlet('hungry') || this.hasMoodlet('bored')){
                 this.triggerScriptedState('uncomfortable', 4000, random(20000, 30000));
+                this.stopMove();
+                return;
+            }
+            if(this.isMisbehaving){
+                switch(random(0, 1)){
+                    case 0:
+                        this.triggerScriptedState('uncomfortable', 4000, random(20000, 30000));
+                        break;
+                    case 1:
+                        this.triggerScriptedState('angry', 4000, random(20000, 30000));
+                        break;
+                }
                 this.stopMove();
                 return;
             }

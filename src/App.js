@@ -2101,6 +2101,16 @@ const App = {
                         children: [
                             {
                                 componentType: 'button',
+                                style: `color: green;`,
+                                className: 'generic-btn stylized m-0 flex-1 flex-center flex-dir-row',
+                                innerHTML: App.getIcon('face-laugh-beam',)  + App.getIcon('arrow-up', true),
+                                onclick: () => {
+                                    App.closeAllDisplays();
+                                    App.pet.praise();
+                                }
+                            },
+                            {
+                                componentType: 'button',
                                 className: 'generic-btn stylized m-0 flex-1 flex-center flex-dir-row',
                                 style: `color: red;`,
                                 innerHTML: App.getIcon('face-angry') + App.getIcon('arrow-down', true),
@@ -2109,16 +2119,6 @@ const App = {
                                     App.pet.scold();
                                 }
                             },
-                            {
-                                componentType: 'button',
-                                style: `color: green;`,
-                                className: 'generic-btn stylized m-0 flex-1 flex-center flex-dir-row',
-                                innerHTML: App.getIcon('face-laugh-beam',)  + App.getIcon('arrow-up', true),
-                                onclick: () => {
-                                    App.closeAllDisplays();
-                                    App.pet.praise();
-                                }
-                            }
                         ]
                     })
                 },
