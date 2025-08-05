@@ -490,6 +490,23 @@ class Pet extends Object2d {
             if(onEndFn) onEndFn();
         });
     }
+    praise(){
+        this.x = '50%';
+        this.playCheeringAnimation();
+    }
+    scold(){
+        this.x = '50%';
+        if(this.isMisbehaving) {
+            this.playAngryAnimation();
+            this.isMisbehaving = random(0, 2) !== 0;
+        } else {
+            this.playUncomfortableAnimation();
+            if(!random(0, 3)){ // 25% chance of care dropping
+                this.petDefinition.adjustCare(false);
+            }
+            this.stats.current_fun -= random(4, 8);
+        }
+    }
     think(){
         if(!this.nextThinkTime){
             // think twice a second
@@ -619,16 +636,27 @@ class Pet extends Object2d {
         let bladder_depletion_rate = stats.bladder_depletion_rate * depletion_mult;
         let health_depletion_rate = stats.health_depletion_rate * depletion_mult;
         let cleanliness_depletion_rate = stats.cleanliness_depletion_rate * depletion_mult;
+        let misbehave_depletion_rate = stats.misbehave_depletion_rate;
         let max_death_tick = stats.max_death_tick;
         switch(this.petDefinition.lifeStage){
-            case PetDefinition.LIFE_STAGE.baby: max_death_tick = stats.baby_max_death_tick; break;
-            case PetDefinition.LIFE_STAGE.child: max_death_tick = stats.child_max_death_tick; break;
-            case PetDefinition.LIFE_STAGE.teen: max_death_tick = stats.teen_max_death_tick; break;
+            case PetDefinition.LIFE_STAGE.baby: 
+                max_death_tick = stats.baby_max_death_tick; 
+                misbehave_depletion_rate *= 2;
+                break;
+            case PetDefinition.LIFE_STAGE.child: 
+                max_death_tick = stats.child_max_death_tick; 
+                misbehave_depletion_rate *= 1.5;
+                break;
+            case PetDefinition.LIFE_STAGE.teen: 
+                max_death_tick = stats.teen_max_death_tick; 
+                misbehave_depletion_rate *= 2.9;
+                break;
         }
 
         if(isOfflineProgression){
             // health_depletion_rate = 0;
             sleep_depletion_rate /= 2;
+            misbehave_depletion_rate = 0;
         }
 
         // sleeping case
@@ -650,6 +678,7 @@ class Pet extends Object2d {
         stats.current_bladder = clamp(stats.current_bladder, 0, stats.max_bladder);
         stats.current_health = clamp(stats.current_health, 0, stats.max_health);
         stats.current_cleanliness = clamp(stats.current_cleanliness, 0, stats.max_cleanliness);
+        stats.current_misbehave = clamp(stats.current_misbehave, 0, stats.max_misbehave)
 
         // depletion
         stats.current_hunger -= hunger_depletion_rate;
@@ -720,6 +749,8 @@ class Pet extends Object2d {
             stats.current_health = 0;
             // console.log('dead of sickness?');
         }
+        stats.current_misbehave -= misbehave_depletion_rate;
+        this.isMisbehaving = stats.current_misbehave <= 0;
 
         if(stats.current_health <= 0 && 
             stats.current_cleanliness <= 0 && 
@@ -1064,11 +1095,14 @@ class Pet extends Object2d {
         if(!this.isMainPet) return;
         App.playSound(sound, force);
     }
-    getStatsDepletionRates(offline){
+    getStatsDepletionRates(offline, targetLifeStage){
         App.petDefinition.maxStats();
+        const currentLifeStage = this.petDefinition.lifeStage;
+        console.log('before', currentLifeStage)
+        if(targetLifeStage !== undefined) this.petDefinition.lifeStage = targetLifeStage;
         
-        let seconds = 3600 * 100;
-        let report = {};
+        const seconds = 3600 * 100;
+        const report = {};
         // let offline = false;
 
         for(let i = 0; i < seconds; i++){
@@ -1083,9 +1117,12 @@ class Pet extends Object2d {
             if(this.stats.current_cleanliness <= 0 && !report.cleanliness) report.cleanliness = {...min, stat: this.stats.current_cleanliness};
             if(this.stats.current_health <= 0 && !report.health) report.health = {...min, stat: this.stats.current_health};
             if(this.stats.current_death_tick <= 0 && !report.death_tick) report.death_tick = {...min, stat: this.stats.current_death_tick};
+            if(this.stats.current_misbehave <= 0 && !report.misbehave) report.misbehave = {...min, stat: this.stats.current_misbehave};
         }
 
         console.log(`Time every stats hit ~0:`, report);
+        console.log('after', this.petDefinition.lifeStage)
+        this.petDefinition.lifeStage = currentLifeStage;
         App.petDefinition.maxStats();
     }
     showCurrentWant(withName){

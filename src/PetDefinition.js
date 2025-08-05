@@ -197,6 +197,9 @@ class PetDefinition {
         child_max_death_tick: 60, // ~ ?? hours
         teen_max_death_tick: 74, // ~ 40 hours
         death_tick_rate: 0.000289,
+        // misbehave
+        max_misbehave: 100,
+        misbehave_depletion_rate: 0.0185,
         // care
         max_care: 3,
         // wander (sec)
@@ -212,6 +215,7 @@ class PetDefinition {
         current_cleanliness: 50,
         current_death_tick: 100,
         current_care: 1,
+        current_misbehave: 50,
 
         // gold
         gold: 15,
@@ -332,6 +336,7 @@ class PetDefinition {
                     current_expression: this.stats.current_expression,
                     current_logic: this.stats.current_logic,
                     current_endurance: this.stats.current_endurance,
+                    current_misbehave: this.stats.current_misbehave,
                 }
                 return;
             }
@@ -402,6 +407,7 @@ class PetDefinition {
         this.stats.current_death_tick = 100;
         this.stats.has_poop_out = false;
         this.stats.is_dead = false;
+        this.stats.current_misbehave = 100;
     }
 
     loadAccessories(accessories){
