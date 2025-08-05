@@ -666,6 +666,7 @@ class PetDefinition {
 
         if(fulfilled){
             this.stats.current_fun += random(30, 50);
+            this.stats.current_misbehave += random(15, 40);
             this.adjustCare(true);
             Missions.done(Missions.TYPES.fulfill_want);
         } else {

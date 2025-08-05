@@ -1000,6 +1000,12 @@ class Activities {
     }
     static async useItem(item){
         App.closeAllDisplays();
+
+        if(App.pet.isMisbehaving){
+            App.pet.x = '50%';
+            App.pet.playAngryAnimation();
+            return;
+        }
         
         const itemObject = new Object2d({
             img: App.constants.ITEM_SPRITESHEET,
@@ -2634,6 +2640,16 @@ class Activities {
     static bathe(){
         App.closeAllDisplays();
         App.setScene(App.scene.bathroom);
+
+        if(App.pet.isMisbehaving){
+            App.toggleGameplayControls(false);
+            App.pet.playRefuseAnimation(() => {
+                App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
+            });
+            return;
+        }
+
         Missions.done(Missions.TYPES.use_bath);
         let foams = [];
         App.toggleGameplayControls(false, () => {
@@ -4446,6 +4462,24 @@ class Activities {
 
                 swayFloat += swaySpeed * App.deltaTime;
                 me.x += Math.sin(swayFloat) * 2;
+                if(me.y < -16) me.removeObject();
+            }
+        }
+    }
+    static task_nonSwayingFloatingObjects(num, textures, yRange = [105, 115]){
+        if(!num) num = random(1, 4);
+        for(let i = 0; i < num; i++){
+            const xPosition = ((i / num) * 100) + random(-2, 7);
+            let floatSpeed = random(5, 6) * 0.01;
+            const floatingObject = new Object2d({
+                img: randomFromArray(textures),
+                z: randomFromArray([0, 100]), 
+                x: `${xPosition}%`, 
+                y: `${random(yRange[0], yRange[1])}%`
+            });
+            floatingObject.onDraw = (me) => {
+                if(isNaN(me.y)) return;
+                me.y -= floatSpeed * App.deltaTime;
                 if(me.y < -16) me.removeObject();
             }
         }
