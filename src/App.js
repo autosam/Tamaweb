@@ -2101,35 +2101,47 @@ const App = {
                     ? App.getBadge('!')
                     : '';
             }
+            const disciplineEntry = {
+                type: 'element',
+                class: ' flex flex-dir-col in-list-container flex-gap-05 inner-padding-sm',
+                innerHTML: UI.create({
+                    children: [
+                        {
+                            domType: 'span',
+                            innerHTML: 'Discipline',
+                        },
+                        {
+                            domType: 'div',
+                            className: 'flex-between flex-gap-05',
+                            children: [
+                                {
+                                    componentType: 'button',
+                                    style: `color: #229d3c;`,
+                                    className: 'generic-btn stylized m-0 flex-1 flex-center flex-dir-row',
+                                    innerHTML: App.getIcon('face-laugh-beam')  + App.getIcon('thumbs-up', true),
+                                    onclick: () => {
+                                        App.closeAllDisplays();
+                                        App.pet.praise();
+                                    }
+                                },
+                                {
+                                    componentType: 'button',
+                                    className: 'generic-btn stylized m-0 flex-1 flex-center flex-dir-row',
+                                    style: `color: #e74040;`,
+                                    innerHTML: App.getIcon('face-angry') + App.getIcon('thumbs-down', true),
+                                    onclick: () => {
+                                        App.closeAllDisplays();
+                                        App.pet.scold();
+                                    }
+                                },
+                            ]
+                        }
+                    ]
+                })
+            };
+
             App.displayList([
-                {
-                    type: 'element',
-                    class: 'flex-between mt-2 mb-2 flex-gap-05',
-                    innerHTML: UI.create({
-                        children: [
-                            {
-                                componentType: 'button',
-                                style: `color: green;`,
-                                className: 'generic-btn stylized m-0 flex-1 flex-center flex-dir-row',
-                                innerHTML: App.getIcon('face-laugh-beam',)  + App.getIcon('arrow-up', true),
-                                onclick: () => {
-                                    App.closeAllDisplays();
-                                    App.pet.praise();
-                                }
-                            },
-                            {
-                                componentType: 'button',
-                                className: 'generic-btn stylized m-0 flex-1 flex-center flex-dir-row',
-                                style: `color: red;`,
-                                innerHTML: App.getIcon('face-angry') + App.getIcon('arrow-down', true),
-                                onclick: () => {
-                                    App.closeAllDisplays();
-                                    App.pet.scold();
-                                }
-                            },
-                        ]
-                    })
-                },
+                {...disciplineEntry},
                 {
                     _mount: (me) => {
                         me.innerHTML = `Missions ${getUnclaimedRewardsBadge()}`
@@ -6970,10 +6982,7 @@ const App = {
             const iconDef = App.definitions.icons[iconName.replace('special:', '')];
             return App.getIcon(iconDef.icon, noRightMargin, iconDef.color);
         }
-        const style = `
-            ${!noRightMargin ? 'margin-right:10px;' : ''}
-            ${color ? `color:${color};` : ''}
-        `
+        const style = `${!noRightMargin ? 'margin-right:10px;' : ''}${color ? `color:${color};` : ''}`;
         return `<i class="fa-solid fa-${iconName}" style="${style}"></i>`
     },
     wait: function(ms = 0){
