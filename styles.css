@@ -1084,6 +1084,12 @@ input#background-color-picker {
 .mt-2 {
     margin-top: 4px;
 }
+.mb-2 {
+    margin-bottom: 4px;
+}
+.m-0 {
+    margin: 0 !important;
+}
 
 .relative {
     position: relative;
