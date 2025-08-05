@@ -1076,6 +1076,9 @@ input#background-color-picker {
 .inner-padding {
     padding: 10px 20px;
 }
+.inner-padding-sm {
+    padding: 4px 8px;
+}
 
 .m {
     margin: 6px;
@@ -1356,7 +1359,9 @@ input#background-color-picker {
     align-items: center;
     border-radius: 100%;
 }
-
+.in-list-container+.in-list-container,
+.generic-btn+.in-list-container,
+.in-list-container+.generic-btn,
 .generic-btn+.generic-btn {
     margin-top: 4px;
 }
@@ -1944,6 +1949,15 @@ a.generic-btn:before {
     text-overflow: ellipsis;
     width: 100%;
     text-align: center;
+}
+
+.in-list-container {
+    border: 2px solid var(--prim-clr-b-border);
+    background: var(--prim-clr-b-bg);
+    color: var(--prim-clr-b-text);
+    text-shadow: 1px 1px 0px var(--prim-clr-b-text-shadow);
+    box-shadow: -20px -20px 0px -15px inset var(--prim-clr-b-shadow);
+    border-radius: 10px;
 }
 
 /* seed package */

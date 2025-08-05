@@ -628,6 +628,9 @@
     .generic-btn {
         margin-top: 8px;
     }
+    .in-list-container+.in-list-container,
+    .generic-btn+.in-list-container,
+    .in-list-container+.generic-btn,
     .generic-btn+.generic-btn {
         margin-top: 8px;
     }
