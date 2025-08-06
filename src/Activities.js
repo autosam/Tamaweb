@@ -3839,7 +3839,74 @@ class Activities {
     }
 
     // school
-    static async school_ExpressionGame({onEndFn} = {}){
+    static async school_ExpressionGame(){
+        App.closeAllDisplays();
+        App.setScene(App.scene.music_classroom);
+        App.pet.stopMove();
+        App.pet.triggerScriptedState('idle', App.INF, 0, true);
+
+        let lastSpawnTime = 0;
+        
+
+        App.toggleGameplayControls(false, () => {});
+
+        const otherPet = new Pet(App.getRandomPetDef(App.petDefinition.lifeStage));
+        otherPet.triggerScriptedState('idle', App.INF, 0, true);
+
+        const spawnNoteBlocks = (x = '25%') => {
+            const mainPetBoundingBox = App.pet.getBoundingBox();
+            const height = random(6, 32);
+            new Object2d({
+                solidColor: {
+                    r: 255,
+                    g: 0,
+                    b: 150
+                },
+                width: 6,
+                height,
+                z: App.constants.ACTIVE_PET_Z - 0.1,
+                x,
+                y: App.drawer.bounds.height + height,
+                onDraw: (me) => {
+                    if(typeof me.y === 'string') return;
+                    me.y -= 0.1 * App.deltaTime;
+                    if(me.y < -height){
+                        me.removeObject();
+                        return
+                    }
+
+                    const blockTop = me.y;
+                    const petBottom = mainPetBoundingBox.y + mainPetBoundingBox.height;
+
+                    if (blockTop <= petBottom) {
+                        const overlap = petBottom - blockTop;
+                        if(App.mouse.isDown){
+                            me.solidColor = { r: 0, g: 255, b: 55 };
+                        } else {
+                            me.solidColor = { r: 255, g: 0, b: 0 };
+                        }
+                        me.height = Math.max(0, me.height - overlap);
+                        me.y += overlap;
+                    }
+                }
+            })
+        }
+
+        const driverFn = App.registerOnDrawEvent(() => {
+            if(App.time > lastSpawnTime + 800){
+                lastSpawnTime = App.time;
+                spawnNoteBlocks(randomFromArray(['25%', '75%']));
+            }
+            App.pet.setState(App.mouse.isDown ? 'jumping' : 'idle');
+        })
+
+        // positions
+        App.pet.x = '25%';
+        App.pet.y = '36%';
+        otherPet.x = '75%';
+        otherPet.y = '36%';
+    }
+    static async school_ExpressionGameX({onEndFn} = {}){
         App.closeAllDisplays();
         App.setScene(App.scene.classroom);
         App.pet.x = '75%';
