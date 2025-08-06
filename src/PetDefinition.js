@@ -199,7 +199,7 @@ class PetDefinition {
         death_tick_rate: 0.000289,
         // misbehave
         max_misbehave: 100,
-        misbehave_depletion_rate: 0.0185,
+        misbehave_depletion_rate: 0.0125,
         // care
         max_care: 3,
         // wander (sec)
