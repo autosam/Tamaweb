@@ -432,11 +432,16 @@ const App = {
             x = Math.max(0, Math.min(x, rect.width));
             y = Math.max(0, Math.min(y, rect.height));
         
-            App.mouse = { x: x / 2, y: y / 2 };
+            App.mouse.x = x / 2;
+            App.mouse.y = y / 2;
         }
-
         document.addEventListener('mousemove', moveEventHandler);
         document.addEventListener('touchmove', moveEventHandler);
+
+        document.addEventListener('mousedown', () => App.mouse.isDown = true)
+        document.addEventListener('mouseup', () => App.mouse.isDown = false)
+        document.addEventListener('touchstart', () => App.mouse.isDown = true)
+        document.addEventListener('touchend', () => App.mouse.isDown = false)
     },
     registerLoadEvents: function(){
         const initializeRenderer = () => {
@@ -1294,6 +1299,9 @@ const App = {
                 App.pet.staticShadow = true;
             }
         }),
+        music_classroom: new Scene({
+            image: 'resources/img/background/house/music_classroom_01.png',
+        })
     },
     setScene(scene, noPositionChange, onLoadArg){
         App.currentScene?.onUnload?.(scene);
@@ -1605,7 +1613,7 @@ const App = {
 
         return animal;
     },
-    getRandomPetDef: function(age, seed){
+    getRandomPetDef: function(age = PetDefinition.LIFE_STAGE.adult, seed){
         pRandom.save();
         let rndArrayFn = randomFromArray;
 
@@ -1613,8 +1621,6 @@ const App = {
             pRandom.seed = seed;
             rndArrayFn = pRandomFromArray;
         }
-
-        if(age === undefined) age = 2;
 
         let sprite;
         switch(age){
