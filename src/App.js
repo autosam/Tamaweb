@@ -3201,24 +3201,29 @@ const App = {
                 <div class="tab-contents">
                     <div id="tab-1" class="tab">
                         <div class="tab-content">
-                            <div class="inner-padding b-radius-10 flex-gap-1 flex flex-dir-col m">
-                                <div class="flex flex-dir-row align-center flex-gap-1">
+                            <div class="inner-padding b-radius-10 flex-gap-2 flex flex-dir-col m mt-6">
+                                <div class="relative flex flex-dir-row align-center flex-gap-1">
+                                    <div class="stats-label">Money</div>
                                     <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:gold', true)}</b> 
                                     <b>$${App.pet.stats.gold}</b>
                                 </div>
-                                <div class="flex flex-dir-row align-center flex-gap-1">
+                                <div class="relative flex flex-dir-row align-center flex-gap-1">
+                                    <div class="stats-label">Hunger</div>
                                     <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:food', true)}</b> 
                                     ${App.createProgressbar( App.pet.stats.current_hunger / App.pet.stats.max_hunger * 100 ).node.outerHTML}
                                 </div>
-                                <div class="flex flex-dir-row align-center flex-gap-1">
+                                <div class="relative flex flex-dir-row align-center flex-gap-1">
+                                    <div class="stats-label">Fun</div>
                                     <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:fun', true)}</b> 
                                     ${App.createProgressbar( App.pet.stats.current_fun / App.pet.stats.max_fun * 100 ).node.outerHTML}
                                 </div>
-                                <div class="flex flex-dir-row align-center flex-gap-1">
+                                <div class="relative flex flex-dir-row align-center flex-gap-1">
+                                    <div class="stats-label">Sleep</div>
                                     <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:sleep', true)}</b> 
                                     ${App.createProgressbar( App.pet.stats.current_sleep / App.pet.stats.max_sleep * 100 ).node.outerHTML}
                                 </div>
-                                <div class="flex flex-dir-row align-center flex-gap-1">
+                                <div class="relative flex flex-dir-row align-center flex-gap-1">
+                                    <div class="stats-label">Discipline</div>
                                     <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:discipline', true)}</b> 
                                     ${App.createProgressbar( App.pet.stats.current_discipline / App.pet.stats.max_discipline * 100 ).node.outerHTML}
                                 </div>
@@ -3227,16 +3232,19 @@ const App = {
                     </div>
                     <div id="tab-2" class="tab">
                         <div class="tab-content">
-                            <div class="inner-padding b-radius-10 flex-gap-1 flex flex-dir-col m">
-                                <div class="flex flex-dir-row align-center flex-gap-1">
+                            <div class="inner-padding b-radius-10 flex-gap-2 flex flex-dir-col m mt-6">
+                                <div class="relative flex flex-dir-row align-center flex-gap-1">
+                                    <div class="stats-label">Expression</div>
                                     <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:expression', true)}</b> 
                                     ${App.createProgressbar( App.pet.stats.current_expression / 100 * 100 ).node.outerHTML}
                                 </div>
-                                <div class="flex flex-dir-row align-center flex-gap-1">
+                                <div class="relative flex flex-dir-row align-center flex-gap-1">
+                                    <div class="stats-label">Logic</div>
                                     <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:logic', true)}</b> 
                                     ${App.createProgressbar( App.pet.stats.current_logic / 100 * 100 ).node.outerHTML}
                                 </div>
-                                <div class="flex flex-dir-row align-center flex-gap-1">
+                                <div class="relative flex flex-dir-row align-center flex-gap-1">
+                                    <div class="stats-label">Endurance</div>
                                     <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:endurance', true)}</b> 
                                     ${App.createProgressbar( App.pet.stats.current_endurance / 100 * 100 ).node.outerHTML}
                                 </div>

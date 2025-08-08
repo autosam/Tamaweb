@@ -1040,6 +1040,9 @@ input#background-color-picker {
 .flex-gap-1 {
     gap: 8px;
 }
+.flex-gap-2 {
+    gap: 16px;
+}
 
 .flex {
     display: flex;
@@ -1087,6 +1090,9 @@ input#background-color-picker {
 
 .mt-2 {
     margin-top: 4px;
+}
+.mt-6 {
+    margin-top: 12px;
 }
 .mb-2 {
     margin-bottom: 4px;
@@ -1588,6 +1594,15 @@ a.generic-btn:before {
   to {
     opacity: 1;
   }
+}
+
+.stats-label {
+    position: absolute;
+    left: 28px;
+    top: -12px;
+    font-size: x-small;
+    font-weight: bold;
+    letter-spacing: 1px;
 }
 
 
