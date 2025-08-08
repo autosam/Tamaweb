@@ -1738,6 +1738,30 @@ const App = {
             App.pet.stats.is_dead
         ) return;
 
+        // school invite
+        if(
+            App.petDefinition.lifeStage >= PetDefinition.LIFE_STAGE.child && 
+            App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.teen &&
+            !App.pet.stats.has_received_school_invite
+        ){
+            App.pet.stats.has_received_school_invite = true;
+            setTimeout(() => {
+                App.queueEvent(() => {
+                    Activities.getMail({
+                        onEndFn: () => {
+                            App.handlers.show_letter({
+                                headline: 'Official School Invitation', 
+                                text: `Dear ${App.userName},<br>${App.petDefinition.name} is now old enough to start school.<br><br>Please make sure they show up to their classes every day, no skipping!`, 
+                                sender: 'School Administration'
+                            })
+                        },
+                        noSceneSwitch: true
+                    });
+                })
+            }, random(1000, 2000))
+            return;
+        }
+
         // newspaper delivery
         const newspaperDeliveryMs = App.getRecord('newspaper_delivery_ms') || 0;
         const shouldDeliver = moment().startOf('day').diff(moment(newspaperDeliveryMs), 'days') > 0;
@@ -2014,6 +2038,20 @@ const App = {
                     }
                 }
             ])
+        },
+        show_letter: function({headline, text, sender}){
+            const container = App.displayEmpty('letter');
+            container.innerHTML = `
+            <div class="flex flex-dir-col">
+                <h1>${App.getIcon('envelope')}</h1>
+                <h1>${headline}</h1>
+                <span>${text}</span>
+                <footer>${sender}</footer>
+                <hr>
+                <button style="margin: 10px; margin-top: 10px; flex: 1" class="generic-btn stylized back-btn">Ok</button>
+            </div>
+            `
+            container.querySelector('.back-btn').onclick = container.close;
         },
         show_newspaper: function(headline, text){
             if(!headline && !text){

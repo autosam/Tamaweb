@@ -1632,10 +1632,10 @@ class Activities {
             ])
         })
     }
-    static getMail(){
+    static getMail({onEndFn = App.handlers.show_newspaper, noSceneSwitch} = {}){
         App.pet.stopMove();
         App.toggleGameplayControls(false);
-        App.setScene(App.scene.garden, false, { noPetBowl: true });
+        if(!noSceneSwitch) App.setScene(App.scene.garden, false, { noPetBowl: true });
         App.pet.x = '78%';
         App.pet.inverted = false;
         App.pet.triggerScriptedState('idle_side', App.INF, false, true);
@@ -1651,7 +1651,7 @@ class Activities {
         });
         const payload = () => {
             mailMan.removeObject();
-            App.handlers.show_newspaper();
+            onEndFn();
             App.pet.stopScriptedState();
             App.toggleGameplayControls(true);
             App.setScene(App.scene.home);

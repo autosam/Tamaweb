@@ -2224,3 +2224,29 @@ a.generic-btn:before {
 .tab-contents {
     display: contents;
 }
+
+/* letter */
+.letter {
+    background: repeating-linear-gradient(45deg, rgb(255, 0, 0) 0px 10px, white 10px 20px, rgb(27, 137, 255) 20px 30px, white 30px 40px);
+    color: #2a0505;
+}
+.letter > div {
+    margin: 6px;
+    padding: 6px 12px;
+    gap: 6px;
+    background: white;
+    border-radius: 12px;
+    outline: 2px solid;
+}
+.letter h1 {
+    margin: 0;
+    font-size: medium;
+}
+.letter footer {
+    text-align: right;
+    font-style: italic;
+}
+.letter hr {
+    width: 100%;
+    background-color: black;
+}
