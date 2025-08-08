@@ -3984,7 +3984,132 @@ class Activities {
     }
 
     // school
-    static async school_ExpressionGame(){
+    static async school_ExpressionGame({onEndFn, maxRounds = 3} = {}){
+        App.closeAllDisplays();
+        App.setScene(App.scene.music_classroom);
+        App.pet.stopMove();
+        App.pet.triggerScriptedState('idle', App.INF, 0, true);
+
+        App.pet.x = '50%';
+        App.pet.y = '36%';
+
+        const screen = UI.empty();
+        document.querySelector('.screen-wrapper').appendChild(screen);
+        screen.innerHTML = `
+        <div class="flex flex-dir-col justify-between height-100p width-full" style="position: absolute; top: 0; left: 0;">
+            <div class="mini-game-ui flex align-center justify-between">
+                <div class="flex align-center">
+                    <i style="margin-right: 4px;" class="fa-solid fa-stopwatch icon"></i>
+                    <div id="round">
+                        <span class="opacity-half">${0}</span>
+                    </div>
+                </div>
+                <div class="flex align-center">
+                    <i style="margin-right: 4px;" class="fa-solid fa-star icon"></i>
+                    <div id="score">${0}</div>
+                </div>
+            </div>
+            <div class="simon-says pointer-events-none">
+                <div id="green" class="simon-says-button">
+                    
+                </div>
+                <div id="red" class="simon-says-button">
+                    
+                </div>
+                <div id="yellow" class="simon-says-button">
+                    
+                </div>
+                <div id="blue" class="simon-says-button">
+                    
+                </div>
+            </div>
+        </div>
+        `;
+
+        let playerInputBuffer = [];
+        let round = 0, wonRounds = 0;
+
+        const container = screen.querySelector('.simon-says');
+        const buttons = screen.querySelectorAll('#green, #red, #yellow, #blue');
+        const [green, red, yellow, blue] = buttons;
+        buttons.forEach((button, index) => {
+            button.playSound = () => App.playSound(`resources/sounds/note_${index + 1}.mp3`, true);
+            button.onclick = () => {
+                setTimeout(() => button.playSound());
+                playerInputBuffer.push(button);
+            }
+        })
+
+        const updateUI = () => {
+            screen.querySelector('#round').textContent = `(${Math.max(round, 1)}/${maxRounds})`;
+            screen.querySelector('#score').textContent = wonRounds;
+        }
+        updateUI();
+
+        const endFn = () => {
+            screen.remove();
+            App.pet.y = '100%';
+            onEndFn?.(wonRounds);
+            Activities.task_winSkillPointFromSchool({
+                amount: wonRounds,
+                hasWon: wonRounds >= 2,
+                icon: App.getIcon('special:expression'),
+            })
+        }
+
+        const initSequence = async (turns = 3) => {
+            round++;
+            updateUI();
+            container.classList.add('pointer-events-none');
+            const sequence = new Array(turns).fill(null).map(() => randomFromArray([...buttons]));
+            playerInputBuffer = [];
+
+            for(let button of sequence){
+                button.classList.add('active');
+                button.playSound();
+                await App.wait(500);
+                button.classList.remove('active');
+                await App.wait(500);
+            }
+
+            container.classList.remove('pointer-events-none');
+            const hasWon = await new Promise(resolve => {
+                const interval = setInterval(() => {
+                    if(!playerInputBuffer.length) return;
+                    const playerInputLastIndex = playerInputBuffer.length - 1;
+                    if(playerInputBuffer.at(playerInputLastIndex) !== sequence.at(playerInputLastIndex)){
+                        resolve(false);
+                        clearInterval(interval);
+                    } else if(playerInputBuffer.length === sequence.length){
+                        resolve(true);
+                        clearInterval(interval);
+                    }
+                }, 16)
+            })
+            container.classList.add('pointer-events-none');
+            if(hasWon) {
+                container.classList.add('win');
+                wonRounds++;
+                updateUI();
+            }
+            else container.classList.add('lose');
+            setTimeout(() => {
+                if(round < maxRounds){
+                    container.classList.remove('win');
+                    container.classList.remove('lose');
+                }
+                setTimeout(() => {
+                    if(round < maxRounds) initSequence(turns + 1);
+                    else endFn();
+                }, 1000);
+            }, 1000)
+        }
+
+        setTimeout(() => {
+            initSequence();
+        }, 1000)
+    }
+    static async school_ExpressionGameX2(){
         App.closeAllDisplays();
         App.setScene(App.scene.music_classroom);
         App.pet.stopMove();
