@@ -3233,6 +3233,7 @@ class Activities {
     static async dogWashingGame(){
         App.closeAllDisplays();
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.sendAnalytics('minigame_dog_washing');
         App.setScene(App.scene.animalBathroom);
         App.toggleGameplayControls(false);
         App.pet.stopMove();
@@ -3342,6 +3343,7 @@ class Activities {
     }
     static async plantMatchingGame(){
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.sendAnalytics('minigame_plant_matching');
 
         const getRandomPlant = () => 
             randomFromArray(Object.keys(App.definitions.plant))
@@ -3456,6 +3458,7 @@ class Activities {
         App.closeAllDisplays();
         App.toggleGameplayControls(false);
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.sendAnalytics('minigame_bar_timing');
         App.setScene(App.scene.arcade_game01);
 
         let screen = App.displayEmpty();
@@ -3543,6 +3546,7 @@ class Activities {
         App.setScene(App.scene.park);
         App.toggleGameplayControls(false);
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.sendAnalytics('minigame_falling_stuff');
         App.mouse.x = null;
         
         App.pet.speedOverride = 0.07;
@@ -3685,6 +3689,7 @@ class Activities {
         App.setScene(App.scene.arcade);
         App.toggleGameplayControls(false);
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.sendAnalytics('minigame_mimic');
 
         const opponentPetDef = new PetDefinition({
             name: 'park_game_npc',
@@ -3800,6 +3805,7 @@ class Activities {
         App.setScene(App.scene.park);
         App.toggleGameplayControls(false);
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.sendAnalytics('minigame_park_rng');
 
         // const randomPetRef = App.getRandomPetDef();
         const randomPetRef = new PetDefinition({
@@ -3848,6 +3854,7 @@ class Activities {
         App.setScene(App.scene.music_classroom);
         App.pet.stopMove();
         App.pet.triggerScriptedState('idle', App.INF, 0, true);
+        App.sendAnalytics('school_minigame_expression');
 
         App.pet.x = '50%';
         App.pet.y = '36%';
@@ -4167,6 +4174,7 @@ class Activities {
         App.pet.x = '50%';
         App.pet.y = '100%';
         App.pet.triggerScriptedState('idle', App.INF, 0, true);
+        App.sendAnalytics('school_minigame_endurance');
 
         let jumpingRope;
         let currentScore = 0, canScore = false, timeLeft = 10, firstJump = false;
@@ -4281,6 +4289,7 @@ class Activities {
         maxAttempts = 4,
         skillIcon,
     } = {}){
+        App.sendAnalytics(`school_minigame_shuffle${skillIcon}`);
         App.pet.triggerScriptedState('idle', App.INF, null, true);
         const screen = App.displayEmpty();
         screen.innerHTML = `
