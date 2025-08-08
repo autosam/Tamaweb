@@ -257,6 +257,7 @@ class PetDefinition {
         // school class visits
         schoolClassesToday: 0,
         lastSchoolClassLimitReset: Date.now(),
+        has_received_school_invite: false,
     }
     friends = [];
     family = [];
@@ -337,6 +338,7 @@ class PetDefinition {
                     last_eaten: this.stats.last_eaten,
                     schoolClassesToday: this.stats.schoolClassesToday,
                     lastSchoolClassLimitReset: this.stats.lastSchoolClassLimitReset,
+                    has_received_school_invite: this.stats.has_received_school_invite,
                     current_expression: this.stats.current_expression,
                     current_logic: this.stats.current_logic,
                     current_endurance: this.stats.current_endurance,
