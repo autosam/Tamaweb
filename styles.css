@@ -223,7 +223,8 @@ hr {
 .grid-item:active:after,
 .grid-item:hover:after,
 .generic-btn:active:after,
-.generic-btn:hover:after
+.generic-btn:hover:after,
+.simon-says-button.active:after
 {
     width: 11px;
     height: 9px;
@@ -1300,6 +1301,65 @@ input#background-color-picker {
     height: 16px;
     border-radius: 100%;
     scale: 3;
+}
+
+.simon-says {
+    width: 150px;
+    height: 100px;
+    display: flex;
+    flex-wrap: wrap;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 0 auto;
+    border: 4px solid #000063;
+    background-color: #000063;
+    gap: 4px;
+    margin-bottom: 4px;
+}
+.simon-says.win .simon-says-button {
+    background: green !important;
+}
+.simon-says.lose .simon-says-button {
+    background: red !important;
+}
+.simon-says-button {
+    position: relative;
+    flex-grow: 1;
+    display: block;
+    width: 35%;
+    cursor: pointer;
+}
+.simon-says-button#green {
+  background: hsl(130, 90%, 45%);
+}
+.simon-says-button#red {
+  background: hsl(0, 90%, 55%);
+}
+.simon-says-button#yellow {
+  background: hsl(48, 100%, 50%);
+}
+.simon-says-button#blue {
+  background: hsl(210, 100%, 55%);
+}
+.simon-says-button.active#green,
+.simon-says-button#green:active {
+  background: hsl(130, 100%, 65%);
+  box-shadow: 0 0 10px hsl(130, 100%, 65%);
+}
+.simon-says-button.active#red,
+.simon-says-button#red:active {
+  background: hsl(0, 100%, 70%);
+  box-shadow: 0 0 10px hsl(0, 100%, 70%);
+}
+.simon-says-button.active#yellow,
+.simon-says-button#yellow:active {
+  background: hsl(48, 100%, 65%);
+  box-shadow: 0 0 10px hsl(48, 100%, 65%);
+}
+.simon-says-button.active#blue,
+.simon-says-button#blue:active {
+  background: hsl(210, 100%, 70%);
+  box-shadow: 0 0 10px hsl(210, 100%, 70%);
 }
 
 

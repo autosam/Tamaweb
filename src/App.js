@@ -5296,6 +5296,16 @@ const App = {
                     onclick: () => {
                         return App.displayList([
                             {
+                                name: 'Tune Practice',
+                                onclick: () => {
+                                    countClassVisit(() => Activities.school_ExpressionGame({
+                                        onEndFn: (pts) => {
+                                            App.pet.stats.current_expression += pts;
+                                        }
+                                    }))
+                                }
+                            },
+                            {
                                 name: 'Flip Cards',
                                 onclick: () => countClassVisit(() => Activities.school_CardShuffleGame({
                                     ...getFlipCardsDifficulty(App.pet.stats.current_expression),
