@@ -197,14 +197,18 @@ class PetDefinition {
         child_max_death_tick: 60, // ~ ?? hours
         teen_max_death_tick: 74, // ~ 40 hours
         death_tick_rate: 0.000289,
-        // misbehave
-        max_misbehave: 100,
-        misbehave_depletion_rate: 0.0125,
         // care
         max_care: 3,
         // wander (sec)
         wander_min: 0.5,
         wander_max: 4,
+        
+        // discipline
+        max_discipline: 100,
+        discipline_depletion_rate: 0.000265, // 52 hours
+        is_misbehaving: false,
+        last_time_praise_given: 0,
+        last_time_misbehave_attempted: Date.now(),
 
         // current
         current_hunger: 40 || 80,
@@ -215,7 +219,7 @@ class PetDefinition {
         current_cleanliness: 50,
         current_death_tick: 100,
         current_care: 1,
-        current_misbehave: 50,
+        current_discipline: random(5, 20),
 
         // gold
         gold: 15,
@@ -336,7 +340,10 @@ class PetDefinition {
                     current_expression: this.stats.current_expression,
                     current_logic: this.stats.current_logic,
                     current_endurance: this.stats.current_endurance,
-                    current_misbehave: this.stats.current_misbehave,
+                    current_discipline: this.stats.current_discipline,
+                    last_time_praise_given: this.stats.last_time_praise_given,
+                    last_time_misbehave_attempted: this.stats.last_time_misbehave_attempted,
+                    is_misbehaving: this.stats.is_misbehaving,
                 }
                 return;
             }
@@ -407,7 +414,8 @@ class PetDefinition {
         this.stats.current_death_tick = 100;
         this.stats.has_poop_out = false;
         this.stats.is_dead = false;
-        this.stats.current_misbehave = 100;
+        this.stats.is_misbehaving = false;
+        this.stats.current_discipline = 100;
     }
 
     loadAccessories(accessories){
@@ -666,7 +674,7 @@ class PetDefinition {
 
         if(fulfilled){
             this.stats.current_fun += random(30, 50);
-            this.stats.current_misbehave += random(15, 40);
+            this.stats.current_discipline += random(3, 6);
             this.adjustCare(true);
             Missions.done(Missions.TYPES.fulfill_want);
         } else {

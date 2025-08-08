@@ -856,7 +856,7 @@ class Activities {
     static async useItem(item){
         App.closeAllDisplays();
 
-        if(App.pet.isMisbehaving){
+        if(App.pet.stats.is_misbehaving){
             App.pet.x = '50%';
             App.pet.playAngryAnimation();
             return;
@@ -2208,6 +2208,7 @@ class Activities {
         await App.pet.triggerScriptedState('cheering', 1000, null, true);
         App.pet.scale = 3;
         App.pet.targetY = 60;
+        App.pet.stats.current_discipline += random(1, 2);
         App.toggleGameplayControls(false, () => {
             App.definitions.achievements.pat_x_times.advance();
             Missions.done(Missions.TYPES.pat);
@@ -2409,6 +2410,7 @@ class Activities {
             App.setScene(App.scene.home);
             App.pet.playCheeringAnimation();
             App.pet.stats.is_at_parents = false;
+            App.pet.stats.current_discipline += random(0, 5);
             App.save();
             return;
         }
@@ -2496,7 +2498,7 @@ class Activities {
         App.closeAllDisplays();
         App.setScene(App.scene.bathroom);
 
-        if(App.pet.isMisbehaving){
+        if(App.pet.stats.is_misbehaving){
             App.toggleGameplayControls(false);
             App.pet.playRefuseAnimation(() => {
                 App.setScene(App.scene.home);
@@ -2533,6 +2535,7 @@ class Activities {
             }
 
             App.pet.stats.current_cleanliness += 25;
+            App.pet.stats.current_discipline += random(1, 3);
             App.playSound(`resources/sounds/ui_click_03.ogg`, true);
         });
 
@@ -2579,6 +2582,7 @@ class Activities {
         App.pet.needsToiletOverlay.hidden = false;
         App.pet.stats.current_bladder = App.pet.stats.max_bladder;
         App.pet.stats.current_logic += 2;
+        App.pet.stats.current_discipline += random(2, 10);
         if(App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child && !force) {
             // make pet potty trained if used toilet more than 2 to 5 times and is baby/child
             if(++App.pet.stats.used_toilet > random(2, 5)){
@@ -4594,6 +4598,7 @@ class Activities {
             setTimeout(() => App.pet.playSound('resources/sounds/task_fail_01.ogg', true));
             petMain.setState('uncomfortable');
             petClerk.setState('mild_uncomfortable');
+            App.pet.stats.current_discipline -= random(2, 6);
         }
         await TimelineDirector.wait(3000);
 
@@ -4648,6 +4653,7 @@ class Activities {
             setTimeout(() => App.pet.playSound('resources/sounds/task_fail_01.ogg', true));
             petMain.setState('uncomfortable');
             petClerk.setState('mild_uncomfortable');
+            App.pet.stats.current_discipline -= random(2, 8);
         }
         await TimelineDirector.wait(3000);
 

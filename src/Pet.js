@@ -343,7 +343,7 @@ class Pet extends Object2d {
         if(this.stats.is_sleeping || App.currentScene !== App.scene.home) return;
         this.stopMove();
         this.x = '50%';
-        if(this.isMisbehaving || (this.hasMoodlet('rested') && !App.isSleepHour())){
+        if(this.stats.is_misbehaving || (this.hasMoodlet('rested') && !App.isSleepHour())){
             this.playRefuseAnimation();
             return;
         }
@@ -375,7 +375,7 @@ class Pet extends Object2d {
                     break;
             }
 
-            if(this.isMisbehaving){
+            if(this.stats.is_misbehaving){
                 if(random(0, 100) >= 10) return true;
             }
 
@@ -494,18 +494,37 @@ class Pet extends Object2d {
             if(onEndFn) onEndFn();
         });
     }
+    attemptMisbehave(forced){
+        const shouldAllow = (App.fullTime - this.stats.last_time_misbehave_attempted) > App.constants.ONE_MINUTE * 15;
+        if(!shouldAllow && !forced) return;
+        this.stats.last_time_misbehave_attempted = App.fullTime;
+
+        let startingChance = 1;
+        switch(this.petDefinition.lifeStage){
+            case PetDefinition.LIFE_STAGE.teen:
+                startingChance = 35; break;
+            case PetDefinition.LIFE_STAGE.child:
+                startingChance = 22; break;
+            case PetDefinition.LIFE_STAGE.baby:
+                startingChance = 10; break;
+        }
+
+        if(random(startingChance, this.stats.max_discipline) > this.stats.current_discipline){
+            this.stats.is_misbehaving = true;
+        }
+    }
     praise(){
         this.stopMove();
         App.reloadScene();
-        if(!this.isMisbehaving){
-            const perfectPraiseTolerance = this.stats.max_misbehave / 4;
-            const isPerfectPraise = this.stats.current_misbehave < perfectPraiseTolerance;
-            if(isPerfectPraise){
+        if(!this.stats.is_misbehaving){
+            const shouldIncreaseDiscipline = (App.fullTime - this.stats.last_time_praise_given) > App.constants.ONE_MINUTE * 7;
+            if(shouldIncreaseDiscipline){
+                this.stats.last_time_praise_given = App.fullTime;
                 Activities.task_nonSwayingFloatingObjects(10, ['resources/img/misc/arrow_up_green_01.png'], [100, 150]);
-                this.stats.current_misbehave = perfectPraiseTolerance;
+                this.stats.current_discipline += random(5, 15);
+                App.save();
             }
-            this.playCheeringAnimation(false, !isPerfectPraise);
-            this.stats.current_misbehave += random(5, 15);
+            this.playCheeringAnimation(false, !shouldIncreaseDiscipline);
         } else {
             const me = this;
             this.triggerScriptedState('shocked', random(-200, 500), null, true, () => me.playCheeringAnimation(false, true));
@@ -513,15 +532,17 @@ class Pet extends Object2d {
                 this.petDefinition.refreshWant()
                 this.showCurrentWant();
             }
+            this.stats.current_discipline -= random(2, 4);
         }
     }
     scold(){
         this.stopMove();
         App.reloadScene();
-        if(this.isMisbehaving) {
+        if(this.stats.is_misbehaving) {
             const isSuccessful = random(0, 2) !== 0;
             if(isSuccessful) {
-                this.stats.current_misbehave = this.stats.max_misbehave;
+                this.stats.current_discipline += random(5, 10);
+                this.stats.is_misbehaving = false;
                 this.triggerScriptedState('mild_uncomfortable', 2000, null, true);
                 Activities.task_nonSwayingFloatingObjects(10, ['resources/img/misc/arrow_up_green_01.png'], [100, 150]);
             } else this.playAngryAnimation();
@@ -535,7 +556,7 @@ class Pet extends Object2d {
                 setTimeout(() => this.activeBubble?.removeObject?.());
             }
             this.stats.current_fun -= random(4, 10);
-            this.stats.current_misbehave -= random(2, 5);
+            this.stats.current_discipline -= random(0, 2);
         }
     }
     think(){
@@ -604,7 +625,7 @@ class Pet extends Object2d {
                 this.stopMove();
                 return;
             }
-            if(this.isMisbehaving){
+            if(this.stats.is_misbehaving){
                 switch(random(0, 1)){
                     case 0:
                         this.triggerScriptedState('uncomfortable', 4000, random(20000, 30000));
@@ -653,6 +674,8 @@ class Pet extends Object2d {
                 offlineAndIsNight = true;
                 depletion_mult = 0.05;
             }
+        } else {
+            this.attemptMisbehave();
         }
 
         switch(this.petDefinition.lifeStage){
@@ -679,27 +702,23 @@ class Pet extends Object2d {
         let bladder_depletion_rate = stats.bladder_depletion_rate * depletion_mult;
         let health_depletion_rate = stats.health_depletion_rate * depletion_mult;
         let cleanliness_depletion_rate = stats.cleanliness_depletion_rate * depletion_mult;
-        let misbehave_depletion_rate = stats.misbehave_depletion_rate;
+        let discipline_depletion_rate = this.stats.is_at_vacation ? 0 : stats.discipline_depletion_rate;
         let max_death_tick = stats.max_death_tick;
         switch(this.petDefinition.lifeStage){
             case PetDefinition.LIFE_STAGE.baby: 
                 max_death_tick = stats.baby_max_death_tick; 
-                misbehave_depletion_rate *= 2;
                 break;
             case PetDefinition.LIFE_STAGE.child: 
                 max_death_tick = stats.child_max_death_tick; 
-                misbehave_depletion_rate *= 1.5;
                 break;
             case PetDefinition.LIFE_STAGE.teen: 
                 max_death_tick = stats.teen_max_death_tick; 
-                misbehave_depletion_rate *= 2.9;
                 break;
         }
 
         if(isOfflineProgression){
             // health_depletion_rate = 0;
             sleep_depletion_rate /= 2;
-            misbehave_depletion_rate = 0;
         }
 
         // sleeping case
@@ -721,7 +740,7 @@ class Pet extends Object2d {
         stats.current_bladder = clamp(stats.current_bladder, 0, stats.max_bladder);
         stats.current_health = clamp(stats.current_health, 0, stats.max_health);
         stats.current_cleanliness = clamp(stats.current_cleanliness, 0, stats.max_cleanliness);
-        stats.current_misbehave = clamp(stats.current_misbehave, 0, stats.max_misbehave)
+        stats.current_discipline = clamp(stats.current_discipline, 0, stats.max_discipline);
 
         // depletion
         stats.current_hunger -= hunger_depletion_rate;
@@ -792,8 +811,12 @@ class Pet extends Object2d {
             stats.current_health = 0;
             // console.log('dead of sickness?');
         }
-        stats.current_misbehave -= misbehave_depletion_rate;
-        this.isMisbehaving = stats.current_misbehave <= 0;
+
+        stats.current_discipline -= discipline_depletion_rate;
+        if(stats.current_discipline <= 0){
+            stats.current_discipline = 0;
+            stats.is_misbehaving = true;
+        }
 
         if(stats.current_health <= 0 && 
             stats.current_cleanliness <= 0 && 
@@ -821,6 +844,7 @@ class Pet extends Object2d {
                 && this.stats[statName] == 0
             ) {
                 this.petDefinition.adjustCare(false);
+                stats.current_discipline -= random(2, 10);
             }
         })
         // increasing
@@ -1103,11 +1127,10 @@ class Pet extends Object2d {
         // deprecated: (max offline progression is 12 hours)
         // (max offline progression is 7 days)
 
-        // 3600(secs in 1 hour) * 24(1 day) * 7(7 days) = 604800
-        const maxOfflineProgressionSeconds = 604800;
+        const { MAX_OFFLINE_PROGRESSION_SECS } = App.constants;
 
         const startTime = Date.now();
-        let iterations = Math.floor(clamp(elapsedTime / 1000, 0, maxOfflineProgressionSeconds) * 2);
+        let iterations = Math.floor(clamp(elapsedTime / 1000, 0, MAX_OFFLINE_PROGRESSION_SECS) * 2);
         for(let i = 0; i < iterations; i++){
             elapsedTime -= 500;
             let date = new Date(startTime - elapsedTime);
@@ -1141,16 +1164,18 @@ class Pet extends Object2d {
     getStatsDepletionRates(offline, targetLifeStage){
         App.petDefinition.maxStats();
         const currentLifeStage = this.petDefinition.lifeStage;
-        console.log('before', currentLifeStage)
         if(targetLifeStage !== undefined) this.petDefinition.lifeStage = targetLifeStage;
+        const { MAX_OFFLINE_PROGRESSION_SECS } = App.constants;
         
-        const seconds = 3600 * 100;
         const report = {};
         // let offline = false;
 
-        for(let i = 0; i < seconds; i++){
+        for(let i = 0; i < MAX_OFFLINE_PROGRESSION_SECS; i++){
             this.statsManager(offline);
             this.statsManager(offline);
+
+            // // prevents dying
+            // this.stats.current_hunger += 1;
 
             let min = {m: i / 60, s: i, h: i / 60 / 60};
             if(this.stats.current_hunger <= 0 && !report.hunger) report.hunger = {...min, stat: this.stats.current_hunger};
@@ -1160,11 +1185,10 @@ class Pet extends Object2d {
             if(this.stats.current_cleanliness <= 0 && !report.cleanliness) report.cleanliness = {...min, stat: this.stats.current_cleanliness};
             if(this.stats.current_health <= 0 && !report.health) report.health = {...min, stat: this.stats.current_health};
             if(this.stats.current_death_tick <= 0 && !report.death_tick) report.death_tick = {...min, stat: this.stats.current_death_tick};
-            if(this.stats.current_misbehave <= 0 && !report.misbehave) report.misbehave = {...min, stat: this.stats.current_misbehave};
+            if(this.stats.current_discipline <= 0 && !report.discipline) report.discipline = {...min, stat: this.stats.current_discipline};
         }
 
         console.log(`Time every stats hit ~0:`, report);
-        console.log('after', this.petDefinition.lifeStage)
         this.petDefinition.lifeStage = currentLifeStage;
         App.petDefinition.maxStats();
     }

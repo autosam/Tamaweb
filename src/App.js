@@ -121,7 +121,8 @@ const App = {
         SCHOOL: {
             maxClassesPerDay: 10,
             resetTime: { hour: 7, minute: 0, second: 0 }
-        }
+        },
+        MAX_OFFLINE_PROGRESSION_SECS: 604800, // 3600(secs in 1 hour) * 24(1 day) * 7(7 days) = 604800
     },
     routes: {
         BLOG: 'https://tamawebgame.github.io/blog/',
@@ -340,7 +341,7 @@ const App = {
 
             App.awayTime = message;
 
-            if(awaySeconds > 2 && App.ENV !== 'dev'){
+            if(awaySeconds > 30 && App.ENV !== 'dev'){
                 App.displayConfirm(`Welcome back!\n<b>${App.petDefinition.name}</b> missed you in those <b>${message}</b> you were away`, [
                     {
                         name: 'ok',
@@ -3171,6 +3172,10 @@ const App = {
                                     <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:sleep', true)}</b> 
                                     ${App.createProgressbar( App.pet.stats.current_sleep / App.pet.stats.max_sleep * 100 ).node.outerHTML}
                                 </div>
+                                <div class="flex flex-dir-row align-center flex-gap-1">
+                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:discipline', true)}</b> 
+                                    ${App.createProgressbar( App.pet.stats.current_discipline / App.pet.stats.max_discipline * 100 ).node.outerHTML}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -5287,6 +5292,7 @@ const App = {
                 }
                 App.pet.stats.schoolClassesToday += 1;
                 console.log(App.pet.stats.schoolClassesToday)
+                App.pet.stats.current_discipline += random(1, 4);
                 return payload();
             }
 
