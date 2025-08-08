@@ -12,7 +12,7 @@ App.definitions = (() => {
                 color: "pink"
             },
             "logic": {
-                icon: "lightbulb",
+                icon: "brain",
                 color: "lightblue"
             },
             "endurance": {
@@ -20,7 +20,7 @@ App.definitions = (() => {
                 color: "lime"
             },
             "food": {
-                icon: "burger",
+                icon: "drumstick-bite",
                 color: "orange"
             },
             "sleep": {
@@ -30,7 +30,11 @@ App.definitions = (() => {
             "fun": {
                 icon: "smile",
                 color: "#b8ff0d"
-            }
+            },
+            "discipline": {
+                icon: "scale-balanced",
+                color: "yellow"
+            },
         },
         /* THEMES */
         themes: [
