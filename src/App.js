@@ -5326,7 +5326,7 @@ const App = {
                     return {
                         activeCards: 3,
                         maxCards: 12,
-                        maxAttempts: 6,
+                        maxAttempts: 5,
                     }
                 }
             }
@@ -5342,6 +5342,12 @@ const App = {
                 return payload();
             }
 
+            const startClassGame = (text, payload) => {
+                App.displayPopup(text, 2000, () => countClassVisit(payload));
+            }
+
+            const flipCardsDescription = `Keep track of cards with the ${App.getIcon('star', true)} symbol and select them after the shuffle!`;
+
             return App.displayList([
                 {
                     name: `${App.getIcon('special:expression')} Expression`,
@@ -5350,16 +5356,19 @@ const App = {
                             {
                                 name: 'Tune Practice',
                                 onclick: () => {
-                                    countClassVisit(() => Activities.school_ExpressionGame({
-                                        onEndFn: (pts) => {
-                                            App.pet.stats.current_expression += pts;
-                                        }
-                                    }))
+                                    startClassGame(
+                                        'Remember the order the blocks light up, and recreate it when the light turns on!',
+                                        () => Activities.school_ExpressionGame({
+                                            onEndFn: (pts) => {
+                                                App.pet.stats.current_expression += pts;
+                                            }
+                                        })
+                                    )
                                 }
                             },
                             {
                                 name: 'Flip Cards',
-                                onclick: () => countClassVisit(() => Activities.school_CardShuffleGame({
+                                onclick: () => startClassGame(flipCardsDescription, () => Activities.school_CardShuffleGame({
                                     ...getFlipCardsDifficulty(App.pet.stats.current_expression),
                                     skillIcon: 'special:expression',
                                     onEndFn: (pts) => {
@@ -5376,7 +5385,7 @@ const App = {
                         return App.displayList([
                             {
                                 name: 'Track',
-                                onclick: () => countClassVisit(() => Activities.school_CardShuffleGame({
+                                onclick: () => startClassGame(`Keep track of the card with the ${App.getIcon('star', true)} symbol and select it after the shuffle!`, () => Activities.school_CardShuffleGame({
                                     activeCards: 1,
                                     maxCards: 4,
                                     swapDelay: 200,
@@ -5390,7 +5399,7 @@ const App = {
                             },
                             {
                                 name: 'Flip Cards',
-                                onclick: () => countClassVisit(() => Activities.school_CardShuffleGame({
+                                onclick: () => startClassGame(flipCardsDescription, () => Activities.school_CardShuffleGame({
                                     ...getFlipCardsDifficulty(App.pet.stats.current_logic),
                                     skillIcon: 'special:logic',
                                     onEndFn: (pts) => {
@@ -5408,7 +5417,7 @@ const App = {
                             {
                                 name: 'Skipping Rope',
                                 onclick: () => {
-                                    countClassVisit(() => Activities.school_EnduranceGame({
+                                    startClassGame('Jump at the perfect time to avoid touching the rope!', () => Activities.school_EnduranceGame({
                                         onEndFn: (pts) => {
                                             App.pet.stats.current_endurance += pts;
                                         }
@@ -5417,7 +5426,7 @@ const App = {
                             },
                             {
                                 name: 'Flip Cards',
-                                onclick: () => countClassVisit(() => Activities.school_CardShuffleGame({
+                                onclick: () => startClassGame(flipCardsDescription, () => Activities.school_CardShuffleGame({
                                     ...getFlipCardsDifficulty(App.pet.stats.current_endurance),
                                     skillIcon: 'special:endurance',
                                     onEndFn: (pts) => {
