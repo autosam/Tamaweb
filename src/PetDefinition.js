@@ -205,7 +205,7 @@ class PetDefinition {
         
         // discipline
         max_discipline: 100,
-        discipline_depletion_rate: 0.000265, // 52 hours
+        discipline_depletion_rate: 0.00009, // 154 hours
         is_misbehaving: false,
         last_time_praise_given: 0,
         last_time_misbehave_attempted: Date.now(),

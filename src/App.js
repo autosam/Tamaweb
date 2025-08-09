@@ -2153,7 +2153,7 @@ const App = {
                     children: [
                         {
                             domType: 'span',
-                            innerHTML: 'Discipline',
+                            innerHTML: `Discipline ${App.getBadge()}`,
                         },
                         {
                             domType: 'div',

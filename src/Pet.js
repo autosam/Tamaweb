@@ -1174,8 +1174,8 @@ class Pet extends Object2d {
             this.statsManager(offline);
             this.statsManager(offline);
 
-            // // prevents dying
-            // this.stats.current_hunger += 1;
+            // prevents dying
+            this.stats.current_hunger += 1;
 
             let min = {m: i / 60, s: i, h: i / 60 / 60};
             if(this.stats.current_hunger <= 0 && !report.hunger) report.hunger = {...min, stat: this.stats.current_hunger};
