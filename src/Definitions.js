@@ -33,7 +33,7 @@ App.definitions = (() => {
             },
             "discipline": {
                 icon: "scale-balanced",
-                color: "yellow"
+                color: "#ffb1ee"
             },
         },
         /* THEMES */

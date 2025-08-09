@@ -4021,18 +4021,11 @@ class Activities {
                 </div>
             </div>
             <div class="simon-says pointer-events-none">
-                <div id="green" class="simon-says-button">
-                    
-                </div>
-                <div id="red" class="simon-says-button">
-                    
-                </div>
-                <div id="yellow" class="simon-says-button">
-                    
-                </div>
-                <div id="blue" class="simon-says-button">
-                    
-                </div>
+                <div id="green" class="simon-says-button"></div>
+                <div id="red" class="simon-says-button"></div>
+                <div id="yellow" class="simon-says-button"></div>
+                <div id="blue" class="simon-says-button"></div>
+                <div class="simon-says-indicator"></div>
             </div>
         </div>
         `;
