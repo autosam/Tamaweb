@@ -2047,6 +2047,51 @@ App.definitions = (() => {
                     App.displayPopup(`You've received $200 and <br>${App.getFoodCSprite(rewardFoodInfo.sprite)}<br> <b>${rewardFoodName}</b> <small>x5</small>`);
                 }
             },
+            reach_max_skill_expression: {
+                name: 'Expressive',
+                description: `Reach max expression skill!`,
+                checkProgress: () => {
+                    if(App.pet?.stats?.current_expression >= 100){
+                        App.addRecord('reach_max_expression', 1, true)
+                    }
+                    return App.getRecord('reach_max_expression') >= 1;
+                },
+                advance: () => null,
+                getReward: () => {
+                    App.pet.stats.gold += 500;
+                    App.displayPopup(`You've received $500!`);
+                }
+            },
+            reach_max_skill_logic: {
+                name: 'Thinker',
+                description: `Reach max logic skill!`,
+                checkProgress: () => {
+                    if(App.pet?.stats?.current_logic >= 100){
+                        App.addRecord('reach_max_logic', 1, true)
+                    }
+                    return App.getRecord('reach_max_logic') >= 1;
+                },
+                advance: () => null,
+                getReward: () => {
+                    App.pet.stats.gold += 500;
+                    App.displayPopup(`You've received $500!`);
+                }
+            },
+            reach_max_skill_endurance: {
+                name: 'Resilient',
+                description: `Reach max endurance skill!`,
+                checkProgress: () => {
+                    if(App.pet?.stats?.current_endurance >= 100){
+                        App.addRecord('reach_max_endurance', 1, true)
+                    }
+                    return App.getRecord('reach_max_endurance') >= 1;
+                },
+                advance: () => null,
+                getReward: () => {
+                    App.pet.stats.gold += 500;
+                    App.displayPopup(`You've received $500!`);
+                }
+            },
     
             // minigames
             perfect_minigame_rodrush_win_x_times: {
