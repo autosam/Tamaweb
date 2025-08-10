@@ -706,10 +706,9 @@ const App = {
     getEvent: function(name){
         return App.gameEventsHistory[name];
     },
-    addRecord: function(name, newValue, shouldReplaceValue){
-        if(newValue === undefined) newValue = 1;
+    addRecord: function(name, value = 1, shouldReplaceValue){
         const currentValue = this.getRecord(name) || 0;
-        this.records[name] = shouldReplaceValue ? newValue : currentValue + newValue;
+        this.records[name] = shouldReplaceValue ? value : currentValue + value;
         return this.records[name];
     },
     getRecord: function(name){
