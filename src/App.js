@@ -32,6 +32,7 @@ const App = {
         theme: false,
         shellAdditionalSize: 0,
         showWantName: true,
+        genderedPets: false,
     },
     constants: {
         ONE_HOUR: 1000 * 60 * 60,
@@ -123,6 +124,15 @@ const App = {
             resetTime: { hour: 7, minute: 0, second: 0 }
         },
         MAX_OFFLINE_PROGRESSION_SECS: 604800, // 3600(secs in 1 hour) * 24(1 day) * 7(7 days) = 604800
+        GENDERS: [
+            'mars',
+            'venus',
+            'transgender',
+            'genderless',
+            'mercury',
+            'neuter',
+            'venus-mars',
+        ]
     },
     routes: {
         BLOG: 'https://tamawebgame.github.io/blog/',
@@ -1996,8 +2006,28 @@ const App = {
             }, 1000);
         },
         show_set_pet_name_dialog: function(text = 'Name your new egg:'){
-            const prompt = `${App.petDefinition.getFullCSprite()}<br>${text}`;
-            App.displayPrompt(prompt, [
+            const { GENDERS } = App.constants;
+            const cycleBetweenGenders = (evt) => {
+                const currentIndex = GENDERS.indexOf(App.pet.stats.gender);
+                const nextIndex = (currentIndex + 1) % GENDERS.length;
+                App.pet.stats.gender = GENDERS.at(nextIndex);
+                evt.target.innerHTML = App.getIcon(App.pet.stats.gender, true);
+            }
+            const prompt = `
+                <span>${App.petDefinition.getFullCSprite()}<br>${text}</span>
+                ${
+                    App.settings.genderedPets ?
+                    `<button 
+                        style="position: absolute; bottom: 0; right: 0" 
+                        class="generic-btn stylized" 
+                        id='gender'
+                    >
+                        ${App.getIcon(App.pet.stats.gender, true)}
+                    </button>` :
+                    ''
+                }
+            `;
+            const element = App.displayPrompt(prompt, [
                 {
                     name: 'set',
                     onclick: (value) => {
@@ -2009,6 +2039,10 @@ const App = {
                     }
                 },
             ], App.pet.petDefinition.name || '');
+            const genderButton = element.querySelector('#gender');
+            if(genderButton){
+                genderButton.onclick = cycleBetweenGenders;
+            }
         },
         show_set_username_dialog: function(){
             const validate = (username) => {
@@ -2635,7 +2669,7 @@ const App = {
                 },
                 { type: 'separator', _ignore: ignoreFirstDivider },
                 {
-                    name: `gameplay settings`,
+                    name: `gameplay settings ${App.getBadge()}`,
                     onclick: () => {
                         return App.displayList([
                             {
@@ -2730,6 +2764,14 @@ const App = {
                                 onclick: (item) => {
                                     App.settings.showWantName = !App.settings.showWantName;
                                     App.applySettings();
+                                    item._mount(); 
+                                    return true;
+                                }
+                            },
+                            {
+                                _mount: (e) => e.innerHTML = `gendered pets: <i>${App.settings.genderedPets ? 'On' : 'Off'}</i> ${App.getBadge()}`,
+                                onclick: (item) => {
+                                    App.settings.genderedPets = !App.settings.genderedPets;
                                     item._mount(); 
                                     return true;
                                 }
@@ -3819,9 +3861,10 @@ const App = {
                     }
                 },
                 {
-                    name: 'set nickname',
+                    name: App.settings.genderedPets ? 'set name/gender' : 'set nickname',
                     onclick: () => {
-                        App.handlers.show_set_pet_name_dialog('Enter a new name for your pet:');
+                        const prompt = App.settings.genderedPets ? 'Enter Name and Gender:' : 'Enter a new name for your pet:';
+                        App.handlers.show_set_pet_name_dialog(prompt);
                         return true;
                     }
                 },
@@ -3887,8 +3930,6 @@ const App = {
                 }
             ]
 
-            const UID = App.userName ? `${(App.userName ?? '') + '-' + App.userId?.toString().slice(0, 5)}` : '';
-
             const playTimeDuration = moment.duration(App.playTime);
 
             const list = UI.genericListContainer();
@@ -3897,7 +3938,7 @@ const App = {
                 <div class="flex-center flex-1 flex flex-gap-05 inner-padding surface-stylized height-auto relative">
                     ${App.petDefinition.getCSprite()}
                     <b>
-                        ${App.petDefinition.name} 
+                    <span>${App.settings.genderedPets ? App.getIcon(App.pet.stats.gender, true) : ''} ${App.petDefinition.name} </span>
                         <br>
                         <small>${App.petDefinition.getLifeStageLabel()} - gen ${App.petDefinition.family.length + 1}</small>
                     </b>
