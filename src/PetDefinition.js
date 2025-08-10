@@ -346,6 +346,7 @@ class PetDefinition {
                     last_time_praise_given: this.stats.last_time_praise_given,
                     last_time_misbehave_attempted: this.stats.last_time_misbehave_attempted,
                     is_misbehaving: this.stats.is_misbehaving,
+                    has_received_school_invite: this.stats.has_received_school_invite,
                 }
                 return;
             }
