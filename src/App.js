@@ -1995,8 +1995,9 @@ const App = {
                 }
             }, 1000);
         },
-        show_set_pet_name_dialog: function(){
-            App.displayPrompt(`Name your new egg:`, [
+        show_set_pet_name_dialog: function(text = 'Name your new egg:'){
+            const prompt = `${App.petDefinition.getFullCSprite()}<br>${text}`;
+            App.displayPrompt(prompt, [
                 {
                     name: 'set',
                     onclick: (value) => {
@@ -3820,19 +3821,7 @@ const App = {
                 {
                     name: 'set nickname',
                     onclick: () => {
-                        App.displayPrompt(`Enter your pet's name:`, [
-                            {
-                                name: 'set',
-                                onclick: (value) => {
-                                    if(!value) return false;
-
-                                    App.pet.petDefinition.name = value;
-                                    App.save();
-                                    App.displayPopup(`Name set to "${App.pet.petDefinition.name}"`)
-                                }
-                            },
-                            {name: 'cancel', class: 'back-btn', onclick: () => {}},
-                        ], App.pet.petDefinition.name);
+                        App.handlers.show_set_pet_name_dialog('Enter a new name for your pet:');
                         return true;
                     }
                 },
