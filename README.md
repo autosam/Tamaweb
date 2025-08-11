@@ -23,8 +23,8 @@ Distributed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 
 
 **For a full breakdown of the terms of use, please see the [Terms of Use](TERMS_OF_USE.md) file.**
 
-### Official Links
-🔗 [Official Website](https://tamawebgame.github.io/) • [itch Version](https://samandev.itch.io/tamaweb) • [Official Wiki](https://tamaweb.wiki.gg/) • [Discord](https://tamawebgame.github.io/discord) • [Blog](https://tamawebgame.github.io/blog) • [Instagram](https://www.instagram.com/tamaweb_game/) • [TikTok](https://www.tiktok.com/@samandevgames?_t=8rmMbdc7Vnb&_r=1)
+### 🔗 Official Links
+[Official Website](https://tamawebgame.github.io/) • [itch Version](https://samandev.itch.io/tamaweb) • [Official Wiki](https://tamaweb.wiki.gg/) • [Discord](https://tamawebgame.github.io/discord) • [Blog](https://tamawebgame.github.io/blog) • [Instagram](https://www.instagram.com/tamaweb_game/) • [TikTok](https://www.tiktok.com/@samandevgames?_t=8rmMbdc7Vnb&_r=1)
 
 ### 📧 Contact
 🌐 https://tamawebgame.github.io
