@@ -919,7 +919,7 @@ const App = {
         //     ])
         // })) return;
 
-        if(addEvent(`update_18_notice`, () => {
+        if(addEvent(`update_19_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
@@ -928,7 +928,7 @@ const App = {
                     bold: true,
                 },
                 {
-                    name: `Check out the food delivery app, items, room background sets and much more!`,
+                    name: `Check out the new school system, skills, discipline system, genders and more!`,
                     type: 'text',
                 },
                 {
