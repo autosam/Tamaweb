@@ -24,4 +24,8 @@ const SOUNDS = [
   "resources/sounds/revival_01.ogg",
   "resources/sounds/vacation_track_01.ogg",
   "resources/sounds/work_track_01.ogg",
+  "resources/sounds/note_1.mp3",
+  "resources/sounds/note_2.mp3",
+  "resources/sounds/note_3.mp3",
+  "resources/sounds/note_4.mp3",
 ];

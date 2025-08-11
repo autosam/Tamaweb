@@ -32,6 +32,7 @@ const App = {
         theme: false,
         shellAdditionalSize: 0,
         showWantName: true,
+        genderedPets: false,
     },
     constants: {
         ONE_HOUR: 1000 * 60 * 60,
@@ -63,6 +64,14 @@ const App = {
         MAX_PLANTS: 8,
         MIN_REVIVE_GOLDS: 250,
         MAX_REVIVE_GOLDS: 1000,
+        SKILL_EVOLUTION_EFFECTIVENESS: {
+            bounds: 30,
+            ratings: {
+                endurance: 1,
+                logic: 2,
+                expression: 3
+            }
+        },
         SLEEP_START: 21,
         SLEEP_END: 8,
         PARENT_DAYCARE_START: 8,
@@ -110,6 +119,20 @@ const App = {
         CHRISTMAS_TREE_Z: 4.58,
         BACKGROUND_Z: -10,
         INPUT_BASE_64: '0xffbx64',
+        SCHOOL: {
+            maxClassesPerDay: 10,
+            resetTime: { hour: 7, minute: 0, second: 0 }
+        },
+        MAX_OFFLINE_PROGRESSION_SECS: 604800, // 3600(secs in 1 hour) * 24(1 day) * 7(7 days) = 604800
+        GENDERS: [
+            'mars',
+            'venus',
+            'transgender',
+            'genderless',
+            'mercury',
+            'neuter',
+            'venus-mars',
+        ]
     },
     routes: {
         BLOG: 'https://tamawebgame.github.io/blog/',
@@ -328,7 +351,7 @@ const App = {
 
             App.awayTime = message;
 
-            if(awaySeconds > 2 && App.ENV !== 'dev'){
+            if(awaySeconds > 30 && App.ENV !== 'dev'){
                 App.displayConfirm(`Welcome back!\n<b>${App.petDefinition.name}</b> missed you in those <b>${message}</b> you were away`, [
                     {
                         name: 'ok',
@@ -420,11 +443,16 @@ const App = {
             x = Math.max(0, Math.min(x, rect.width));
             y = Math.max(0, Math.min(y, rect.height));
         
-            App.mouse = { x: x / 2, y: y / 2 };
+            App.mouse.x = x / 2;
+            App.mouse.y = y / 2;
         }
-
         document.addEventListener('mousemove', moveEventHandler);
         document.addEventListener('touchmove', moveEventHandler);
+
+        document.addEventListener('mousedown', () => App.mouse.isDown = true)
+        document.addEventListener('mouseup', () => App.mouse.isDown = false)
+        document.addEventListener('touchstart', () => App.mouse.isDown = true)
+        document.addEventListener('touchend', () => App.mouse.isDown = false)
     },
     registerLoadEvents: function(){
         const initializeRenderer = () => {
@@ -678,10 +706,9 @@ const App = {
     getEvent: function(name){
         return App.gameEventsHistory[name];
     },
-    addRecord: function(name, newValue, shouldReplaceValue){
-        if(newValue === undefined) newValue = 1;
+    addRecord: function(name, value = 1, shouldReplaceValue){
         const currentValue = this.getRecord(name) || 0;
-        this.records[name] = shouldReplaceValue ? newValue : currentValue + newValue;
+        this.records[name] = shouldReplaceValue ? value : currentValue + value;
         return this.records[name];
     },
     getRecord: function(name){
@@ -892,7 +919,7 @@ const App = {
         //     ])
         // })) return;
 
-        if(addEvent(`update_18_notice`, () => {
+        if(addEvent(`update_19_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
@@ -901,7 +928,7 @@ const App = {
                     bold: true,
                 },
                 {
-                    name: `Check out the food delivery app, items, room background sets and much more!`,
+                    name: `Check out the new school system, skills, discipline system, genders and more!`,
                     type: 'text',
                 },
                 {
@@ -1265,6 +1292,18 @@ const App = {
         animalBathroom: new Scene({
             image: 'resources/img/background/house/animal_bathroom_01.png'
         }),
+        classroom: new Scene({
+            image: 'resources/img/background/house/classroom_01.png',
+            onLoad: () => {
+                App.pet.staticShadow = false;
+            },
+            onUnload: () => {
+                App.pet.staticShadow = true;
+            }
+        }),
+        music_classroom: new Scene({
+            image: 'resources/img/background/house/music_classroom_01.png',
+        })
     },
     setScene(scene, noPositionChange, onLoadArg){
         App.currentScene?.onUnload?.(scene);
@@ -1576,7 +1615,7 @@ const App = {
 
         return animal;
     },
-    getRandomPetDef: function(age, seed){
+    getRandomPetDef: function(age = PetDefinition.LIFE_STAGE.adult, seed){
         pRandom.save();
         let rndArrayFn = randomFromArray;
 
@@ -1584,8 +1623,6 @@ const App = {
             pRandom.seed = seed;
             rndArrayFn = pRandomFromArray;
         }
-
-        if(age === undefined) age = 2;
 
         let sprite;
         switch(age){
@@ -1702,6 +1739,30 @@ const App = {
             App.pet.stats.is_dead
         ) return;
 
+        // school invite
+        if(
+            App.petDefinition.lifeStage >= PetDefinition.LIFE_STAGE.child && 
+            App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.teen &&
+            !App.pet.stats.has_received_school_invite
+        ){
+            App.pet.stats.has_received_school_invite = true;
+            setTimeout(() => {
+                App.queueEvent(() => {
+                    Activities.getMail({
+                        onEndFn: () => {
+                            App.handlers.show_letter({
+                                headline: 'Official School Invitation', 
+                                text: `Dear ${App.userName},<br>${App.petDefinition.name} is now old enough to start school.<br><br>Please make sure they show up to their classes every day, no skipping!`, 
+                                sender: 'School Administration'
+                            })
+                        },
+                        noSceneSwitch: true
+                    });
+                })
+            }, random(1000, 2000))
+            return;
+        }
+
         // newspaper delivery
         const newspaperDeliveryMs = App.getRecord('newspaper_delivery_ms') || 0;
         const shouldDeliver = moment().startOf('day').diff(moment(newspaperDeliveryMs), 'days') > 0;
@@ -1740,6 +1801,13 @@ const App = {
         },
         go_to_clinic: function(){
             Activities.goToClinic(() => App.handlers.open_activity_list(true))
+        },
+        show_attended_school_limit_message: function(){
+            const formattedResetTime = moment(App.constants.SCHOOL.resetTime).format('h:mmA');
+            return App.displayPopup(`<b>${App.petDefinition.name}</b> has attended all of their classes today!<br><br>Come back tomorrow after <b>${formattedResetTime}</b>`, 4000);
+        },
+        go_to_school: function(){
+            Activities.goToSchool(() => App.handlers.open_activity_list(true))
         },
         open_works_list: function(){
             const backFn = () => {
@@ -1936,8 +2004,29 @@ const App = {
                 }
             }, 1000);
         },
-        show_set_pet_name_dialog: function(){
-            App.displayPrompt(`Name your new egg:`, [
+        show_set_pet_name_dialog: function(text = 'Name your new egg:'){
+            const { GENDERS } = App.constants;
+            const cycleBetweenGenders = (evt) => {
+                const currentIndex = GENDERS.indexOf(App.pet.stats.gender);
+                const nextIndex = (currentIndex + 1) % GENDERS.length;
+                App.pet.stats.gender = GENDERS.at(nextIndex);
+                evt.target.innerHTML = App.getIcon(App.pet.stats.gender, true);
+            }
+            const prompt = `
+                <span>${App.petDefinition.getFullCSprite()}<br>${text}</span>
+                ${
+                    App.settings.genderedPets ?
+                    `<button 
+                        style="position: absolute; bottom: 0; right: 0" 
+                        class="generic-btn stylized" 
+                        id='gender'
+                    >
+                        ${App.getIcon(App.pet.stats.gender, true)}
+                    </button>` :
+                    ''
+                }
+            `;
+            const element = App.displayPrompt(prompt, [
                 {
                     name: 'set',
                     onclick: (value) => {
@@ -1949,6 +2038,10 @@ const App = {
                     }
                 },
             ], App.pet.petDefinition.name || '');
+            const genderButton = element.querySelector('#gender');
+            if(genderButton){
+                genderButton.onclick = cycleBetweenGenders;
+            }
         },
         show_set_username_dialog: function(){
             const validate = (username) => {
@@ -1971,6 +2064,20 @@ const App = {
                     }
                 }
             ])
+        },
+        show_letter: function({headline, text, sender}){
+            const container = App.displayEmpty('letter');
+            container.innerHTML = `
+            <div class="flex flex-dir-col">
+                <h1>${App.getIcon('envelope')}</h1>
+                <h1>${headline}</h1>
+                <span>${text}</span>
+                <footer>${sender}</footer>
+                <hr>
+                <button style="margin: 10px; margin-top: 10px; flex: 1" class="generic-btn stylized back-btn">Ok</button>
+            </div>
+            `
+            container.querySelector('.back-btn').onclick = container.close;
         },
         show_newspaper: function(headline, text){
             if(!headline && !text){
@@ -2065,7 +2172,47 @@ const App = {
                     ? App.getBadge('!')
                     : '';
             }
+            const disciplineEntry = {
+                type: 'element',
+                class: ' flex flex-dir-col in-list-container flex-gap-05 inner-padding-sm',
+                innerHTML: UI.create({
+                    children: [
+                        {
+                            domType: 'span',
+                            innerHTML: `Discipline ${App.getBadge()}`,
+                        },
+                        {
+                            domType: 'div',
+                            className: 'flex-between flex-gap-05',
+                            children: [
+                                {
+                                    componentType: 'button',
+                                    style: `color: #229d3c;`,
+                                    className: 'generic-btn stylized m-0 flex-1 flex-center flex-dir-row',
+                                    innerHTML: App.getIcon('face-laugh-beam')  + App.getIcon('thumbs-up', true),
+                                    onclick: () => {
+                                        App.closeAllDisplays();
+                                        App.pet.praise();
+                                    }
+                                },
+                                {
+                                    componentType: 'button',
+                                    className: 'generic-btn stylized m-0 flex-1 flex-center flex-dir-row',
+                                    style: `color: #e74040;`,
+                                    innerHTML: App.getIcon('face-angry') + App.getIcon('thumbs-down', true),
+                                    onclick: () => {
+                                        App.closeAllDisplays();
+                                        App.pet.scold();
+                                    }
+                                },
+                            ]
+                        }
+                    ]
+                })
+            };
+
             App.displayList([
+                {...disciplineEntry},
                 {
                     _mount: (me) => {
                         me.innerHTML = `Missions ${getUnclaimedRewardsBadge()}`
@@ -2186,7 +2333,7 @@ const App = {
                     }
                 },
                 {
-                    name: `craft ${App.getBadge()}`,
+                    name: `craft`,
                     onclick: () => {
                         App.handlers.open_craftables_list();
                         return true;
@@ -2521,7 +2668,7 @@ const App = {
                 },
                 { type: 'separator', _ignore: ignoreFirstDivider },
                 {
-                    name: `gameplay settings`,
+                    name: `gameplay settings ${App.getBadge()}`,
                     onclick: () => {
                         return App.displayList([
                             {
@@ -2620,6 +2767,14 @@ const App = {
                                     return true;
                                 }
                             },
+                            {
+                                _mount: (e) => e.innerHTML = `gendered pets: <i>${App.settings.genderedPets ? 'On' : 'Off'}</i> ${App.getBadge()}`,
+                                onclick: (item) => {
+                                    App.settings.genderedPets = !App.settings.genderedPets;
+                                    item._mount(); 
+                                    return true;
+                                }
+                            },
                         ])
                     }
                 },
@@ -2712,9 +2867,9 @@ const App = {
                     }
                 },
                 {
-                    name: `Change Theme ${App.getBadge()}`,
+                    name: `Change Theme`,
                     onclick: () => {
-                        const newThemes = ['pardis'];
+                        const newThemes = [];
                         return App.displayList(
                             App.definitions.themes.map(themeName => ({
                                 name: `${themeName} ${newThemes.includes(themeName) ? App.getBadge('new!') : ''}`,
@@ -3061,35 +3216,94 @@ const App = {
             ], null, 'Settings')
         },
         open_stats: function(){
+            const getCareRatingIcons = (current = App.pet.stats.current_care, max = App.pet.stats.max_care, sizePx) => {
+                return new Array(max).fill('').map((_, i) => {
+                    const style = i >= current ? 'opacity: 0.5; filter:grayscale();' : 'filter:hue-rotate(310deg);';
+                    const finalStyle = `${style} ${sizePx ? `width: ${sizePx}px;` : ''}`;
+                    return `<img style="margin-top: 2px; ${finalStyle}" src="resources/img/misc/star_01.png"></img>`
+                }).join(' ')
+            }
+
             const list = UI.genericListContainer();
             const content = UI.empty();
-            const careRatingIcons = new Array(App.pet.stats.max_care).fill('').map((_, i) => {
-                const style = i >= App.pet.stats.current_care ? 'opacity: 0.5; filter:grayscale()' : 'filter:hue-rotate(310deg)';
-                return `<img style="margin-top: 2px; ${style}" src="resources/img/misc/star_01.png"></img>`
-            }).join(' ')
             content.innerHTML = `
-            <div class="inner-padding b-radius-10 m surface-stylized">
-                <div>
-                    <b>GOLD:</b> $${App.pet.stats.gold}
+            <div class="tabs">
+                <div class="tab-titles">
+                    <div for="tab-1" class="tab-title">${App.getIcon('bar-chart', true)}</div>
+                    <div for="tab-2" class="tab-title">${App.getIcon('star', true)}</div>
                 </div>
-                <div>
-                    <b>HUNGER:</b> ${App.createProgressbar( App.pet.stats.current_hunger / App.pet.stats.max_hunger * 100 ).node.outerHTML}
-                </div>
-                <div>
-                    <b>SLEEP:</b> ${App.createProgressbar( App.pet.stats.current_sleep / App.pet.stats.max_sleep * 100 ).node.outerHTML}
-                </div>
-                <div>
-                    <b>FUN:</b> ${App.createProgressbar( App.pet.stats.current_fun / App.pet.stats.max_fun * 100 ).node.outerHTML}
-                </div>
-                <div style="
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                ">
-                    <b>CARE:</b> <div style="display: inline-flex; gap: 1px">${careRatingIcons}</div>
+                <div class="tab-contents">
+                    <div id="tab-1" class="tab">
+                        <div class="tab-content">
+                            <div class="inner-padding b-radius-10 flex-gap-2 flex flex-dir-col m mt-6">
+                                <div class="relative flex flex-dir-row align-center flex-gap-1">
+                                    <div class="stats-label">Money</div>
+                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:gold', true)}</b> 
+                                    <b>$${App.pet.stats.gold}</b>
+                                </div>
+                                <div class="relative flex flex-dir-row align-center flex-gap-1">
+                                    <div class="stats-label">Hunger</div>
+                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:food', true)}</b> 
+                                    ${App.createProgressbar( App.pet.stats.current_hunger / App.pet.stats.max_hunger * 100 ).node.outerHTML}
+                                </div>
+                                <div class="relative flex flex-dir-row align-center flex-gap-1">
+                                    <div class="stats-label">Fun</div>
+                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:fun', true)}</b> 
+                                    ${App.createProgressbar( App.pet.stats.current_fun / App.pet.stats.max_fun * 100 ).node.outerHTML}
+                                </div>
+                                <div class="relative flex flex-dir-row align-center flex-gap-1">
+                                    <div class="stats-label">Sleep</div>
+                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:sleep', true)}</b> 
+                                    ${App.createProgressbar( App.pet.stats.current_sleep / App.pet.stats.max_sleep * 100 ).node.outerHTML}
+                                </div>
+                                <div class="relative flex flex-dir-row align-center flex-gap-1">
+                                    <div class="stats-label">Discipline</div>
+                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:discipline', true)}</b> 
+                                    ${App.createProgressbar( App.pet.stats.current_discipline / App.pet.stats.max_discipline * 100 ).node.outerHTML}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="tab-2" class="tab">
+                        <div class="tab-content">
+                            <div class="inner-padding b-radius-10 flex-gap-2 flex flex-dir-col m mt-6">
+                                <div class="relative flex flex-dir-row align-center flex-gap-1">
+                                    <div class="stats-label">Expression</div>
+                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:expression', true)}</b> 
+                                    ${App.createProgressbar( App.pet.stats.current_expression / 100 * 100 ).node.outerHTML}
+                                </div>
+                                <div class="relative flex flex-dir-row align-center flex-gap-1">
+                                    <div class="stats-label">Logic</div>
+                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:logic', true)}</b> 
+                                    ${App.createProgressbar( App.pet.stats.current_logic / 100 * 100 ).node.outerHTML}
+                                </div>
+                                <div class="relative flex flex-dir-row align-center flex-gap-1">
+                                    <div class="stats-label">Endurance</div>
+                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:endurance', true)}</b> 
+                                    ${App.createProgressbar( App.pet.stats.current_endurance / 100 * 100 ).node.outerHTML}
+                                </div>
+                                <div class="flex-between align-center">
+                                    <b>CARE:</b> <div style="display: inline-flex; gap: 1px">${getCareRatingIcons()}</div>
+                                </div>
+                            </div>
+                            <div class="inner-padding b-radius-10 uppercase list-text surface-stylized">
+                                <small>
+                                    <i class="fa-solid fa-info-circle"></i>
+                                    High enough skills will override care ratings above 1 when evolving.
+                                    <hr>
+                                    <div>
+                                        <span class="flex-between items-center no-width-children"> ${App.getIcon('special:endurance')}➜ ${getCareRatingIcons(1, undefined, 16)} </span>
+                                        <span class="flex-between items-center no-width-children"> ${App.getIcon('special:logic')}➜ ${getCareRatingIcons(2, undefined, 16)} </span>
+                                        <span class="flex-between items-center no-width-children"> ${App.getIcon('special:expression')}➜ ${getCareRatingIcons(3, undefined, 16)} </span>
+                                    </div>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             `;
+            App.initTab(content);
             list.appendChild(content);
         },
         open_food_stats: function(foodName){
@@ -3361,6 +3575,11 @@ const App = {
 
                             App.pet.stats.current_fun += current.fun_replenish ?? 0;
                             App.pet.stats.current_sleep += current.sleep_replenish ?? 0;
+
+                            App.pet.stats.current_expression += current.expression_increase ?? 0;
+                            App.pet.stats.current_logic += current.logic_increase ?? 0;
+                            App.pet.stats.current_endurance += current.endurance_increase ?? 0;
+
                             if(App.pet.hasMoodlet('healthy') && food === 'medicine')
                                 App.pet.stats.current_health = App.pet.stats.current_health * 0.6;
                             else
@@ -3641,21 +3860,10 @@ const App = {
                     }
                 },
                 {
-                    name: 'set nickname',
+                    name: App.settings.genderedPets ? 'set name/gender' : 'set nickname',
                     onclick: () => {
-                        App.displayPrompt(`Enter your pet's name:`, [
-                            {
-                                name: 'set',
-                                onclick: (value) => {
-                                    if(!value) return false;
-
-                                    App.pet.petDefinition.name = value;
-                                    App.save();
-                                    App.displayPopup(`Name set to "${App.pet.petDefinition.name}"`)
-                                }
-                            },
-                            {name: 'cancel', class: 'back-btn', onclick: () => {}},
-                        ], App.pet.petDefinition.name);
+                        const prompt = App.settings.genderedPets ? 'Enter Name and Gender:' : 'Enter a new name for your pet:';
+                        App.handlers.show_set_pet_name_dialog(prompt);
                         return true;
                     }
                 },
@@ -3721,8 +3929,6 @@ const App = {
                 }
             ]
 
-            const UID = App.userName ? `${(App.userName ?? '') + '-' + App.userId?.toString().slice(0, 5)}` : '';
-
             const playTimeDuration = moment.duration(App.playTime);
 
             const list = UI.genericListContainer();
@@ -3731,7 +3937,7 @@ const App = {
                 <div class="flex-center flex-1 flex flex-gap-05 inner-padding surface-stylized height-auto relative">
                     ${App.petDefinition.getCSprite()}
                     <b>
-                        ${App.petDefinition.name} 
+                    <span>${App.settings.genderedPets ? App.getIcon(App.pet.stats.gender, true) : ''} ${App.petDefinition.name} </span>
                         <br>
                         <small>${App.petDefinition.getLifeStageLabel()} - gen ${App.petDefinition.family.length + 1}</small>
                     </b>
@@ -4003,6 +4209,8 @@ const App = {
                     }
 
                     App.sendAnalytics('craft', current.name);
+                    App.pet.stats.current_expression += 2;
+                    App.pet.stats.current_logic += 3;
                 }
             });
 
@@ -4612,7 +4820,7 @@ const App = {
                 },
                 {
                     _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby,
-                    name: `<span style="color: mediumvioletred"> <i class="fa-solid fa-burger icon"></i> SnapMeal </span> ${App.getBadge()}`,
+                    name: `<span style="color: mediumvioletred"> <i class="fa-solid fa-burger icon"></i> SnapMeal </span>`,
                     onclick: () => {
                         let list = [
                             ...App.handlers.open_food_list({buyMode: true, getListOnly: true, filterType: 'food', age: PetDefinition.LIFE_STAGE.adult}),
@@ -5020,6 +5228,11 @@ const App = {
 
             const showRandomPost = () => {
                 App.petDefinition.stats.current_fun += random(0, 5);
+                switch(random(0, 2, 3)){
+                    case 0: App.pet.stats.current_expression += 0.5; break;
+                    case 1: App.pet.stats.current_endurance += 0.5; break;
+                    case 2: App.pet.stats.current_logic += 0.5; break;
+                }
                 let otherPetDef;
                 if(App.petDefinition.friends && App.petDefinition.friends.length){
                     otherPetDef = randomFromArray(App.petDefinition.friends);
@@ -5034,6 +5247,7 @@ const App = {
                     name: 'make post',
                     onclick: () => {
                         App.petDefinition.stats.current_fun += random(1, 5);
+                        App.pet.stats.current_expression += 0.5;
                         showPost(App.petDefinition, null, true);
                         return true;
                     }
@@ -5067,8 +5281,10 @@ const App = {
                                                     return;
                                                 }
                                                 let state = App.petDefinition.addFriend(otherPetDef);
-                                                if(state) App.displayPopup(`${otherPetDef.name} <b style="color: #87cf00">accepted</b> ${App.petDefinition.name}'s friend request!`);
-                                                else App.displayPopup(`${App.petDefinition.name} is already friends with ${otherPetDef.name}!`);
+                                                if(state) {
+                                                    App.displayPopup(`${otherPetDef.name} <b style="color: #87cf00">accepted</b> ${App.petDefinition.name}'s friend request!`);
+                                                    App.pet.stats.current_expression += 2;
+                                                } else App.displayPopup(`${App.petDefinition.name} is already friends with ${otherPetDef.name}!`);
                                             }
                                         },
                                         {
@@ -5099,11 +5315,159 @@ const App = {
                             App.displayPopup(`sent message to ${friendDef.name}!`, 3000);
                             friendDef.increaseFriendship(10);
                             friendDef.sentMessage = true;
+                            App.pet.stats.current_expression += 0.5;
                         })
                         return true;
                     }
                 }
             ])
+        },
+        open_school_activity_list: function(){
+            const backFn = () => {
+                App.handlers.open_activity_list(true);
+            }
+
+            const getFlipCardsDifficulty = (stat) => {
+                if(stat < 6){
+                    return {
+                        activeCards: 1,
+                        maxCards: 4,
+                        maxAttempts: 2,
+                    }
+                } else if(stat < 15){
+                    return {
+                        activeCards: 1,
+                        maxCards: 8,
+                        maxAttempts: 3,
+                    }
+                } else if(stat <= 30) {
+                    return {
+                        activeCards: 1,
+                        maxCards: 12,
+                        maxAttempts: 3,
+                    }
+                } else if(stat <= 60) {
+                    return {
+                        activeCards: 2,
+                        maxCards: 12,
+                    }
+                } else {
+                    return {
+                        activeCards: 3,
+                        maxCards: 12,
+                        maxAttempts: 5,
+                    }
+                }
+            }
+
+            const countClassVisit = (payload) => {
+                if(App.pet.stats.schoolClassesToday >= App.constants.SCHOOL.maxClassesPerDay){
+                    App.handlers.show_attended_school_limit_message();
+                    return true;
+                }
+                App.pet.stats.schoolClassesToday += 1;
+                console.log(App.pet.stats.schoolClassesToday)
+                App.pet.stats.current_discipline += random(1, 4);
+                return payload();
+            }
+
+            const startClassGame = (text, payload) => {
+                App.displayPopup(text, 2000, () => countClassVisit(payload));
+            }
+
+            const flipCardsDescription = `Keep track of cards with the ${App.getIcon('star', true)} symbol and select them after the shuffle!`;
+
+            return App.displayList([
+                {
+                    name: `${App.getIcon('special:expression')} Expression`,
+                    onclick: () => {
+                        return App.displayList([
+                            {
+                                name: 'Tune Practice',
+                                onclick: () => {
+                                    startClassGame(
+                                        'Remember the order the blocks light up, and recreate it when the light turns on!',
+                                        () => Activities.school_ExpressionGame({
+                                            onEndFn: (pts) => {
+                                                App.pet.stats.current_expression += pts;
+                                            }
+                                        })
+                                    )
+                                }
+                            },
+                            {
+                                name: 'Flip Cards',
+                                onclick: () => startClassGame(flipCardsDescription, () => Activities.school_CardShuffleGame({
+                                    ...getFlipCardsDifficulty(App.pet.stats.current_expression),
+                                    skillIcon: 'special:expression',
+                                    onEndFn: (pts) => {
+                                        App.pet.stats.current_expression += pts;
+                                    }
+                                }))
+                            }
+                        ])
+                    }
+                },
+                {
+                    name: `${App.getIcon('special:logic')} Logic`,
+                    onclick: () => {
+                        return App.displayList([
+                            {
+                                name: 'Track',
+                                onclick: () => startClassGame(`Keep track of the card with the ${App.getIcon('star', true)} symbol and select it after the shuffle!`, () => Activities.school_CardShuffleGame({
+                                    activeCards: 1,
+                                    maxCards: 4,
+                                    swapDelay: 200,
+                                    maxSwaps: 10,
+                                    maxAttempts: 1,
+                                    skillIcon: 'special:logic',
+                                    onEndFn: (pts) => {
+                                        App.pet.stats.current_logic += pts;
+                                    }
+                                }))
+                            },
+                            {
+                                name: 'Flip Cards',
+                                onclick: () => startClassGame(flipCardsDescription, () => Activities.school_CardShuffleGame({
+                                    ...getFlipCardsDifficulty(App.pet.stats.current_logic),
+                                    skillIcon: 'special:logic',
+                                    onEndFn: (pts) => {
+                                        App.pet.stats.current_logic += pts;
+                                    }
+                                }))
+                            },
+                        ])
+                    }
+                },
+                {
+                    name: `${App.getIcon('special:endurance')} Endurance`,
+                    onclick: () => {
+                        return App.displayList([
+                            {
+                                name: 'Skipping Rope',
+                                onclick: () => {
+                                    startClassGame('Jump at the perfect time to avoid touching the rope!', () => Activities.school_EnduranceGame({
+                                        onEndFn: (pts) => {
+                                            App.pet.stats.current_endurance += pts;
+                                        }
+                                    }))
+                                }
+                            },
+                            {
+                                name: 'Flip Cards',
+                                onclick: () => startClassGame(flipCardsDescription, () => Activities.school_CardShuffleGame({
+                                    ...getFlipCardsDifficulty(App.pet.stats.current_endurance),
+                                    skillIcon: 'special:endurance',
+                                    onEndFn: (pts) => {
+                                        App.pet.stats.current_endurance += pts;
+                                    }
+                                }))
+                            }
+                        ])
+                    }
+                },
+
+            ], backFn)
         },
         open_mall_activity_list: function(){
             const hasNewMainDecor = Object.keys(App.definitions.room_background).some(key => {
@@ -5527,6 +5891,22 @@ const App = {
     haveAnyDisplays: function(){
         return !![...document.querySelectorAll('.screen-wrapper .display')].length;
     },
+    initTab: function(element){
+        const tabs = element.querySelector('.tabs');
+        if(!tabs) return;
+        const tabTitles = [...element.querySelectorAll('.tab-title')];
+        const tabContents = [...element.querySelectorAll('.tab')];
+        tabTitles.forEach(tabTitle => {
+            const forWhichElement = tabTitle.getAttribute('for');
+            const correspondingContent = tabContents.find(t => t.id === forWhichElement);
+            tabTitle.onclick = () => {
+                [...tabTitles, ...tabContents].forEach(e => e.classList.remove('active'));
+                tabTitle.classList.add('active');
+                correspondingContent.classList.add('active');
+            }
+        })
+        tabTitles.at(0).click();
+    },
     displayList: function(listItems, backFn, backFnTitle){
         // if(backFn !== false)
         //     listItems.push({
@@ -5570,7 +5950,10 @@ const App = {
                     break;
                 case "separator":
                     element = document.createElement('hr');
-                    defaultClassName = 'content-separator';
+                    break;
+                case 'element':
+                    element = item.innerHTML;
+                    defaultClassName = ``;
                     break;
                 default:
                     element = document.createElement(item.link ? 'a' : 'button');
@@ -5739,9 +6122,12 @@ const App = {
         return list;
     },
     displayMessageBubble: function(content, icon = ''){
-        const splitContent = content.split('')
-            .map((letter, index) => `<span style="animation-delay: ${index * 0.05}s">${letter}</span>`)
-            .join('');
+        let splitContent = content;
+        if(!containsHtmlTags(content)){
+            splitContent = content.split('')
+                .map((letter, index) => `<span style="animation-delay: ${index * 0.05}s">${letter}</span>`)
+                .join('');
+        }
         const display = App.displayEmpty('bg-transparent pointer-events-none');
         display.close = () => {
             UI.fadeOut(display.querySelector('.message-bubble'));
@@ -6532,6 +6918,16 @@ const App = {
         const url = `https://docs.google.com/forms/d/e/1FAIpQLSenonpIhjHL8BYJbnOHqF2KudJiDciEveJG56BdGsvJ01-rTA/formResponse?usp=pp_url&entry.1753365981=${user}&entry.233513152=${sendingText}`;
         fetch(url).catch(e => {});
     },
+    sendErrorLog: function(error, force){
+        if(!force && App.ENV !== 'prod') return;
+
+        if(!error) return;
+
+        const versionInfo = `[game:${VERSION}-pl:${App.isOnItch ? 'itch' : 'web'}]`;
+        const user = (App.userName ? App.userName + '-' : '') + App.userId;
+        const url = `https://docs.google.com/forms/d/e/1FAIpQLSfFWw8O7zdylTuViC8nwD0HKr-TZDjVafSoJr1EONkr3E7WkQ/formResponse?usp=pp_url&entry.1957124188=${user}&entry.1587672397=${`${versionInfo} - ${navigator?.userAgent}`}&entry.36658531=${error}`;
+        fetch(url).catch(e => {});
+    },
     installAsPWA: function() { 
         if(!App.deferredInstallPrompt) return false;
         App.deferredInstallPrompt.prompt();
@@ -6689,8 +7085,13 @@ const App = {
         const encoded = `${App.constants.INPUT_BASE_64}${btoa(code)}`;
         return encoded;
     },
-    getIcon: function(iconName, noRightMargin){
-        return `<i class="fa-solid fa-${iconName}" style="${!noRightMargin ? 'margin-right:10px' : ''}"></i>`
+    getIcon: function(iconName, noRightMargin, color){
+        if(iconName.startsWith('special:')){
+            const iconDef = App.definitions.icons[iconName.replace('special:', '')];
+            return App.getIcon(iconDef.icon, noRightMargin, iconDef.color);
+        }
+        const style = `${!noRightMargin ? 'margin-right:10px;' : ''}${color ? `color:${color};` : ''}`;
+        return `<i class="fa-solid fa-${iconName}" style="${style}"></i>`
     },
     wait: function(ms = 0){
         return new Promise(resolve => setTimeout(resolve, ms))

@@ -223,7 +223,8 @@ hr {
 .grid-item:active:after,
 .grid-item:hover:after,
 .generic-btn:active:after,
-.generic-btn:hover:after
+.generic-btn:hover:after,
+.simon-says-button.active:after
 {
     width: 11px;
     height: 9px;
@@ -263,8 +264,8 @@ hr {
 
 .list-text {
     margin: 5px 15px;
-    background: #222285;
-    color: white;
+    /* background: #222285;
+    color: white; */
 }
 
 .generic-slider-container {
@@ -585,6 +586,10 @@ button {
     justify-content: space-between;
 }
 
+.no-width-children > * {
+    width: 0px;
+}
+
 .flex-wrap {
     flex-wrap: wrap;
 }
@@ -630,6 +635,7 @@ button {
 .progressbar {
     border-radius: 5px;
     overflow: hidden;
+    flex-grow: 1;
 }
 
 .progressbar-background {
@@ -1034,6 +1040,9 @@ input#background-color-picker {
 .flex-gap-1 {
     gap: 8px;
 }
+.flex-gap-2 {
+    gap: 16px;
+}
 
 .flex {
     display: flex;
@@ -1071,6 +1080,9 @@ input#background-color-picker {
 .inner-padding {
     padding: 10px 20px;
 }
+.inner-padding-sm {
+    padding: 4px 8px;
+}
 
 .m {
     margin: 6px;
@@ -1078,6 +1090,15 @@ input#background-color-picker {
 
 .mt-2 {
     margin-top: 4px;
+}
+.mt-6 {
+    margin-top: 12px;
+}
+.mb-2 {
+    margin-bottom: 4px;
+}
+.m-0 {
+    margin: 0 !important;
 }
 
 .relative {
@@ -1176,26 +1197,21 @@ input#background-color-picker {
     position: relative;
     border: 4px solid rgb(0, 0, 0);
 }
-
 .timing-bar-rod {
     height: 100%;
 }
-
 .timing-bar-rod:nth-child(1) {
     background-color: greenyellow;
     width: 70%;
 }
-
 .timing-bar-rod:nth-child(2) {
     background-color: orange;
     width: 20%;
 }
-
 .timing-bar-rod:nth-child(3) {
     background-color: red;
     width: 10%;
 }
-
 .timing-bar-cursor {
     width: 6px;
     height: 15px;
@@ -1205,18 +1221,6 @@ input#background-color-picker {
     bottom: -3px;
     outline: 2px solid black;
 }
-
-/* .dog-washing-button {
-    border-radius: 100%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    outline: 2px solid;
-    color: #ff6b85;
-    background: pink;
-    position: absolute;
-    transition: all 0.1s;
-} */
 
 .dog-washing-button {
     border-radius: 100%;
@@ -1238,6 +1242,162 @@ input#background-color-picker {
         transform: scale(0.8);
     }
 }
+
+.school-logic-container{
+    background-color: #FFAE21;
+}
+.school-logic-container > .mini-game-ui {
+    position: absolute;
+    left: 4px;
+    top: 0;
+    z-index: 30;
+}
+.cards-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+.cards-container.disabled {
+    pointer-events: none;
+}
+.cards-container > .card {
+    background: repeating-linear-gradient(-45deg, #ffd8ae 0 10px, #ffe5ca 10px 20px);
+    width: 35px;
+    height: 52px;
+    border: 2px solid rgb(255, 231, 206);
+    border-radius: 4px;
+    color: #ff5e00;
+    transition: all 0.3s ease;
+    position: absolute;
+    font-size: 22px;
+    overflow: hidden;
+    box-shadow: inset -2px -2px 0px 0 #00000038;
+}
+.cards-container > .card.disabled {
+    pointer-events: none;
+}
+.cards-container > .card.turning.disabled {
+    background-color: #87A0B2;
+    background: repeating-linear-gradient(-45deg, #87A0B2 0 10px, #98b1c2 10px 20px);
+}
+.cards-container > .card.turning {
+    transform: rotateY(180deg);
+    background: #5DA271;
+    background: repeating-linear-gradient(-45deg, #4a8a5c 0 10px, #5DA271 10px 20px);;
+    border-color: #dadada;
+    color: transparent;
+    box-shadow: inset -2px 2px 0px 0 #ffffff38, inset 2px -2px 0px 0 #00000038;
+    cursor: pointer;
+}
+.cards-container > .card > * {
+    pointer-events: none;
+}
+
+.mix-colors-container {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+.mix-colors-container > button {
+    flex-grow: 1;
+    overflow: hidden;
+}
+.mix-colors-container .color {
+    width: 16px;
+    height: 16px;
+    border-radius: 100%;
+    scale: 3;
+}
+
+.simon-says {
+    width: 150px;
+    height: 100px;
+    display: flex;
+    flex-wrap: wrap;
+    border-radius: 10px;
+    /* overflow: hidden; */
+    margin: 0 auto;
+    border: 4px solid #000063;
+    background-color: #000063;
+    gap: 4px;
+    margin-bottom: 4px;
+    position: relative;
+}
+.simon-says.win .simon-says-button {
+    background: hsl(130, 90%, 45%) !important;
+}
+.simon-says.lose .simon-says-button {
+    background: hsl(0, 90%, 55%) !important;
+}
+.simon-says-button {
+    position: relative;
+    flex-grow: 1;
+    display: block;
+    width: 35%;
+    cursor: pointer;
+}
+.simon-says-button.active:after{
+    z-index: 2;
+}
+.simon-says-button#green {
+  background: hsl(130, 90%, 45%);
+}
+.simon-says-button#red {
+  background: hsl(0, 90%, 55%);
+}
+.simon-says-button#yellow {
+  background: hsl(48, 100%, 50%);
+}
+.simon-says-button#blue {
+  background: hsl(210, 100%, 55%);
+}
+.simon-says-button.active#green,
+.simon-says-button#green:active {
+  background: hsl(130, 100%, 65%);
+  box-shadow: 0 0 10px hsl(130, 100%, 65%);
+}
+.simon-says-button.active#red,
+.simon-says-button#red:active {
+  background: hsl(0, 100%, 70%);
+  box-shadow: 0 0 10px hsl(0, 100%, 70%);
+}
+.simon-says-button.active#yellow,
+.simon-says-button#yellow:active {
+  background: hsl(48, 100%, 65%);
+  box-shadow: 0 0 10px hsl(48, 100%, 65%);
+}
+.simon-says-button.active#blue,
+.simon-says-button#blue:active {
+  background: hsl(210, 100%, 70%);
+  box-shadow: 0 0 10px hsl(210, 100%, 70%);
+}
+.simon-says .simon-says-indicator {
+    position: absolute;
+    top: calc(50% - 10px);
+    left: calc(50% - 10px);
+    width: 20px;
+    height: 20px;
+    background-color: #000063;
+    border-radius: 100%;
+    position: absolute;
+    pointer-events: none;
+}
+.simon-says .simon-says-indicator:after {
+    content: "";
+    position: absolute;
+    border-radius: 100%;
+    left: 4px;
+    top: 4px;
+    width: 12px;
+    height: 12px;
+    background-color: white;
+    box-shadow: 0 0 10px white;
+}
+.simon-says.pointer-events-none .simon-says-indicator:after {
+    background: rgb(84, 84, 84) !important;
+    box-shadow: none;
+}
+
 
 .webcam-container {
     overflow: hidden;
@@ -1295,7 +1455,9 @@ input#background-color-picker {
     align-items: center;
     border-radius: 100%;
 }
-
+.in-list-container+.in-list-container,
+.generic-btn+.in-list-container,
+.in-list-container+.generic-btn,
 .generic-btn+.generic-btn {
     margin-top: 4px;
 }
@@ -1462,6 +1624,15 @@ a.generic-btn:before {
   to {
     opacity: 1;
   }
+}
+
+.stats-label {
+    position: absolute;
+    left: 28px;
+    top: -12px;
+    font-size: x-small;
+    font-weight: bold;
+    letter-spacing: 1px;
 }
 
 
@@ -1885,6 +2056,15 @@ a.generic-btn:before {
     text-align: center;
 }
 
+.in-list-container {
+    border: 2px solid var(--prim-clr-b-border);
+    background: var(--prim-clr-b-bg);
+    color: var(--prim-clr-b-text);
+    text-shadow: 1px 1px 0px var(--prim-clr-b-text-shadow);
+    box-shadow: -20px -20px 0px -15px inset var(--prim-clr-b-shadow);
+    border-radius: 10px;
+}
+
 /* seed package */
 .seed-pack {
     background-image: url(resources/img/misc/seed_pack_01.png);
@@ -2024,4 +2204,94 @@ a.generic-btn:before {
     display: inline-flex;
     left: 4px;
     top: 0;
+}
+
+.outlined-icon {
+    text-shadow: 
+        1px 1px 0px #00014b, 
+        -1px -1px 0px #00014b,
+        1px -1px 0px #00014b,
+        -1px 1px 0px #00014b;
+}
+
+.tabs {
+    display: flex;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--prim-clr-b-bg);
+    flex-direction: column;
+    margin-top: 4px;
+    align-items: stretch;
+    border: 2px solid var(--prim-clr-b-border);
+}
+.tab.active {
+    color: var(--prim-clr-b-text);
+    display: block;
+}
+.tab-titles {
+    display: flex;
+    flex-grow: 1;
+    width: 100%;
+}
+.tab-title.active {
+    color: var(--prim-clr-b-text);
+    border-bottom: 4px solid;
+    background-color: color-mix(in srgb, var(--prim-clr-b-text) 15%, transparent)
+}
+.tab-title {
+    flex-grow: 1;
+    width: 10%;
+    padding: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 2px solid;
+    color: var(--prim-clr-b-border);
+    cursor: pointer;
+}
+.tab-title:hover {
+    background-color: color-mix(in srgb, var(--prim-clr-b-text) 10%, transparent)
+}
+.tab {
+    flex-grow: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+.tab .tab-content {
+    display: none;
+}
+.tab.active .tab-content {
+    display: inline;
+}
+
+.tab-contents {
+    display: contents;
+}
+
+/* letter */
+.letter {
+    background: repeating-linear-gradient(45deg, rgb(255, 0, 0) 0px 10px, white 10px 20px, rgb(27, 137, 255) 20px 30px, white 30px 40px);
+    color: #2a0505;
+}
+.letter > div {
+    margin: 6px;
+    padding: 6px 12px;
+    gap: 6px;
+    background: white;
+    border-radius: 12px;
+    outline: 2px solid;
+}
+.letter h1 {
+    margin: 0;
+    font-size: medium;
+}
+.letter footer {
+    text-align: right;
+    font-style: italic;
+}
+.letter hr {
+    width: 100%;
+    background-color: black;
 }
