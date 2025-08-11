@@ -2869,7 +2869,7 @@ const App = {
                 {
                     name: `Change Theme`,
                     onclick: () => {
-                        const newThemes = ['pardis'];
+                        const newThemes = [];
                         return App.displayList(
                             App.definitions.themes.map(themeName => ({
                                 name: `${themeName} ${newThemes.includes(themeName) ? App.getBadge('new!') : ''}`,
