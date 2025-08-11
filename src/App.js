@@ -6918,6 +6918,16 @@ const App = {
         const url = `https://docs.google.com/forms/d/e/1FAIpQLSenonpIhjHL8BYJbnOHqF2KudJiDciEveJG56BdGsvJ01-rTA/formResponse?usp=pp_url&entry.1753365981=${user}&entry.233513152=${sendingText}`;
         fetch(url).catch(e => {});
     },
+    sendErrorLog: function(error, force){
+        if(!force && App.ENV !== 'prod') return;
+
+        if(!error) return;
+
+        const versionInfo = `[game:${VERSION}-pl:${App.isOnItch ? 'itch' : 'web'}]`;
+        const user = (App.userName ? App.userName + '-' : '') + App.userId;
+        const url = `https://docs.google.com/forms/d/e/1FAIpQLSfFWw8O7zdylTuViC8nwD0HKr-TZDjVafSoJr1EONkr3E7WkQ/formResponse?usp=pp_url&entry.1957124188=${user}&entry.1587672397=${`${versionInfo} - ${navigator?.userAgent}`}&entry.36658531=${error}`;
+        fetch(url).catch(e => {});
+    },
     installAsPWA: function() { 
         if(!App.deferredInstallPrompt) return false;
         App.deferredInstallPrompt.prompt();

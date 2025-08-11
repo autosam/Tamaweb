@@ -135,8 +135,14 @@ const showError = (msg, stack) => {
     document.querySelector('.error-container').style.display = ''
     document.querySelector('#error-message').textContent = msg;
 }
-window.onerror = (message) => showError(message);
-window.onunhandledrejection = (event) => showError(event.reason, event.reason.stack);
+window.onerror = (message) => {
+    showError(message);
+    App.sendErrorLog(message);
+}
+window.onunhandledrejection = (event) => {
+    showError(event.reason, event.reason.stack);
+    App.sendErrorLog(event.reason.stack);
+}
 
 handleServiceWorker();
 App.init();
