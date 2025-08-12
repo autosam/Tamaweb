@@ -2247,6 +2247,7 @@ a.generic-btn:before {
     justify-content: center;
     border-bottom: 2px solid;
     color: var(--prim-clr-b-border);
+    color: color-mix(in srgb, var(--prim-clr-b-text) 40%, transparent);
     cursor: pointer;
 }
 .tab-title:hover {
