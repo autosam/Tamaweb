@@ -407,7 +407,7 @@ class Pet extends Object2d {
         this.petDefinition.stats.last_eaten = [
             foodSpriteCellNumber, 
             ...this.petDefinition.stats.last_eaten
-        ].toSpliced(App.constants.FEEDING_PICKINESS.bufferSize);
+        ].slice(0, App.constants.FEEDING_PICKINESS.bufferSize);
 
         Missions.done(Missions.TYPES.food);
 

@@ -3429,7 +3429,8 @@ class Activities {
         const checkIndex = (name, index) => targetList[index] === name;
 
         selectionLists
-            .toReversed()
+            .slice()
+            .reverse()
             .forEach((list, index) => {
                 const currentList = App.display2xGrid(
                     list.map((name) => ({
