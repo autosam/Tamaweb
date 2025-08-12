@@ -4548,7 +4548,8 @@ const App = {
                     name: '<div class="width-full flex-center"> + </div>',
                     onclick: () => { // add furniture
                         const list = App.ownedFurniture?.filter(f => !f.isActive)
-                        .toReversed()
+                        .slice()
+                        .reverse()
                         .map(furniture => {
                             const def = App.getFurnitureDefFromId(furniture.id);
                             return {
