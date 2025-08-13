@@ -67,6 +67,7 @@ class Drawer {
                 const { 
                     image, 
                     spritesheet, 
+                    solidColor,
                     inverted, 
                     upperHalfOffsetY, 
                     scale, 
@@ -79,7 +80,7 @@ class Drawer {
                     filter,
                     clip,
                 } = object;
-                if (!image?.naturalWidth) return;
+                if (!image?.naturalWidth && !solidColor) return;
 
                 context.save();
 
@@ -100,7 +101,7 @@ class Drawer {
                 }
 
                 if (clipCircle) {
-                    const radius = Math.min((width || image.width), (height || image.height)) / 2; // for a circle, radius is half of the smaller dimension
+                    const radius = Math.min((width || image?.width), (height || image?.height)) / 2; // for a circle, radius is half of the smaller dimension
 
                     context.beginPath();
                     context.arc(spriteCenterX, spriteCenterY, radius, 0, Math.PI * 2, false);
@@ -119,7 +120,7 @@ class Drawer {
 
                 if (inverted) {
                     context.scale(-1, 1);
-                    x = -x - (spritesheet ? spritesheet.cellSize : (width || image.width));
+                    x = -x - (spritesheet ? spritesheet.cellSize : (width || image?.width));
                 }
 
                 if (composite) {
@@ -167,6 +168,11 @@ class Drawer {
 
                     drawHalf(0, upperHalfOffsetY); // drawing upper half with offset
                     drawHalf(1); // drawing lower half
+                } else if(solidColor){
+                    const colorString = `rgb(${solidColor.r}, ${solidColor.g}, ${solidColor.b})`;
+                    // console.log(colorString)
+                    context.fillStyle = colorString;
+                    context.fillRect(x, y, (object.width || image.width), (object.height || image.height));
                 } else {
                     context.drawImage(image, x, y, (object.width || image.width), (object.height || image.height));
                 }
@@ -273,6 +279,7 @@ class Drawer {
         }
 
         this.objects[object.drawerId] = null;
+        object.isRemoved = true;
         this.objects.forEach(otherObject => {
             if(otherObject?.parent?.drawerId === object.drawerId){
                 // this.objects[otherObject.drawerId] = null;

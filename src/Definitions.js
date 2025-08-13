@@ -1,6 +1,41 @@
 App.definitions = (() => {
     const _ls = PetDefinition.LIFE_STAGE;
     return  {
+        /* ICONS */
+        icons: {
+            "gold": {
+                icon: "sack-dollar",
+                color: "orange"
+            },
+            "expression": {
+                icon: "wand-magic-sparkles",
+                color: "pink"
+            },
+            "logic": {
+                icon: "brain",
+                color: "lightblue"
+            },
+            "endurance": {
+                icon: "dumbbell",
+                color: "lime"
+            },
+            "food": {
+                icon: "drumstick-bite",
+                color: "orange"
+            },
+            "sleep": {
+                icon: "moon",
+                color: "white"
+            },
+            "fun": {
+                icon: "smile",
+                color: "#b8ff0d"
+            },
+            "discipline": {
+                icon: "scale-balanced",
+                color: "#ffb1ee"
+            },
+        },
         /* THEMES */
         themes: [
             'default', 
@@ -115,6 +150,12 @@ App.definitions = (() => {
                 name: 'Park',
                 image: 'resources/img/misc/activity_building_park.png',
                 onEnter: () => App.handlers.go_to_park(),
+            },
+            {
+                isDisabled: () => !(App.petDefinition.lifeStage >= PetDefinition.LIFE_STAGE.child && App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.teen),
+                name: `School ${App.getBadge()}`,
+                image: 'resources/img/misc/activity_building_school.png',
+                onEnter: () => App.handlers.go_to_school(),
             },
             {
                 name: "Hospital",
@@ -723,7 +764,7 @@ App.definitions = (() => {
                 price: 50,
                 interaction_time: 8100,
                 age: [_ls.baby, _ls.child],
-                isNew: false,
+                logic_increase: 1,
             },
             "grimoire": {
                 sprite: 9,
@@ -731,8 +772,8 @@ App.definitions = (() => {
                 price: 200,
                 interaction_time: 8000,
                 interruptable: false,
-                isNew: false,
                 age: [_ls.teen, _ls.adult, _ls.elder],
+                endurance_increase: 1,
             },
             "bear": {
                 sprite: 10,
@@ -740,7 +781,7 @@ App.definitions = (() => {
                 price: 180,
                 interaction_time: 10000,
                 interruptable: true,
-                isNew: false,
+                expression_increase: 1,
             },
             "skate": {
                 sprite: 11,
@@ -751,6 +792,7 @@ App.definitions = (() => {
                 isNew: false,
                 onEnd: () => App.setScene(App.scene.home),
                 age: [_ls.teen, _ls.adult, _ls.elder],
+                endurance_increase: 1.5,
             },
             "foxy": {
                 sprite: 1,
@@ -758,17 +800,20 @@ App.definitions = (() => {
                 price: 50,
                 interaction_time: 12000,
                 interruptable: true,
+                expression_increase: 0.5,
             },
             "dumble": {
                 sprite: 2,
                 fun_replenish: 10,
                 price: 100,
                 age: [_ls.teen, _ls.adult],
+                endurance_increase: 2,
             },
             "music player": {
                 sprite: 3,
                 fun_replenish: 15,
-                price: 65
+                price: 65,
+                expression_increase: 1.5,
             },
             "ball": {
                 sprite: 4,
@@ -776,6 +821,7 @@ App.definitions = (() => {
                 price: 35,
                 interaction_time: 100000,
                 interruptable: true,
+                endurance_increase: 0.75,
             },
             "smartphone": {
                 sprite: 5,
@@ -784,6 +830,7 @@ App.definitions = (() => {
                 interaction_time: 100000,
                 interruptable: true,
                 age: [_ls.teen, _ls.adult, _ls.elder],
+                logic_increase: 2,
             },
             "magazine": {
                 sprite: 6,
@@ -792,6 +839,7 @@ App.definitions = (() => {
                 interaction_time: 60000,
                 interruptable: true,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                logic_increase: 1.5,
             },
             "microphone": {
                 sprite: 7,
@@ -799,6 +847,7 @@ App.definitions = (() => {
                 price: 75,
                 interaction_time: 60000,
                 interruptable: true,
+                expression_increase: 1.5,
             },
             "rubicube": {
                 sprite: 12,
@@ -806,7 +855,8 @@ App.definitions = (() => {
                 price: 150,
                 interaction_time: 30000,
                 interruptable: true,
-                isNew: true,
+                isNew: false,
+                logic_increase: 1.5,
             },
             "fidget spinner": {
                 sprite: 13,
@@ -814,8 +864,9 @@ App.definitions = (() => {
                 price: 250,
                 interaction_time: 30000,
                 interruptable: true,
-                isNew: true,
+                isNew: false,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                expression_increase: 0.3,
             },
             "retroboy": {
                 sprite: 14,
@@ -823,7 +874,9 @@ App.definitions = (() => {
                 price: 350,
                 interaction_time: 30000,
                 interruptable: true,
-                isNew: true,
+                isNew: false,
+                logic_increase: 0.4,
+                expression_increase: 0.5,
             },
             "robotty": {
                 sprite: 15,
@@ -831,7 +884,8 @@ App.definitions = (() => {
                 price: 300,
                 interaction_time: 15000,
                 interruptable: true,
-                isNew: true,
+                isNew: false,
+                logic_increase: 0.75,
             },
         },
     
@@ -1020,12 +1074,12 @@ App.definitions = (() => {
             "mush-room": {
                 image: 'resources/img/background/house/cc_08.png',
                 price: 350,
-                isNew: true,
+                isNew: false,
             },
             "vintage orange": {
                 image: 'resources/img/background/house/cc_07.png',
                 price: 250,
-                isNew: true,
+                isNew: false,
             },
 
             // craftables
@@ -1072,7 +1126,7 @@ App.definitions = (() => {
             "mush-kitchen": {
                 image: 'resources/img/background/house/kitchen_cc_02.png',
                 price: 350,
-                isNew: true,
+                isNew: false,
                 type: 'kitchen',
             },
         },
@@ -1085,14 +1139,14 @@ App.definitions = (() => {
                 image: 'resources/img/furniture/mushroom_couch.png',
                 id: "mushroom_couch",
                 price: 200,
-                isNew: true,
+                isNew: false,
             },
             {
                 name: 'Mushroom Pot',
                 image: 'resources/img/furniture/mushroom_pot.png',
                 id: "mushroom_pot",
                 price: 150,
-                isNew: true,
+                isNew: false,
             },
             {
                 name: 'Mushroom Lamp',
@@ -1107,21 +1161,21 @@ App.definitions = (() => {
                 image: 'resources/img/furniture/vintage_couch.png',
                 id: "vintage_couch",
                 price: 200,
-                isNew: true,
+                isNew: false,
             },
             {
                 name: 'Vintage Cabinet',
                 image: 'resources/img/furniture/vintage_cabinet.png',
                 id: "vintage_cabinet",
                 price: 150,
-                isNew: true,
+                isNew: false,
             },
             {
                 name: 'Vintage Plant',
                 image: 'resources/img/furniture/vintage_plant.png',
                 id: "vintage_plant",
                 price: 150,
-                isNew: true,
+                isNew: false,
             },
 
             // valentine set
@@ -1411,7 +1465,7 @@ App.definitions = (() => {
                 image: 'resources/img/furniture/couch_city.png',
                 id: "couch_city",
                 isCraftable: true,
-                isNew: true,
+                isNew: false,
                 craftingRecipe: ['tetrocana', 'orange tulip', 'lucrios'],
             },
             {
@@ -1419,7 +1473,7 @@ App.definitions = (() => {
                 image: 'resources/img/furniture/city_toy_car.png',
                 id: "city_toy_car",
                 isCraftable: true,
-                isNew: true,
+                isNew: false,
                 craftingRecipe: ['lucrios', 'tetrocana', 'yellow tulip'],
             },
             {
@@ -1427,7 +1481,7 @@ App.definitions = (() => {
                 image: 'resources/img/furniture/plant_city.png',
                 id: "plant_city",
                 isCraftable: true,
-                isNew: true,
+                isNew: false,
                 craftingRecipe: ['green tulip', 'hephasto', 'bamboo'],
             },
         ],
@@ -1991,6 +2045,51 @@ App.definitions = (() => {
                     App.pet.stats.gold += 200;
                     App.addNumToObject(App.pet.inventory.food, rewardFoodName, 5);
                     App.displayPopup(`You've received $200 and <br>${App.getFoodCSprite(rewardFoodInfo.sprite)}<br> <b>${rewardFoodName}</b> <small>x5</small>`);
+                }
+            },
+            reach_max_skill_expression: {
+                name: 'Expressive',
+                description: `Reach max expression skill!`,
+                checkProgress: () => {
+                    if(App.pet?.stats?.current_expression >= 100){
+                        App.addRecord('reach_max_expression', 1, true)
+                    }
+                    return App.getRecord('reach_max_expression') >= 1;
+                },
+                advance: () => null,
+                getReward: () => {
+                    App.pet.stats.gold += 500;
+                    App.displayPopup(`You've received $500!`);
+                }
+            },
+            reach_max_skill_logic: {
+                name: 'Thinker',
+                description: `Reach max logic skill!`,
+                checkProgress: () => {
+                    if(App.pet?.stats?.current_logic >= 100){
+                        App.addRecord('reach_max_logic', 1, true)
+                    }
+                    return App.getRecord('reach_max_logic') >= 1;
+                },
+                advance: () => null,
+                getReward: () => {
+                    App.pet.stats.gold += 500;
+                    App.displayPopup(`You've received $500!`);
+                }
+            },
+            reach_max_skill_endurance: {
+                name: 'Resilient',
+                description: `Reach max endurance skill!`,
+                checkProgress: () => {
+                    if(App.pet?.stats?.current_endurance >= 100){
+                        App.addRecord('reach_max_endurance', 1, true)
+                    }
+                    return App.getRecord('reach_max_endurance') >= 1;
+                },
+                advance: () => null,
+                getReward: () => {
+                    App.pet.stats.gold += 500;
+                    App.displayPopup(`You've received $500!`);
                 }
             },
     

@@ -202,6 +202,13 @@ class PetDefinition {
         // wander (sec)
         wander_min: 0.5,
         wander_max: 4,
+        
+        // discipline
+        max_discipline: 100,
+        discipline_depletion_rate: 0.00009, // 154 hours
+        is_misbehaving: false,
+        last_time_praise_given: 0,
+        last_time_misbehave_attempted: Date.now(),
 
         // current
         current_hunger: 40 || 80,
@@ -212,6 +219,7 @@ class PetDefinition {
         current_cleanliness: 50,
         current_death_tick: 100,
         current_care: 1,
+        current_discipline: random(5, 20),
 
         // gold
         gold: 15,
@@ -240,6 +248,19 @@ class PetDefinition {
         },
         is_revived_once: false,
         last_eaten: [],
+
+        // skill points
+        current_expression: 0,
+        current_logic: 0,
+        current_endurance: 0,
+
+        // school class visits
+        schoolClassesToday: 0,
+        lastSchoolClassLimitReset: Date.now(),
+        has_received_school_invite: false,
+
+        // gender
+        gender: randomFromArray(App.constants.GENDERS),
     }
     friends = [];
     family = [];
@@ -318,6 +339,18 @@ class PetDefinition {
                     current_rabbit_hole: this.stats.current_rabbit_hole,
                     is_revived_once: this.stats.is_revived_once,
                     last_eaten: this.stats.last_eaten,
+                    schoolClassesToday: this.stats.schoolClassesToday,
+                    lastSchoolClassLimitReset: this.stats.lastSchoolClassLimitReset,
+                    has_received_school_invite: this.stats.has_received_school_invite,
+                    current_expression: this.stats.current_expression,
+                    current_logic: this.stats.current_logic,
+                    current_endurance: this.stats.current_endurance,
+                    current_discipline: this.stats.current_discipline,
+                    last_time_praise_given: this.stats.last_time_praise_given,
+                    last_time_misbehave_attempted: this.stats.last_time_misbehave_attempted,
+                    is_misbehaving: this.stats.is_misbehaving,
+                    has_received_school_invite: this.stats.has_received_school_invite,
+                    gender: this.stats.gender,
                 }
                 return;
             }
@@ -388,6 +421,8 @@ class PetDefinition {
         this.stats.current_death_tick = 100;
         this.stats.has_poop_out = false;
         this.stats.is_dead = false;
+        this.stats.is_misbehaving = false;
+        this.stats.current_discipline = 100;
     }
 
     loadAccessories(accessories){
@@ -478,6 +513,8 @@ class PetDefinition {
     }
 
     getPossibleEvolutions(isNpc, all){
+        const { bounds, ratings } = App.constants.SKILL_EVOLUTION_EFFECTIVENESS;
+ 
         const careRating = !isNpc ? this.stats.current_care : random(1, 3);
         let possibleEvolutions = GROWTH_CHART[this.sprite];
         if(!possibleEvolutions){
@@ -485,6 +522,22 @@ class PetDefinition {
         }
 
         if(all) return possibleEvolutions;
+
+        const skills =  {
+            endurance: this.stats.current_endurance,
+            logic: this.stats.current_logic,
+            expression: this.stats.current_expression,
+        }
+        const topSkill = Object.entries(skills).reduce((best, [key, value]) => {
+        if (value <= bounds) return best;
+        return !best || value > best[1] ? [key, value] : best;
+        }, null)?.[0];
+
+        let finalRating = careRating;
+        if(careRating > 1){
+            const topSkillRating = ratings[topSkill];
+            if(topSkillRating) finalRating = topSkillRating;
+        }
 
         switch(this.lifeStage){
             case PetDefinition.LIFE_STAGE.adult:
@@ -496,10 +549,10 @@ class PetDefinition {
             case PetDefinition.LIFE_STAGE.baby:
             case PetDefinition.LIFE_STAGE.child:
             case PetDefinition.LIFE_STAGE.teen:
-                switch(careRating){
-                    case 1: return [possibleEvolutions[0]]; // low care
-                    case 3: return [possibleEvolutions[2]]; // high care
-                    default: return [possibleEvolutions[1]]; // default medium care
+                switch(finalRating){
+                    case 1: return [possibleEvolutions[0]]; // low care, endurance skill
+                    case 3: return [possibleEvolutions[2]]; // high care, expression skill
+                    default: return [possibleEvolutions[1]]; // default medium care, logic skill
                 }
             default: return false;
         }
@@ -628,6 +681,7 @@ class PetDefinition {
 
         if(fulfilled){
             this.stats.current_fun += random(30, 50);
+            this.stats.current_discipline += random(3, 6);
             this.adjustCare(true);
             Missions.done(Missions.TYPES.fulfill_want);
         } else {

@@ -1,4 +1,47 @@
 class Activities {
+    static async goToSchool(onFail){
+        // reset school attend limit of eligible
+        const lastReset = moment(App.pet.stats.lastSchoolClassLimitReset);
+        const nextReset = lastReset.clone().add(1, 'day').set(App.constants.SCHOOL.resetTime);
+        console.log({nextReset: nextReset.toISOString()})
+        if (moment().isSameOrAfter(nextReset)) {
+            App.pet.stats.schoolClassesToday = 0;
+            App.pet.stats.lastSchoolClassLimitReset = nextReset.toISOString();
+            console.log('school reset', App.pet.stats)
+        }
+
+        if(App.pet.stats.schoolClassesToday >= App.constants.SCHOOL.maxClassesPerDay){
+            App.handlers.show_attended_school_limit_message();
+            onFail?.();
+            return false;
+        }
+
+        App.setScene(App.scene.classroom);
+        App.toggleGameplayControls(false)
+        const main = new TimelineDirector(App.pet);
+        const teacher = new TimelineDirector(new Pet(App.getRandomPetDef(), {
+            staticShadow: false,
+        }));
+        teacher.lookAt(false);
+        teacher.setPosition({x: '75%'});
+        teacher.setState('idle');
+        main.setPosition({x: '-5%'})
+
+        await main.moveTo({x: '25%', speed: 0.025});
+        await teacher.bob({animation: 'idle_side', maxCycles: 1});
+        const messageBubble = App.displayMessageBubble('Welcome!', teacher.actor.petDefinition.getFullCSprite());
+        main.setState('cheering');
+        teacher.setState('cheering');
+        await TimelineDirector.wait(2000);
+        messageBubble.close();
+        await TimelineDirector.wait(500);
+        App.handlers.open_school_activity_list();
+        teacher.remove();
+        main.release();
+        messageBubble?.close();
+        App.toggleGameplayControls(true);
+
+    }
     static async receiveOrderedFood(){
         App.setScene(App.scene.home);
         App.toggleGameplayControls(false);
@@ -674,6 +717,10 @@ class Activities {
                     }
                 ])
                 rabbitHoleDefinition?.onEnd?.();
+                // randomly increase skill points
+                App.pet.stats.current_expression += clamp(random(-2, 3), 0, 3);
+                App.pet.stats.current_logic += clamp(random(-2, 3), 0, 3);
+                App.pet.stats.current_endurance += clamp(random(-2, 3), 0, 3);
             }
 
             App.pet.stats.current_rabbit_hole.name = false;
@@ -808,6 +855,12 @@ class Activities {
     }
     static async useItem(item){
         App.closeAllDisplays();
+
+        if(App.pet.stats.is_misbehaving){
+            App.pet.x = '50%';
+            App.pet.playAngryAnimation();
+            return;
+        }
         
         const itemObject = new Object2d({
             img: App.constants.ITEM_SPRITESHEET,
@@ -844,6 +897,9 @@ class Activities {
 
             App.pet.stats.current_fun += item.fun_replenish || 0;
             App.pet.stats.current_sleep += item.sleep_replenish || 0;
+            App.pet.stats.current_expression += item.expression_increase || 0;
+            App.pet.stats.current_logic += item.logic_increase || 0;
+            App.pet.stats.current_endurance += item.endurance_increase || 0;
 
             App.pet.playCheeringAnimation();
 
@@ -1032,6 +1088,7 @@ class Activities {
                             Missions.done(Missions.TYPES.water_crop);
                         }
                         wateringCan.removeObject();
+                        App.pet.stats.current_expression += 0.5;
                         App.toggleGameplayControls(false, previousController);
                     }
                 },
@@ -1069,6 +1126,7 @@ class Activities {
                                         }
                                     ])
                                     App.sendAnalytics('harvest', plant.name);
+                                    App.pet.stats.current_logic += 0.25;
                                     return true;
                                 },
                                 filterFn: (plant) => plant.age === Plant.AGE.grown
@@ -1219,9 +1277,11 @@ class Activities {
                 });
                 App.animals.list.push(newAnimal);
                 App.displayPopup(`A new animal ${newAnimal.getFullCSprite()} has chosen your backyard as their new home. Take good care of them!`, 3000, () => openChooseNameDialog(newAnimal));
+                App.pet.stats.current_expression += 2;
                 App.sendAnalytics('animal_arrived');
             } else if(App.animals.treatBiteCount > 2) {
                 resetTreat();
+                App.pet.stats.current_endurance += 3;
                 App.displayConfirm(`The food you placed out earlier is gone.<br><br>Unfortunately, its visitor chose not to stay this time, maybe you'll meet them next time!`, [
                     {
                         name: 'ok',
@@ -1427,10 +1487,10 @@ class Activities {
             ])
         })
     }
-    static getMail(){
+    static getMail({onEndFn = App.handlers.show_newspaper, noSceneSwitch} = {}){
         App.pet.stopMove();
         App.toggleGameplayControls(false);
-        App.setScene(App.scene.garden, false, { noPetBowl: true });
+        if(!noSceneSwitch) App.setScene(App.scene.garden, false, { noPetBowl: true });
         App.pet.x = '78%';
         App.pet.inverted = false;
         App.pet.triggerScriptedState('idle_side', App.INF, false, true);
@@ -1446,7 +1506,7 @@ class Activities {
         });
         const payload = () => {
             mailMan.removeObject();
-            App.handlers.show_newspaper();
+            onEndFn();
             App.pet.stopScriptedState();
             App.toggleGameplayControls(true);
             App.setScene(App.scene.home);
@@ -1970,6 +2030,7 @@ class Activities {
         App.pet.triggerScriptedState('idle', App.INF, 0, false);
         App.sendAnalytics('cooking_game', resultFoodName || '');
         Missions.done(Missions.TYPES.cook);
+        App.pet.stats.current_expression += 1.5;
         // App.setScene(App.scene.kitchen);
 
         const potObject = new Object2d({
@@ -2128,6 +2189,7 @@ class Activities {
         await App.pet.triggerScriptedState('idle', 2000, 0, true);
         curtainObject.removeObject();
         App.pet.playCheeringAnimationIfTrue(cheer, () => {
+            App.pet.stats.current_expression += 2;
             App.toggleGameplayControls(true);
             onEndFn();
         });
@@ -2146,6 +2208,7 @@ class Activities {
         await App.pet.triggerScriptedState('cheering', 1000, null, true);
         App.pet.scale = 3;
         App.pet.targetY = 60;
+        App.pet.stats.current_discipline += random(1, 2);
         App.toggleGameplayControls(false, () => {
             App.definitions.achievements.pat_x_times.advance();
             Missions.done(Missions.TYPES.pat);
@@ -2169,6 +2232,9 @@ class Activities {
             App.pet.shadowOffset = 0;
             App.pet.scale = 1;
             App.pet.playCheeringAnimation();
+            App.pet.stats.current_expression += 1;
+            App.pet.stats.current_endurance += 1;
+            App.pet.stats.current_logic += 1;
         });
     }
     static standWork(){
@@ -2344,6 +2410,7 @@ class Activities {
             App.setScene(App.scene.home);
             App.pet.playCheeringAnimation();
             App.pet.stats.is_at_parents = false;
+            App.pet.stats.current_discipline += random(0, 5);
             App.save();
             return;
         }
@@ -2394,6 +2461,7 @@ class Activities {
                         App.setScene(App.scene.home);
                         App.toggleGameplayControls(true);
                         onEndFn?.();
+                        App.pet.stats.current_endurance += 1;
                     }
 
                     if(state == 'very sick' || state == 'sick'){
@@ -2429,6 +2497,16 @@ class Activities {
     static bathe(){
         App.closeAllDisplays();
         App.setScene(App.scene.bathroom);
+
+        if(App.pet.stats.is_misbehaving){
+            App.toggleGameplayControls(false);
+            App.pet.playRefuseAnimation(() => {
+                App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
+            });
+            return;
+        }
+
         Missions.done(Missions.TYPES.use_bath);
         let foams = [];
         App.toggleGameplayControls(false, () => {
@@ -2457,6 +2535,7 @@ class Activities {
             }
 
             App.pet.stats.current_cleanliness += 25;
+            App.pet.stats.current_discipline += random(1, 3);
             App.playSound(`resources/sounds/ui_click_03.ogg`, true);
         });
 
@@ -2502,6 +2581,8 @@ class Activities {
 
         App.pet.needsToiletOverlay.hidden = false;
         App.pet.stats.current_bladder = App.pet.stats.max_bladder;
+        App.pet.stats.current_logic += 2;
+        App.pet.stats.current_discipline += random(2, 10);
         if(App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child && !force) {
             // make pet potty trained if used toilet more than 2 to 5 times and is baby/child
             if(++App.pet.stats.used_toilet > random(2, 5)){
@@ -2713,11 +2794,13 @@ class Activities {
     }
     static redecorRoom(callbackFn){
         App.toggleGameplayControls(false);
+        App.definitions.achievements.redecor_x_times.advance();
+        App.pet.stats.current_expression += 1;
+
         let otherPetDef = new PetDefinition({
             sprite: 'resources/img/character/chara_290b.png',
         })
         let otherPet = new Pet(otherPetDef);
-        App.definitions.achievements.redecor_x_times.advance();
 
         otherPet.stopMove();
         otherPet.x = '100%';
@@ -2828,6 +2911,8 @@ class Activities {
                 otherPet.stopScriptedState();
                 App.pet.x = '50%';
                 App.pet.stats.current_fun += 55;
+                App.pet.stats.current_expression += 2;
+                App.pet.stats.current_logic += 0.5;
                 App.pet.statsManager();
                 App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => App.setScene(App.scene.home));
                 App.drawer.removeObject(otherPet);
@@ -3081,6 +3166,11 @@ class Activities {
                 otherPet.stopScriptedState();
                 App.pet.x = '50%';
                 App.pet.stats.current_fun += 30;
+                switch(random(0, 2)){
+                    case 0: App.pet.stats.current_expression += 2; break;
+                    case 1: App.pet.stats.current_endurance += 2; break;
+                    case 2: App.pet.stats.current_logic += 2; break;
+                }
                 App.pet.statsManager();
                 App.drawer.removeObject(otherPet);
                 App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => {
@@ -3124,6 +3214,7 @@ class Activities {
             App.toggleGameplayControls(false);
             App.pet.x = '50%';
             App.pet.stats.current_fun += 15;
+            App.pet.stats.current_endurance += 0.5;
             App.pet.statsManager();
             App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => {
                 App.setScene(App.scene.home);
@@ -3142,6 +3233,7 @@ class Activities {
     static async dogWashingGame(){
         App.closeAllDisplays();
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.sendAnalytics('minigame_dog_washing');
         App.setScene(App.scene.animalBathroom);
         App.toggleGameplayControls(false);
         App.pet.stopMove();
@@ -3251,6 +3343,7 @@ class Activities {
     }
     static async plantMatchingGame(){
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.sendAnalytics('minigame_plant_matching');
 
         const getRandomPlant = () => 
             randomFromArray(Object.keys(App.definitions.plant))
@@ -3336,7 +3429,8 @@ class Activities {
         const checkIndex = (name, index) => targetList[index] === name;
 
         selectionLists
-            .toReversed()
+            .slice()
+            .reverse()
             .forEach((list, index) => {
                 const currentList = App.display2xGrid(
                     list.map((name) => ({
@@ -3365,6 +3459,7 @@ class Activities {
         App.closeAllDisplays();
         App.toggleGameplayControls(false);
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.sendAnalytics('minigame_bar_timing');
         App.setScene(App.scene.arcade_game01);
 
         let screen = App.displayEmpty();
@@ -3452,6 +3547,7 @@ class Activities {
         App.setScene(App.scene.park);
         App.toggleGameplayControls(false);
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.sendAnalytics('minigame_falling_stuff');
         App.mouse.x = null;
         
         App.pet.speedOverride = 0.07;
@@ -3594,6 +3690,7 @@ class Activities {
         App.setScene(App.scene.arcade);
         App.toggleGameplayControls(false);
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.sendAnalytics('minigame_mimic');
 
         const opponentPetDef = new PetDefinition({
             name: 'park_game_npc',
@@ -3709,6 +3806,7 @@ class Activities {
         App.setScene(App.scene.park);
         App.toggleGameplayControls(false);
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.sendAnalytics('minigame_park_rng');
 
         // const randomPetRef = App.getRandomPetDef();
         const randomPetRef = new PetDefinition({
@@ -3749,6 +3847,582 @@ class Activities {
         });
         
         return false;  
+    }
+
+    // school
+    static async school_ExpressionGame({onEndFn, maxRounds = 3} = {}){
+        App.closeAllDisplays();
+        App.setScene(App.scene.music_classroom);
+        App.pet.stopMove();
+        App.pet.triggerScriptedState('idle', App.INF, 0, true);
+        App.sendAnalytics('school_minigame_expression');
+
+        App.pet.x = '50%';
+        App.pet.y = '36%';
+
+        const screen = UI.empty();
+        document.querySelector('.screen-wrapper').appendChild(screen);
+        screen.innerHTML = `
+        <div class="flex flex-dir-col justify-between height-100p width-full" style="position: absolute; top: 0; left: 0;">
+            <div class="mini-game-ui flex align-center justify-between">
+                <div class="flex align-center">
+                    <i style="margin-right: 4px;" class="fa-solid fa-stopwatch icon"></i>
+                    <div id="round">
+                        <span class="opacity-half">${0}</span>
+                    </div>
+                </div>
+                <div class="flex align-center">
+                    <i style="margin-right: 4px;" class="fa-solid fa-star icon"></i>
+                    <div id="score">${0}</div>
+                </div>
+            </div>
+            <div class="simon-says pointer-events-none">
+                <div id="green" class="simon-says-button"></div>
+                <div id="red" class="simon-says-button"></div>
+                <div id="yellow" class="simon-says-button"></div>
+                <div id="blue" class="simon-says-button"></div>
+                <div class="simon-says-indicator"></div>
+            </div>
+        </div>
+        `;
+
+        let playerInputBuffer = [];
+        let round = 0, wonRounds = 0;
+
+        const container = screen.querySelector('.simon-says');
+        const buttons = screen.querySelectorAll('#green, #red, #yellow, #blue');
+        const [green, red, yellow, blue] = buttons;
+        buttons.forEach((button, index) => {
+            button.playSound = () => App.playSound(`resources/sounds/note_${index + 1}.mp3`, true);
+            button.onclick = () => {
+                setTimeout(() => button.playSound());
+                playerInputBuffer.push(button);
+            }
+        })
+
+        const updateUI = () => {
+            screen.querySelector('#round').textContent = `(${Math.max(round, 1)}/${maxRounds})`;
+            screen.querySelector('#score').textContent = wonRounds;
+        }
+        updateUI();
+
+        const endFn = () => {
+            screen.remove();
+            App.pet.y = '100%';
+            onEndFn?.(wonRounds);
+            Activities.task_winSkillPointFromSchool({
+                amount: wonRounds,
+                hasWon: wonRounds >= 2,
+                icon: App.getIcon('special:expression'),
+            })
+        }
+
+        const initSequence = async (turns = 3) => {
+            round++;
+            updateUI();
+            container.classList.add('pointer-events-none');
+            const sequence = new Array(turns).fill(null).map(() => randomFromArray([...buttons]));
+            playerInputBuffer = [];
+
+            for(let button of sequence){
+                button.classList.add('active');
+                button.playSound();
+                await App.wait(500);
+                button.classList.remove('active');
+                await App.wait(500);
+            }
+
+            container.classList.remove('pointer-events-none');
+            const hasWon = await new Promise(resolve => {
+                const interval = setInterval(() => {
+                    if(!playerInputBuffer.length) return;
+                    const playerInputLastIndex = playerInputBuffer.length - 1;
+                    if(playerInputBuffer.at(playerInputLastIndex) !== sequence.at(playerInputLastIndex)){
+                        resolve(false);
+                        clearInterval(interval);
+                    } else if(playerInputBuffer.length === sequence.length){
+                        resolve(true);
+                        clearInterval(interval);
+                    }
+                }, 16)
+            })
+            container.classList.add('pointer-events-none');
+            if(hasWon) {
+                container.classList.add('win');
+                wonRounds++;
+                updateUI();
+            }
+            else container.classList.add('lose');
+            setTimeout(() => {
+                if(round < maxRounds){
+                    container.classList.remove('win');
+                    container.classList.remove('lose');
+                }
+                setTimeout(() => {
+                    if(round < maxRounds) initSequence(turns + 1);
+                    else endFn();
+                }, 1000);
+            }, 1000)
+        }
+
+        setTimeout(() => {
+            initSequence();
+        }, 1000)
+    }
+    static async school_ExpressionGameX2(){
+        App.closeAllDisplays();
+        App.setScene(App.scene.music_classroom);
+        App.pet.stopMove();
+        App.pet.triggerScriptedState('idle', App.INF, 0, true);
+
+        let lastSpawnTime = 0;
+        
+
+        App.toggleGameplayControls(false, () => {});
+
+        const otherPet = new Pet(App.getRandomPetDef(App.petDefinition.lifeStage));
+        otherPet.triggerScriptedState('idle', App.INF, 0, true);
+
+        const spawnNoteBlocks = (x = '25%') => {
+            const mainPetBoundingBox = App.pet.getBoundingBox();
+            const height = random(6, 32);
+            new Object2d({
+                solidColor: {
+                    r: 255,
+                    g: 0,
+                    b: 150
+                },
+                width: 6,
+                height,
+                z: App.constants.ACTIVE_PET_Z - 0.1,
+                x,
+                y: App.drawer.bounds.height + height,
+                onDraw: (me) => {
+                    if(typeof me.y === 'string') return;
+                    me.y -= 0.1 * App.deltaTime;
+                    if(me.y < -height){
+                        me.removeObject();
+                        return
+                    }
+
+                    const blockTop = me.y;
+                    const petBottom = mainPetBoundingBox.y + mainPetBoundingBox.height;
+
+                    if (blockTop <= petBottom) {
+                        const overlap = petBottom - blockTop;
+                        if(App.mouse.isDown){
+                            me.solidColor = { r: 0, g: 255, b: 55 };
+                        } else {
+                            me.solidColor = { r: 255, g: 0, b: 0 };
+                        }
+                        me.height = Math.max(0, me.height - overlap);
+                        me.y += overlap;
+                    }
+                }
+            })
+        }
+
+        const driverFn = App.registerOnDrawEvent(() => {
+            if(App.time > lastSpawnTime + 800){
+                lastSpawnTime = App.time;
+                spawnNoteBlocks(randomFromArray(['25%', '75%']));
+            }
+            App.pet.setState(App.mouse.isDown ? 'jumping' : 'idle');
+        })
+
+        // positions
+        App.pet.x = '25%';
+        App.pet.y = '36%';
+        otherPet.x = '75%';
+        otherPet.y = '36%';
+    }
+    static async school_ExpressionGameX({onEndFn} = {}){
+        App.closeAllDisplays();
+        App.setScene(App.scene.classroom);
+        App.pet.x = '75%';
+        App.pet.y = '100%';
+        App.pet.triggerScriptedState('idle', App.INF, 0, true);
+        App.toggleGameplayControls(false);
+
+        let timeLeft = 30, currentScore = 0;
+
+        const screen = UI.empty();
+        document.querySelector('.screen-wrapper').appendChild(screen);
+        screen.innerHTML = `
+        <div class="flex flex-dir-col justify-between height-100p width-full" style="position: absolute; top: 0; left: 0;">
+            <div class="mini-game-ui flex align-center justify-between">
+                <div class="flex align-center">
+                    <i style="margin-right: 4px;" class="fa-solid fa-stopwatch icon"></i>
+                    <div id="time-left">
+                        <span class="opacity-half">${timeLeft}</span>
+                    </div>
+                </div>
+                <div class="flex align-center">
+                    <div id="score">${currentScore}</div>
+                </div>
+            </div>
+            <div class="mix-colors-container">
+                <button id="reset" class="generic-btn stylized justify-center">
+                    <div class="color" style="background: white;"></div>
+                </button>
+                <button id="red" class="generic-btn stylized justify-center">
+                    <div class="color" style="background: red;"></div>
+                </button>
+                <button id="yellow" class="generic-btn stylized justify-center">
+                    <div class="color" style="background: yellow;"></div>
+                </button>
+                <button id="blue" class="generic-btn stylized justify-center">
+                    <div class="color" style="background: blue;"></div>
+                </button>
+            </div>
+        </div>
+        `;
+
+        const playerColorTaps = {
+            red: 0,
+            yellow: 0,
+            blue: 0
+        }
+        const COLORS = {
+            red:   { r: 255, g: 0,   b: 0   },
+            blue:  { r: 0,   g: 0,   b: 255 },
+            yellow:{ r: 255, g: 255, b: 0   }
+        };
+        const mixColors = (taps) => {
+            let total = taps.red + taps.blue + taps.yellow;
+            if (total === 0) return { r: 255, g: 255, b: 255 }; // default black
+
+            let r = (
+                COLORS.red.r * taps.red +
+                COLORS.blue.r * taps.blue +
+                COLORS.yellow.r * taps.yellow
+            ) / total;
+
+            let g = (
+                COLORS.red.g * taps.red +
+                COLORS.blue.g * taps.blue +
+                COLORS.yellow.g * taps.yellow
+            ) / total;
+
+            let b = (
+                COLORS.red.b * taps.red +
+                COLORS.blue.b * taps.blue +
+                COLORS.yellow.b * taps.yellow
+            ) / total;
+
+            return { r: Math.round(r), g: Math.round(g), b: Math.round(b) };
+        }
+        const getColorDistance = (c1, c2) => {
+            return Math.sqrt(
+                Math.pow(c1.r - c2.r, 2) +
+                Math.pow(c1.g - c2.g, 2) +
+                Math.pow(c1.b - c2.b, 2)
+            );
+        }
+
+        const targetPainting = new Object2d({
+            solidColor: {
+            r: random(0, 255),
+            g: random(0, 255),
+            b: random(0, 255)
+        },
+            width: 24,
+            height: 24,
+            x: '25%',
+            y: '50%',
+        })
+        const playerPainting = new Object2d({
+            solidColor: {
+                r: 255,
+                g: 255,
+                b: 255,
+            },
+            width: 24,
+            height: 24,
+            x: '75%',
+            y: '50%',
+            onDraw: (me) => {
+                me.solidColor = mixColors(playerColorTaps);
+                // console.log(playerColorTaps, me.solidColor)
+            }
+        })
+
+        const uiUpdateInterval = setInterval(() => {
+            screen.querySelector('#score').textContent = getColorDistance(playerPainting.solidColor, targetPainting.solidColor).toFixed(1);
+        }, 100)
+
+        const [resetButton, redButton, yellowButton, blueButton] = screen.querySelectorAll('#reset, #red, #yellow, #blue');
+        redButton.onclick = () => playerColorTaps.red ++;
+        yellowButton.onclick = () => playerColorTaps.yellow ++;
+        blueButton.onclick = () => playerColorTaps.blue ++;
+        resetButton.onclick = () => {
+            playerColorTaps.red = 0;
+            playerColorTaps.yellow = 0;
+            playerColorTaps.blue = 0;
+        }
+    }
+    static async school_EnduranceGame({onEndFn} = {}){
+        App.closeAllDisplays();
+        App.setScene(App.scene.classroom);
+        App.pet.stopMove();
+        App.pet.x = '50%';
+        App.pet.y = '100%';
+        App.pet.triggerScriptedState('idle', App.INF, 0, true);
+        App.sendAnalytics('school_minigame_endurance');
+
+        let jumpingRope;
+        let currentScore = 0, canScore = false, timeLeft = 10, firstJump = false;
+
+        const screen = UI.empty();
+        document.querySelector('.screen-wrapper').appendChild(screen);
+        screen.innerHTML = `
+        <div class="width-full pointer-events-none" style="position: absolute; bottom: 0; left: 0;">
+            <div class="mini-game-ui flex align-center justify-between">
+                <div class="flex align-center">
+                    <i style="margin-right: 4px;" class="fa-solid fa-stopwatch icon"></i>
+                    <div id="time-left">
+                        <span class="opacity-half">${timeLeft}</span>
+                    </div>
+                </div>
+                <div class="flex align-center">
+                    <div id="score">${currentScore}</div>
+                </div>
+            </div>
+        </div>
+        `;
+
+        const checkProgress = (isScoring) => {
+            if(isScoring){
+                firstJump = true;
+                if(canScore){
+                    currentScore++;
+                    setTimeout(() => App.playSound('resources/sounds/ui_click_03.ogg', true));
+                    updateUI();
+                }
+            }
+            if(timeLeft <= 0){
+                App.toggleGameplayControls(false);
+                jumpingRope?.removeObject();
+                screen.remove();
+                App.pet.stopScriptedState();
+                App.pet.y = '100%';
+                const points = clamp(Math.floor(currentScore / 3), 0, 3);
+                onEndFn?.(points);
+                Activities.task_winSkillPointFromSchool({
+                    amount: points,
+                    hasWon: points > 1,
+                    icon: App.getIcon('special:endurance'),
+                })
+            }
+        }
+
+        jumpingRope = new Object2d({
+            img: 'resources/img/misc/jumping_rope_01.png',
+            x: 0, y: 0, z: App.pet.z + 0.1,
+            spritesheet: {
+                cellSize: App.drawer.bounds.width,
+                cellNumber: 1,
+                rows: 1,
+                columns: 4
+            },
+            onDraw: (me) => {
+                const speed = 135;
+                const previousAnimFrame = me.spritesheet.cellNumber;
+                Object2d.animations.cycleThroughFrames(me, speed, true);
+                const currentAnimFrame = me.spritesheet.cellNumber;
+                if(currentAnimFrame === 1){
+                    me.z = App.constants.ACTIVE_PET_Z + 0.1;
+                } else if(currentAnimFrame >= me.spritesheet.rows * me.spritesheet.columns){
+                    me.z = App.constants.ACTIVE_PET_Z - 0.1;
+                }
+
+                if(previousAnimFrame !== currentAnimFrame && currentAnimFrame === 3 && me.z > App.pet.z){
+                    App.pet.setState('jumping');
+                    App.pet.filter = 'brightness(1.2)';
+                    canScore = true;
+                    setTimeout(() => {
+                        App.pet.filter = '';
+                        canScore = false;
+                        if(!jumpingRope || jumpingRope.isRemoved) return;
+                        App.pet.setState('idle');
+                    }, speed);
+                }
+            }
+        })
+
+        const updateUI = () => {
+            screen.querySelector('#time-left').textContent = timeLeft;
+            screen.querySelector('#score').textContent = currentScore;
+        }
+
+        let timerFn = setInterval(() => {
+            if(!firstJump) return;
+            timeLeft -= 1;
+            if(timeLeft <= 0) {
+                clearInterval(timerFn);
+                checkProgress()
+            }
+            updateUI();
+        }, 1000);
+
+        App.toggleGameplayControls(false, () => {
+            App.pet.z = App.constants.ACTIVE_PET_Z + 0.2;
+            checkProgress(true);
+            App.pet.jump(0.28, false, () => {
+                App.pet.triggerScriptedState('idle', App.INF, 0, true)
+                App.pet.z = App.constants.ACTIVE_PET_Z;
+            })
+        })
+    }
+    static async school_CardShuffleGame({
+        activeCards = 2, 
+        maxCards = 12, 
+        onEndFn, 
+        swapDelay = 400, 
+        maxSwaps,
+        maxAttempts = 4,
+        skillIcon,
+    } = {}){
+        App.sendAnalytics(`school_minigame_shuffle${skillIcon}`);
+        App.pet.triggerScriptedState('idle', App.INF, null, true);
+        const screen = App.displayEmpty();
+        screen.innerHTML = `
+        <div class="height-100p school-logic-container">
+            <div class="mini-game-ui flex hidden">
+                <span id="counter">0</span>
+                <span>/${maxAttempts}</span>
+            </div>
+            <div class="cards-container">
+
+            </div>
+        </div>
+        `;
+
+        const cardsContainer = screen.querySelector('.cards-container');
+        const miniGameUI = screen.querySelector('.mini-game-ui');
+        const counter = screen.querySelector('.mini-game-ui #counter');
+
+        let cards;
+        let totalTurnedCards = 0, correctCards = 0;
+        const handleCardSelect = (card) => {
+            if(!card.classList.contains('turning')) return; // already turned
+            totalTurnedCards++;
+            card.classList.remove('turning');
+            if(card.isTarget){
+                correctCards++;
+            }
+            App.playSound(card.isTarget ? 'resources/sounds/ui_click_03.ogg' : 'resources/sounds/ui_click_01.ogg', true);
+            
+            const animationDelay = 350;
+            counter.textContent = totalTurnedCards;
+
+            cardsContainer.classList.add('disabled');
+            setTimeout(() => {
+                cardsContainer.classList.remove('disabled');
+            }, animationDelay);
+            setTimeout(() => {
+                if(correctCards === activeCards){
+                    screen.close();
+                    onEndFn?.(3);
+                    Activities.task_winSkillPointFromSchool({
+                        amount: 3,
+                        hasWon: true,
+                        icon: App.getIcon(skillIcon),
+                    })
+                } else if(totalTurnedCards >= maxAttempts){
+                    miniGameUI.classList.add('hidden');
+                    cardsContainer.classList.add('disabled');
+                    cards.forEach(card => card.classList.remove('turning'))
+                    setTimeout(() => {
+                        screen.close();
+                        onEndFn?.(0);
+                        Activities.task_winSkillPointFromSchool({
+                            amount: 0,
+                            hasWon: false,
+                            icon: App.getIcon(skillIcon),
+                        })
+                    }, 2000);
+                }
+            }, animationDelay);
+        }
+
+        let swappedIndex = 2;
+        const swapCards = (a, b) => {
+            const aLeft = a.style.left;
+            const aTop = a.style.top;
+
+            const bLeft = b.style.left;
+            const bTop = b.style.top;
+
+            a.style.left = bLeft;
+            a.style.top = bTop;
+            b.style.left = aLeft;
+            b.style.top = aTop;
+
+            a.style.zIndex = swappedIndex;
+            b.style.zIndex = ++swappedIndex;
+
+            App.playSound('resources/sounds/ui_click_04.ogg', true);
+        }
+        const generateCards = (activeAmount, maxAmount) => {
+            const randomPositions = new Array(maxAmount)
+                .fill(null)
+                .map((_, i) => ( {index: i, weight: Math.random()} ))
+                .sort((a, b) => a.weight - b.weight)
+                .map(item => item.index)
+                .slice(0, activeAmount);
+            const cards = [];
+            for(let i = 0; i < maxAmount; i++){
+                const isTarget = randomPositions.includes(i);
+                const card = UI.ce({
+                    componentType: 'div',
+                    className: 'card flex flex-center disabled',
+                    parent: cardsContainer,
+                    innerHTML: isTarget ? App.getIcon('star', true) : `<span class="opacity-third">${App.getIcon('poop', true)}</span>`,
+                    isTarget,
+                    onclick: () => {
+                        handleCardSelect(card);
+                    }
+                })
+                const maxCols = 4;
+                const gap = 10;
+                const col = i % maxCols;
+                const row = Math.floor(i / maxCols);
+                card.style.position = 'absolute';
+                card.style.top = `${-100 * (col + 1)}px`;
+                setTimeout(() => card.style.top = `${6 + row * (card.clientHeight + gap)}px`);
+                card.style.left = `${8 + col * (card.clientWidth + gap)}px`;
+                cards.push(card);
+            }
+            return cards;
+        }
+        cards = generateCards(activeCards, maxCards);
+        await App.wait(3000);
+        for(let i = 0; i < cards.length; i++){
+            await App.wait(150);
+            const card = cards.at(i);
+            card.classList.add('turning')
+        }
+        await App.wait(1000);
+
+        // swapping
+        const scrambledCards = shuffleArray([
+            ...shuffleArray(cards).slice(0, maxSwaps ?? cards.length/1.5), 
+            cards.find(c => c.isTarget)
+        ]);
+        for(let i = 0; i < scrambledCards.length; i++){
+            const card = scrambledCards.at(i);
+            let target;
+            while(true){
+                target = randomFromArray(scrambledCards);
+                if(target !== card) break;
+            }
+            await App.wait(swapDelay);
+            swapCards(card, target);
+        }
+        await App.wait(500);
+        cards.forEach(card => card.classList.remove('disabled'))
+        miniGameUI.classList.remove('hidden');
     }
 
 
@@ -3803,6 +4477,8 @@ class Activities {
                 App.pet.stats.gold += clampedMoneyMade;
             } else clampedMoneyMade = 0;
             App.pet.stats.current_fun -= elapsedTime / 3.5;
+            App.pet.stats.current_expression -= 0.5;
+            App.pet.stats.current_logic += 3;
             App.displayConfirm(`${App.petDefinition.name} made $${clampedMoneyMade}`, [
                 {
                     name: 'ok',
@@ -3844,6 +4520,24 @@ class Activities {
             }
         }
     }
+    static task_nonSwayingFloatingObjects(num, textures, yRange = [105, 115]){
+        if(!num) num = random(1, 4);
+        for(let i = 0; i < num; i++){
+            const xPosition = ((i / num) * 100) + random(-2, 7);
+            let floatSpeed = random(5, 6) * 0.01;
+            const floatingObject = new Object2d({
+                img: randomFromArray(textures),
+                z: randomFromArray([0, 100]), 
+                x: `${xPosition}%`, 
+                y: `${random(yRange[0], yRange[1])}%`
+            });
+            floatingObject.onDraw = (me) => {
+                if(isNaN(me.y)) return;
+                me.y -= floatSpeed * App.deltaTime;
+                if(me.y < -16) me.removeObject();
+            }
+        }
+    }
     static task_handleLeavingAnimals(){
         App.animals.list?.forEach(a => a?.handleStatsUpdate?.());
         const leavingAnimals = App.animals.list.filter(a => a.stats.current_happiness <= 0);
@@ -3870,7 +4564,55 @@ class Activities {
                 App.animals.list.splice(App.animals.list.indexOf(a), 1);
             })
             App.pet.stats.current_fun -= 100;
+            App.pet.stats.current_expression -= 2;
         }
+    }
+    static async task_winSkillPointFromSchool({
+            amount = 0, 
+            hasWon, 
+            npc = 'resources/img/character/chara_175b.png',
+            icon,
+        } = {}){
+        App.closeAllDisplays();
+        App.setScene(App.scene.classroom);
+        App.toggleGameplayControls(false);
+        App.pet.staticShadow = false;
+
+        if(hasWon) Missions.done(Missions.TYPES.earn_school_points);
+
+        const petMain = new TimelineDirector(App.pet);
+        const petClerk = new TimelineDirector(new Pet(new PetDefinition({
+            name: 'prize giver',
+            sprite: npc,
+        })));
+
+        petMain.setPosition({x: '75%'});
+        petMain.setState('idle')
+        petClerk.setPosition({x: '25%'});
+        petClerk.setState('idle')
+        await TimelineDirector.wait(500);
+        const messageBubble = App.displayMessageBubble(`<span class="outlined-icon">${icon}</span>+${amount}`);
+        await petMain.bob({maxCycles: 1, animation: 'shocked'});
+        if(hasWon){
+            setTimeout(() => App.pet.playSound('resources/sounds/cheer_success.ogg', true));
+            petMain.setState('cheering_with_icon');
+            petClerk.setState('cheering');
+        } else {
+            setTimeout(() => App.pet.playSound('resources/sounds/task_fail_01.ogg', true));
+            petMain.setState('uncomfortable');
+            petClerk.setState('mild_uncomfortable');
+            App.pet.stats.current_discipline -= random(2, 6);
+        }
+        await TimelineDirector.wait(3000);
+
+        petMain.release();
+        petClerk.remove();
+
+        App.setScene(App.scene.home);
+        App.toggleGameplayControls(true);
+        UI.clearLastClicked();
+        messageBubble.close();
+        App.handlers.open_school_activity_list();
     }
     static async task_winMoneyFromArcade({
             amount = 0, 
@@ -3914,6 +4656,7 @@ class Activities {
             setTimeout(() => App.pet.playSound('resources/sounds/task_fail_01.ogg', true));
             petMain.setState('uncomfortable');
             petClerk.setState('mild_uncomfortable');
+            App.pet.stats.current_discipline -= random(2, 8);
         }
         await TimelineDirector.wait(3000);
 

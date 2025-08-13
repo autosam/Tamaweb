@@ -135,8 +135,18 @@ const showError = (msg, stack) => {
     document.querySelector('.error-container').style.display = ''
     document.querySelector('#error-message').textContent = msg;
 }
-window.onerror = (message) => showError(message);
-window.onunhandledrejection = (event) => showError(event.reason, event.reason.stack);
+window.onerror = (message) => {
+    showError(message);
+    App.sendErrorLog(message);
+}
+window.onunhandledrejection = (event) => {
+    const reason = event.reason;
+    const message = typeof reason === 'string' ? reason : reason?.message || 'Unknown rejection';
+    const stack = reason?.stack || 'Unknown';
+
+    showError(event.reason, event.reason.stack);
+    App.sendErrorLog(`${message} - ${stack}`);
+}
 
 handleServiceWorker();
 App.init();

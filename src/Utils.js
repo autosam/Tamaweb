@@ -136,6 +136,10 @@ function shuffleArray(array) {
         .sort((a, b) => a.sort - b.sort)
         .map(({ value }) => value);
 }
+function containsHtmlTags(str) {
+    const htmlTagRegex = /<[a-z][\s\S]*>/i;
+    return htmlTagRegex.test(str);
+}
 function downloadUpscaledCanvasAsImage(canvas, imageName, scale = 1){
     const scaledCanvas = document.createElement("canvas");
     scaledCanvas.width = canvas.width * scale;
@@ -236,4 +240,51 @@ function getRandomName(seed, noSuffix){
         return n + s;
     }
     return randomFromArray(firstNames) + (noSuffix ? '' : randomFromArray(suffixes));
+}
+
+
+const wordBank = {
+  slot1: [
+    "I", "You", "We", "They", "He", "She", "It", "Who", "Someone", "Nobody", "Everybody",
+    "Dog", "Cat", "Bird", "Mouse", "Fish", "Bunny", "Fox", "Bear", "Cow", "Pig", "Lizard", "Turtle",
+    "Monster", "Ghost", "Alien", "Robot", "Wizard", "Hero", "Villain", "Fairy", "Dragon", "Zombie",
+    "Friend", "Stranger", "Helper", "Leader", "Follower", "Parent", "Kid", "Baby", "Teacher", "Team", "Group",
+    "Shadow", "Light", "Dream", "Magic", "Star", "Name", "Echo", "Voice", "Time", "Idea"
+  ],
+
+  slot2: [
+    "love", "want", "see", "open", "check", "feel", "need", "eat", "play", "hear", "find", "touch", "like",
+    "carry", "drop", "hide", "give", "take", "say", "close", "think", "try", "make", "build", "break", "fix",
+    "run", "jump", "climb", "crawl", "fly", "swim", "walk", "slide", "spin", "bounce", "roll", "chase", "escape",
+    "laugh", "cry", "smile", "frown", "yell", "whisper", "sing", "shout", "giggle", "mumble", "scream", "argue",
+    "dream", "imagine", "explore", "solve", "remember", "forget", "guess", "suspect", "wonder", "believe", "know",
+    "help", "share", "trade", "steal", "hug", "kiss", "tickle", "scare", "follow", "lead", "watch", "listen",
+    "draw", "paint", "write", "read", "count", "measure", "cook", "clean", "decorate", "design", "code", "program"
+  ],
+
+  slot3: [
+    "toy", "game", "puzzle", "cube", "doll", "robot", "slime", "sticker", "plush", "ball", "card", "dice", "spinner",
+    "food", "snack", "candy", "fruit", "cookie", "cake", "juice", "milk", "rice", "fish", "soup", "bread", "ice cream",
+    "music", "beep", "song", "hum", "bell", "chime", "drum", "voice", "echo", "noise", "whistle", "melody", "tune",
+    "happy", "sad", "sleepy", "bored", "scared", "excited", "calm", "silly", "angry", "curious", "lonely", "proud", "shy",
+    "fun", "love", "time", "light", "dark", "dream", "idea", "magic", "star", "name", "secret", "surprise", "wish",
+    "hat", "book", "pen", "box", "map", "coin", "chair", "blanket", "pillow", "bed", "window", "mirror", "key", "door",
+    "bag", "lamp", "rope", "glove", "ring", "necklace", "watch", "phone", "screen", "button", "switch", "remote",
+    "cloud", "rain", "snow", "sun", "moon", "tree", "flower", "leaf", "rock", "sand", "fire", "water", "wind", "fog",
+    "castle", "tower", "bridge", "path", "hole", "trap", "room", "house", "school", "forest", "cave", "island", "planet",
+    "color", "shape", "pattern", "number", "letter", "word", "story", "joke", "truth", "lie", "game", "challenge"
+  ],
+
+  questionStarters: [
+    "What is", "Where is", "Who is", "Can I have", "Do you like", "Is this",
+    "Why is", "How do", "When will", "Can you see", "Did you hear", "Will it be",
+    "Is there", "Are you", "Should I", "Could we", "Would you", "May I", "Do they",
+    "What happens if", "Can it", "Does it", "Is it okay to", "Can I touch", "Do you want",
+    "What do you think of", "Is it true that", "Can we play with", "Would it be fun to", "Is this yours"
+  ]
+};
+const generateRandomSentence = (isQuestion = Math.random() > 0.5) => {
+    const {slot1, slot2, slot3, questionStarters} = wordBank;
+    if(isQuestion) return `${randomFromArray(questionStarters)} ${randomFromArray(slot3)}`;
+    return `${randomFromArray(slot1)} ${randomFromArray(slot2)} ${randomFromArray(slot3)}`
 }
