@@ -170,7 +170,7 @@ const App = {
         console.log({loadedData});
 
         // shell background
-        this.setShellBackground(loadedData.shellBackground);
+        this.setShellBackground(loadedData?.shellBackground);
 
         // mods
         this.loadMods(loadedData.mods);
