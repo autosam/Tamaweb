@@ -1085,7 +1085,7 @@ class Pet extends Object2d {
         }
     }
     jump(strength = 0.28, silent, onEndFn){
-        if(this.isJumping !== undefined) return false;
+        if(this.isJumping) return false;
 
         this.isJumping = true;
         const gravity = 0.001;
@@ -1096,7 +1096,7 @@ class Pet extends Object2d {
         this.triggerScriptedState('jumping', App.INF, 0, true, 
         () => { // on end
             this.y = startY;
-            this.isJumping = undefined;
+            this.isJumping = false;
         }, () => { // driver fn
             velocity -= gravity * App.deltaTime;
             this.y -= velocity * App.deltaTime;

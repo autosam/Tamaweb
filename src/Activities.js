@@ -4001,6 +4001,7 @@ class Activities {
         App.pet.stopMove();
         App.pet.triggerScriptedState('idle', App.INF, 0, true);
         App.sendAnalytics('school_minigame_expression');
+        App.toggleGameplayControls(false);
 
         App.pet.x = '50%';
         App.pet.y = '36%';
@@ -4055,6 +4056,7 @@ class Activities {
             screen.remove();
             App.pet.y = '100%';
             onEndFn?.(wonRounds);
+            App.toggleGameplayControls(true);
             Activities.task_winSkillPointFromSchool({
                 amount: wonRounds,
                 hasWon: wonRounds >= 2,
@@ -4383,7 +4385,7 @@ class Activities {
 
                 if(previousAnimFrame !== currentAnimFrame && currentAnimFrame === 3 && me.z > App.pet.z){
                     App.pet.setState('jumping');
-                    App.pet.filter = 'brightness(1.2)';
+                    App.pet.filter = 'brightness(1.35)';
                     canScore = true;
                     setTimeout(() => {
                         App.pet.filter = '';
@@ -4410,13 +4412,14 @@ class Activities {
             updateUI();
         }, 1000);
 
+        App.pet.isJumping = false;
         App.toggleGameplayControls(false, () => {
-            App.pet.z = App.constants.ACTIVE_PET_Z + 0.2;
-            checkProgress(true);
             App.pet.jump(0.28, false, () => {
                 App.pet.triggerScriptedState('idle', App.INF, 0, true)
                 App.pet.z = App.constants.ACTIVE_PET_Z;
             })
+            App.pet.z = App.constants.ACTIVE_PET_Z + 0.2;
+            checkProgress(true);
         })
     }
     static async school_CardShuffleGame({
