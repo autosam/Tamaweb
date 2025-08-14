@@ -140,12 +140,12 @@ window.onerror = (message) => {
     App.sendErrorLog(message);
 }
 window.onunhandledrejection = (event) => {
-    const reason = event.reason;
+    const reason = event?.reason;
     const message = typeof reason === 'string' ? reason : reason?.message || 'Unknown rejection';
-    const stack = reason?.stack || 'Unknown';
+    const stack = reason?.stack || false;
 
-    showError(event.reason, event.reason.stack);
-    App.sendErrorLog(`${message} - ${stack}`);
+    showError(event?.reason, event?.reason?.stack);
+    if(stack) App.sendErrorLog(`${message} - ${stack}`);
 }
 
 handleServiceWorker();

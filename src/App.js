@@ -6924,9 +6924,14 @@ const App = {
 
         if(!error) return;
 
+        if(App.fullTime - App.temp.lastErrorSent < App.constants.ONE_SECOND * 30){
+            return;
+        }
+        App.temp.lastErrorSent = App.fullTime;
+
         const versionInfo = `[game:${VERSION}-pl:${App.isOnItch ? 'itch' : 'web'}]`;
         const user = (App.userName ? App.userName + '-' : '') + App.userId;
-        const url = `https://docs.google.com/forms/d/e/1FAIpQLSfFWw8O7zdylTuViC8nwD0HKr-TZDjVafSoJr1EONkr3E7WkQ/formResponse?usp=pp_url&entry.1957124188=${user}&entry.1587672397=${`${versionInfo} - ${navigator?.userAgent}`}&entry.36658531=${error}`;
+        const url = `https://docs.google.com/forms/d/e/1FAIpQLScSloIis4P1yyKQ3imYcaipOk2XS12Qj16ZeM4DicTHi3RSCQ/formResponse?usp=pp_url&entry.1957124188=${user}&entry.1587672397=${`${versionInfo} - ${navigator?.userAgent}`}&entry.36658531=${error}`
         fetch(url).catch(e => {});
     },
     installAsPWA: function() { 
