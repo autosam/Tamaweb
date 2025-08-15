@@ -4431,7 +4431,7 @@ class Activities {
         maxAttempts = 4,
         skillIcon,
     } = {}){
-        App.sendAnalytics(`school_minigame_shuffle${skillIcon}`);
+        App.sendAnalytics(`school_minigame_shuffle`);
         App.pet.triggerScriptedState('idle', App.INF, null, true);
         const screen = App.displayEmpty();
         screen.innerHTML = `
