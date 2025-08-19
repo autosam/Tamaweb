@@ -33,6 +33,7 @@ const App = {
         shellAdditionalSize: 0,
         showWantName: true,
         genderedPets: false,
+        playMusic: true,
     },
     constants: {
         ONE_HOUR: 1000 * 60 * 60,
@@ -2180,7 +2181,7 @@ const App = {
                     children: [
                         {
                             domType: 'span',
-                            innerHTML: `${App.getGenericCSprite(1, 'resources/img/misc/misbehaving_01.png', {cellSize: 9, rows: 1}, 'x2 opacity-half ml-2 ')} Discipline ${App.getBadge()}`,
+                            innerHTML: `${App.getGenericCSprite(1, 'resources/img/misc/misbehaving_01.png', {cellSize: 9, rows: 1}, 'x2 opacity-half ml-2 ')} Discipline`,
                         },
                         {
                             domType: 'div',
@@ -2669,7 +2670,7 @@ const App = {
                 },
                 { type: 'separator', _ignore: ignoreFirstDivider },
                 {
-                    name: `gameplay settings ${App.getBadge()}`,
+                    name: `gameplay settings`,
                     onclick: () => {
                         return App.displayList([
                             {
@@ -2769,7 +2770,7 @@ const App = {
                                 }
                             },
                             {
-                                _mount: (e) => e.innerHTML = `gendered pets: <i>${App.settings.genderedPets ? 'On' : 'Off'}</i> ${App.getBadge()}`,
+                                _mount: (e) => e.innerHTML = `gendered pets: <i>${App.settings.genderedPets ? 'On' : 'Off'}</i>`,
                                 onclick: (item) => {
                                     App.settings.genderedPets = !App.settings.genderedPets;
                                     item._mount(); 
@@ -2780,7 +2781,7 @@ const App = {
                     }
                 },
                 {
-                    name: `system settings`,
+                    name: `system settings ${App.getBadge()}`,
                     onclick: () => {
                         App.displayList([
                             {
@@ -2788,6 +2789,14 @@ const App = {
                                 onclick: (item) => {
                                     App.settings.playSound = !App.settings.playSound;
                                     item.innerHTML = `sound fx: <i>${App.settings.playSound ? 'on' : 'off'}</i>`;  
+                                    return true;
+                                }
+                            },
+                            {
+                                _mount: (e) => e.innerHTML = `bg music: <i>${App.settings.playMusic ? 'on' : 'off'}</i> ${App.getBadge()}`,
+                                onclick: (item) => {
+                                    App.settings.playMusic = !App.settings.playMusic;
+                                    item._mount();
                                     return true;
                                 }
                             },
@@ -6529,7 +6538,7 @@ const App = {
         const audioElement = new Audio();
         Object.keys(config).map(key => audioElement[key] = config[key]);
         audioElement.play();
-        audioElement.muted = !App.settings.playSound;
+        audioElement.muted = !App.settings.playSound || !App.settings.playMusic;
         return {
             element: audioElement,
             stop: () => {
