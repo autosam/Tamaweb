@@ -6156,6 +6156,7 @@ const App = {
         const iconContent = !icon ? '' : `<div class="message-bubble_icon">${icon}</div>`;
 
         display.innerHTML = `<div class="message-bubble">${iconContent}${splitContent}</div>`
+        display.classList.remove('display')
         return display;
     },
     displayPopup: function(content, ms, onEndFn, isReveal){

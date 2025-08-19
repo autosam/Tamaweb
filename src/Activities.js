@@ -4623,7 +4623,7 @@ class Activities {
             happiness, 
             hasWon, 
             npc = 'resources/img/character/chara_175b.png'
-        }){
+        } = {}){
         const moneyBag = new Object2d({
             img: 'resources/img/misc/money_bag_01.png',
             x: '50%', y: '0%', width: 24, height: 24,
