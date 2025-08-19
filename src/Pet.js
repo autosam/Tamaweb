@@ -556,13 +556,14 @@ class Pet extends Object2d {
         this.stopMove();
         App.reloadScene();
         if(this.stats.is_misbehaving) {
-            const isSuccessful = random(0, 2) !== 0;
+            const isSuccessful = random(0, 4) > 0;
             if(isSuccessful) {
                 this.stats.current_discipline += random(5, 10);
                 this.stats.is_misbehaving = false;
                 this.triggerScriptedState('mild_uncomfortable', 2000, null, true);
                 Activities.task_nonSwayingFloatingObjects(10, ['resources/img/misc/arrow_up_green_01.png'], [100, 150]);
-            } else this.playAngryAnimation();
+                setTimeout(() => this.playSound('resources/sounds/cheer_success.ogg', true));
+            } else this.playRefuseAnimation();
         } else {
             this.playUncomfortableAnimation();
             if(!random(0, 3)){ // 25% chance of care dropping
