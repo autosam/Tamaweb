@@ -1400,6 +1400,12 @@ input#background-color-picker {
 .mb-2 {
     margin-bottom: 4px;
 }
+.ml-2 {
+    margin-left: 4px;
+}
+.ml-4 {
+     margin-left: 8px;
+}
 .m-0 {
     margin: 0 !important;
 }
