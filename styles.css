@@ -2542,6 +2542,9 @@ a.generic-btn:before {
     flex-grow: 1;
     width: 100%;
 }
+.tab-title > * {
+    pointer-events: none;
+}
 .tab-title.active {
     color: var(--prim-clr-b-text);
     border-bottom: 4px solid;
