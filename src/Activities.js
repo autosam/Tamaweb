@@ -442,6 +442,7 @@ class Activities {
             // offset by 1
             App.temp.outsideActivityIndex = currentActivityIndex + 1;
             currentActivity.onEnter?.();
+            setTimeout(() => App.playSound('resources/sounds/ui_click_03.ogg', true));
         }
         
         let currentActivityIndex = App.temp.outsideActivityIndex ?? 1;

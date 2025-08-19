@@ -1109,7 +1109,7 @@ class Pet extends Object2d {
         const gravity = 0.001;
         const startY = this.y;
         let velocity = strength;
-        if(!silent) App.playSound('resources/sounds/jump.ogg', true);
+        if(!silent) this.playSound('resources/sounds/jump.ogg', true);
 
         this.triggerScriptedState('jumping', App.INF, 0, true, 
         () => { // on end
@@ -1176,7 +1176,7 @@ class Pet extends Object2d {
         this.petDefinition.loadStats(json);
     }
     playSound(sound, force){
-        if(!this.isMainPet) return;
+        if(!this.isMainPet || App.haveAnyDisplays()) return;
         App.playSound(sound, force);
     }
     getStatsDepletionRates(offline, targetLifeStage){
