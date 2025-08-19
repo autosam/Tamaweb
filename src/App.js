@@ -2205,6 +2205,14 @@ const App = {
                                     onclick: () => {
                                         App.closeAllDisplays();
                                         App.pet.scold();
+                                        if(App.pet.stats.is_misbehaving){
+                                            // still misbehaving
+                                            App.toggleGameplayControls(false);
+                                            setTimeout(() => {
+                                                App.toggleGameplayControls(true);
+                                                App.handlers.open_care_menu();
+                                            }, 2000)
+                                        }
                                     }
                                 },
                             ]
