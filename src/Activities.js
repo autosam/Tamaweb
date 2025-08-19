@@ -4174,7 +4174,7 @@ class Activities {
         App.sendAnalytics('school_minigame_endurance');
 
         let jumpingRope;
-        let currentScore = 0, canScore = false, timeLeft = 10, firstJump = false;
+        let currentScore = 0, canScore = false, timeLeft = 12, firstJump = false;
 
         const screen = UI.empty();
         document.querySelector('.screen-wrapper').appendChild(screen);
@@ -4229,7 +4229,7 @@ class Activities {
                 columns: 4
             },
             onDraw: (me) => {
-                const speed = 135;
+                const speed = 150;
                 const previousAnimFrame = me.spritesheet.cellNumber;
                 Object2d.animations.cycleThroughFrames(me, speed, true);
                 const currentAnimFrame = me.spritesheet.cellNumber;
