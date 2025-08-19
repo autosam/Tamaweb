@@ -44,9 +44,7 @@ class Drawer {
 
             object.onDraw?.(object);
 
-            if(object.invisible) {
-                return;
-            }
+            if(object.invisible) return;
 
             if (object.x.toString().indexOf('%') >= 0) {
                 let width = object.spritesheet ? object.spritesheet.cellSize : object.width || object.image.width;
