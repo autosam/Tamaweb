@@ -6308,7 +6308,7 @@ const App = {
         } catch(e) {}
 
         // button click event
-        const clickSoundClassNames = ['click-sound', 'list-item'];
+        const clickSoundClassNames = ['click-sound', 'list-item', 'tab-title'];
         const backSoundClassNames = ['back-btn', 'back-sound'];
         document.addEventListener('click', (e) => {
 
