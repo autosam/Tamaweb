@@ -109,6 +109,7 @@ const App = {
         // z-index
         ACTIVE_PET_Z: 5,
         NPC_PET_Z: 4.6,
+        MAX_PLACED_FURNITURE: 6,
         POOP_POSITIONS: [
             {x: '75%', y: '78%', z: 4.59},
             {x: '85%', y: '84%', z: 4.592},
@@ -4535,7 +4536,7 @@ const App = {
             ]
 
             const occupiedLength = list.length;
-            for(let i = 0; i < 5 - occupiedLength; i++){
+            for(let i = 0; i < App.constants.MAX_PLACED_FURNITURE - occupiedLength; i++){
                 list.push({
                     name: '<div class="width-full flex-center"> + </div>',
                     onclick: () => { // add furniture
