@@ -112,6 +112,22 @@ class Pet extends Object2d {
                 Object2d.animations.flip(overlay, 750);
             }
         });
+
+        this.misbehavingOverlay = new Object2d({
+            parent: this,
+            img: 'resources/img/misc/misbehaving_01.png',
+            x: 0,
+            y: 0,
+            invisible: true,
+            z: App.constants.ACTIVE_PET_Z + 0.1,
+            // width: this.petDefinition.spritesheet.cellSize, height: this.petDefinition.spritesheet.cellSize,
+            onDraw: (overlay) => {
+                overlay.invisible = !overlay.parent?.stats?.is_misbehaving;
+                overlay.mimicParent(['inverted', 'upperHalfOffsetY']);
+                overlay.x -= (overlay.parent.spritesheet.offsetY / 2) || 0;
+                Object2d.animations.pulseScale(overlay, 0.01, 0.05);
+            }
+        })
     }
     equipAccessories(){
         // removing old accessories
@@ -502,14 +518,15 @@ class Pet extends Object2d {
         let startingChance = 1;
         switch(this.petDefinition.lifeStage){
             case PetDefinition.LIFE_STAGE.teen:
-                startingChance = 35; break;
+                startingChance = 18; break;
             case PetDefinition.LIFE_STAGE.child:
-                startingChance = 22; break;
+                startingChance = 9; break;
             case PetDefinition.LIFE_STAGE.baby:
-                startingChance = 10; break;
+                startingChance = 5; break;
         }
 
-        if(random(startingChance, this.stats.max_discipline) > this.stats.current_discipline){
+        const helperDisciplineAdd = (100 - this.stats.current_discipline) / 2.8; // helper booster
+        if(random(startingChance, this.stats.max_discipline) > (this.stats.current_discipline + helperDisciplineAdd)){
             this.stats.is_misbehaving = true;
         }
     }

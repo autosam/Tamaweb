@@ -2187,7 +2187,7 @@ const App = {
                     children: [
                         {
                             domType: 'span',
-                            innerHTML: `Discipline ${App.getBadge()}`,
+                            innerHTML: `${App.getGenericCSprite(1, 'resources/img/misc/misbehaving_01.png', {cellSize: 9, rows: 1}, 'x2 opacity-half ml-2 ')} Discipline ${App.getBadge()}`,
                         },
                         {
                             domType: 'div',
@@ -6418,7 +6418,7 @@ const App = {
             ? `<div style="width: 1"><img style="width: 36px; outline: none" src="${image}"></img></div>`
             : `<c-sprite width="64" height="36" index="0" src="${image}"></c-sprite>`;
     },
-    getGenericCSprite: function(index, spritesheet, dimensions, className, additional = ''){
+    getGenericCSprite: function(index, spritesheet, dimensions, className = '', additional = ''){
         const size = dimensions.rows * dimensions.cellSize;
         return `<c-sprite 
             naturalWidth="${size}" 

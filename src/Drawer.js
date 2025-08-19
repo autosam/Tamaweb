@@ -44,6 +44,10 @@ class Drawer {
 
             object.onDraw?.(object);
 
+            if(object.invisible) {
+                return;
+            }
+
             if (object.x.toString().indexOf('%') >= 0) {
                 let width = object.spritesheet ? object.spritesheet.cellSize : object.width || object.image.width;
                 object.x = this.getRelativePositionX(Number(object.x.toString().slice(0, object.x.toString().length - 1))) - width / 2;
