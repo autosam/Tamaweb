@@ -511,7 +511,7 @@ class Pet extends Object2d {
         });
     }
     attemptMisbehave(forced){
-        const shouldAllow = (App.fullTime - this.stats.last_time_misbehave_attempted) > App.constants.ONE_MINUTE * 15;
+        const shouldAllow = (App.fullTime - this.stats.last_time_misbehave_attempted) > App.constants.ONE_HOUR * 12;
         if(!shouldAllow && !forced) return;
         this.stats.last_time_misbehave_attempted = App.fullTime;
 
