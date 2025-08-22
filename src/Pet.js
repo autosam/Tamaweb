@@ -1167,7 +1167,6 @@ class Pet extends Object2d {
         this.petDefinition.ageUp()
         this.removeObject();
         App.pet = App.createActivePet(this.petDefinition);
-        App.save();
     }
     serializeStats(){
         return this.petDefinition.serializeStats();

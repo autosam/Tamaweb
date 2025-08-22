@@ -154,20 +154,12 @@ const App = {
         App.drawer = new Drawer(document.querySelector('.graphics-canvas'));
         Object2d.setDrawer(App.drawer);
 
-        // localforage store /* DEPRECATED, stuck for compatibility, todo: remove later */
-        App.dbStore = localforage.createInstance({
-            name: "tamaweb-store",
-            driver: localforage.INDEXEDDB
-        });
-
         // moment settings
         moment.relativeTimeThreshold('m', 59);
 
         // load data
         const loadedData = await this.handleSequentiallyLoad([
             App.load,
-            App.localforage_load,
-            App.legacy_load,
         ]);
         console.log({loadedData});
 
@@ -472,7 +464,7 @@ const App = {
         });
         window.onbeforeunload = function(){
             App.sendSessionEvent(false);
-            App.save();
+            // App.save();
         }
 
 
@@ -775,17 +767,6 @@ const App = {
                         Missions.currentPts += 500;
                     });
                 })) return showAlreadyUsed();
-                break;
-            case "GETLFDBDATA":
-                const waitDisplay = App.displayPopup('Please wait...');
-                const getter = async () => {
-                    const dbStoreStorage = await App.localforage_getDBItems();
-                    const saveCode = await App.getSaveCode(dbStoreStorage);
-                    App.exportSaveCode(saveCode);
-                    App.displayPopup('exported!');
-                    waitDisplay.close();
-                }
-                getter();
                 break;
             default:
                 const showInvalidError = () => {
@@ -2497,31 +2478,6 @@ const App = {
                                 }
                             },
                             {
-                                name: 'localStorage size',
-                                onclick: () => {
-                                    let total = [];
-                                    var _lsTotal = 0,
-                                        _xLen, _x;
-                                    for (_x in localStorage) {
-                                        if (!localStorage.hasOwnProperty(_x)) {
-                                            continue;
-                                        }
-                                        _xLen = ((localStorage[_x].length + _x.length) * 2);
-                                        _lsTotal += _xLen;
-                                        const text = (_x.substr(0, 50) + " = " + (_xLen / 1024).toFixed(2) + " KB")
-                                        total.push(text);
-                                    };
-                                    const totalText = (_lsTotal / 1024).toFixed(2) + " KB";
-
-                                    const ui = UI.genericListContainer();
-                                    const content = UI.empty()
-                                    ui.appendChild(content);
-                                    content.innerHTML = [...total, `total = ${totalText}`].join('<br>');
-
-                                    return true;
-                                }
-                            },
-                            {
                                 name: 'user',
                                 onclick: () => {
                                     const ui = UI.genericListContainer();
@@ -3132,8 +3088,6 @@ const App = {
 
                                     App.displayPopup('resetting...', App.INF);
 
-                                    window.localStorage.clear();
-                                    await App.dbStore.clear();
                                     await window.idbKeyval.delMany(['last_time', 'pet']);
 
                                     location.reload();
@@ -3162,8 +3116,6 @@ const App = {
                                             onclick: async () => {
                                                 App.save = () => {};
                                                 App.displayPopup('resetting...', App.INF);
-                                                window.localStorage.clear();
-                                                await App.dbStore.clear();
                                                 await window.idbKeyval.clear();
                                                 location.reload();
                                                 return false;
@@ -6571,7 +6523,7 @@ const App = {
         };
     },
     handleSequentiallyLoad: async function(loaders){
-        const isValid = (data) => !!(data?.lastTime && data.pet?.name);
+        const isValid = (data) => Boolean(data?.lastTime && data.pet?.name);
         let mainData;
         try {
             for (const loader of loaders) {
@@ -6632,9 +6584,9 @@ const App = {
         return mainData;
     },
     save: function(noIndicator){
-        let savingData = [];
         if(!App.pet || !App.loadingEnded) return;
 
+        let savingData = [];
         const setItem = (key, value) => {
             savingData = [...savingData, [key, value]];
         }
@@ -6739,65 +6691,6 @@ const App = {
     
         return App.loadedData;
     },
-    localforage_load: async function() {
-        const getItem = async (key, defaultValue) => {
-            const value = await App.dbStore.getItem(key);
-            return value !== null ? value : defaultValue;
-        }
-    
-        const pet = await getItem('pet', {});
-        const settings = await getItem('settings', null);
-        const lastTime = await getItem('last_time', false);
-        const eventsHistory = await getItem('ingame_events_history', null);
-        const roomCustomizations = await getItem('room_customization', null);
-        const mods = await getItem('mods', App.mods);
-        const records = await getItem('records', App.records);
-    
-        const userId = await getItem('user_id', random(100000000000, 999999999999));
-        App.userId = userId;
-    
-        const userName = await getItem('user_name', null);
-        App.userName = userName === 'null' ? null : userName;
-    
-        App.playTime = parseInt(await getItem('play_time', 0), 10);
-    
-        const shellBackground = await getItem('shell_background_v2.1', 
-            App.definitions.shell_background.find(shell => shell.isDefault).image ||
-            App.definitions.shell_background[1].image);
-    
-        const missions = await getItem('missions', {});
-        const furniture = await getItem('furniture', false);
-        const plants = await getItem('plants', App.plants);
-        const animals = await getItem('animals', App.animals);
-
-        App.loadedData = {
-            pet,
-            settings,
-            lastTime,
-            eventsHistory,
-            roomCustomizations,
-            shellBackground,
-            playTime: App.playTime,
-            mods,
-            records,
-            missions,
-            furniture,
-            plants,
-            animals,
-        };
-    
-        return App.loadedData;
-    },
-    localforage_getDBItems: async function(){
-        const keys = await App.dbStore.keys();
-        const items = {};
-
-        for (const key of keys) {
-            items[key] = await App.dbStore.getItem(key);
-        }
-    
-        return items;
-    },
     getDBItems: async function(){
         const entries = await window.idbKeyval.entries();
         return entries.reduce((acc, [key, value]) => acc = {...acc, [key]: value}, {});
@@ -6810,63 +6703,6 @@ const App = {
         }
     
         return items;
-    },
-    legacy_load: function(){
-        let pet = window.localStorage.getItem('pet');
-            pet = pet ? JSON.parse(pet) : {};
-
-        let settings = window.localStorage.getItem('settings');
-            settings = settings ? JSON.parse(settings) : null;
-
-        let lastTime = window.localStorage.getItem('last_time') || false;
-
-        let eventsHistory = window.localStorage.getItem('ingame_events_history');
-            eventsHistory = eventsHistory ? JSON.parse(eventsHistory) : null;
-
-        let roomCustomizations = window.localStorage.getItem('room_customization');
-        roomCustomizations = roomCustomizations ? JSON.parse(roomCustomizations) : null;
-
-        let mods = window.localStorage.getItem('mods');
-        mods = mods ? JSON.parse(mods) : App.mods;
-
-        let records = window.localStorage.getItem('records');
-        records = records ? JSON.parse(records) : App.records;
-
-        // user
-        let userId = window.localStorage.getItem('user_id') || random(100000000000, 999999999999);
-        App.userId = userId;
-        let userName = window.localStorage.getItem('user_name');
-        App.userName = userName == 'null' ? null : userName;
-        
-        App.playTime = parseInt(window.localStorage.getItem('play_time') || 0);
-
-        let shellBackground = 
-            window.localStorage.getItem('shell_background_v2.1') || 
-            App.definitions.shell_background.find(shell => shell.isDefault).image ||
-            App.definitions.shell_background[1].image;
-
-        let missions = window.localStorage.getItem('missions');
-        missions = missions ? JSON.parse(missions) : {};
-
-        let furniture = window.localStorage.getItem('furniture');
-        furniture = furniture ? JSON.parse(furniture) : false;
-
-        App.loadedData = {
-            ...(App.loadedData || {}),
-            pet, 
-            settings, 
-            lastTime, 
-            eventsHistory, 
-            roomCustomizations, 
-            shellBackground, 
-            playTime: App.playTime, 
-            mods,
-            records,
-            missions,
-            furniture
-        };
-
-        return App.loadedData;
     },
     loadFromJson: async function(json, callbackFn){
         const ignoreKeys = [
@@ -6900,8 +6736,6 @@ const App = {
         callbackFn?.();
     },
     getSaveCode: async function(providedStorage){
-        // let charCode = 'save:' + btoa(JSON.stringify(window.localStorage));
-        // let charCode = `save:${btoa(encodeURIComponent(JSON.stringify(window.localStorage)))}:endsave`;
         const storage = providedStorage ?? await App.getDBItems();
         const serializableStorage = Object.assign({}, storage);
         const unserializableAttributes = ['shell_background_v2.1', 'mods'];
