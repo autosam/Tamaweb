@@ -2412,7 +2412,6 @@ class Activities {
             App.pet.playCheeringAnimation();
             App.pet.stats.is_at_parents = false;
             App.pet.stats.current_discipline += random(0, 5);
-            App.save();
             return;
         }
 
