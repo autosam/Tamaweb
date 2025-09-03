@@ -163,6 +163,14 @@ const App = {
         ]);
         console.log({loadedData});
 
+        // events history
+        if(loadedData.eventsHistory){
+            App.gameEventsHistory = loadedData.eventsHistory;
+        }
+
+        // records
+        App.records = loadedData.records;
+
         // shell background
         this.setShellBackground(loadedData?.shellBackground);
 
@@ -356,13 +364,7 @@ const App = {
         }
 
         // in-game events
-        if(loadedData.eventsHistory){
-            App.gameEventsHistory = loadedData.eventsHistory;
-        }
         this.handleInGameEvents();
-
-        // records
-        App.records = loadedData.records;
 
         // missions
         Missions.init(loadedData.missions);
@@ -880,6 +882,9 @@ const App = {
         }
     },
     handleInGameEvents: function(){
+        // add active pet to collection
+        App.handlers.add_active_pet_to_collection();
+
         if(!App.awayTime || App.awayTime === -1) {
             App.handlers.show_onboarding();
             return;
@@ -1687,9 +1692,8 @@ const App = {
         }
     },
     createActivePet: function(petDef, props = {}){
-        if(petDef.sprite){
-            App.addEvent(`${App.constants.CHAR_UNLOCK_PREFIX}_${PetDefinition.getCharCode(petDef.sprite)}`)
-        }
+        if(petDef.sprite) App.handlers.add_active_pet_to_collection(petDef.sprite);
+
         return new Pet(petDef, {
             z: App.constants.ACTIVE_PET_Z, 
             scale: 1, 
@@ -3315,8 +3319,12 @@ const App = {
             list.appendChild(content);
             list.style.zIndex = 5;
         },
+        add_active_pet_to_collection: function(char = App.petDefinition.sprite){
+            const eventId = `${App.constants.CHAR_UNLOCK_PREFIX}_${PetDefinition.getCharCode(char)}`
+            App.addEvent(eventId)
+        },
         open_character_collection: function(){
-            App.addEvent(`${App.constants.CHAR_UNLOCK_PREFIX}_${PetDefinition.getCharCode(App.petDefinition.sprite)}`)
+            App.handlers.add_active_pet_to_collection();
 
             let unlockedCount = 0;
             const allCharacters = [
