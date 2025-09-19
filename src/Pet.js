@@ -391,7 +391,10 @@ class Pet extends Object2d {
                     break;
             }
 
-            if(this.stats.is_misbehaving){
+            if(
+                this.stats.is_misbehaving &&
+                (this.stats.current_hunger > this.stats.max_hunger / 2)
+            ){
                 if(random(0, 100) >= 10) return true;
             }
 
