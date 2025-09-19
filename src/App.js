@@ -6329,8 +6329,7 @@ const App = {
             moment(App.constants.CHRISTMAS_TIME.absDay, 'MM-DD'), 
             'day');
     },
-    isSleepHour: function(){
-        const hour = new Date().getHours();
+    isSleepHour: function(hour = new Date().getHours()){
         return App.isWithinHour(
             hour,
             App.constants.SLEEP_START + App.settings.sleepingHoursOffset,
