@@ -441,7 +441,7 @@ class Pet extends Object2d {
         App.uiFood.setAttribute('index', foodSpriteCellNumber - 1);
         
         this.inverted = false;
-        this.stats.current_hunger += value;
+        this.stats.current_hunger += (value || 0);
 
         App.setScene(App.scene.kitchen);
 

@@ -3486,8 +3486,8 @@ const App = {
                 // lifestage check
                 if('age' in current && !current.age.includes(age)) continue;
 
-                // buy mode and is free
-                if(buyMode && (current.price === 0 || (!allowCookableOnly && current.cookableOnly))) continue;
+                // buy mode and should skip
+                if(buyMode && (current.price === 0 || (!allowCookableOnly && current.cookableOnly) || current.unbuyable)) continue;
 
                 // filter check
                 if(filterType && currentType !== filterType) continue;
@@ -3571,7 +3571,7 @@ const App = {
                         }
 
                         App.closeAllDisplays();
-                        let ateFood = App.pet.feed(current.sprite, current.hunger_replenish, currentType, null, reopenFn);
+                        let ateFood = App.pet.feed(current.sprite, current.hunger_replenish ?? 0, currentType, null, reopenFn);
                         if(ateFood) {
                             removeOneFoodFromInventory();
 
@@ -3581,6 +3581,8 @@ const App = {
                             App.pet.stats.current_expression += current.expression_increase ?? 0;
                             App.pet.stats.current_logic += current.logic_increase ?? 0;
                             App.pet.stats.current_endurance += current.endurance_increase ?? 0;
+                            App.pet.stats.current_discipline += current.discipline_increase ?? 0;
+
 
                             if(App.pet.hasMoodlet('healthy') && food === 'medicine')
                                 App.pet.stats.current_health = App.pet.stats.current_health * 0.6;
