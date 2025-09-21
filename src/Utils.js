@@ -259,7 +259,10 @@ const wordBank = {
     "laugh", "cry", "smile", "frown", "yell", "whisper", "sing", "shout", "giggle", "mumble", "scream", "argue",
     "dream", "imagine", "explore", "solve", "remember", "forget", "guess", "suspect", "wonder", "believe", "know",
     "help", "share", "trade", "steal", "hug", "kiss", "tickle", "scare", "follow", "lead", "watch", "listen",
-    "draw", "paint", "write", "read", "count", "measure", "cook", "clean", "decorate", "design", "code", "program"
+    "draw", "paint", "write", "read", "count", "measure", "cook", "clean", "decorate", "design", "code", "program", 
+    "King", "Queen", "Knight", "Prince", "Princess", "Soldier", "Captain", "Pirate", "Ninja", "Samurai",
+    "Giant", "Angel", "Demon", "Beast", "Clown", "Jester", "Hunter", "Traveler", "Explorer", "Seeker",
+    "Player", "Singer", "Dancer", "Painter", "Writer", "Thinker", "Watcher", "Listener", "Maker", "Breaker",
   ],
 
   slot3: [
@@ -272,7 +275,14 @@ const wordBank = {
     "bag", "lamp", "rope", "glove", "ring", "necklace", "watch", "phone", "screen", "button", "switch", "remote",
     "cloud", "rain", "snow", "sun", "moon", "tree", "flower", "leaf", "rock", "sand", "fire", "water", "wind", "fog",
     "castle", "tower", "bridge", "path", "hole", "trap", "room", "house", "school", "forest", "cave", "island", "planet",
-    "color", "shape", "pattern", "number", "letter", "word", "story", "joke", "truth", "lie", "game", "challenge"
+    "color", "shape", "pattern", "number", "letter", "word", "story", "joke", "truth", "lie", "game", "challenge", "push",
+    "pull", "lift", "throw", "catch", "cut", "burn", "freeze", "melt", "grow",
+    "shine", "glow", "fade", "enter", "leave", "stay", "wait", "move", "turn", "spin",
+    "clap", "stomp", "kick", "punch", "wave", "nod", "bow", "dance", "cheer", "whistle", "mountain", 
+    "valley", "river", "lake", "ocean", "desert", "volcano", "starfall", "comet", "galaxy",
+    "armor", "sword", "shield", "bow", "arrow", "helmet", "crown", "cloak", "staff", "wand",
+    "painting", "statue", "poem", "scroll", "note", "message", "signal", "alarm", "flag", "sign",
+    "energy", "spark", "flame", "smoke", "shadow", "illusion", "portal", "dimension", "spirit", "soul",
   ],
 
   questionStarters: [
@@ -280,7 +290,10 @@ const wordBank = {
     "Why is", "How do", "When will", "Can you see", "Did you hear", "Will it be",
     "Is there", "Are you", "Should I", "Could we", "Would you", "May I", "Do they",
     "What happens if", "Can it", "Does it", "Is it okay to", "Can I touch", "Do you want",
-    "What do you think of", "Is it true that", "Can we play with", "Would it be fun to", "Is this yours"
+    "What do you think of", "Is it true that", "Can we play with", "Would it be fun to", 
+    "Is this yours", "How many", "Which one", "What if", "Can we try", "Do you remember", 
+    "Shall we", "Could it be", "Would you like to", "Can I join", "What should", "Is it possible to",
+    "Do you believe", "Will you help", "Should we wait", "When can we", "Is it safe to"
   ]
 };
 const generateRandomSentence = (isQuestion = Math.random() > 0.5) => {
