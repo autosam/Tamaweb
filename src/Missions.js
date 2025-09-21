@@ -146,10 +146,24 @@ const Missions = {
                 }
             } 
         });
+        const exclusivePotionsPool = Object.keys(defs.food).filter(key => {
+            const item = defs.food[key];
+            return item.type === 'med' && item.unbuyable;
+        }).map(key => { 
+            return {
+                name: key,
+                icon: App.getFoodCSprite(defs.food[key].sprite),
+                count: [1, 1],
+                type: 'consumable',
+                onClaim: (amt) => {
+                    App.addNumToObject(App.pet.inventory.food, key, amt || 1);
+                }
+            } 
+        });
         const goldPullDef = {
             name: 'gold',
             icon: '<div class="gold-circle">$</div>',
-            count: [6, 35],
+            count: [1, 25],
             type: '',
             onClaim: (amt) => {
                 App.pet.stats.gold += amt || 50;
@@ -219,6 +233,22 @@ const Missions = {
                         ...accessoriesPool,
                     ]
                     pullFromPool(pool, false);
+                }
+            },
+            {
+                name: 'Exclusive Potions',
+                price: 100,
+                info: `
+                    <div>
+                        <div> gold++++ </div>
+                        <div> special potions+ </div>
+                    </div>
+                `,
+                onClaim: () => {
+                    const pool = [
+                        ...exclusivePotionsPool
+                    ]
+                    pullFromPool(pool, random(0, 3));
                 }
             },
         ]
