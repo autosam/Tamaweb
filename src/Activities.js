@@ -1,4 +1,158 @@
 class Activities {
+    static async goToGridActivities(){
+        App.toggleGameplayControls(false);
+        App.setScene(App.scene.emptyOutside)
+
+        App.pet.stopMove();
+        App.pet.x = '50%';
+        App.pet.y = '50%';
+        App.pet.speedOverride = 0.05;
+
+        const currentGridPosition = { x: 0, y: 0 };
+
+        // ui
+        App.toggleGameplayControls(false);
+        const display = document.createElement('div');
+        display.className = 'absolute-fullscreen flex flex-dir-col menu-animation'
+        document.querySelector('.screen-wrapper').appendChild(display)
+        display.close = () => display.remove();
+        display.innerHTML = `
+            <div class="flex justify-center height-auto b-radius-10">
+                <span id="activity-name" class="directional-control__activity-name">$activity_name$</span>
+            </div>
+            <div class="directional-control__container">
+                <div class="controls-y">
+                    <div class="controls-x flex-1 align-center">
+                        <button class="generic-btn stylized slide-action" id="up"><i class="fa fa-angle-up"></i></button>
+                        <button class="generic-btn stylized slide-action" id="down"><i class="fa fa-angle-down"></i></button>
+                    </div>
+                    <div class="controls-x flex-1 align-center">
+                        <button class="generic-btn stylized slide-action" id="left"><i class="fa fa-angle-left"></i></button>
+                        <button class="generic-btn stylized slide-action" id="right"><i class="fa fa-angle-right"></i></button>
+                    </div>
+                    <div class="bottom-container align-end">
+                        <button class="generic-btn stylized back-btn" id="cancel">
+                            <i class="fa fa-home"></i>
+                        </button>
+                        <button class="generic-btn stylized" id="apply">
+                            <i class="fa fa-door-open"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        const upBtn = display.querySelector('button#up');
+        const downBtn = display.querySelector('button#down');
+        const rightBtn = display.querySelector('button#right');
+        const leftBtn = display.querySelector('button#left');
+        const updatePosition = (direction) => {
+            switch(direction){
+                case 'up': currentGridPosition.y += 1; break;
+                case 'down': currentGridPosition.y -= 1; break;
+                case 'right': currentGridPosition.x -= 1; break;
+                case 'left': currentGridPosition.x += 1; break;
+            }
+        }
+        upBtn.onclick = () => updatePosition("up");
+        downBtn.onclick = () => updatePosition("down");
+        rightBtn.onclick = () => updatePosition("right");
+        leftBtn.onclick = () => updatePosition("left");
+
+        // driver
+        App.pet.triggerScriptedState('idle', App.INF, 0, true, false, () => {
+            // driver
+            const position = {
+                x: currentGridPosition.x * (App.drawer.bounds.width), 
+                y: currentGridPosition.y * (App.drawer.bounds.height), 
+            }
+            App.drawer.setCameraPosition(
+                position.x, 
+                position.y, 
+                0.01 * App.deltaTime
+            )
+            App.pet.targetX = (-position.x) + (App.drawer.bounds.width / 2) - App.petDefinition.spritesheet.cellSize / 2;
+            App.pet.targetY = (-position.y) + (App.drawer.bounds.height / 2) - App.petDefinition.spritesheet.cellSize / 2 + App.petDefinition.spritesheet.offsetY;
+            
+            const isMoving = App.pet.x !== App.pet.targetX || App.pet.y !== App.pet.targetY;
+            App.pet.setState(isMoving ? 'moving' : 'idle');
+        });
+
+        let gridDefinition = []
+        for(let x = -1; x <= 1; x++){
+            gridDefinition[x] = []
+            for(let y = -1; y <= 1; y++) {
+                gridDefinition[x][y] = {
+                    background: 'resources/img/background/tile/grass_01.png',
+                    pets: [
+                        App.getRandomPetDef(),
+                        App.getRandomPetDef(),
+                    ],
+                    objects: [
+                        {
+                            image: 'resources/img/furniture/vintage_couch.png',
+                            x: 50,
+                            y: 50
+                        }
+                    ]
+                }
+            }
+        }
+
+        // todo: use timeline director
+
+        const renderMap = (gridDefinition) => {
+            const spawnedTiles = []
+            for(let x = -1; x <= 1; x++){
+                for(let y = -1; y <= 1; y++) {
+                    const cellDefinition = gridDefinition[x][y];
+                    const position = {
+                        x: x * App.drawer.bounds.width,
+                        y: y * App.drawer.bounds.height
+                    }
+                    const tileBackgroundObject = new Object2d({
+                        img: cellDefinition.background,
+                        ...position,
+                    })
+                    spawnedTiles.push(tileBackgroundObject);
+
+                    // pets
+                    cellDefinition.pets?.forEach((petDef) => {
+                        const petPosition = {
+                            x: App.drawer.getRelativePositionX(random(20, 80)) - petDef.spritesheet.cellSize / 2 + position.x,
+                            y: App.drawer.getRelativePositionY(random(20, 80)) - petDef.spritesheet.cellSize / 2 + position.y,
+                        }
+                        const pet = new Pet(petDef, { 
+                            ...petPosition, 
+                            breathFloat: Math.random(), // randomize breath pattern
+                            parent: tileBackgroundObject, 
+                            onDraw: (me) => {
+                                App.pet.setLocalZBasedOnSelf(me);
+                            } 
+                        });
+                        pet.triggerScriptedState('idle', App.INF, 0, true);
+                    })
+
+                    // objects
+                    cellDefinition.pets?.forEach((objectDef) => {
+                        const objectPosition = {
+                            x: App.drawer.getRelativePositionX(objectDef.x) / 2 + position.x,
+                            y: App.drawer.getRelativePositionY(objectDef.y) / 2 + position.y,
+                        }
+                        const object = new Object2d({ 
+                            ...objectDef, 
+                            ...objectPosition, 
+                            parent: tileBackgroundObject, z: 50,
+                            onDraw: (me) => {
+                                App.pet.setLocalZBasedOnSelf(me);
+                            } 
+                        });
+                    })
+                }
+            }
+        }
+
+        renderMap(gridDefinition)
+    }
     static async goToSchool(onFail){
         // reset school attend limit of eligible
         const lastReset = moment(App.pet.stats.lastSchoolClassLimitReset);
