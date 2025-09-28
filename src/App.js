@@ -6828,6 +6828,11 @@ const App = {
         }
         App.temp.lastErrorSent = App.fullTime;
 
+        window?.Sentry?.captureException(error, {
+            username: App.userName,
+            userId: App.userId,
+        });
+
         const versionInfo = `[game:${VERSION}-pl:${App.isOnItch ? 'itch' : 'web'}]`;
         const user = (App.userName ? App.userName + '-' : '') + App.userId;
         const url = `https://docs.google.com/forms/d/e/1FAIpQLScSloIis4P1yyKQ3imYcaipOk2XS12Qj16ZeM4DicTHi3RSCQ/formResponse?usp=pp_url&entry.1957124188=${user}&entry.1587672397=${`${versionInfo} - ${navigator?.userAgent}`}&entry.36658531=${error}`
