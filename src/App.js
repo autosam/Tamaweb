@@ -5953,6 +5953,7 @@ const App = {
                     break;
                 case "separator":
                     element = document.createElement('hr');
+                    defaultClassName = 'content-separator';
                     break;
                 case 'element':
                     element = item.innerHTML;
