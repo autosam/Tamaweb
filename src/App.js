@@ -363,9 +363,6 @@ const App = {
             }
         }
 
-        // in-game events
-        this.handleInGameEvents();
-
         // missions
         Missions.init(loadedData.missions);
 
@@ -395,6 +392,9 @@ const App = {
                 e.preventDefault();
             }
         }); */
+
+        // in-game events
+        this.handleInGameEvents();
         
         // random encounters
         App.runRandomEncounters();
@@ -6593,6 +6593,13 @@ const App = {
     save: function(noIndicator){
         if(!App.pet || !App.loadingEnded) return;
 
+        const timeElapsedSinceLastSave = App.time - (App.temp.lastSaved ?? 0);
+        if(noIndicator && timeElapsedSinceLastSave < (App.constants.AUTO_SAVE_INTERVAL_SECS / 2) * 1000){
+            return;
+        }
+
+        App.temp.lastSaved = Infinity; // prevent re-saving until save is complete
+
         let savingData = [];
         const setItem = (key, value) => {
             savingData = [...savingData, [key, value]];
@@ -6600,7 +6607,6 @@ const App = {
         setItem('pet', App.pet.serializeStats());
         setItem('settings', (App.settings));
         setItem('last_time', Date.now());
-        // setItem('last_time', Date.now() - 86400 * 1000 * 10);
         setItem('user_id', App.userId);
         setItem('user_name', App.userName);
         setItem('ingame_events_history', (App.gameEventsHistory));
@@ -6634,14 +6640,22 @@ const App = {
             ]
         });
 
-        // -3600000
         if(!noIndicator){
             const saveIcon = document.querySelector('.save-indicator');
             saveIcon.style.display = '';
             setTimeout(() => saveIcon.style.display = 'none', 2000);
         }
 
-        window.idbKeyval?.setMany(savingData);
+        if(!savingData?.length) {
+            App.sendErrorLog(`savingData-no-length: ${savingData?.length}`);
+            return;
+        }
+        window.idbKeyval?.setMany(savingData)
+            .then(() => App.temp.lastSaved = App.time)
+            .catch((e) => {
+                setTimeout(() => App.temp.lastSaved = App.time, 5000);
+                App.sendErrorLog(`idbKeyval-setMany: ${e}`);
+            });
     },
     load: async function() {
         let hasLoadError = false;
