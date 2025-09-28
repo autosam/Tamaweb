@@ -2624,7 +2624,7 @@ const App = {
                                 }
                             },
                             {
-                                name: 'active mods',
+                                name: `active mods (${App.mods.length})`,
                                 onclick: () => {
                                     // App.displayPopup(JSON.stringify(App.mods, null, 2), 5000);
                                     if(!App.mods.length) return App.displayPopup('No mods installed');
