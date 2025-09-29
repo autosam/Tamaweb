@@ -2192,7 +2192,7 @@ const App = {
                                 },
                                 {
                                     componentType: 'button',
-                                    className: 'generic-btn stylized m-0 flex-1 flex-center flex-dir-row',
+                                    className: `generic-btn stylized m-0 flex-1 flex-center flex-dir-row ${App.pet.stats.is_misbehaving ? 'attention' : ''}`,
                                     style: `color: #e74040;`,
                                     innerHTML: App.getIcon('face-angry') + App.getIcon('thumbs-down', true),
                                     onclick: () => {
