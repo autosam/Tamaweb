@@ -2031,6 +2031,18 @@ a.generic-btn:before {
     }
 }
 
+.attention {
+    animation: attention 0.25s ease-in-out infinite alternate;
+}
+@keyframes attention {
+    from {
+        transform: scale(0.95);
+    }
+    to {
+        transform: scale(1.025);
+    }
+}
+
 /* shell shapes */
 .shell-shape-2 {
     border-radius: 30%;
