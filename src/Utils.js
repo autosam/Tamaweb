@@ -282,7 +282,7 @@ const wordBank = {
     "valley", "river", "lake", "ocean", "desert", "volcano", "starfall", "comet", "galaxy",
     "armor", "sword", "shield", "bow", "arrow", "helmet", "crown", "cloak", "staff", "wand",
     "painting", "statue", "poem", "scroll", "note", "message", "signal", "alarm", "flag", "sign",
-    "energy", "spark", "flame", "smoke", "shadow", "illusion", "portal", "dimension", "spirit", "soul",
+    "energy", "spark", "flame", "smoke", "shadow", "illusion", "portal", "dimension", "spirit", "soul", "exist"
   ],
 
   questionStarters: [
@@ -293,7 +293,7 @@ const wordBank = {
     "What do you think of", "Is it true that", "Can we play with", "Would it be fun to", 
     "Is this yours", "How many", "Which one", "What if", "Can we try", "Do you remember", 
     "Shall we", "Could it be", "Would you like to", "Can I join", "What should", "Is it possible to",
-    "Do you believe", "Will you help", "Should we wait", "When can we", "Is it safe to"
+    "Do you believe", "Will you help", "Should we wait", "When can we", "Is it safe to", "How weird it is to",
   ]
 };
 const generateRandomSentence = (isQuestion = Math.random() > 0.5) => {
