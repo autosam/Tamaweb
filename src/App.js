@@ -163,8 +163,10 @@ const App = {
         ]);
         console.log({loadedData});
 
+        if(!loadedData) return;
+
         // events history
-        if(loadedData.eventsHistory){
+        if(loadedData?.eventsHistory){
             App.gameEventsHistory = loadedData.eventsHistory;
         }
 
