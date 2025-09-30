@@ -3531,6 +3531,7 @@ const App = {
                                 ` : ''}
                             </b>`
                         }
+                        ${current.isNew ? App.getBadge('new!') : ''}
                     `,
                     onclick: (btn, list) => {
                         // buy mode
@@ -3608,12 +3609,14 @@ const App = {
 
             if(buyMode) list.push(list.shift());
 
+            console.log({list})
+
             let acceptLabel = 'Eat';
             if(buyMode) acceptLabel = 'Purchase';
             else if(sellMode) acceptLabel = 'Sell';
             else if(useMode) acceptLabel = 'Use';
             sliderInstance = App.displaySlider(
-                list, 
+                list.sort((a, b) => (b?.current?.isNew || 0) - (a?.current?.isNew || 0)), 
                 activeIndex, 
                 {accept: acceptLabel}, 
                 (buyMode || sellMode) ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}` : null);
