@@ -241,9 +241,18 @@ const Missions = {
                 info: `
                     <div>
                         <div> gold++++ </div>
-                        <div> special potions+ </div>
+                        <div> ${App.getIcon('flask')}expression skill+ </div>
+                        <div> ${App.getIcon('flask')}logic skill+ </div>
+                        <div> ${App.getIcon('flask')}endurance skill+ </div>
+                        <div> ${App.getIcon('flask')}neglect+ </div>
+                        <div> ${App.getIcon('flask')}well behaving+ </div>
+                        <div> ${App.getIcon('flask')}misbehaving+ </div>
+                        <div> ${App.getIcon('flask')}fulfillment+ </div>
+                        <div> ${App.getIcon('flask')}aging up+ </div>
+                        <div> ${App.getIcon('flask')}nothingness+ </div>
                     </div>
                 `,
+                isNew: true,
                 onClaim: () => {
                     const pool = [
                         ...exclusivePotionsPool
@@ -262,14 +271,14 @@ const Missions = {
                 </small>`,
                 type: 'text'
             },
-            ...chests
-            .map(chest => {
+            ...chests.map(chest => {
                 return {
                     name: 
                         '<div class="pointer-events-none">'
+                        + `<div><small>${App.getIcon('coins', true)} <span>${chest.price}</span></small></div>`
                         + chest.name 
-                        + `<br><small class="inline-list">${chest.info }<small>`
-                        + App.getBadge(`${App.getIcon('coins', true)} <span style="margin-left: 3px">${chest.price}</span>`)
+                        + `<br><small class="inline-list">${chest.info}</small>`
+                        + (chest.isNew ? App.getBadge() : '')
                         + '</div>',
                     _disable: chest.price > Missions.currentPts,
                     class: 'large',
@@ -320,6 +329,7 @@ const Missions = {
                     </span>
                     <button onclick="Missions.openRewardsMenu()" class="generic-btn stylized">
                         ${App.getIcon('shopping-bag', true)}
+                        ${App.getBadge('!')}
                     </button>
                 `,
                 type: 'text',

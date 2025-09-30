@@ -6282,7 +6282,7 @@ const App = {
             if(moment(expirationDate).isBefore(moment())) return '';
         }
 
-        return `<span class="badge ${color}">${text}<span>`;
+        return `<span class="badge ${color}">${text}</span>`;
     },
     drawUI: function(){
         App.drawer.drawImmediate({
