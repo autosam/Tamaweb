@@ -3601,8 +3601,6 @@ const App = {
 
             if(buyMode) list.push(list.shift());
 
-            console.log({list})
-
             let acceptLabel = 'Eat';
             if(buyMode) acceptLabel = 'Purchase';
             else if(sellMode) acceptLabel = 'Sell';
