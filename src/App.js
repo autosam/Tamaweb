@@ -907,7 +907,7 @@ const App = {
         //     ])
         // })) return;
 
-        if(addEvent(`update_19_notice`, () => {
+        if(addEvent(`update_20_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
@@ -916,7 +916,7 @@ const App = {
                     bold: true,
                 },
                 {
-                    name: `Check out the new school system, skills, discipline system, genders and more!`,
+                    name: `Check out the newly added potions, food, snacks and improvements!`,
                     type: 'text',
                 },
                 {
