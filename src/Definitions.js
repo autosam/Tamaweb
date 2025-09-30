@@ -809,6 +809,28 @@ App.definitions = (() => {
                 type: 'med',
                 unbuyable: true,
             },
+            "potion of aging up": {
+                sprite: 1050,
+                price: 250,
+                type: 'med',
+                unbuyable: true,
+                payload: () => {
+                    App.toggleGameplayControls(false);
+                    App.pet.triggerScriptedState('cheering', 10000, 0, true);
+                    Activities.task_foam(() => {
+                        App.pet.ageUp();
+                        App.pet.x = '50%';
+                        App.pet.y = 60;
+                        App.pet.stopMove();
+                        App.pet.triggerScriptedState('blush', 3000, 0, true, () => {
+                            App.setScene(App.scene.home);
+                            App.toggleGameplayControls(true);
+                            App.pet.playCheeringAnimation();
+                        });
+                        App.sendAnalytics('age_up_potion', App.petDefinition.lifeStage);
+                    });
+                },
+            },
             "potion of nothingness": {
                 sprite: 1050,
                 price: 2,

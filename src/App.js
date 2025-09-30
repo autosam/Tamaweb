@@ -3583,11 +3583,15 @@ const App = {
                             App.pet.stats.current_endurance += current.endurance_increase ?? 0;
                             App.pet.stats.current_discipline += current.discipline_increase ?? 0;
 
-
                             if(App.pet.hasMoodlet('healthy') && food === 'medicine')
                                 App.pet.stats.current_health = App.pet.stats.current_health * 0.6;
                             else
                                 App.pet.stats.current_health += current.health_replenish ?? 0;
+
+                            // custom callback after eating item
+                            if(current.payload){
+                                App.queueEvent(current.payload);
+                            }
                         }
                     }
                 })
