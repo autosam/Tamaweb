@@ -391,7 +391,10 @@ class Pet extends Object2d {
                     break;
             }
 
-            if(this.stats.is_misbehaving){
+            if(
+                this.stats.is_misbehaving &&
+                (this.stats.current_hunger > this.stats.max_hunger / 2)
+            ){
                 if(random(0, 100) >= 10) return true;
             }
 
@@ -438,7 +441,7 @@ class Pet extends Object2d {
         App.uiFood.setAttribute('index', foodSpriteCellNumber - 1);
         
         this.inverted = false;
-        this.stats.current_hunger += value;
+        this.stats.current_hunger += (value || 0);
 
         App.setScene(App.scene.kitchen);
 
@@ -677,9 +680,8 @@ class Pet extends Object2d {
             }
         }
     }
-    statsManager(isOfflineProgression, hour){
+    statsManager(isOfflineProgression, hour = App.hour){
         if(!this.isMainPet || this.stats.is_dead) return;
-        if(!hour) hour = App.hour;
 
         let stats = this.stats;
         const previousStats = Object.assign({}, this.stats);
@@ -688,7 +690,7 @@ class Pet extends Object2d {
         if(isOfflineProgression){
             depletion_mult = 0.25;
 
-            if(App.isSleepHour()){
+            if(App.isSleepHour(hour)){
                 offlineAndIsNight = true;
                 depletion_mult = 0.05;
             }
@@ -1178,18 +1180,18 @@ class Pet extends Object2d {
         if(!this.isMainPet || App.haveAnyDisplays()) return;
         App.playSound(sound, force);
     }
-    getStatsDepletionRates(offline, targetLifeStage){
+    getStatsDepletionRates(isOffline, targetLifeStage, hour){
         App.petDefinition.maxStats();
         const currentLifeStage = this.petDefinition.lifeStage;
-        if(targetLifeStage !== undefined) this.petDefinition.lifeStage = targetLifeStage;
+        if(targetLifeStage != null) this.petDefinition.lifeStage = targetLifeStage;
         const { MAX_OFFLINE_PROGRESSION_SECS } = App.constants;
         
         const report = {};
         // let offline = false;
 
         for(let i = 0; i < MAX_OFFLINE_PROGRESSION_SECS; i++){
-            this.statsManager(offline);
-            this.statsManager(offline);
+            this.statsManager(isOffline, hour);
+            this.statsManager(isOffline, hour);
 
             // prevents dying
             this.stats.current_hunger += 1;

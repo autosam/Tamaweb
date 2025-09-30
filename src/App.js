@@ -363,9 +363,6 @@ const App = {
             }
         }
 
-        // in-game events
-        this.handleInGameEvents();
-
         // missions
         Missions.init(loadedData.missions);
 
@@ -395,6 +392,9 @@ const App = {
                 e.preventDefault();
             }
         }); */
+
+        // in-game events
+        this.handleInGameEvents();
         
         // random encounters
         App.runRandomEncounters();
@@ -907,7 +907,7 @@ const App = {
         //     ])
         // })) return;
 
-        if(addEvent(`update_19_notice`, () => {
+        if(addEvent(`update_20_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
@@ -916,7 +916,7 @@ const App = {
                     bold: true,
                 },
                 {
-                    name: `Check out the new school system, skills, discipline system, genders and more!`,
+                    name: `Check out the newly added potions, food, snacks and improvements!`,
                     type: 'text',
                 },
                 {
@@ -2184,7 +2184,7 @@ const App = {
                                 },
                                 {
                                     componentType: 'button',
-                                    className: 'generic-btn stylized m-0 flex-1 flex-center flex-dir-row',
+                                    className: `generic-btn stylized m-0 flex-1 flex-center flex-dir-row ${App.pet.stats.is_misbehaving ? 'attention' : ''}`,
                                     style: `color: #e74040;`,
                                     innerHTML: App.getIcon('face-angry') + App.getIcon('thumbs-down', true),
                                     onclick: () => {
@@ -2530,14 +2530,92 @@ const App = {
                     },
                 },
                 {
+                    name: `save management`,
+                    onclick: () => {
+                        return App.displayList([
+                            {
+                                name: `<i class="fa-solid fa-download icon"></i> <label class="custom-file-upload"><input id="save-file" type="file"></input>Import</label>`,
+                                _mount: (element) => {
+                                    const input = element.querySelector('#save-file');
+                                    App.handleFileLoad(input, 'readAsText', (data) => {
+                                        App.handleInputCode(data);
+                                        input.files = new DataTransfer().files;
+                                        return true;
+                                    })
+                                },
+                                onclick: () => {
+                                    return true;
+                                }
+                            },
+                            {
+                                name: `<i class="fa-solid fa-upload icon"></i> Export`,
+                                onclick: () => App.exportSaveCode()
+                            },
+                            {
+                                name: `<i class="fa-solid fa-copy icon"></i> copy`,
+                                onclick: async () => {
+                                    const loadingPopup = App.displayPopup('loading...');
+                                    const charCode = await App.getSaveCode();
+                                    loadingPopup.close();
+                                    App.displayConfirm(`Here you'll be able to copy your unique save code and continue your playthrough on another device`, [
+                                        {
+                                            name: 'ok',
+                                            onclick: () => {
+                                                App.displayConfirm(`After copying the code, open Tamaweb on another device and paste the code in <b>settings > input code</b>`, [
+                                                    {
+                                                        name: 'ok',
+                                                        onclick: () => {
+                                                            try {
+                                                                if(App.isOnItch) throw 'itch_clipboard';
+                                                                navigator.clipboard.writeText(charCode);
+                                                                console.log('save code copied', charCode);
+                                                                App.displayPopup('Save code copied!', 1000);
+                                                            } catch(e) {
+                                                                const prompt = App.displayPrompt(`Copy your save code from the box below:<br><small><i class="fa-solid fa-info-circle"></i> starts with <b>save:</b> and ends with <b>:endsave</b></small>`, [
+                                                                    {
+                                                                        name: 'Ok, I copied',
+                                                                        class: 'back-btn',
+                                                                        onclick: () => {}
+                                                                    }
+                                                                ], charCode);
+                                                                const input = prompt.querySelector('input');
+                                                                input.focus();
+                                                                input.select();
+                                                            }
+                                                        }
+                                                    },
+                                                ]);
+                                            }
+                                        },
+                                    ]);
+                                    return true;
+                                }
+                            },
+                        ])
+                    }
+                },
+                {
                     // _ignore: !App.isTester(),
                     _ignore: App.isOnItch,
                     name: `mods`,
                     onclick: () => {
                         const display = App.displayList([
                             {
-                                name: 'install / uninstalling mods will refresh the game',
-                                type: 'info'
+                                name: `
+                                    <span>
+                                        Please backup your save before installing mods.
+                                    </span>
+                                    <div class="flex flex-dir-col mt-2">
+                                        <button id="emergency-backup" class="generic-btn stylized primary solid"> ${App.getIcon('download')} Backup </button>
+                                    </div>
+                                `,
+                                type: 'info',
+                                _mount: (e) => {
+                                    e.querySelector('#emergency-backup').onclick = (evt) => {
+                                        App.exportSaveCode();
+                                        evt.target.innerHTML = `${App.getIcon('check')} Exported!`
+                                    }
+                                }
                             },
                             {
                                 name: '<label class="custom-file-upload"><input id="mod-file" type="file"></input>+ Add mod</label>',
@@ -2546,7 +2624,7 @@ const App = {
                                 }
                             },
                             {
-                                name: 'active mods',
+                                name: `active mods (${App.mods.length})`,
                                 onclick: () => {
                                     // App.displayPopup(JSON.stringify(App.mods, null, 2), 5000);
                                     if(!App.mods.length) return App.displayPopup('No mods installed');
@@ -2600,7 +2678,10 @@ const App = {
                                     return true;
                                 }
                             },
-                            
+                            {
+                                name: 'installing / uninstalling mods will refresh the game.',
+                                type: 'info'
+                            },
                         ])
 
                         App.handleFileLoad(display.querySelector('#mod-file'), 'readAsText', (data) => {
@@ -2749,7 +2830,7 @@ const App = {
                     }
                 },
                 {
-                    name: `system settings ${App.getBadge()}`,
+                    name: `system settings`,
                     onclick: () => {
                         App.displayList([
                             {
@@ -2761,7 +2842,7 @@ const App = {
                                 }
                             },
                             {
-                                _mount: (e) => e.innerHTML = `bg music: <i>${App.settings.playMusic ? 'on' : 'off'}</i> ${App.getBadge()}`,
+                                _mount: (e) => e.innerHTML = `bg music: <i>${App.settings.playMusic ? 'on' : 'off'}</i>`,
                                 onclick: (item) => {
                                     App.settings.playMusic = !App.settings.playMusic;
                                     item._mount();
@@ -3007,71 +3088,6 @@ const App = {
                     }
                 },
                 { type: 'separator' },
-                {
-                    name: `save code`,
-                    onclick: () => {
-                        return App.displayList([
-                            {
-                                name: `<i class="fa-solid fa-download icon"></i> <label class="custom-file-upload"><input id="save-file" type="file"></input>Import</label>`,
-                                _mount: (element) => {
-                                    const input = element.querySelector('#save-file');
-                                    App.handleFileLoad(input, 'readAsText', (data) => {
-                                        App.handleInputCode(data);
-                                        input.files = new DataTransfer().files;
-                                        return true;
-                                    })
-                                },
-                                onclick: () => {
-                                    return true;
-                                }
-                            },
-                            {
-                                name: `<i class="fa-solid fa-upload icon"></i> Export`,
-                                onclick: () => App.exportSaveCode()
-                            },
-                            {
-                                name: `<i class="fa-solid fa-copy icon"></i> copy`,
-                                onclick: async () => {
-                                    const loadingPopup = App.displayPopup('loading...');
-                                    const charCode = await App.getSaveCode();
-                                    loadingPopup.close();
-                                    App.displayConfirm(`Here you'll be able to copy your unique save code and continue your playthrough on another device`, [
-                                        {
-                                            name: 'ok',
-                                            onclick: () => {
-                                                App.displayConfirm(`After copying the code, open Tamaweb on another device and paste the code in <b>settings > input code</b>`, [
-                                                    {
-                                                        name: 'ok',
-                                                        onclick: () => {
-                                                            try {
-                                                                if(App.isOnItch) throw 'itch_clipboard';
-                                                                navigator.clipboard.writeText(charCode);
-                                                                console.log('save code copied', charCode);
-                                                                App.displayPopup('Save code copied!', 1000);
-                                                            } catch(e) {
-                                                                const prompt = App.displayPrompt(`Copy your save code from the box below:<br><small><i class="fa-solid fa-info-circle"></i> starts with <b>save:</b> and ends with <b>:endsave</b></small>`, [
-                                                                    {
-                                                                        name: 'Ok, I copied',
-                                                                        class: 'back-btn',
-                                                                        onclick: () => {}
-                                                                    }
-                                                                ], charCode);
-                                                                const input = prompt.querySelector('input');
-                                                                input.focus();
-                                                                input.select();
-                                                            }
-                                                        }
-                                                    },
-                                                ]);
-                                            }
-                                        },
-                                    ]);
-                                    return true;
-                                }
-                            },
-                        ])
-                    }
-                },
                 {
                     name: 'reset pet data',
                     onclick: () => {
@@ -3462,8 +3478,8 @@ const App = {
                 // lifestage check
                 if('age' in current && !current.age.includes(age)) continue;
 
-                // buy mode and is free
-                if(buyMode && (current.price === 0 || (!allowCookableOnly && current.cookableOnly))) continue;
+                // buy mode and should skip
+                if(buyMode && (current.price === 0 || (!allowCookableOnly && current.cookableOnly) || current.unbuyable)) continue;
 
                 // filter check
                 if(filterType && currentType !== filterType) continue;
@@ -3507,6 +3523,7 @@ const App = {
                                 ` : ''}
                             </b>`
                         }
+                        ${current.isNew ? App.getBadge('new!') : ''}
                     `,
                     onclick: (btn, list) => {
                         // buy mode
@@ -3547,7 +3564,7 @@ const App = {
                         }
 
                         App.closeAllDisplays();
-                        let ateFood = App.pet.feed(current.sprite, current.hunger_replenish, currentType, null, reopenFn);
+                        let ateFood = App.pet.feed(current.sprite, current.hunger_replenish ?? 0, currentType, null, reopenFn);
                         if(ateFood) {
                             removeOneFoodFromInventory();
 
@@ -3557,11 +3574,17 @@ const App = {
                             App.pet.stats.current_expression += current.expression_increase ?? 0;
                             App.pet.stats.current_logic += current.logic_increase ?? 0;
                             App.pet.stats.current_endurance += current.endurance_increase ?? 0;
+                            App.pet.stats.current_discipline += current.discipline_increase ?? 0;
 
                             if(App.pet.hasMoodlet('healthy') && food === 'medicine')
                                 App.pet.stats.current_health = App.pet.stats.current_health * 0.6;
                             else
                                 App.pet.stats.current_health += current.health_replenish ?? 0;
+
+                            // custom callback after eating item
+                            if(current.payload){
+                                App.queueEvent(current.payload);
+                            }
                         }
                     }
                 })
@@ -3583,7 +3606,7 @@ const App = {
             else if(sellMode) acceptLabel = 'Sell';
             else if(useMode) acceptLabel = 'Use';
             sliderInstance = App.displaySlider(
-                list, 
+                list.sort((a, b) => (b?.current?.isNew || 0) - (a?.current?.isNew || 0)), 
                 activeIndex, 
                 {accept: acceptLabel}, 
                 (buyMode || sellMode) ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}` : null);
@@ -5929,6 +5952,7 @@ const App = {
                     break;
                 case "separator":
                     element = document.createElement('hr');
+                    defaultClassName = 'content-separator';
                     break;
                 case 'element':
                     element = item.innerHTML;
@@ -6248,7 +6272,7 @@ const App = {
             if(moment(expirationDate).isBefore(moment())) return '';
         }
 
-        return `<span class="badge ${color}">${text}<span>`;
+        return `<span class="badge ${color}">${text}</span>`;
     },
     drawUI: function(){
         App.drawer.drawImmediate({
@@ -6321,8 +6345,7 @@ const App = {
             moment(App.constants.CHRISTMAS_TIME.absDay, 'MM-DD'), 
             'day');
     },
-    isSleepHour: function(){
-        const hour = new Date().getHours();
+    isSleepHour: function(hour = new Date().getHours()){
         return App.isWithinHour(
             hour,
             App.constants.SLEEP_START + App.settings.sleepingHoursOffset,
@@ -6586,6 +6609,13 @@ const App = {
     save: function(noIndicator){
         if(!App.pet || !App.loadingEnded) return;
 
+        const timeElapsedSinceLastSave = App.time - (App.temp.lastSaved ?? 0);
+        if(noIndicator && timeElapsedSinceLastSave < (App.constants.AUTO_SAVE_INTERVAL_SECS / 2) * 1000){
+            return;
+        }
+
+        App.temp.lastSaved = Infinity; // prevent re-saving until save is complete
+
         let savingData = [];
         const setItem = (key, value) => {
             savingData = [...savingData, [key, value]];
@@ -6593,7 +6623,6 @@ const App = {
         setItem('pet', App.pet.serializeStats());
         setItem('settings', (App.settings));
         setItem('last_time', Date.now());
-        // setItem('last_time', Date.now() - 86400 * 1000 * 10);
         setItem('user_id', App.userId);
         setItem('user_name', App.userName);
         setItem('ingame_events_history', (App.gameEventsHistory));
@@ -6627,14 +6656,22 @@ const App = {
             ]
         });
 
-        // -3600000
         if(!noIndicator){
             const saveIcon = document.querySelector('.save-indicator');
             saveIcon.style.display = '';
             setTimeout(() => saveIcon.style.display = 'none', 2000);
         }
 
-        window.idbKeyval?.setMany(savingData);
+        if(!savingData?.length) {
+            App.sendErrorLog(`savingData-no-length: ${savingData?.length}`);
+            return;
+        }
+        window.idbKeyval?.setMany(savingData)
+            .then(() => App.temp.lastSaved = App.time)
+            .catch((e) => {
+                setTimeout(() => App.temp.lastSaved = App.time, 5000);
+                App.sendErrorLog(`idbKeyval-setMany: ${e}`);
+            });
     },
     load: async function() {
         let hasLoadError = false;
@@ -6789,6 +6826,11 @@ const App = {
             return;
         }
         App.temp.lastErrorSent = App.fullTime;
+
+        window?.Sentry?.captureException(error, {
+            username: App.userName,
+            userId: App.userId,
+        });
 
         const versionInfo = `[game:${VERSION}-pl:${App.isOnItch ? 'itch' : 'web'}]`;
         const user = (App.userName ? App.userName + '-' : '') + App.userId;

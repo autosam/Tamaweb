@@ -420,6 +420,25 @@ App.definitions = (() => {
                 price: 20,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
+            "bunny burger": {
+                sprite: 770,
+                hunger_replenish: 30,
+                fun_replenish: 10,
+                health_replenish: 5,
+                price: 25,
+                cookableOnly: true,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                isNew: true,
+            },
+            "pancakes": {
+                sprite: 806,
+                hunger_replenish: 25,
+                fun_replenish: 2,
+                health_replenish: 2,
+                price: 15,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                isNew: true,
+            },
             // cookable only
             "sky bread": {
                 sprite: 142,
@@ -713,7 +732,86 @@ App.definitions = (() => {
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 type: 'treat',
             },
-    
+            "toasted marshmallows": {
+                sprite: 937,
+                hunger_replenish: 5,
+                fun_replenish: 20,
+                health_replenish: 0,
+                price: 5,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                type: 'treat',
+                isNew: true,
+            },
+            "watermelon": {
+                sprite: 948,
+                hunger_replenish: 15,
+                fun_replenish: 20,
+                health_replenish: 5,
+                price: 10,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                type: 'treat',
+                isNew: true,
+            },
+            "orange juice": {
+                sprite: 905,
+                hunger_replenish: 5,
+                fun_replenish: 15,
+                health_replenish: 5,
+                price: 5,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                type: 'treat',
+                isNew: true,
+            },
+            "snackfin": {
+                sprite: 839,
+                hunger_replenish: 5,
+                fun_replenish: 15,
+                health_replenish: 0,
+                price: 5,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                type: 'treat',
+                isNew: true,
+            },
+            "banana": {
+                sprite: 960,
+                hunger_replenish: 20,
+                fun_replenish: 5,
+                health_replenish: 5,
+                price: 8,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                type: 'treat',
+                isNew: true,
+            },
+            "nuts": {
+                sprite: 920,
+                hunger_replenish: 5,
+                fun_replenish: 2,
+                health_replenish: 2,
+                price: 2,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                type: 'treat',
+                isNew: true,
+            },
+            "santa cake": {
+                sprite: 848,
+                hunger_replenish: 20,
+                fun_replenish: 10,
+                health_replenish: 1,
+                price: 15,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                type: 'treat',
+                isNew: true,
+            },
+            "kuchice": {
+                sprite: 890,
+                hunger_replenish: 5,
+                fun_replenish: 20,
+                health_replenish: -2,
+                price: 8,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                type: 'treat',
+                isNew: true,
+            },
     
     
             // groc
@@ -737,15 +835,6 @@ App.definitions = (() => {
                 age: [_ls.baby],
                 nonCraftable: true,
             },
-            "sleep replacement": {
-                sprite: 1050,
-                hunger_replenish: -25,
-                fun_replenish: -20,
-                sleep_replenish: 999,
-                price: 120,
-                type: 'med',
-                isNew: false,
-            },
             "medicine": {
                 sprite: 1050,
                 hunger_replenish: 0,
@@ -754,6 +843,106 @@ App.definitions = (() => {
                 price: 20,
                 type: 'med',
             },
+            "sleep replacement": {
+                sprite: 1050,
+                hunger_replenish: -25,
+                fun_replenish: -20,
+                sleep_replenish: 999,
+                price: 120,
+                type: 'med',
+            },
+            "expression skill potion": {
+                sprite: 1053,
+                expression_increase: 40,
+                price: 250,
+                type: 'med',
+                unbuyable: true,
+                isNew: true,
+            },
+            "logic skill potion": {
+                sprite: 1053,
+                logic_increase: 40,
+                price: 250,
+                type: 'med',
+                unbuyable: true,
+                isNew: true,
+            },
+            "endurance skill potion": {
+                sprite: 1053,
+                endurance_increase: 40,
+                price: 250,
+                type: 'med',
+                unbuyable: true,
+                isNew: true,
+            },
+            "potion of neglect": {
+                sprite: 1053,
+                hunger_replenish: -999,
+                fun_replenish: -999,
+                sleep_replenish: -999,
+                health_replenish: -999,
+                price: 2,
+                type: 'med',
+                unbuyable: true,
+                isNew: true,
+            },
+            "potion of well behaving": {
+                sprite: 1053,
+                discipline_increase: 30,
+                price: 500,
+                type: 'med',
+                unbuyable: true,
+                isNew: true,
+            },
+            "potion of misbehaving": {
+                sprite: 1053,
+                discipline_increase: -30,
+                price: 2,
+                type: 'med',
+                unbuyable: true,
+                isNew: true,
+            },
+            "potion of fulfillment": {
+                sprite: 1053,
+                hunger_replenish: 999,
+                fun_replenish: 999,
+                sleep_replenish: 999,
+                health_replenish: 999,
+                price: 500,
+                type: 'med',
+                unbuyable: true,
+                isNew: true,
+            },
+            "potion of aging up": {
+                sprite: 1053,
+                price: 250,
+                type: 'med',
+                unbuyable: true,
+                isNew: true,
+                payload: () => {
+                    App.toggleGameplayControls(false);
+                    App.pet.triggerScriptedState('cheering', 10000, 0, true);
+                    Activities.task_foam(() => {
+                        App.pet.ageUp();
+                        App.pet.x = '50%';
+                        App.pet.y = 60;
+                        App.pet.stopMove();
+                        App.pet.triggerScriptedState('blush', 3000, 0, true, () => {
+                            App.setScene(App.scene.home);
+                            App.toggleGameplayControls(true);
+                            App.pet.playCheeringAnimation();
+                        });
+                        App.sendAnalytics('age_up_potion', App.petDefinition.lifeStage);
+                    });
+                },
+            },
+            "potion of nothingness": {
+                sprite: 1053,
+                price: 2,
+                type: 'med',
+                unbuyable: true,
+                isNew: true,
+            }
         },
     
         /* ITEMS */

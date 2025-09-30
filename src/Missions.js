@@ -146,10 +146,24 @@ const Missions = {
                 }
             } 
         });
+        const exclusivePotionsPool = Object.keys(defs.food).filter(key => {
+            const item = defs.food[key];
+            return item.type === 'med' && item.unbuyable;
+        }).map(key => { 
+            return {
+                name: key,
+                icon: App.getFoodCSprite(defs.food[key].sprite),
+                count: [1, 1],
+                type: 'consumable',
+                onClaim: (amt) => {
+                    App.addNumToObject(App.pet.inventory.food, key, amt || 1);
+                }
+            } 
+        });
         const goldPullDef = {
             name: 'gold',
             icon: '<div class="gold-circle">$</div>',
-            count: [6, 35],
+            count: [1, 25],
             type: '',
             onClaim: (amt) => {
                 App.pet.stats.gold += amt || 50;
@@ -221,6 +235,31 @@ const Missions = {
                     pullFromPool(pool, false);
                 }
             },
+            {
+                name: 'Exclusive Potions',
+                price: 100,
+                info: `
+                    <div>
+                        <div> gold++++ </div>
+                        <div> ${App.getIcon('flask')}expression skill+ </div>
+                        <div> ${App.getIcon('flask')}logic skill+ </div>
+                        <div> ${App.getIcon('flask')}endurance skill+ </div>
+                        <div> ${App.getIcon('flask')}neglect+ </div>
+                        <div> ${App.getIcon('flask')}well behaving+ </div>
+                        <div> ${App.getIcon('flask')}misbehaving+ </div>
+                        <div> ${App.getIcon('flask')}fulfillment+ </div>
+                        <div> ${App.getIcon('flask')}aging up+ </div>
+                        <div> ${App.getIcon('flask')}nothingness+ </div>
+                    </div>
+                `,
+                isNew: true,
+                onClaim: () => {
+                    const pool = [
+                        ...exclusivePotionsPool
+                    ]
+                    pullFromPool(pool, random(0, 3));
+                }
+            },
         ]
         const list = App.displayList([
             {
@@ -232,14 +271,14 @@ const Missions = {
                 </small>`,
                 type: 'text'
             },
-            ...chests
-            .map(chest => {
+            ...chests.map(chest => {
                 return {
                     name: 
                         '<div class="pointer-events-none">'
+                        + `<div><small>${App.getIcon('coins', true)} <span>${chest.price}</span></small></div>`
                         + chest.name 
-                        + `<br><small class="inline-list">${chest.info }<small>`
-                        + App.getBadge(`${App.getIcon('coins', true)} <span style="margin-left: 3px">${chest.price}</span>`)
+                        + `<br><small class="inline-list">${chest.info}</small>`
+                        + (chest.isNew ? App.getBadge() : '')
                         + '</div>',
                     _disable: chest.price > Missions.currentPts,
                     class: 'large',
@@ -290,6 +329,7 @@ const Missions = {
                     </span>
                     <button onclick="Missions.openRewardsMenu()" class="generic-btn stylized">
                         ${App.getIcon('shopping-bag', true)}
+                        ${App.getBadge('!')}
                     </button>
                 `,
                 type: 'text',
