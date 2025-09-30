@@ -92,20 +92,24 @@ self.addEventListener("fetch", (event) => {
 
   if (event.request.url.startsWith(self.location.origin)) {
     event.respondWith(
-      caches.match(event.request).then((cachedResponse) => {
-        if (cachedResponse) {
-          return cachedResponse;
-        }
+      fetch(event.request)
+        .then((response) => {
+          if (
+            !response ||
+            response.status !== 200 ||
+            response.type !== "basic"
+          ) {
+            return response;
+          }
 
-        return caches.open(CACHE_NAME).then((cache) => {
-          return fetch(event.request).then((response) => {
-            if (!response || response.status !== 200 || response.type !== "basic") {
-              return response;
-            }
-            return cache.put(event.request, response.clone()).then(() => response);
+          return caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, response.clone());
+            return response;
           });
-        });
-      })
+        })
+        .catch(() => {
+          return caches.match(event.request);
+        })
     );
   }
 });
