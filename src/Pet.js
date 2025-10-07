@@ -184,8 +184,12 @@ class Pet extends Object2d {
         const initialAdditionalY = this.additionalY;
         let animationFloat = 0;
         this.onDraw = (me) => {
-            animationFloat += 0.0075 * App.deltaTime;
-            me.additionalY = initialAdditionalY - 3 - Math.sin(animationFloat) * 3;
+            const floatSpeed = me.isMoving ? 0.0075 : 0.005;
+            animationFloat += floatSpeed * App.deltaTime;
+
+            me.additionalY = App.pet.state === 'sitting' ? 
+                initialAdditionalY :
+                initialAdditionalY - 3 - Math.sin(animationFloat) * 3;
         }
     }
     onLateDraw() {
