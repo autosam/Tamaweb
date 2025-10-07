@@ -247,7 +247,7 @@ class PetDefinition {
             endTime: false,
         },
         is_revived_once: false,
-        is_ghost: true,
+        is_ghost: false,
         last_eaten: [],
 
         // skill points
