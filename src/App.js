@@ -7180,18 +7180,8 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 
-const debug_spawn = () => {
-    const deliveryNpc = new Pet(
-        new PetDefinition({
-            sprite: 'resources/img/character/delivery_npc_01.png',
-        }),
-        {
-            spritesheet: {
-                cellNumber: 0,
-                cellSize: 36,
-                rows: 4,
-                columns: 4,
-            }
-        }
-    )
+const debug_spawn = (isGhost = true) => {
+    App.pet.removeObject();
+    App.petDefinition.stats.is_ghost = isGhost;
+    App.pet = App.createActivePet(App.petDefinition);
 }
