@@ -449,7 +449,7 @@ class Activities {
             mallNpc.removeObject();
         });
     }
-    static async goToActivities({ activities } = {}){
+    static async goToActivities({ activities, floorImage = 'resources/img/background/outside/activities_base_01.png' } = {}){
         App.setScene({
             ...App.scene.emptyOutside,
             petY: '94%',
@@ -554,7 +554,7 @@ class Activities {
             scenePositionX += App.drawer.bounds.width * offset;
 
             const background = new Object2d({
-                img: 'resources/img/background/outside/activities_base_01.png',
+                img: floorImage,
                 x: scenePositionX, y: 0,
             });
             new Object2d({

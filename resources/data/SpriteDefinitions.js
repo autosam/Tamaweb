@@ -1,4 +1,5 @@
 const SPRITES = [
+"accessory/angel_halo_01.png",
 "accessory/bear_hat_01.png",
 "accessory/bouquet_01.png",
 "accessory/bunny_balloon_01.png",
@@ -85,6 +86,7 @@ const SPRITES = [
 "background/outside/garden_01.png",
 "background/outside/garden_inner_01.png",
 "background/outside/graveyard_01.png",
+"background/outside/heaven_activities_base_01.png",
 "background/outside/hospital_01.png",
 "background/outside/mall_walkway.png",
 "background/outside/market_01.png",
@@ -165,6 +167,7 @@ const SPRITES = [
 "item/plants.png",
 "misc/activity_building_arcade.png",
 "misc/activity_building_fortune_teller.png",
+"misc/activity_building_heaven.png",
 "misc/activity_building_home.png",
 "misc/activity_building_homeworld_getaway.png",
 "misc/activity_building_hospital.png",
