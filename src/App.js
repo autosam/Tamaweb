@@ -4624,8 +4624,21 @@ const App = {
         },
         open_activity_list: function(noIndexReset){
             if(!noIndexReset) App.temp.outsideActivityIndex = 1;
+
+            const afterLifeActivities = App.pet.stats.is_ghost ? [
+                {
+                    name: "Heaven",
+                    image: 'resources/img/misc/activity_building_heaven.png',
+                    onEnter: () => App.handlers.go_to_home(),
+                    isHome: true,
+                },
+            ] : [];
+
             return Activities.goToActivities({
-                activities: App.definitions.outside_activities
+                activities: [
+                    ...App.definitions.outside_activities,
+                    ...afterLifeActivities
+                ]  
             });
         },
         open_rabbitholes_list: function(){
