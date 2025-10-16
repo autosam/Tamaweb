@@ -796,7 +796,11 @@ class Pet extends Object2d {
         // spawning poop objects
         const spawnedPoopObjects = App.drawer.selectObjects('poop');
         const poopObjectsToBeSpawned = this.stats.has_poop_out - spawnedPoopObjects.length;
-        if(poopObjectsToBeSpawned > 0 && spawnedPoopObjects.length < App.constants.POOP_POSITIONS.length){
+        if(
+            poopObjectsToBeSpawned > 0
+            && spawnedPoopObjects.length < App.constants.POOP_POSITIONS.length 
+            && !this.isDuringScriptedState()
+        ){
             for(let i = 0; i < poopObjectsToBeSpawned; i++){
                 const position = App.constants.POOP_POSITIONS.at(i + spawnedPoopObjects.length);
                 if(!position) break;
