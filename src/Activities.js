@@ -472,7 +472,12 @@ class Activities {
         editDisplay.close = () => editDisplay.remove();
         editDisplay.innerHTML = `
             <div class="flex justify-center height-auto b-radius-10">
-                <span id="activity-name" class="directional-control__activity-name">$activity_name$</span>
+                <span class="directional-control__activity-name">
+                    <div class="flex flex-dir-col">
+                        <span id="activity-name">$activity_name$</span>
+                        <small id="activity-number" class="opacity-09 font-x-small"></small>
+                    </div>
+                </span>
             </div>
             <div class="directional-control__container">
                 <div class="controls-y">
@@ -535,6 +540,8 @@ class Activities {
             if(currentActivityIndex < 0) currentActivityIndex = activities.length - 1;
             const currentActivity = activities[currentActivityIndex];
 
+
+            document.querySelector('#activity-number').innerHTML =  `#${currentActivityIndex + 1}`;
             document.querySelector('#activity-name').innerHTML =  `${currentActivity.name}`;
             if(currentActivity.isDisabled?.()){
                 document.querySelector('#activity-name').classList.add('disabled');
