@@ -1312,6 +1312,9 @@ input#background-color-picker {
 .opacity-third {
     opacity: 0.325;
 }
+.opacity-09 {
+    opacity: 0.9;
+}
 
 .flex-container {
     display: flex;
@@ -1327,6 +1330,10 @@ input#background-color-picker {
 
 .font-small {
     font-size: small;
+}
+
+.font-x-small {
+    font-size: x-small;
 }
 
 .flex-dir-col {
