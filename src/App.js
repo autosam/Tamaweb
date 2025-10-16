@@ -4667,6 +4667,11 @@ const App = {
 
                             const dialog = App.displayList([
                                 {
+                                    name: `${hole.name} ${hole.isNew ? App.getBadge() : ''}`,
+                                    icon: 'lemon',
+                                    type: 'info',
+                                },
+                                {
                                     name: 'Alone',
                                     onclick: () => {
                                         confirmFn()
@@ -4684,7 +4689,7 @@ const App = {
                                         return true;
                                     }
                                 },
-                            ])
+                            ], undefined, 'Back');
 
                             // confirmFn();
                             return true;
@@ -6004,7 +6009,7 @@ const App = {
                     if(item.type === 'info'){
                         element.innerHTML = `
                             <small>
-                                <i class="fa-solid fa-info-circle"></i>
+                                ${App.getIcon(item.icon || 'info-circle', true)}
                                 ${item.name}
                             </small>
                         `;
