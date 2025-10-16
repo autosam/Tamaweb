@@ -1301,6 +1301,10 @@ const App = {
         }),
         music_classroom: new Scene({
             image: 'resources/img/background/house/music_classroom_01.png',
+        }),
+        homeworld_getaways: new Scene({
+            image: 'resources/img/background/house/homeworld_getaways_01.png',
+            noShadows: true,
         })
     },
     setScene(scene, noPositionChange, onLoadArg){
@@ -4592,6 +4596,8 @@ const App = {
             });
         },
         open_rabbitholes_list: function(){
+            if(!App.temp.rabbitholeTraveledFriends) App.temp.rabbitholeTraveledFriends = []
+
             const backFn = () => {
                 App.handlers.open_activity_list(true);
             }
@@ -4604,7 +4610,7 @@ const App = {
                             ${App.getBadge(`<span> <i class="fa-solid fa-clock fa-xs"></i> ${Math.ceil(hole.duration / 1000 / 60)}</span>`, 'neutral')}
                         `,
                         onclick: () => {
-                            const confirmFn = () => {
+                            const confirmFn = (otherPet) => {
                                 App.displayConfirm(`Are you sure you want to <b>${hole.name}</b>? <br><br> ${App.petDefinition.name} will go out for <b>${moment(hole.duration + Date.now()).toNow(true)}</b>`, [
                                     {
                                         name: 'yes',
@@ -4613,7 +4619,8 @@ const App = {
                                                 name: hole.name,
                                                 endTime: Date.now() + hole.duration
                                             }
-                                            Activities.goToCurrentRabbitHole(true);
+                                            // Activities.goToCurrentRabbitHole(true);
+                                            Activities.goToHomePlanet(otherPet);
                                             App.save();
                                             App.closeAllDisplays();
                                             App.sendAnalytics('rabbit_hole', hole.name);
@@ -4626,7 +4633,29 @@ const App = {
                                     },
                                 ])
                             }
-                            confirmFn();
+
+                            const dialog = App.displayList([
+                                {
+                                    name: 'Alone',
+                                    onclick: () => {
+                                        confirmFn()
+                                        return true;
+                                    }
+                                },
+                                {
+                                    name: 'With a friend',
+                                    onclick: () => {
+                                        App.handlers.open_friends_list(
+                                            (selectedFriend) => {
+                                                confirmFn(selectedFriend)
+                                            }
+                                        )
+                                        return true;
+                                    }
+                                },
+                            ])
+
+                            // confirmFn();
                             return true;
                         }
                     })),
