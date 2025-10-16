@@ -2678,7 +2678,7 @@ App.definitions = (() => {
                 }
             },
             {
-                name: 'Attend rave party',
+                name: 'Go to starlight disco',
                 duration: App.constants.ONE_HOUR * 1.5,
                 isNew: true,
                 onEnd: () => {
