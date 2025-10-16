@@ -112,6 +112,7 @@ const UI = {
                 ]
             })
         }
+        UI.attachScrollableIndicator(list);
         document.querySelector('.screen-wrapper').appendChild(list);
         return list;
     },
@@ -132,6 +133,21 @@ const UI = {
             UI.hide(element);
             if(onEnd) onEnd(element);
         }, timeMs);
+    },
+    attachScrollableIndicator: (element) => {
+        if(!element) return;
+
+        setTimeout(() => {
+            const isScrollable = element.scrollHeight > element.clientHeight + 4;
+            if(isScrollable){
+                element.classList.add('scrollable-indicator');
+            }
+            element.addEventListener('scroll', () => {
+                if (element.scrollTop > 0) {
+                    element.classList.remove('scrollable-indicator')
+                }
+            })
+        }, 2)
     },
     hide: (element) => {
         element.style.display = 'none';
