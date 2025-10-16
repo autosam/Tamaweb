@@ -1,4 +1,82 @@
 class Activities {
+    static async goToHomePlanet(otherPetDef){
+        App.setScene(App.scene.homeworld_getaways);
+        App.toggleGameplayControls(false)
+
+        const ufoObject = new Object2d({
+            image: App.preloadedResources['resources/img/misc/ufo_02.png'],
+            x: 0, y: 0, z: App.constants.ACTIVE_PET_Z + 1,
+        });
+        const ufoBeamObject = new Object2d({
+            image: App.preloadedResources['resources/img/misc/ufo_01.png'],
+            y: 0,
+            x: 0,
+            opacity: 0,
+            parent: ufoObject,
+        });
+
+        let other;
+        const main = new TimelineDirector(App.pet);
+
+        if(otherPetDef){
+            // increasing friendship
+            if(!App.temp.rabbitholeTraveledFriends) App.temp.rabbitholeTraveledFriends = [];
+            if(!App.temp.rabbitholeTraveledFriends.includes(otherPetDef)){
+                otherPetDef.increaseFriendship();
+            }
+            App.temp.rabbitholeTraveledFriends.push(otherPetDef);
+
+            other = new TimelineDirector(new Pet(otherPetDef));
+        }
+
+        main.setPosition({x: '105%', y: '90%'})
+        other?.setPosition({x: '120%', y: '90%'})
+        other?.moveTo({x: '85%', speed: 0.015});
+        await main.moveTo({x: '50%', speed: 0.025});
+        main.setState('cheering');
+        await TimelineDirector.wait(1000);
+
+        ufoBeamObject.onDraw = (me) => {
+            me.opacity = lerp(me.opacity, 1, 0.005 * App.deltaTime);
+        }
+
+
+        await main.bob({animation: 'shocked', maxCycles: 1});
+        other?.lookAt(false)
+        other?.setState('idle_side');
+        await TimelineDirector.wait(500);
+        other?.bob({animation: 'shocked', maxCycles: 1});
+        await main.fade({target: 0});
+        main.actor.scale = 1;
+        main.setPosition({x: 9999, y: 9999});
+
+
+        if(other){
+            other.actor.scale = 1;
+            await other.moveTo({x: '50%', speed: 0.025});
+            await other.bob({animation: 'cheering', maxCycles: 1, landAnimation: 'idle'});
+            await TimelineDirector.wait(500);
+            await other.fade({target: 0});
+            other.actor.scale = 1;
+            other.actor.removeObject();
+        }
+
+        ufoBeamObject.onDraw = (me) => {
+            me.opacity = lerp(me.opacity, 0, 0.002 * App.deltaTime);
+        }
+
+        await TimelineDirector.wait(350);
+        
+        App.fadeScreen({
+            middleFn: () => {
+                main.release()
+                ufoObject.removeObject();
+                App.toggleGameplayControls(true);
+                App.setScene(App.scene.home);
+                Activities.goToCurrentRabbitHole(false);
+            }
+        })
+    }
     static async goToSchool(onFail){
         // reset school attend limit of eligible
         const lastReset = moment(App.pet.stats.lastSchoolClassLimitReset);
@@ -656,45 +734,7 @@ class Activities {
             ])
         });
     }
-    static async goToCurrentRabbitHole(isStarting) {
-        if(isStarting) { // starting animation
-            App.pet.stopMove();
-            App.pet.x = '50%';
-            App.toggleGameplayControls(false);
-
-
-            const ufoObject = new Object2d({
-                image: App.preloadedResources['resources/img/misc/ufo_02.png'],
-                x: 0, y: 0, z: App.constants.ACTIVE_PET_Z + 1,
-                onDraw: (me) => {
-                    if(App.pet.y > 50) return;
-                    me.y = lerp(me.y, -50, 0.0005 * App.deltaTime)
-                }
-            });
-            const ufoBeamObject = new Object2d({
-                image: App.preloadedResources['resources/img/misc/ufo_01.png'],
-                y: -120,
-                x: 0,
-                parent: ufoObject,
-                onDraw: (me) => {
-                    me.y = (App.pet.y) - 70;
-                }
-            });
-
-            await App.pet.triggerScriptedState('shocked', 2000, false, true, 
-                // onEnd
-                () => {
-                    App.pet.y = '100%';
-                    App.pet.x = -999;
-                    ufoObject.removeObject();
-                },
-                // driver
-                () => {
-                    App.pet.y = lerp(App.pet.y, -100, 0.0005 * App.deltaTime);
-                }
-            )
-        }
-
+    static async goToCurrentRabbitHole() {
         const {current_rabbit_hole: currentRabbitHole} = App.pet.stats;
 
         const outOverlay = new Object2d({
@@ -703,11 +743,6 @@ class Activities {
         });
 
         const onEndFn = (isInterrupted) => {
-            setTimeout(() => {
-                App.pet.x = '50%';
-                App.pet.stopMove();
-            })
-
             const rabbitHoleDefinition = App.definitions.rabbit_hole_activities.find(activity => activity.name === App.pet.stats.current_rabbit_hole.name);
 
             if(!isInterrupted){
@@ -725,9 +760,16 @@ class Activities {
             }
 
             App.pet.stats.current_rabbit_hole.name = false;
-            App.toggleGameplayControls(true);
-            outOverlay.removeObject();
-            App.setScene(App.scene.home);
+
+            App.fadeScreen({
+                middleFn: () => {
+                    App.pet.x = '50%';
+                    App.pet.stopMove();
+                    App.toggleGameplayControls(true);
+                    outOverlay.removeObject();
+                    App.setScene(App.scene.home);
+                }
+            })
         }
 
         const driverFn = () => {
@@ -740,10 +782,8 @@ class Activities {
             App.pet.x = -99;
         }
 
-        if(!isStarting){
-            const isAlreadyEnded = driverFn();
-            if(isAlreadyEnded) return;
-        }
+        const isAlreadyEnded = driverFn();
+        if(isAlreadyEnded) return;
 
         App.toggleGameplayControls(false, () => {
             App.displayConfirm(`
@@ -4705,6 +4745,7 @@ class TimelineDirector {
             this.actor.speedOverride = speed;
         })
     }
+
     setPosition = ({x, y}) => {
         if(!this.actor) return;
         if(x) this.actor.x = x;
@@ -4770,6 +4811,55 @@ class TimelineDirector {
         })
     }
     think = (...args) => this.actor?.showThought(...args);
+    resize = ({target, speed = 0.005, timeout = 1000} = {}) => {
+        return new Promise(resolve => {
+            const { actor } = this;
+
+            let drawEvent;
+
+            const end = () => {
+                App.unregisterOnDrawEvent(drawEvent);
+                actor.scale = target;
+                drawEvent = null;
+                resolve();
+            }
+
+            setTimeout(() => {
+                if(drawEvent) end();
+            }, timeout);
+
+            drawEvent = App.registerOnDrawEvent(() => {
+                actor.scale = lerp(actor.scale, target, speed * App.deltaTime);
+
+                if(actor.scale.toFixed(2) === target) end();
+            })
+        })
+    }
+    fade = ({target, speed = 0.005, timeout = 1000} = {}) => {
+        const defaultOpacity = this.actor.opacity || 1;
+        return new Promise(resolve => {
+            const { actor } = this;
+
+            let drawEvent;
+
+            const end = () => {
+                App.unregisterOnDrawEvent(drawEvent);
+                actor.opacity = defaultOpacity;
+                drawEvent = null;
+                resolve();
+            }
+
+            setTimeout(() => {
+                if(drawEvent) end();
+            }, timeout);
+
+            drawEvent = App.registerOnDrawEvent(() => {
+                actor.opacity = lerp((actor.opacity || 1), target, speed * App.deltaTime);
+
+                if(actor.opacity.toFixed(2) === target) end();
+            })
+        })
+    } 
     
     static wait = (...args) => App.wait(...args);
 }
