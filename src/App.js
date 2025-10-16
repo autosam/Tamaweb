@@ -5949,16 +5949,6 @@ const App = {
         tabTitles.at(0).click();
     },
     displayList: function(listItems, backFn, backFnTitle){
-        // if(backFn !== false)
-        //     listItems.push({
-        //         name: /* '<i class="fa-solid fa-arrow-left"></i>' || */ 'BACK',
-        //         class: 'back-btn solid primary bold',
-        //         onclick: () => {
-        //             if(backFn) backFn();
-        //             return false;
-        //         }
-        //     });
-
         const list = UI.genericListContainer(backFn, backFnTitle);
         list._listItems = listItems;
 
@@ -6201,6 +6191,7 @@ const App = {
                     onEndFn();
                 }
             }
+        UI.attachScrollableIndicator(popup)
         setTimeout(() => {
             popup.close();
         }, ms || 2000);
@@ -6224,6 +6215,7 @@ const App = {
             list.close = function(){
                 list.remove();
             }
+        UI.attachScrollableIndicator(list)
 
         const btnContainer = list.querySelector('.buttons-container');
         buttons.forEach(def => {
@@ -6263,6 +6255,7 @@ const App = {
             list.close = function(){
                 list.remove();
             }
+        UI.attachScrollableIndicator(list);
             
         const btnContainer = list.querySelector('.buttons-container');
 

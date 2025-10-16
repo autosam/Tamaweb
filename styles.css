@@ -2296,6 +2296,38 @@ a.generic-btn:before {
     }
 }
 
+.scrollable-indicator:after {
+    content: '\f103';
+    bottom: 4px;
+    right: 10px;
+    position: absolute;
+    z-index: 3;
+    pointer-events: none;
+    font-family: "Font Awesome 6 Free";
+    font-size: 11px;
+    animation: scrollable-indicator-anim 0.55s infinite alternate-reverse ease-in-out;
+    color: var(--prim-clr-b-text);
+    text-shadow: 
+        1px 0 var(--prim-clr-b-text-shadow), 
+        -1px 0 var(--prim-clr-b-text-shadow), 
+        2px 0 var(--prim-clr-b-text-shadow), 
+        -2px 0 var(--prim-clr-b-text-shadow), 
+        0px 1px var(--prim-clr-b-text-shadow), 
+        0px -1px var(--prim-clr-b-text-shadow),
+        0px 2px var(--prim-clr-b-text-shadow), 
+        0px -2px var(--prim-clr-b-text-shadow);
+}
+@keyframes scrollable-indicator-anim {
+    from {
+        opacity: 0.5;
+        transform: translateY(-3px);
+    }
+    to {
+        opacity: 0.9;
+        transform: rotateX(25deg);
+    }
+}
+
 .credit-author {
     margin: 5px -10px;
     padding: 5px 10px;
