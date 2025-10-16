@@ -4634,15 +4634,15 @@ const App = {
             }
             return App.displayList([
                 ...App.definitions.rabbit_hole_activities
+                    .sort((a, b) => b.isNew || 0 - a.isNew || 0)
                     .map(hole => ({
-                        // name: `${hole.name} ${App.getBadge(`<span> <i class="fa-solid fa-clock fa-xs"></i> ${hole.duration / 1000 / 60}</span>`, 'neutral')}`,
                         name: `
                             <span class="ellipsis">${hole.name}<span>
-                            ${App.getBadge(`<span> <i class="fa-solid fa-clock fa-xs"></i> ${Math.ceil(hole.duration / 1000 / 60)}</span>`, 'neutral')}
+                            ${App.getBadge(`${hole.isNew ? 'New!' : ''} <span> <i class="fa-solid fa-clock fa-xs"></i> ${Math.ceil(hole.duration / 1000 / 60)}</span>`, hole.isNew ? false : 'neutral')}
                         `,
                         onclick: () => {
                             const confirmFn = (otherPet) => {
-                                App.displayConfirm(`Are you sure you want to <b>${hole.name}</b>? <br><br> ${App.petDefinition.name} will go out for <b>${moment(hole.duration + Date.now()).toNow(true)}</b>`, [
+                                App.displayConfirm(`Are you sure you want to <b>${hole.name}</b>${otherPet ? ` with <i>${otherPet.name}</i>`: ''}? <br><br> ${App.petDefinition.name} will go out for <b>${moment(hole.duration + Date.now()).toNow(true)}</b>`, [
                                     {
                                         name: 'yes',
                                         onclick: () => {
@@ -4674,7 +4674,7 @@ const App = {
                                     }
                                 },
                                 {
-                                    name: 'With a friend',
+                                    name: `With a friend ${App.getBadge()}`,
                                     onclick: () => {
                                         App.handlers.open_friends_list(
                                             (selectedFriend) => {

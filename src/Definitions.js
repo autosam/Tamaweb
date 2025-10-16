@@ -428,7 +428,7 @@ App.definitions = (() => {
                 price: 25,
                 cookableOnly: true,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
-                isNew: true,
+                isNew: false,
             },
             "pancakes": {
                 sprite: 806,
@@ -437,7 +437,7 @@ App.definitions = (() => {
                 health_replenish: 2,
                 price: 15,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
-                isNew: true,
+                isNew: false,
             },
             // cookable only
             "sky bread": {
@@ -740,7 +740,7 @@ App.definitions = (() => {
                 price: 5,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 type: 'treat',
-                isNew: true,
+                isNew: false,
             },
             "watermelon": {
                 sprite: 948,
@@ -750,7 +750,7 @@ App.definitions = (() => {
                 price: 10,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 type: 'treat',
-                isNew: true,
+                isNew: false,
             },
             "orange juice": {
                 sprite: 905,
@@ -760,7 +760,7 @@ App.definitions = (() => {
                 price: 5,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 type: 'treat',
-                isNew: true,
+                isNew: false,
             },
             "snackfin": {
                 sprite: 839,
@@ -770,7 +770,7 @@ App.definitions = (() => {
                 price: 5,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 type: 'treat',
-                isNew: true,
+                isNew: false,
             },
             "banana": {
                 sprite: 960,
@@ -780,7 +780,7 @@ App.definitions = (() => {
                 price: 8,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 type: 'treat',
-                isNew: true,
+                isNew: false,
             },
             "nuts": {
                 sprite: 920,
@@ -790,7 +790,7 @@ App.definitions = (() => {
                 price: 2,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 type: 'treat',
-                isNew: true,
+                isNew: false,
             },
             "santa cake": {
                 sprite: 848,
@@ -800,7 +800,7 @@ App.definitions = (() => {
                 price: 15,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 type: 'treat',
-                isNew: true,
+                isNew: false,
             },
             "kuchice": {
                 sprite: 890,
@@ -810,7 +810,7 @@ App.definitions = (() => {
                 price: 8,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 type: 'treat',
-                isNew: true,
+                isNew: false,
             },
     
     
@@ -857,7 +857,7 @@ App.definitions = (() => {
                 price: 250,
                 type: 'med',
                 unbuyable: true,
-                isNew: true,
+                isNew: false,
             },
             "logic skill potion": {
                 sprite: 1053,
@@ -865,7 +865,7 @@ App.definitions = (() => {
                 price: 250,
                 type: 'med',
                 unbuyable: true,
-                isNew: true,
+                isNew: false,
             },
             "endurance skill potion": {
                 sprite: 1053,
@@ -873,7 +873,7 @@ App.definitions = (() => {
                 price: 250,
                 type: 'med',
                 unbuyable: true,
-                isNew: true,
+                isNew: false,
             },
             "potion of neglect": {
                 sprite: 1053,
@@ -884,7 +884,7 @@ App.definitions = (() => {
                 price: 2,
                 type: 'med',
                 unbuyable: true,
-                isNew: true,
+                isNew: false,
             },
             "potion of well behaving": {
                 sprite: 1053,
@@ -892,7 +892,7 @@ App.definitions = (() => {
                 price: 500,
                 type: 'med',
                 unbuyable: true,
-                isNew: true,
+                isNew: false,
             },
             "potion of misbehaving": {
                 sprite: 1053,
@@ -900,7 +900,7 @@ App.definitions = (() => {
                 price: 2,
                 type: 'med',
                 unbuyable: true,
-                isNew: true,
+                isNew: false,
             },
             "potion of fulfillment": {
                 sprite: 1053,
@@ -911,14 +911,14 @@ App.definitions = (() => {
                 price: 500,
                 type: 'med',
                 unbuyable: true,
-                isNew: true,
+                isNew: false,
             },
             "potion of aging up": {
                 sprite: 1053,
                 price: 250,
                 type: 'med',
                 unbuyable: true,
-                isNew: true,
+                isNew: false,
                 payload: () => {
                     App.toggleGameplayControls(false);
                     App.pet.triggerScriptedState('cheering', 10000, 0, true);
@@ -941,7 +941,7 @@ App.definitions = (() => {
                 price: 2,
                 type: 'med',
                 unbuyable: true,
-                isNew: true,
+                isNew: false,
             }
         },
     
@@ -2675,6 +2675,16 @@ App.definitions = (() => {
                 onEnd: () => {
                     App.pet.stats.current_fun += 30;
                     App.pet.stats.current_health += 20;
+                }
+            },
+            {
+                name: 'Attend rave party',
+                duration: App.constants.ONE_HOUR * 1.5,
+                isNew: true,
+                onEnd: () => {
+                    App.pet.stats.current_fun += 90;
+                    App.pet.stats.current_hunger += 25;
+                    App.pet.stats.current_sleep -= 50;
                 }
             },
         ],
