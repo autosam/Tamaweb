@@ -1270,6 +1270,11 @@ App.definitions = (() => {
                 price: 250,
                 isNew: false,
             },
+            "pumpkin": {
+                image: 'resources/img/background/house/cc_09.png',
+                price: 350,
+                isNew: true,
+            },
 
             // craftables
             "collage": {
@@ -1537,6 +1542,28 @@ App.definitions = (() => {
                 image: 'resources/img/furniture/pot_astra.png',
                 id: "pot_astra",
                 price: 120,
+            },
+
+            {
+                name: 'Big Pumpkin',
+                image: 'resources/img/furniture/big_pumpkin.png',
+                id: "big_pumpkin",
+                price: 100,
+                isNew: true,
+            },
+            {
+                name: 'Small Pumpkin',
+                image: 'resources/img/furniture/small_pumpkin.png',
+                id: "small_pumpkin",
+                price: 100,
+                isNew: true,
+            },
+            {
+                name: 'Spooky Tree',
+                image: 'resources/img/furniture/spooky_tree.png',
+                id: "spooky_tree",
+                price: 50,
+                isNew: true,
             },
     
             // misc
