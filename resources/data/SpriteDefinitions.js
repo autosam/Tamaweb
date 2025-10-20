@@ -14,6 +14,7 @@ const SPRITES = [
 "accessory/mini_band_01.png",
 "accessory/mini_band_01_icon.png",
 "accessory/placeholder_01.png",
+"accessory/pumpkin_01.png",
 "accessory/purple_headphones_01.png",
 "accessory/rainbow_01.png",
 "accessory/rainbow_hat_01.png",
