@@ -1332,7 +1332,9 @@ const App = {
         return App.scene.home.image?.includes('furnishable/');
     },
     getFurnishableBackground(backgroundSrc){
-        return backgroundSrc.replace('house/', 'house/furnishable/');
+        return backgroundSrc
+            .replace('house/', 'house/furnishable/')
+            .replace('outside/', 'outside/furnishable/')
     },
     getFurnitureDefFromId(id){
         return App.definitions.furniture.find(current => current.id === id);
