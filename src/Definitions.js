@@ -2146,8 +2146,15 @@ App.definitions = (() => {
             // angel / devil
             'angel halo': {
                 image: 'resources/img/accessory/angel_halo_01.png',
-                font: true,
+                front: true,
                 price: -1,
+            },
+            // pumpkin
+            'pumpkin': {
+                image: 'resources/img/accessory/pumpkin_01.png',
+                front: true,
+                price: 150,
+                isNew: true,
             },
         },
     
