@@ -185,6 +185,19 @@ class Object2d {
         const height = this.spritesheet?.cellSize || this.height || this.image.height;
         return { x, y, width, height };
     }
+    showOutline(color = '#7CE0E6'){
+        if(!this._initialFilter) this._initialFilter = this.filter || '';
+        const outlineFilter = [
+            `drop-shadow(0px 1px 0px ${color})`,
+            `drop-shadow(1px 0px 0px ${color})`,
+            `drop-shadow(-1px 0px 0px ${color})`,
+        ].join(' ')
+        this.filter = `${this._initialFilter} ${outlineFilter}`
+    }
+    hideOutline(){
+        this.filter = this._initialFilter != null ? this._initialFilter : this.filter;
+        this._initialFilter = this.filter;
+    }
     static setDrawer(drawer) {
         Object2d.defaultDrawer = drawer;
     }
