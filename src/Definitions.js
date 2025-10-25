@@ -812,6 +812,17 @@ App.definitions = (() => {
                 type: 'treat',
                 isNew: false,
             },
+            "spookandy": {
+                sprite: 17,
+                hunger_replenish: 5,
+                fun_replenish: 5,
+                health_replenish: -5,
+                price: 10,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                type: 'treat',
+                isNew: true,
+                unbuyable: true,
+            },
     
     
             // groc
