@@ -1,5 +1,10 @@
 class Object2d {
     constructor(config) {
+        if(config.parent?.isRemoved){
+            console.error('Cannot instantiate, parent is removed.');
+            return false;
+        }
+
         // parent drawer
         if (!config.drawer) {
             if (Object2d.defaultDrawer) {

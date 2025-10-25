@@ -196,6 +196,7 @@ const SPRITES = [
 "misc/cooking_pot_p02.png",
 "misc/cooking_pot_p03.png",
 "misc/cyberpunk_overlay_01.png",
+"misc/devil_tree_01.png",
 "misc/devil_walkway_01.png",
 "misc/dresser_curtain_01.png",
 "misc/dr_sprite.png",

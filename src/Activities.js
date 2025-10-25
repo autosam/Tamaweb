@@ -581,7 +581,10 @@ class Activities {
         };
     }
     static async goToWalk(){
-        App.setScene(App.scene.forest)
+        App.setScene(App.scene.devil_town_exterior)
+
+        const sceneParent = new Object2d({})
+        window.sceneParent = sceneParent;
 
         // init vars
         let activeSpeed = 0, 
@@ -592,40 +595,17 @@ class Activities {
 
 
         App.toggleGameplayControls(false, () => {
-            // activeSpeed += 5;
-            // if(activeSpeed > 10) activeSpeed = 10;
+            activeSpeed += 0.25 * App.deltaTime;
         })
 
         const onEndFn = () => {
-
-        }
-
-        if('geolocation' in navigator){
-            const onSuccess = (me) => {
-                // Extract latitude, longitude, and speed from the geolocation data
-                const lat = position.coords.latitude;
-                const long = position.coords.longitude;
-                const speed = position.coords.speed * 2.236936;
-                console.log(speed);
-            }
-
-            const onError = (e) => {
-                console.log(e)
-            }
-
-            const watchID = navigator.geolocation.watchPosition(
-                onSuccess,
-                onError,
-                {
-                    enableHighAccuracy: true,
-                    maximumAge: 30000,
-                    timeout: 1,
-                }
-            );
+            sceneParent.removeObject();
         }
 
         const driverFn = () => {
-            activeSpeed = 1;
+            // activeSpeed = 1;
+            activeSpeed -= (0.001 * App.deltaTime);
+            activeSpeed = clamp(activeSpeed, 0, 3);
             globalOffset += activeSpeed * 0.025 * App.deltaTime;
             App.pet.setState(activeSpeed ? 'moving' : 'idle_side');
             
@@ -638,66 +618,37 @@ class Activities {
 
         const spawnEntities = (xOffset = globalOffset) => {
             spawnTicks++;
-            const moverFn = (me) => {
-                if(me._xOffset === undefined) me._xOffset = me.x;
-
-                me.x = ((globalOffset) - xOffset - me._xOffset);
-                if(me.x >= App.drawer.bounds.width * 2) {
+            const moverFn = (me, moveSpeed = 1) => {
+                if (me._xOffset === undefined) me._xOffset = me.x + ((App.drawer.bounds.width / moveSpeed) - App.drawer.bounds.width);
+                me.x = ((globalOffset - xOffset - me._xOffset) * moveSpeed);
+                if (me.x >= App.drawer.bounds.width * 2) {
                     me.removeObject();
                 }
             }
 
-            // bamboo
-            const maxBamboos = 10;
-            for(let i = 0; i < maxBamboos; i++){
-                new Object2d({
-                    img: 'resources/img/misc/forest_bamboo_01.png',
-                    x: (i * (App.drawer.bounds.width/maxBamboos)) + random(-4, 4) + globalSpawnOffset,
-                    y: random(0, 30),
+            // background trees
+            for(let i = 0; i < 1; i++){
+                const tree = new Object2d({
+                    parent: sceneParent,
+                    img: 'resources/img/misc/devil_tree_01.png',
+                    x: (i * (App.drawer.bounds.width/1)) + random(-4, 4) + globalSpawnOffset,
+                    y: random(10, 60),
                     z: -0.1,
-                    onDraw: moverFn,
+                    inverted: !!random(0, 1),
+                    onDraw: () => moverFn(tree, 0.8),
                 })
             }
-            new Object2d({
-                img: 'resources/img/misc/forest_bamboo_02.png',
-                x: random(-32, 32) + globalSpawnOffset,
-                y: 0,
-                z: App.constants.ACTIVE_PET_Z + 1,
-                onDraw: moverFn,
-            })
 
-            // house
-            if(spawnTicks % 10 === 0){
-                new Object2d({
-                    img: 'resources/img/misc/house_01.png',
-                    x: 64 + globalSpawnOffset,
-                    y: '35%',
-                    z: 0.2,
-                    onDraw: moverFn,
-                })
-                return;
-            }
-
-            // bush
-            // for(let i = 0; i < 3; i++){
-            //     new Object2d({
-            //         img: `resources/img/misc/forest_bush_0${random(1, 2)}.png`,
-            //         x: (i * 32) + globalSpawnOffset,
-            //         y: `${60 + random(0, 5)}%`,
-            //         z: 0.1,
-            //         inverted: !!random(0, 1),
-            //         onDraw: moverFn,
-            //     })
-            // }
-
-            // flower
-            for(let i = 0; i < 3; i++){
-                new Object2d({
-                    img: 'resources/img/misc/forest_flower_01.png',
-                    x: (i * (32 + random(-10, 10))) + globalSpawnOffset,
-                    y: 60 + random(-1, 5),
-                    z: 0.2,
-                    onDraw: moverFn,
+            // foreground trees
+            for(let i = 0; i < 1; i++){
+                const tree = new Object2d({
+                    parent: sceneParent,
+                    img: 'resources/img/misc/devil_tree_01.png',
+                    x: (i * (App.drawer.bounds.width/1)) + random(-32, 32) + globalSpawnOffset,
+                    y: random(70, 80),
+                    z: App.pet.z + 1,
+                    inverted: !!random(0, 1),
+                    onDraw: () => moverFn(tree, 1.2),
                 })
             }
         }
@@ -710,7 +661,8 @@ class Activities {
         .fill(true)
         .map((_, i) => 
             new Object2d({
-                img: 'resources/img/background/outside/forest_01.png',
+                parent: sceneParent,
+                img: 'resources/img/misc/devil_walkway_01.png',
                 x: 0,
                 y: 0,
                 z: 0,
