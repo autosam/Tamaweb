@@ -1309,6 +1309,12 @@ const App = {
         devil_town_exterior: new Scene({
             image: 'resources/img/background/house/devil_town_01.png',
             noShadows: true,
+            onLoad: () => {
+                App.pet.showOutline();
+            },
+            onUnload: () => {
+                App.pet.hide();
+            }
         }),
     },
     setScene(scene, noPositionChange, onLoadArg){
