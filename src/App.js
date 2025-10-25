@@ -1305,7 +1305,11 @@ const App = {
         homeworld_getaways: new Scene({
             image: 'resources/img/background/house/homeworld_getaways_01.png',
             noShadows: true,
-        })
+        }),
+        devil_town_exterior: new Scene({
+            image: 'resources/img/background/house/devil_town_01.png',
+            noShadows: true,
+        }),
     },
     setScene(scene, noPositionChange, onLoadArg){
         App.currentScene?.onUnload?.(scene);
