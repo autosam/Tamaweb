@@ -186,7 +186,7 @@ class Object2d {
         return { x, y, width, height };
     }
     showOutline(color = '#7CE0E6'){
-        if(!this._initialFilter) this._initialFilter = this.filter || '';
+        if(this._initialFilter == null) this._initialFilter = this.filter || '';
         const outlineFilter = [
             `drop-shadow(0px 1px 0px ${color})`,
             `drop-shadow(1px 0px 0px ${color})`,

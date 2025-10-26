@@ -1,4 +1,31 @@
 class Activities {
+    static goToUnderworldEntrance(){
+        App.setScene(App.scene.reviverDen);
+        App.toggleGameplayControls(false, () => {
+            App.pet.stopScriptedState();
+        });
+
+        const reviverNpc = new Pet(
+            new PetDefinition({
+                sprite: 'resources/img/character/chara_193b.png',
+                name: 'The Exorcist',
+                accessories: ['reviver hood'],
+            }), 
+            {
+                x: '20%',
+                z: App.constants.ACTIVE_PET_Z - 1,
+            }
+        );
+        reviverNpc.triggerScriptedState('mild_uncomfortable', App.INF, false, true);
+
+        App.pet.triggerScriptedState('moving', 2500, null, true, () => {
+            App.setScene(App.scene.home);
+            App.handlers.open_underworld_menu();
+            App.toggleGameplayControls(true);
+
+            reviverNpc.removeObject();
+        }, Pet.scriptedEventDrivers.movingIn.bind({pet: App.pet}));
+    }
     static async goToHomePlanet(otherPetDef){
         App.setScene(App.scene.homeworld_getaways);
         App.toggleGameplayControls(false)

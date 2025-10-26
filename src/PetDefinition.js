@@ -277,7 +277,7 @@ class PetDefinition {
         },
         item: { 'rattle': 1 },
         accessory: {},
-        harvests: {}, seeds: {},
+        harvests: {}, seeds: {}, misc: {},
     }
     accessories = [];
 
