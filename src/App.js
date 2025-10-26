@@ -61,6 +61,13 @@ const App = {
             rows: 28,
             columns: 28,
         },
+        MISC_SPRITESHEET: 'resources/img/item/misc.png',
+        MISC_SPRITESHEET_DIMENSIONS: {
+            cellNumber: 1,
+            cellSize: 24,
+            rows: 33,
+            columns: 33,
+        },
         MAX_ANIMALS: 16,
         MAX_PLANTS: 8,
         MIN_REVIVE_GOLDS: 250,
@@ -4635,21 +4642,108 @@ const App = {
         open_activity_list: function(noIndexReset){
             if(!noIndexReset) App.temp.outsideActivityIndex = 1;
 
-            const afterLifeActivities = App.pet.stats.is_ghost ? [
-                {
-                    name: "Heaven",
-                    image: 'resources/img/misc/activity_building_heaven.png',
-                    onEnter: () => App.handlers.go_to_home(),
-                    isHome: true,
-                },
-            ] : [];
-
             return Activities.goToActivities({
                 activities: [
-                    ...App.definitions.outside_activities,
-                    ...afterLifeActivities
+                    ...App.definitions.outside_activities
                 ]  
             });
+        },
+        open_underworld_menu: function(){
+            const backFn = () => {
+                App.handlers.open_activity_list(true);
+            }
+
+            const currencyIcon = App.getFoodCSprite(App.definitions.food['spookandy']?.sprite);
+
+            const openPurchasableList = () => {
+                const candyAmount = App.pet.inventory.food['spookandy'] || 0;
+
+                const specialPotionsX = [
+                    {
+                        name: 'Item 1',
+                        icon: App.getFoodCSprite(App.definitions.food['spookandy']?.sprite),
+                        ownedAmount: App.pet.inventory.food['spookandy'],
+                        isNew: false,
+                    },
+                    {
+                        name: 'Item 2',
+                        icon: App.getFoodCSprite(App.definitions.food['bunny burger']?.sprite),
+                        ownedAmount: App.pet.inventory.food['bunny burger'],
+                        isNew: true,
+                    },
+                ]
+
+                const foodNames = [
+                    'potion of aging up', 
+                    'potion of fulfillment', 
+                    'potion of misbehaving', 
+                    'potion of well behaving', 
+                    'potion of neglect',
+                    'expression skill potion',
+                    'logic skill potion',
+                    'endurance skill potion',
+                ]
+                const itemDefs = [
+                    ...foodNames.map(name => {
+                        const item = App.definitions.food[name];
+                        return {
+                            ...item,
+                            name,
+                            icon: App.getFoodCSprite(item.sprite),
+                            price: 150,
+                            ownedAmount: App.pet.inventory.food[name],
+                        }
+                    })
+                ]
+                // todo: continue
+                console.log(itemDefs)
+                const allItems = [
+                    ...itemDefs,
+                ].map(current => {
+                    return {
+                        ...current,
+                        name: `
+                            ${current.icon} 
+                            ${current.name?.toUpperCase()} 
+                            (x${current.ownedAmount || 0})
+                            <b class="flex align-center flex-gap-025 justify-center"> ${currencyIcon} <span>X${current.price || 0}</span> </b>
+                            ${current.isNew ? App.getBadge('new!') : ''}
+                        `,
+                    }
+                })
+
+                return App.displaySlider(
+                    allItems, 
+                    false, 
+                    {
+                        accept: 'Purchase',
+                    },
+                    `
+                        <div class="flex align-center flex-gap-025">
+                            ${currencyIcon} x${candyAmount}
+                        </div>
+                    `
+                );
+
+                return App.displayList([
+                    {
+                        name: `${App.getFoodCSprite(App.definitions.food['spookandy']?.sprite)} x${candyAmount}`,
+                        type: 'text',
+                        solid: true,
+                    },
+                    {
+                        name: `${App.getFoodCSprite(App.definitions.food['spookandy']?.sprite)} Spookandy`,
+                        onclick: () => true
+                    }
+                ])
+            }
+
+            return App.displayList([
+                {
+                    name: 'Purchase',
+                    onclick: openPurchasableList,
+                },
+            ], backFn)
         },
         open_rabbitholes_list: function(){
             if(!App.temp.rabbitholeTraveledFriends) App.temp.rabbitholeTraveledFriends = []

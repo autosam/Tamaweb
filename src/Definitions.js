@@ -168,6 +168,11 @@ App.definitions = (() => {
                 image: 'resources/img/misc/activity_building_work.png',
                 onEnter: () => App.handlers.open_works_list(),
             },
+            {
+                name: 'Underworld Entrance',
+                image: 'resources/img/misc/activity_building_underworld.png',
+                onEnter: () => Activities.goToUnderworldEntrance(),
+            }
         ],
     
         /* FOOD AND SNACKS */

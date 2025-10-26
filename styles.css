@@ -1344,6 +1344,9 @@ input#background-color-picker {
     flex-direction: row;
 }
 
+.flex-gap-025 {
+    gap: 2px;
+}
 .flex-gap-05 {
     gap: 4px;
 }
