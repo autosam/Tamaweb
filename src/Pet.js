@@ -1138,11 +1138,10 @@ class Pet extends Object2d {
             this.nextRandomTargetSelect = 0;
         }
     }
-    jump(strength = 0.28, silent, onEndFn){
+    jump(strength = 0.28, silent, onEndFn, gravity = 0.001){
         if(this.isJumping) return false;
 
         this.isJumping = true;
-        const gravity = 0.001;
         const startY = this.y;
         let velocity = strength;
         if(!silent) this.playSound('resources/sounds/jump.ogg', true);
