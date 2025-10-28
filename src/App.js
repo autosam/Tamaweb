@@ -141,7 +141,8 @@ const App = {
             'mercury',
             'neuter',
             'venus-mars',
-        ]
+        ],
+        UNDERWORLD_TREAT_CURRENCY: 'spookandy',
     },
     routes: {
         BLOG: 'https://tamawebgame.github.io/blog/',
@@ -1327,7 +1328,7 @@ const App = {
                 App.pet.showOutline();
             },
             onUnload: () => {
-                App.pet.hide();
+                App.pet.hideOutline();
             }
         }),
     },
@@ -3423,7 +3424,8 @@ const App = {
 
                         if(confirm('Set this as main character?')){
                             App.petDefinition.sprite = char;
-                            window.location.reload();
+                            App.save();
+                            setTimeout(() => window.location.reload(), 1000);
                         }
                     }
                 }
@@ -4649,29 +4651,23 @@ const App = {
             });
         },
         open_underworld_menu: function(){
+            const CURRENCY_NAME = App.constants.UNDERWORLD_TREAT_CURRENCY;
+            const CURRENCY_ICON = App.getFoodCSprite(App.definitions.food[CURRENCY_NAME]?.sprite);
+
             const backFn = () => {
                 App.handlers.open_activity_list(true);
             }
 
-            const currencyIcon = App.getFoodCSprite(App.definitions.food['spookandy']?.sprite);
 
-            const openPurchasableList = () => {
-                const candyAmount = App.pet.inventory.food['spookandy'] || 0;
-
-                const specialPotionsX = [
-                    {
-                        name: 'Item 1',
-                        icon: App.getFoodCSprite(App.definitions.food['spookandy']?.sprite),
-                        ownedAmount: App.pet.inventory.food['spookandy'],
-                        isNew: false,
-                    },
-                    {
-                        name: 'Item 2',
-                        icon: App.getFoodCSprite(App.definitions.food['bunny burger']?.sprite),
-                        ownedAmount: App.pet.inventory.food['bunny burger'],
-                        isNew: true,
-                    },
-                ]
+            const payWithCustomCurrency = (amt) => {
+                const currentAmount = App.pet.inventory.food[CURRENCY_NAME] || 0;
+                if(amt > currentAmount) return App.displayPopup(`Don't have enough ${CURRENCY_NAME}!`);
+                App.addNumToObject(App.pet.inventory.food, CURRENCY_NAME, -amt);
+                return true;
+            }
+            const openPurchasableList = (activeIndex) => {
+                let sliderInstance;
+                const candyAmount = App.pet.inventory.food[CURRENCY_NAME] || 0;
 
                 const foodNames = [
                     'potion of aging up', 
@@ -4683,20 +4679,44 @@ const App = {
                     'logic skill potion',
                     'endurance skill potion',
                 ]
+                const miscItems = [
+                    {
+                        name: 'underworld tickets',
+                        icon: App.getGenericCSprite(1, App.constants.MISC_SPRITESHEET, App.constants.MISC_SPRITESHEET_DIMENSIONS),
+                        price: 150,
+                        ownedAmount: App.pet.inventory.misc['underworld tickets'],
+                        onclick: () => {
+                            if(payWithCustomCurrency(150)){
+                                App.addNumToObject(App.pet.inventory.misc, 'underworld tickets', 3);
+                                openPurchasableList(sliderInstance?.getCurrentIndex());
+                                return false;
+                            }
+                            return true;
+                        }
+                    }
+                ]
                 const itemDefs = [
+                    ...miscItems,
                     ...foodNames.map(name => {
                         const item = App.definitions.food[name];
                         return {
                             ...item,
                             name,
                             icon: App.getFoodCSprite(item.sprite),
-                            price: 150,
+                            price: 250,
                             ownedAmount: App.pet.inventory.food[name],
+                            onclick: () => {
+                                if(payWithCustomCurrency(250)){
+                                    console.log({name})
+                                    App.addNumToObject(App.pet.inventory.food, name, 1);
+                                    openPurchasableList(sliderInstance?.getCurrentIndex());
+                                    return false;
+                                }
+                                return true;
+                            }
                         }
                     })
                 ]
-                // todo: continue
-                console.log(itemDefs)
                 const allItems = [
                     ...itemDefs,
                 ].map(current => {
@@ -4706,36 +4726,26 @@ const App = {
                             ${current.icon} 
                             ${current.name?.toUpperCase()} 
                             (x${current.ownedAmount || 0})
-                            <b class="flex align-center flex-gap-025 justify-center"> ${currencyIcon} <span>X${current.price || 0}</span> </b>
+                            <b class="flex align-center flex-gap-025 justify-center"> ${CURRENCY_ICON} <span>X${current.price || 0}</span> </b>
                             ${current.isNew ? App.getBadge('new!') : ''}
                         `,
                     }
                 })
 
-                return App.displaySlider(
+                sliderInstance = App.displaySlider(
                     allItems, 
-                    false, 
+                    activeIndex, 
                     {
                         accept: 'Purchase',
                     },
                     `
                         <div class="flex align-center flex-gap-025">
-                            ${currencyIcon} x${candyAmount}
+                            ${CURRENCY_ICON} x${candyAmount}
                         </div>
                     `
                 );
 
-                return App.displayList([
-                    {
-                        name: `${App.getFoodCSprite(App.definitions.food['spookandy']?.sprite)} x${candyAmount}`,
-                        type: 'text',
-                        solid: true,
-                    },
-                    {
-                        name: `${App.getFoodCSprite(App.definitions.food['spookandy']?.sprite)} Spookandy`,
-                        onclick: () => true
-                    }
-                ])
+                return sliderInstance;
             }
 
             return App.displayList([
@@ -4743,6 +4753,16 @@ const App = {
                     name: 'Purchase',
                     onclick: openPurchasableList,
                 },
+                {
+                    name: 'Trick or Treat',
+                    onclick: () => {
+                        return App.displayPopup(
+                            `Double jump to get all <br> ${CURRENCY_ICON} <br> while avoiding <br> <img src="resources/img/misc/bat_01.png"></img>`, 
+                            false,
+                            () => Activities.goToWalk(App.handlers.open_underworld_menu)
+                        );
+                    }
+                }
             ], backFn)
         },
         open_rabbitholes_list: function(){
@@ -6718,6 +6738,16 @@ const App = {
         Object.keys(config).map(key => audioElement[key] = config[key]);
         audioElement.play();
         audioElement.muted = !App.settings.playSound || !App.settings.playMusic;
+
+        if(config.loopTime){
+            audioElement.addEventListener('timeupdate', () => {
+                if (audioElement.currentTime >= config.loopTime) {
+                    audioElement.currentTime = 0;
+                    audioElement.play();
+                }
+            })
+        }
+
         return {
             element: audioElement,
             stop: () => {
