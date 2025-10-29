@@ -235,6 +235,7 @@ const App = {
             width: 96, height: 96, 
             z: App.constants.BACKGROUND_Z,
             noPreload: Boolean(App.mods.length),
+            static: true,
         })
         // App.foodsSpritesheet = new Object2d({
         //     image: App.preloadedResources["resources/img/item/foods.png"],
@@ -4623,10 +4624,12 @@ const App = {
             const CURRENCY_NAME = App.constants.UNDERWORLD_TREAT_CURRENCY;
             const CURRENCY_ICON = App.getFoodCSprite(App.definitions.food[CURRENCY_NAME]?.sprite);
 
+            const TICKETS_PRICE = 50,
+                POTION_PRICE = 200;
+
             const backFn = () => {
                 App.handlers.open_activity_list(true);
             }
-
 
             const payWithCustomCurrency = (amt) => {
                 const currentAmount = App.pet.inventory.food[CURRENCY_NAME] || 0;
@@ -4652,10 +4655,10 @@ const App = {
                     {
                         name: 'underworld tickets',
                         icon: App.getGenericCSprite(1, App.constants.MISC_SPRITESHEET, App.constants.MISC_SPRITESHEET_DIMENSIONS),
-                        price: 150,
+                        price: TICKETS_PRICE,
                         ownedAmount: App.pet.inventory.misc['underworld tickets'],
                         onclick: () => {
-                            if(payWithCustomCurrency(150)){
+                            if(payWithCustomCurrency(TICKETS_PRICE)){
                                 App.addNumToObject(App.pet.inventory.misc, 'underworld tickets', 3);
                                 openPurchasableList(sliderInstance?.getCurrentIndex());
                                 return false;
@@ -4672,10 +4675,10 @@ const App = {
                             ...item,
                             name,
                             icon: App.getFoodCSprite(item.sprite),
-                            price: 250,
+                            price: POTION_PRICE,
                             ownedAmount: App.pet.inventory.food[name],
                             onclick: () => {
-                                if(payWithCustomCurrency(250)){
+                                if(payWithCustomCurrency(POTION_PRICE)){
                                     console.log({name})
                                     App.addNumToObject(App.pet.inventory.food, name, 1);
                                     openPurchasableList(sliderInstance?.getCurrentIndex());
@@ -4695,7 +4698,9 @@ const App = {
                             ${current.icon} 
                             ${current.name?.toUpperCase()} 
                             (x${current.ownedAmount || 0})
-                            <b class="flex align-center flex-gap-025 justify-center"> ${CURRENCY_ICON} <span>X${current.price || 0}</span> </b>
+                            <b class="flex align-center flex-gap-025 justify-center">
+                                ${CURRENCY_ICON} <span>X${current.price || 0}</span> 
+                            </b>
                             ${current.isNew ? App.getBadge('new!') : ''}
                         `,
                     }
@@ -4719,11 +4724,61 @@ const App = {
 
             return App.displayList([
                 {
-                    name: 'Purchase',
-                    onclick: openPurchasableList,
+                    name: `Enter Underworld`,
+                    onclick: () => {
+                        const ownedTickets = App.pet.inventory.misc['underworld tickets'] || 0;
+                        const ticketIcon = App.getGenericCSprite(1, App.constants.MISC_SPRITESHEET, App.constants.MISC_SPRITESHEET_DIMENSIONS);
+                        if(!ownedTickets){
+                            return App.displayConfirm(`
+                                You don't have a 
+                                <div class="flex align-center justify-center flex-gap-1 bold">${ticketIcon} Ticket,</div>
+                                purchase some from the shop using
+                                <div class="flex align-center justify-center flex-gap-1 bold">${CURRENCY_ICON} ${CURRENCY_NAME}</div>
+                                `, 
+                                [
+                                    {
+                                        name: 'open shop',
+                                        onclick: () => {
+                                            openPurchasableList()
+                                        }
+                                    },
+                                    {
+                                        name: 'close',
+                                        class: 'back-btn',
+                                        onclick: () => {}
+                                    },
+                                ]
+                            )
+                        }
+                        Activities.goToActivities({
+                            activities: [
+                                {
+                                    name: "Home",
+                                    image: 'resources/img/misc/activity_building_devil_home.png',
+                                    onEnter: () => App.handlers.open_underworld_menu(),
+                                    isHome: true,
+                                },
+                                {
+                                    name: "Restaurant",
+                                    image: 'resources/img/misc/activity_building_devil_restaurant.png',
+                                    onEnter: () => App.handlers.go_to_home(),
+                                    isHome: true,
+                                },
+                                {
+                                    name: "Town Hall",
+                                    image: 'resources/img/misc/activity_building_devil_gathering.png',
+                                    onEnter: () => App.handlers.go_to_home(),
+                                    isHome: true,
+                                },
+                            ],
+                            floorImage: 'resources/img/misc/devil_walkway_02.png',
+                            scene: App.scene.devil_town_exterior,
+                            id: 'devilTown',
+                        })
+                    }
                 },
                 {
-                    name: 'Trick or Treat',
+                    name: `Trick or Treat ${App.getBadge(CURRENCY_ICON, 'transparent')}`,
                     onclick: () => {
                         return App.displayPopup(
                             `Double jump to get all <br> ${CURRENCY_ICON} <br> while avoiding <br> <img src="resources/img/misc/bat_01.png"></img>`, 
@@ -4731,7 +4786,11 @@ const App = {
                             () => Activities.goToWalk(App.handlers.open_underworld_menu)
                         );
                     }
-                }
+                },
+                {
+                    name: 'Shop',
+                    onclick: openPurchasableList,
+                },
             ], backFn)
         },
         open_rabbitholes_list: function(){
