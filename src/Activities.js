@@ -739,9 +739,16 @@ class Activities {
             mallNpc.removeObject();
         });
     }
-    static async goToActivities({ activities, floorImage = 'resources/img/background/outside/activities_base_01.png' } = {}){
+    static async goToActivities({ 
+        activities, 
+        floorImage = 'resources/img/background/outside/activities_base_01.png',
+        scene = App.scene.emptyOutside,
+        id = 'default',
+    } = {}){
+        const tempId = `_outsideActivity_${id}`;
+        
         App.setScene({
-            ...App.scene.emptyOutside,
+            ...scene,
             petY: '94%',
         });
 
@@ -813,12 +820,12 @@ class Activities {
             onEnd();
             const currentActivity = activities[currentActivityIndex];
             // offset by 1
-            App.temp.outsideActivityIndex = currentActivityIndex + 1;
+            App.temp[tempId] = currentActivityIndex + 1;
             currentActivity.onEnter?.();
             setTimeout(() => App.playSound('resources/sounds/ui_click_03.ogg', true));
         }
         
-        let currentActivityIndex = App.temp.outsideActivityIndex ?? 1;
+        let currentActivityIndex = App.temp[tempId] ?? 1;
         const updateSelectedActivity = (offset = 1) => {
             if(spawnedGameObjects.length > 3){
                 const toDespwan = spawnedGameObjects.shift();
