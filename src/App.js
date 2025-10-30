@@ -5040,23 +5040,23 @@ const App = {
                                 onclick: () => {
                                     const list = UI.genericListContainer();                                
                                     UI.genericListContainerContent(`
-                                            <div class="inner-padding uppercase surface-stylized b-radius-10 flex flex-dir-col flex-gap-2">
-                                                <div class="flex flex-dir-col flex-gap-05">
-                                                    <div>${icon} ${friendDef.name}</div>
-                                                    <small>(${friendDef.getLifeStageLabel()})</small>
-                                                    <small>
-                                                        ${isMonsterGhost ? monsterSpan : ''}
-                                                        ${isAngelGhost ? angelSpan : ''}
-                                                    </small>
-                                                </div>
-                                                <div></div>
-                                                <div class="relative flex flex-dir-row align-center flex-gap-1">
-                                                    <div class="stats-label">Friendship</div>
-                                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('smile', true)}</b> 
-                                                    ${App.createProgressbar( friendDef.getFriendship() / 100 * 100 ).node.outerHTML}
-                                                </div>
-
+                                        <div class="inner-padding uppercase surface-stylized b-radius-10 flex flex-dir-col flex-gap-2">
+                                            <div class="flex flex-dir-col flex-gap-05">
+                                                <div>${icon} ${friendDef.name}</div>
+                                                <small>(${friendDef.getLifeStageLabel()})</small>
+                                                <small>
+                                                    ${isMonsterGhost ? monsterSpan : ''}
+                                                    ${isAngelGhost ? angelSpan : ''}
+                                                </small>
                                             </div>
+                                            <div></div>
+                                            <div class="relative flex flex-dir-row align-center flex-gap-1">
+                                                <div class="stats-label">Friendship</div>
+                                                <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('smile', true)}</b> 
+                                                ${App.createProgressbar( friendDef.getFriendship() / 100 * 100 ).node.outerHTML}
+                                            </div>
+
+                                        </div>
                                     `, list)
                                     return true;
                                 }
