@@ -893,7 +893,8 @@ class Pet extends Object2d {
         if(stats.current_health <= 0 && 
             stats.current_cleanliness <= 0 && 
             stats.current_fun <= 0 && 
-            stats.current_hunger <= 0
+            stats.current_hunger <= 0 &&
+            !stats.is_ghost
         ) stats.current_death_tick -= stats.death_tick_rate;
         else stats.current_death_tick = max_death_tick;
 
@@ -1245,7 +1246,7 @@ class Pet extends Object2d {
             this.statsManager(isOffline, hour);
 
             // prevents dying
-            this.stats.current_hunger += 1;
+            // this.stats.current_hunger += 1;
 
             let min = {m: i / 60, s: i, h: i / 60 / 60};
             if(this.stats.current_hunger <= 0 && !report.hunger) report.hunger = {...min, stat: this.stats.current_hunger};
