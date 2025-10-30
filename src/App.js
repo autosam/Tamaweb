@@ -4962,6 +4962,7 @@ const App = {
                         }
                     },
                     {
+                        _ignore: friendDef.stats.is_ghost === App.pet.stats.is_ghost,
                         name: `Place curse`,
                         onclick: () => {
                             if(App.pet.stats.current_hunger < App.pet.stats.max_hunger / 2){
@@ -5008,6 +5009,7 @@ const App = {
                         }
                     },
                     {
+                        _ignore: friendDef.stats.is_ghost === App.pet.stats.is_ghost,
                         name: `Gift Divinity`,
                         onclick: () => {
                             if(App.pet.stats.current_hunger < App.pet.stats.max_hunger / 2){
