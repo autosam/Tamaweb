@@ -4677,7 +4677,7 @@ const App = {
             return Activities.goToActivities({
                 activities: [
                     {
-                        name: "Home",
+                        name: "Overworld Entrance",
                         image: 'resources/img/misc/activity_building_devil_home.png',
                         onEnter: () => App.handlers.open_underworld_menu(),
                         isHome: true,
@@ -4759,7 +4759,6 @@ const App = {
                             ownedAmount: App.pet.inventory.food[name],
                             onclick: () => {
                                 if(payWithCustomCurrency(POTION_PRICE)){
-                                    console.log({name})
                                     App.addNumToObject(App.pet.inventory.food, name, 1);
                                     openPurchasableList(sliderInstance?.getCurrentIndex());
                                     return false;
@@ -4808,10 +4807,11 @@ const App = {
                     onclick: () => {
                         const ownedTickets = App.pet.inventory.misc['underworld tickets'] || 0;
                         const ticketIcon = App.getGenericCSprite(1, App.constants.MISC_SPRITESHEET, App.constants.MISC_SPRITESHEET_DIMENSIONS);
+                        const ticketSpan = `<div class="flex align-center justify-center flex-gap-1 bold">${ticketIcon} Ticket</div>`;
                         if(!ownedTickets){
                             return App.displayConfirm(`
                                 You don't have a 
-                                <div class="flex align-center justify-center flex-gap-1 bold">${ticketIcon} Ticket,</div>
+                                ${ticketSpan}
                                 purchase some from the shop using
                                 <div class="flex align-center justify-center flex-gap-1 bold">${CURRENCY_ICON} ${CURRENCY_NAME}</div>
                                 `, 
@@ -4831,7 +4831,22 @@ const App = {
                             )
                         }
 
-                        App.handlers.open_devil_town_activity_list();
+                        App.displayConfirm(`Do you want to enter the Underworld? This will cost you x1 ${ticketSpan}`, [
+                            {
+                                name: 'yes',
+                                onclick: () => {
+                                    App.addNumToObject(App.pet.inventory.misc, 'underworld tickets', -1);
+                                    App.handlers.open_devil_town_activity_list();
+                                    App.sendAnalytics('enter_underworld');
+                                }
+                            },
+                            {
+                                name: 'no',
+                                class: 'back-btn',
+                                onclick: () => {}
+                            },
+
+                        ])
                     }
                 },
                 {
@@ -4938,6 +4953,9 @@ const App = {
             const monsterIcon = `<img class="icon" src="resources/img/misc/devil_icon.png"></img>`
             const angelIcon = `<img class="icon" src="resources/img/misc/angel_icon.png"></img>`
 
+            const monsterSpan = `<div> ${monsterIcon} <b style="color: red;">monster</b> </div>`;
+            const angelSpan = `<div> ${angelIcon} <b style="color: forestgreen;">angel</b> </div>`;
+
             let friendsList;
             const mappedFriendsList = friends.map((friendDef, index) => {
                 const name = friendDef.name || 'Unknown';
@@ -4969,7 +4987,7 @@ const App = {
                                 return App.displayPopup("You don't have enough energy to do this.");
                             }
 
-                            App.displayConfirm(`This will turn <b>${friendDef.name}</b> into a <div>${monsterIcon} <b style="color: red;">monster</b>,</div> do you want to continue?`, [
+                            App.displayConfirm(`This will turn <b>${friendDef.name}</b> into a ${monsterSpan},</div> do you want to continue?`, [
                                 {
                                     name: 'yes',
                                     onclick: () => {
@@ -5016,7 +5034,7 @@ const App = {
                                 return App.displayPopup("You don't have enough energy to do this.");
                             }
 
-                            App.displayConfirm(`This will turn <b>${friendDef.name}</b> into an <div>${angelIcon} <b style="color: forestgreen;">angel</b>,</div> do you want to continue?`, [
+                            App.displayConfirm(`This will turn <b>${friendDef.name}</b> into an ${angelSpan},</div> do you want to continue?`, [
                                 {
                                     name: 'yes',
                                     onclick: () => {
@@ -5044,13 +5062,15 @@ const App = {
                 return {
                     name: icon + name,
                     onclick: () => {
+                        const isMonsterGhost = friendDef.stats.is_ghost === PetDefinition.GHOST_TYPE.devil;
+                        const isAngelGhost = friendDef.stats.is_ghost === PetDefinition.GHOST_TYPE.angel;
                         if (onClickOverride) return onClickOverride(friendDef);
                         const friendActivitiesList = App.displayList([
                             {
                                 name: 'info',
                                 onclick: () => {
                                     const list = UI.genericListContainer();
-                                    UI.genericListContainerContent(`
+                                    /* UI.genericListContainerContent(`
                                 <div class="inner-padding uppercase surface-stylized b-radius-10">
                                     ${icon} ${friendDef.name}
                                     <br>
@@ -5058,10 +5078,46 @@ const App = {
                                     <hr>
                                     <b>Age:</b> ${friendDef.getLifeStageLabel()}
                                 </div>
-                                `, list);
+                                `, list); */
+                                
+                                    UI.genericListContainerContent(`
+                                            <div class="inner-padding uppercase surface-stylized b-radius-10 flex flex-dir-col flex-gap-2">
+                                                <div class="flex flex-dir-col flex-gap-05">
+                                                    <div>${icon} ${friendDef.name}</div>
+                                                    <small>(${friendDef.getLifeStageLabel()})</small>
+                                                    <small>
+                                                        ${isMonsterGhost ? monsterSpan : ''}
+                                                        ${isAngelGhost ? angelSpan : ''}
+                                                    </small>
+                                                </div>
+                                                <div></div>
+                                                <div class="relative flex flex-dir-row align-center flex-gap-1">
+                                                    <div class="stats-label">Friendship</div>
+                                                    <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('smile', true)}</b> 
+                                                    ${App.createProgressbar( friendDef.getFriendship() / 100 * 100 ).node.outerHTML}
+                                                </div>
+
+                                            </div>
+                                    `, list)
 
                                     return true;
                                 }
+                            },
+                            {
+                                _ignore: !friendDef.stats.is_ghost,
+                                name: `${isMonsterGhost ? monsterIcon : angelIcon} <span style="color: ${isMonsterGhost ? 'red' : 'forestgreen'};">Be converted</span>`,
+                                onclick: () => {
+                                    if(friendDef.stats.player_friendship <= 98){
+                                        return App.displayPopup(`
+                                            You need to be best friends with 
+                                            <b>${friendDef.name}</b> 
+                                            before asking to be converted to
+                                            <div>
+                                                ${isMonsterGhost ? monsterSpan : angelSpan}
+                                            </div>
+                                        `, 3500);
+                                    }
+                                },
                             },
                             ...getInteractionSet(monsterInteractions, App.pet.stats.is_ghost === PetDefinition.GHOST_TYPE.devil),
                             ...getInteractionSet(angelInteractions, App.pet.stats.is_ghost === PetDefinition.GHOST_TYPE.angel),
