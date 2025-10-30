@@ -5069,17 +5069,7 @@ const App = {
                             {
                                 name: 'info',
                                 onclick: () => {
-                                    const list = UI.genericListContainer();
-                                    /* UI.genericListContainerContent(`
-                                <div class="inner-padding uppercase surface-stylized b-radius-10">
-                                    ${icon} ${friendDef.name}
-                                    <br>
-                                    <b>Friendship:</b> ${App.createProgressbar(friendDef.getFriendship() / 100 * 100).node.outerHTML}
-                                    <hr>
-                                    <b>Age:</b> ${friendDef.getLifeStageLabel()}
-                                </div>
-                                `, list); */
-                                
+                                    const list = UI.genericListContainer();                                
                                     UI.genericListContainerContent(`
                                             <div class="inner-padding uppercase surface-stylized b-radius-10 flex flex-dir-col flex-gap-2">
                                                 <div class="flex flex-dir-col flex-gap-05">
@@ -5099,7 +5089,6 @@ const App = {
 
                                             </div>
                                     `, list)
-
                                     return true;
                                 }
                             },
