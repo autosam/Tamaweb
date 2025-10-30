@@ -1,4 +1,304 @@
 class Activities {
+    static async angel_grantWish(otherPetDef = App.getRandomPetDef()){
+        App.closeAllDisplays();
+        App.setScene(App.scene.angel_town_room);
+        App.toggleGameplayControls(false);
+
+        otherPetDef.increaseFriendship(20);
+
+        const otherPet = new TimelineDirector(new Pet(otherPetDef));
+        const main = new TimelineDirector(App.pet);
+
+        main.setPosition({x: '30%'});
+        otherPet.setPosition({x: '100%'});
+        otherPet.actor.staticShadow = false;
+        await otherPet.moveTo({x: '70%', speed: 0.02});
+
+        await TimelineDirector.wait(500);
+
+        // create wanted food
+        const wantedFood = randomFromArray(Object.keys(App.definitions.food));
+        const wantedFoodDef = App.definitions.food[wantedFood];
+
+        otherPet.setState('mild_uncomfortable');
+        otherPet.actor.showThought('food', wantedFood, 1500);
+        await TimelineDirector.wait(1000);
+
+        otherPet.setState('idle');
+        main.setState('blush');
+
+        await TimelineDirector.wait(1000);
+        const foodObject = new Object2d({
+            image: App.preloadedResources[App.constants.FOOD_SPRITESHEET],
+            spritesheet: {
+                ...App.constants.FOOD_SPRITESHEET_DIMENSIONS,
+                cellNumber: wantedFoodDef.sprite
+            },
+            scale: 0,
+            x: '50%',
+            y: '50%',
+            onDraw: (me) => {
+                me.scale = lerp(me.scale, 1, 0.001 * App.deltaTime)
+            },
+        })
+
+        const shine = new Object2d({
+            img: 'resources/img/misc/light_rays_03.png',
+            x: '50%',
+            y: '50%',
+            rotation: 0,
+            composite: 'screen',
+            scale: 0,
+            onDraw: (me) => {
+                me.rotation += 0.05 * App.deltaTime;
+                me.scale = lerp(me.scale, 0.5, 0.001 * App.deltaTime);
+            }
+        })
+
+        otherPet.setState('shocked');
+        await TimelineDirector.wait(1000);
+        otherPet.setState('cheering');
+
+        await TimelineDirector.wait(5000);
+        App.fadeScreen({
+            middleFn: () => {
+                main.setPosition({x: '50%'});
+                main.release();
+                otherPet.remove();
+                foodObject.removeObject();
+                shine.removeObject();
+                App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
+                App.pet.playCheeringAnimation();
+            },
+        })
+    }
+    static async angel_bless(otherPetDef = App.getRandomPetDef()){
+        App.closeAllDisplays();
+        App.setScene(App.scene.angel_town_room);
+        App.toggleGameplayControls(false);
+
+        otherPetDef.increaseFriendship(15);
+
+        const otherPet = new TimelineDirector(new Pet(otherPetDef));
+        const main = new TimelineDirector(App.pet);
+
+        main.setPosition({x: '30%'});
+        otherPet.setPosition({x: '100%'});
+        otherPet.actor.staticShadow = false;
+        await otherPet.moveTo({x: '70%', speed: 0.02});
+
+        await TimelineDirector.wait(500);
+        Activities.task_floatingObjects(10, ['resources/img/misc/yellow_star_01.png'], [50, App.drawer.bounds.height]);
+
+        main.setState('kissing');
+        main.lookAt(true);
+        otherPet.setState('blush');
+
+        await TimelineDirector.wait(1000);
+
+        main.setState('blush');
+        otherPet.setState('cheering');
+        otherPet.actor.showOutline('yellow');
+        const shine = new Object2d({
+            img: 'resources/img/misc/light_rays_03.png',
+            x: '70%',
+            y: '80%',
+            rotation: 0,
+            composite: 'screen',
+            scale: 0,
+            onDraw: (me) => {
+                me.rotation += 0.05 * App.deltaTime;
+                me.scale = lerp(me.scale, 2, 0.001 * App.deltaTime);
+            }
+        })
+
+        Activities.task_floatingObjects(20, ['resources/img/misc/yellow_star_01.png'], [50, App.drawer.bounds.height]);
+
+        await TimelineDirector.wait(3000);
+        App.fadeScreen({
+            middleFn: () => {
+                main.setPosition({x: '50%'});
+                main.release();
+                otherPet.remove();
+                shine.removeObject();
+                App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
+                App.pet.playCheeringAnimation();
+            },
+        })
+    }
+    static async ghost_convertOtherPet(otherPetDef = App.getRandomPetDef(), ghostType = App.petDefinition.stats.is_ghost){
+        const isTurningIntoDevil = ghostType === PetDefinition.GHOST_TYPE.devil;
+        
+        App.closeAllDisplays();
+        App.setScene(App.scene.reviverDen);
+        App.toggleGameplayControls(false);
+        
+        if(isTurningIntoDevil) otherPetDef.increaseFriendship(-random(10, 50));
+        else otherPetDef.increaseFriendship(random(5, 30));
+
+        const otherPet = new TimelineDirector(new Pet(otherPetDef));
+        const main = new TimelineDirector(App.pet);
+
+        main.setPosition({x: '30%'});
+        otherPet.setPosition({x: '100%'});
+        otherPet.actor.staticShadow = false;
+        await otherPet.moveTo({x: '70%', speed: 0.02});
+
+        await TimelineDirector.wait(250);
+
+        for(let i = 0; i < 6; i++){
+            new Object2d({
+                img: 'resources/img/misc/foam_single.png',
+                x: '70%',
+                y: otherPet.actor.y - otherPet.actor.petDefinition.spritesheet.cellSize / 2,
+                opacity: 1,
+                scale: 1 + Math.random(),
+                rotation: random(0, 180),
+                z: App.constants.ACTIVE_PET_Z,
+                onDraw: (me) => {
+                    Object2d.animations.flip(me);
+                    Object2d.animations.pulseScale(me, 0.1, 0.01);
+                    me.scale -= 0.0009 * App.deltaTime;
+                    me.opacity -= 0.0009 * App.deltaTime;
+                    if(me.opacity <= 0) me.removeObject();
+                }
+            })
+        }
+
+        await TimelineDirector.wait(250);
+
+        otherPet.remove();
+        otherPetDef.stats.is_ghost = ghostType;
+        const otherPetConverted = new TimelineDirector(new Pet(otherPetDef));
+        otherPetConverted.setState('shocked');
+        otherPetConverted.setPosition({x: '70%'});
+        await TimelineDirector.wait(500);
+
+        otherPetConverted.setState(isTurningIntoDevil ? 'uncomfortable' : 'cheering');
+
+        main.setState('blush');
+
+        await TimelineDirector.wait(3500);
+        App.fadeScreen({
+            middleFn: () => {
+                main.setPosition({x: '50%'});
+                main.release();
+                otherPetConverted.remove();
+                App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
+                App.pet.playCheeringAnimation();
+            },
+        })
+    }
+    static async demon_whisper(otherPetDef = App.getRandomPetDef()){
+        App.closeAllDisplays();
+        App.setScene(App.scene.home);
+        App.toggleGameplayControls(false);
+
+        otherPetDef.increaseFriendship(random(-5, 5));
+
+        const otherPet = new TimelineDirector(new Pet(otherPetDef));
+        const main = new TimelineDirector(App.pet);
+
+        main.setPosition({x: '30%'});
+        otherPet.setPosition({x: '100%'});
+        otherPet.actor.staticShadow = false;
+        await otherPet.moveTo({x: '70%', speed: 0.02});
+
+        await TimelineDirector.wait(250);
+        main.setState('eating');
+        main.lookAt(true);
+        App.pet.say(randomFromArray([
+            '𒋦𒍹𒄦',
+            '꧁⎝ 𓆩༺✧༻𓆪 ⎠꧂',
+            '𖤍𒅒𒈔𒅒𒇫𒄆',
+        ]), 2500)
+        await TimelineDirector.wait(50);
+        App.playSound('resources/sounds/shock.ogg', true);
+        await otherPet.bob({animation: 'shocked', maxCycles: 2});
+        await TimelineDirector.wait(2000);
+        main.setState('idle');
+        await otherPet.moveTo({x: '0%'});
+        await otherPet.moveTo({x: '100%'});
+        main.moveTo({x: '50%', speed: 0.02});
+        await otherPet.moveTo({x: '0%'});
+        await otherPet.moveTo({x: '150%'});
+
+        main.setState('idle');
+
+        await TimelineDirector.wait(500);
+        App.fadeScreen({
+            middleFn: () => {
+                main.setPosition({x: '50%'});
+                main.release();
+                otherPet.remove();
+                App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
+                App.pet.playCheeringAnimation();
+            },
+        })
+    }
+    static async demon_scare(otherPetDef = App.getRandomPetDef()){
+        App.closeAllDisplays();
+        App.setScene(App.scene.home);
+        App.toggleGameplayControls(false);
+
+        otherPetDef.increaseFriendship(-random(2, 5));
+
+        const otherPet = new TimelineDirector(new Pet(otherPetDef));
+        const main = new TimelineDirector(App.pet);
+
+        main.setPosition({x: '150%'});
+        otherPet.setPosition({x: '100%'});
+        otherPet.actor.staticShadow = false;
+        await otherPet.moveTo({x: '50%', speed: 0.02});
+
+        await TimelineDirector.wait(250);
+        main.setPosition({x: '30%'});
+        main.fade({target: main.actor.opacity, from: 0.01, speed: 0.005})
+        otherPet.setState('idle_side');
+        otherPet.lookAt(true);
+        await TimelineDirector.wait(750);
+        otherPet.setState('mild_uncomfortable');
+        main.setPosition({x: '150%'});
+        await TimelineDirector.wait(750);
+        main.setPosition({x: '70%'});
+        main.fade({target: main.actor.opacity, from: 0.01, speed: 0.005})
+        otherPet.setState('idle_side');
+        otherPet.lookAt(false);
+        await TimelineDirector.wait(750);
+        otherPet.setState('mild_uncomfortable');
+        main.setPosition({x: '150%'});
+        await TimelineDirector.wait(750);
+        otherPet.setState('idle_side');
+        otherPet.lookAt(false);
+        await TimelineDirector.wait(750);
+        otherPet.lookAt(true);
+        main.setPosition({x: '70%'})
+        await TimelineDirector.wait(100);
+        otherPet.bob({animation: 'shocked', landAnimation: 'shocked', maxCycles: 1});
+        otherPet.moveTo({disableMoveAnimation: true, x: '30%'});
+        main.lookAt(false);
+        App.pet.playSound('resources/sounds/jump.ogg');
+        await main.bob({animation: 'angry', landAnimation: 'idle_side', maxCycles: 1});
+        await TimelineDirector.wait(200);
+        main.setState('cheering');
+        otherPet.setState('uncomfortable');
+
+        await TimelineDirector.wait(1500);
+        App.fadeScreen({
+            middleFn: () => {
+                main.setPosition({x: '50%'});
+                main.release();
+                otherPet.remove();
+                App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
+                App.pet.playCheeringAnimation();
+            }
+        })
+    }
     static goToDevilTownGathering(){
         App.setScene(App.scene.devil_town_gathering);
 
@@ -5076,12 +5376,14 @@ class TimelineDirector {
         this.actor.triggerScriptedState('idle', App.INF, false, true, config.onEnd, config.driverFn);
         this.actor.stopMove();
     }
-    moveTo = ({x, y, speed = 0.15, endState = 'idle'}) => {
+    moveTo = ({x, y, speed = 0.15, endState = 'idle', disableMoveAnimation}) => {
         return new Promise(resolve => {
             if(!this.actor) return resolve();
 
             this.actor.scriptedEventDriverFn = (me) => {
-                me.setState(me.isMoving ? 'moving' : endState)
+                if(!disableMoveAnimation){
+                    me.setState(me.isMoving ? 'moving' : endState)
+                }
                 if(!me.isMoving) {
                     me.speedOverride = false;
                     resolve();
@@ -5187,8 +5489,9 @@ class TimelineDirector {
             })
         })
     }
-    fade = ({target, speed = 0.005, timeout = 1000} = {}) => {
+    fade = ({target, speed = 0.005, timeout = 1000, from = this.actor.opacity} = {}) => {
         const defaultOpacity = this.actor.opacity || 1;
+        this.actor.opacity = from;
         return new Promise(resolve => {
             const { actor } = this;
 
