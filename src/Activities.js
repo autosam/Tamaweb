@@ -1,266 +1,51 @@
 class Activities {
-    static async goToWalk(onEndCallback){
-        App.closeAllDisplays();
-        App.setScene(App.scene.devil_town_exterior)
+    static goToDevilTownGathering(){
+        App.setScene(App.scene.devil_town_gathering);
 
-        const backgroundMusic = App.playAdvancedSound({
-            src: 'resources/sounds/trick_or_treat_bm_01.mp3',
-            loop: true, 
-            volume: 0.4,
-        });
+        const sceneParent = new Object2d({});
 
-        const currencyIcon = App.getFoodCSprite(App.definitions.food[App.constants.UNDERWORLD_TREAT_CURRENCY]?.sprite);
-
-        // init vars
-        let activeSpeed = 2.5, 
-            globalOffset = 0, 
-            lastGlobalOffsetLooped = App.INF,
-            globalSpawnOffset = App.drawer.bounds.width,
-            spawnTicks = 0;
-
-        // score vars
-        let lives = 3, score = 0;
-
-        const screen = UI.empty();
-        document.querySelector('.screen-wrapper').appendChild(screen);
-        screen.innerHTML = `
-        <div class="width-full pointer-events-none" style="position: absolute; top: 0; left: 0;">
-            <div class="flex-container" style="justify-content: space-between; padding: 4px">
-                <div class="flex-container flex-gap-05 mini-game-ui">
-                    ${currencyIcon}
-                    <div id="score">${score}</div>
-                </div>
-                <div class="flex-container">
-                    <div id="lives">${lives}</div>
-                </div>
-            </div>
-        </div>
-        `;
-        const uiScore = screen.querySelector('#score'),
-            uiLives = screen.querySelector('#lives');
-        const updateUI = () => {
-            uiScore.textContent = score;
-            uiLives.innerHTML = new Array(lives).fill('').map(() => {
-                return `<img src="resources/img/misc/heart_particle_01.png"></img>`
-            }).join(' ');
-        }
-        updateUI();
-
-        const sceneParent = new Object2d({})
-
-        const onEndFn = async () => {
-            screen.remove();
-            App.pet.stopScriptedState();
-            sceneParent.onDraw = undefined;
-            App.toggleGameplayControls(false);
-            backgroundMusic.stop();
-
-            App.addNumToObject(App.pet.inventory.food, App.constants.UNDERWORLD_TREAT_CURRENCY, score);
-
-            App.pet.triggerScriptedState('idle', App.INF, 0, true);
-            App.pet.x = '50%';
-            App.pet.y = '100%';
-
-            const msg = App.displayMessageBubble(`${currencyIcon} x${score}`)
-
-            const onEnd = () => {
-                App.toggleGameplayControls();
-                sceneParent.removeObject();
-                msg.close();
-                onEndCallback?.();
-            }
-
-            if(score >= 5) App.pet.playCheeringAnimation(onEnd);
-            else App.pet.playUncomfortableAnimation(onEnd);
+        const getRandomGhostPet = (ghostType = PetDefinition.GHOST_TYPE.devil) => {
+            const npcDef = App.getRandomPetDef();
+            npcDef.stats.is_ghost = ghostType;
+            return new Pet(npcDef, {parent: sceneParent});
         }
 
-        let jumpCount = 0, groundPositionY = false;
-        App.toggleGameplayControls(false, () => {
-            if(groundPositionY === false) {
-                groundPositionY = App.pet.y;
-            }
-            const jump = () => {
-                App.pet.playSound('resources/sounds/jump.ogg', true);
+        const driverFnFactory = () => {
+            let timer = Math.random();
+            return (pet) => {
+                timer -= App.deltaTime;
 
-                const gravity = 0.001;
-                let velocity = 0.31;
-                App.pet.triggerScriptedState('talking', App.INF, 0, true, 
-                    () => {
-                        App.pet.y = groundPositionY;
-                        jumpCount = 0;
-                    },
-                    () => {
-                        velocity -= gravity * App.deltaTime;
-                        App.pet.y -= velocity * App.deltaTime;
-                        if(App.pet.y >= groundPositionY){
-                            App.pet.stopScriptedState();
-                            App.pet.triggerScriptedState('idle_side', App.INF, false, true)
-                        }
-                    }
+                if(timer < 0) timer = 750;
+                else return;
+
+                if(pet.state !== 'idle') return pet.setState('idle');
+
+                pet.setState(
+                    randomFromArray(['idle', 'cheering', 'blush'])
                 )
             }
-            if(++jumpCount <= 2){
-                jump();
-            }
-        })
-
-        const driverFn = () => {
-            activeSpeed += 0.000065 * App.deltaTime;
-            // activeSpeed = 1;
-            // activeSpeed -= (0.001 * App.deltaTime);
-            activeSpeed = clamp(activeSpeed, 0, 6);
-            globalOffset += activeSpeed * 0.025 * App.deltaTime;
-            if(!jumpCount) {
-                App.pet.setState(activeSpeed ? 'moving' : 'idle_side');
-            }
-            
-            const globalOffsetLooped = globalOffset % App.drawer.bounds.width;
-            if(globalOffsetLooped < lastGlobalOffsetLooped){
-                spawnEntities();
-            }
-            lastGlobalOffsetLooped = globalOffsetLooped;
         }
-        sceneParent.onDraw = driverFn;
 
-        const spawnEntities = (xOffset = globalOffset) => {
-            spawnTicks++;
-            const moverFn = (me, moveSpeed = 1) => {
-                if (me._xOffset === undefined) me._xOffset = me.x + ((App.drawer.bounds.width / moveSpeed) - App.drawer.bounds.width);
-                me.x = ((globalOffset - xOffset - me._xOffset) * moveSpeed);
-                if (me.x >= App.drawer.bounds.width * 2) {
-                    me?.removeObject();
-                }
-            }
-            const spawnImpactEffect = (color = {r: 0, g: 255, b: 0}) => {
-                new Object2d({
-                    ...App.drawer.bounds,
-                    solidColor: color,
-                    x: 0, y: 0,
-                    opacity: 0.6,
-                    composite: 'additive',
-                    z: 999,
-                    onDraw: (me) => {
-                        me.opacity -= 0.0015 * App.deltaTime;
-                        if(me.opacity <= 0) {
-                            me.removeObject();
-                        }
+        const main = new TimelineDirector(App.pet, {driverFn: driverFnFactory()});
+        const npcA = new TimelineDirector(getRandomGhostPet(PetDefinition.GHOST_TYPE.angel), {driverFn: driverFnFactory()});
+        const npcB = new TimelineDirector(getRandomGhostPet(PetDefinition.GHOST_TYPE.devil), {driverFn: driverFnFactory()});
+
+        main.setPosition({x: '50%', y: '95%'});
+        npcA.setPosition({x: '25%', y: '90%'});
+        npcB.setPosition({x: '75%', y: '90%'});
+
+        App.toggleGameplayControls(false, () => {
+            return App.displayList([
+                {
+                    name: `${App.getIcon('city')} Return`,
+                    onclick: () => {
+                        main.release();
+                        sceneParent.removeObject();
+                        App.handlers.open_devil_town_activity_list(true)
                     }
-                })
-            }
-            const progress = (isScoring) => {
-                if(isScoring) {
-                    score++;
-                    spawnImpactEffect({r: 0, g: 255, b: 0});
-                    App.playSound(`resources/sounds/cute.ogg`, true)
-                } else {
-                    lives--
-                    spawnImpactEffect({r: 255, g: 0, b: 0});
-                    App.playSound(`resources/sounds/sad.ogg`, true)
                 }
-                updateUI();
-                if(lives <= 0) onEndFn();
-            }
-
-            // background trees
-            for(let i = 0; i < 1; i++){
-                const tree = new Object2d({
-                    parent: sceneParent,
-                    img: 'resources/img/misc/devil_tree_01.png',
-                    x: (i * (App.drawer.bounds.width/1)) + random(-4, 4) + globalSpawnOffset,
-                    y: random(10, 60),
-                    z: -0.1,
-                    inverted: !!random(0, 1),
-                    onDraw: () => moverFn(tree, 0.8),
-                })
-            }
-
-            // foreground trees
-            for(let i = 0; i < 1; i++){
-                const tree = new Object2d({
-                    parent: sceneParent,
-                    img: 'resources/img/misc/devil_tree_01.png',
-                    x: (i * (App.drawer.bounds.width/1)) + random(-32, 32) + globalSpawnOffset,
-                    y: random(70, 80),
-                    z: App.pet.z + 1,
-                    inverted: !!random(0, 1),
-                    onDraw: () => moverFn(tree, 1.2),
-                })
-            }
-
-            // obstacle
-            if(spawnTicks > 5 && spawnTicks % 4 === 0){
-                const bat = new Object2d({
-                    parent: sceneParent,
-                    img: 'resources/img/misc/bat_01.png',
-                    x: ((App.drawer.bounds.width/1)) + 32 + globalSpawnOffset,
-                    y: `${randomFromArray([20, 70])}%`,
-                    z: App.pet.z + 0.1,
-                    onDraw: (me) => {
-                        if(!isNaN(me.y)){
-                            Object2d.animations.bob(me, 0.01)
-                        }
-                        moverFn(me, 1);
-                        if(me.isColliding(App.pet.getBoundingBox(12, 4))){
-                            me.removeObject();
-                            progress(false);
-                        }
-                    },
-                })
-                bat.showOutline('red');
-                return;
-            }
-
-            // treat
-            if(spawnTicks % 3 === 0){
-                const treat = new Object2d({
-                    parent: sceneParent,
-                    img: App.constants.FOOD_SPRITESHEET,
-                    spritesheet: {
-                        ...App.constants.FOOD_SPRITESHEET_DIMENSIONS,
-                        cellNumber: App.definitions.food[App.constants.UNDERWORLD_TREAT_CURRENCY].sprite,
-                    },
-                    x: ((App.drawer.bounds.width/1)) + globalSpawnOffset,
-                    y: `${randomFromArray([20, 70])}%`,
-                    z: App.pet.z - 0.1,
-                    onDraw: (me) => {
-                        if(!isNaN(me.y)){
-                            Object2d.animations.bob(me)
-                        }
-                        moverFn(me, 1);
-                        if(me.isColliding(App.pet.getBoundingBox())){
-                            me.removeObject();
-                            progress(true);
-                        }
-                    },
-                })
-                treat.showOutline();
-                // treat.showBoundingBox();
-            }
-        }
-        // initial spawning of the first two chunks
-        // otherwise the pet would run with no entities around at the start
-        spawnEntities(App.drawer.bounds.width * -1);
-        spawnEntities(App.drawer.bounds.width * -2);
-
-        const movingBackgrounds = new Array(2)
-        .fill(true)
-        .map((_, i) => 
-            new Object2d({
-                parent: sceneParent,
-                img: 'resources/img/misc/devil_walkway_01.png',
-                x: 0,
-                y: 0,
-                z: 0,
-                onDraw: (me) => {
-                    me.x = (globalOffset % App.drawer.bounds.width) + (-i * App.drawer.bounds.width);
-                }
-            })
-        )
-
-        App.pet.stopMove();
-        App.pet.triggerScriptedState('idle_side', App.INF, false, true);
-        App.pet.inverted = false;
-        App.pet.x = '80%';
+            ])
+        })
     }
     static goToUnderworldEntrance(){
         App.setScene(App.scene.reviverDen);
@@ -4192,6 +3977,269 @@ class Activities {
         
         return false;  
     }
+    static async trickOrTreatGame(onEndCallback){
+        App.closeAllDisplays();
+        App.setScene(App.scene.devil_town_exterior)
+
+        const backgroundMusic = App.playAdvancedSound({
+            src: 'resources/sounds/trick_or_treat_bm_01.mp3',
+            loop: true, 
+            volume: 0.4,
+        });
+
+        const currencyIcon = App.getFoodCSprite(App.definitions.food[App.constants.UNDERWORLD_TREAT_CURRENCY]?.sprite);
+
+        // init vars
+        let activeSpeed = 2.5, 
+            globalOffset = 0, 
+            lastGlobalOffsetLooped = App.INF,
+            globalSpawnOffset = App.drawer.bounds.width,
+            spawnTicks = 0;
+
+        // score vars
+        let lives = 3, score = 0;
+
+        const screen = UI.empty();
+        document.querySelector('.screen-wrapper').appendChild(screen);
+        screen.innerHTML = `
+        <div class="width-full pointer-events-none" style="position: absolute; top: 0; left: 0;">
+            <div class="flex-container" style="justify-content: space-between; padding: 4px">
+                <div class="flex-container flex-gap-05 mini-game-ui">
+                    ${currencyIcon}
+                    <div id="score">${score}</div>
+                </div>
+                <div class="flex-container">
+                    <div id="lives">${lives}</div>
+                </div>
+            </div>
+        </div>
+        `;
+        const uiScore = screen.querySelector('#score'),
+            uiLives = screen.querySelector('#lives');
+        const updateUI = () => {
+            uiScore.textContent = score;
+            uiLives.innerHTML = new Array(lives).fill('').map(() => {
+                return `<img src="resources/img/misc/heart_particle_01.png"></img>`
+            }).join(' ');
+        }
+        updateUI();
+
+        const sceneParent = new Object2d({})
+
+        const onEndFn = async () => {
+            screen.remove();
+            App.pet.stopScriptedState();
+            sceneParent.onDraw = undefined;
+            App.toggleGameplayControls(false);
+            backgroundMusic.stop();
+
+            App.addNumToObject(App.pet.inventory.food, App.constants.UNDERWORLD_TREAT_CURRENCY, score);
+
+            App.pet.triggerScriptedState('idle', App.INF, 0, true);
+            App.pet.x = '50%';
+            App.pet.y = '100%';
+
+            const msg = App.displayMessageBubble(`${currencyIcon} x${score}`)
+
+            const onEnd = () => {
+                App.toggleGameplayControls();
+                sceneParent.removeObject();
+                msg.close();
+                onEndCallback?.();
+            }
+
+            if(score >= 5) App.pet.playCheeringAnimation(onEnd);
+            else App.pet.playUncomfortableAnimation(onEnd);
+        }
+
+        let jumpCount = 0, groundPositionY = false;
+        App.toggleGameplayControls(false, () => {
+            if(groundPositionY === false) {
+                groundPositionY = App.pet.y;
+            }
+            const jump = () => {
+                App.pet.playSound('resources/sounds/jump.ogg', true);
+
+                const gravity = 0.001;
+                let velocity = 0.31;
+                App.pet.triggerScriptedState('talking', App.INF, 0, true, 
+                    () => {
+                        App.pet.y = groundPositionY;
+                        jumpCount = 0;
+                    },
+                    () => {
+                        velocity -= gravity * App.deltaTime;
+                        App.pet.y -= velocity * App.deltaTime;
+                        if(App.pet.y >= groundPositionY){
+                            App.pet.stopScriptedState();
+                            App.pet.triggerScriptedState('idle_side', App.INF, false, true)
+                        }
+                    }
+                )
+            }
+            if(++jumpCount <= 2){
+                jump();
+            }
+        })
+
+        const driverFn = () => {
+            activeSpeed += 0.000065 * App.deltaTime;
+            // activeSpeed = 1;
+            // activeSpeed -= (0.001 * App.deltaTime);
+            activeSpeed = clamp(activeSpeed, 0, 6);
+            globalOffset += activeSpeed * 0.025 * App.deltaTime;
+            if(!jumpCount) {
+                App.pet.setState(activeSpeed ? 'moving' : 'idle_side');
+            }
+            
+            const globalOffsetLooped = globalOffset % App.drawer.bounds.width;
+            if(globalOffsetLooped < lastGlobalOffsetLooped){
+                spawnEntities();
+            }
+            lastGlobalOffsetLooped = globalOffsetLooped;
+        }
+        sceneParent.onDraw = driverFn;
+
+        const spawnEntities = (xOffset = globalOffset) => {
+            spawnTicks++;
+            const moverFn = (me, moveSpeed = 1) => {
+                if (me._xOffset === undefined) me._xOffset = me.x + ((App.drawer.bounds.width / moveSpeed) - App.drawer.bounds.width);
+                me.x = ((globalOffset - xOffset - me._xOffset) * moveSpeed);
+                if (me.x >= App.drawer.bounds.width * 2) {
+                    me?.removeObject();
+                }
+            }
+            const spawnImpactEffect = (color = {r: 0, g: 255, b: 0}) => {
+                new Object2d({
+                    ...App.drawer.bounds,
+                    solidColor: color,
+                    x: 0, y: 0,
+                    opacity: 0.6,
+                    composite: 'additive',
+                    z: 999,
+                    onDraw: (me) => {
+                        me.opacity -= 0.0015 * App.deltaTime;
+                        if(me.opacity <= 0) {
+                            me.removeObject();
+                        }
+                    }
+                })
+            }
+            const progress = (isScoring) => {
+                if(isScoring) {
+                    score++;
+                    spawnImpactEffect({r: 0, g: 255, b: 0});
+                    App.playSound(`resources/sounds/cute.ogg`, true)
+                } else {
+                    lives--
+                    spawnImpactEffect({r: 255, g: 0, b: 0});
+                    App.playSound(`resources/sounds/sad.ogg`, true)
+                }
+                updateUI();
+                if(lives <= 0) onEndFn();
+            }
+
+            // background trees
+            for(let i = 0; i < 1; i++){
+                const tree = new Object2d({
+                    parent: sceneParent,
+                    img: 'resources/img/misc/devil_tree_01.png',
+                    x: (i * (App.drawer.bounds.width/1)) + random(-4, 4) + globalSpawnOffset,
+                    y: random(10, 60),
+                    z: -0.1,
+                    inverted: !!random(0, 1),
+                    onDraw: () => moverFn(tree, 0.8),
+                })
+            }
+
+            // foreground trees
+            for(let i = 0; i < 1; i++){
+                const tree = new Object2d({
+                    parent: sceneParent,
+                    img: 'resources/img/misc/devil_tree_01.png',
+                    x: (i * (App.drawer.bounds.width/1)) + random(-32, 32) + globalSpawnOffset,
+                    y: random(70, 80),
+                    z: App.pet.z + 1,
+                    inverted: !!random(0, 1),
+                    onDraw: () => moverFn(tree, 1.2),
+                })
+            }
+
+            // obstacle
+            if(spawnTicks > 5 && spawnTicks % 4 === 0){
+                const bat = new Object2d({
+                    parent: sceneParent,
+                    img: 'resources/img/misc/bat_01.png',
+                    x: ((App.drawer.bounds.width/1)) + 32 + globalSpawnOffset,
+                    y: `${randomFromArray([20, 70])}%`,
+                    z: App.pet.z + 0.1,
+                    onDraw: (me) => {
+                        if(!isNaN(me.y)){
+                            Object2d.animations.bob(me, 0.01)
+                        }
+                        moverFn(me, 1);
+                        if(me.isColliding(App.pet.getBoundingBox(12, 4))){
+                            me.removeObject();
+                            progress(false);
+                        }
+                    },
+                })
+                bat.showOutline('red');
+                return;
+            }
+
+            // treat
+            if(spawnTicks % 3 === 0){
+                const treat = new Object2d({
+                    parent: sceneParent,
+                    img: App.constants.FOOD_SPRITESHEET,
+                    spritesheet: {
+                        ...App.constants.FOOD_SPRITESHEET_DIMENSIONS,
+                        cellNumber: App.definitions.food[App.constants.UNDERWORLD_TREAT_CURRENCY].sprite,
+                    },
+                    x: ((App.drawer.bounds.width/1)) + globalSpawnOffset,
+                    y: `${randomFromArray([20, 70])}%`,
+                    z: App.pet.z - 0.1,
+                    onDraw: (me) => {
+                        if(!isNaN(me.y)){
+                            Object2d.animations.bob(me)
+                        }
+                        moverFn(me, 1);
+                        if(me.isColliding(App.pet.getBoundingBox())){
+                            me.removeObject();
+                            progress(true);
+                        }
+                    },
+                })
+                treat.showOutline();
+                // treat.showBoundingBox();
+            }
+        }
+        // initial spawning of the first two chunks
+        // otherwise the pet would run with no entities around at the start
+        spawnEntities(App.drawer.bounds.width * -1);
+        spawnEntities(App.drawer.bounds.width * -2);
+
+        const movingBackgrounds = new Array(2)
+        .fill(true)
+        .map((_, i) => 
+            new Object2d({
+                parent: sceneParent,
+                img: 'resources/img/misc/devil_walkway_01.png',
+                x: 0,
+                y: 0,
+                z: 0,
+                onDraw: (me) => {
+                    me.x = (globalOffset % App.drawer.bounds.width) + (-i * App.drawer.bounds.width);
+                }
+            })
+        )
+
+        App.pet.stopMove();
+        App.pet.triggerScriptedState('idle_side', App.INF, false, true);
+        App.pet.inverted = false;
+        App.pet.x = '80%';
+    }
 
     // school
     static async school_ExpressionGame({onEndFn, maxRounds = 3} = {}){
@@ -5023,9 +5071,9 @@ class Activities {
 // timeline animation director
 class TimelineDirector {
     registeredDrawEvents = [];
-    constructor(actor){
+    constructor(actor, config = {}){
         this.actor = actor;
-        this.actor.triggerScriptedState('idle', App.INF, false, true);
+        this.actor.triggerScriptedState('idle', App.INF, false, true, config.onEnd, config.driverFn);
         this.actor.stopMove();
     }
     moveTo = ({x, y, speed = 0.15, endState = 'idle'}) => {

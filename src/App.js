@@ -1325,6 +1325,16 @@ const App = {
                 App.pet.hideOutline();
             }
         }),
+        devil_town_gathering: new Scene({
+            image: 'resources/img/background/house/devil_town_02.png',
+            noShadows: true,
+            onLoad: () => {
+                App.pet.showOutline();
+            },
+            onUnload: () => {
+                App.pet.hideOutline();
+            }
+        }),
     },
     setScene(scene, noPositionChange, onLoadArg){
         App.currentScene?.onUnload?.(scene);
@@ -4624,6 +4634,37 @@ const App = {
                 ]  
             });
         },
+        open_devil_town_activity_list: function(noIndexReset){
+            const id = 'devilTown';
+
+            if(!noIndexReset) App.temp[App.handlers.getOutsideActivityId(id)] = 1;
+
+            return Activities.goToActivities({
+                activities: [
+                    {
+                        name: "Home",
+                        image: 'resources/img/misc/activity_building_devil_home.png',
+                        onEnter: () => App.handlers.open_underworld_menu(),
+                        isHome: true,
+                    },
+                    {
+                        name: "Restaurant",
+                        image: 'resources/img/misc/activity_building_devil_restaurant.png',
+                        onEnter: () => App.handlers.go_to_home(),
+                        isHome: true,
+                    },
+                    {
+                        name: "Town Hall",
+                        image: 'resources/img/misc/activity_building_devil_gathering.png',
+                        onEnter: () => Activities.goToDevilTownGathering(),
+                        isHome: true,
+                    },
+                ],
+                floorImage: 'resources/img/misc/devil_walkway_02.png',
+                scene: App.scene.devil_town_exterior,
+                id,
+            })
+        },
         open_underworld_menu: function(){
             const CURRENCY_NAME = App.constants.UNDERWORLD_TREAT_CURRENCY;
             const CURRENCY_ICON = App.getFoodCSprite(App.definitions.food[CURRENCY_NAME]?.sprite);
@@ -4754,31 +4795,8 @@ const App = {
                                 ]
                             )
                         }
-                        Activities.goToActivities({
-                            activities: [
-                                {
-                                    name: "Home",
-                                    image: 'resources/img/misc/activity_building_devil_home.png',
-                                    onEnter: () => App.handlers.open_underworld_menu(),
-                                    isHome: true,
-                                },
-                                {
-                                    name: "Restaurant",
-                                    image: 'resources/img/misc/activity_building_devil_restaurant.png',
-                                    onEnter: () => App.handlers.go_to_home(),
-                                    isHome: true,
-                                },
-                                {
-                                    name: "Town Hall",
-                                    image: 'resources/img/misc/activity_building_devil_gathering.png',
-                                    onEnter: () => App.handlers.go_to_home(),
-                                    isHome: true,
-                                },
-                            ],
-                            floorImage: 'resources/img/misc/devil_walkway_02.png',
-                            scene: App.scene.devil_town_exterior,
-                            id: 'devilTown',
-                        })
+
+                        App.handlers.open_devil_town_activity_list();
                     }
                 },
                 {
@@ -4787,7 +4805,7 @@ const App = {
                         return App.displayPopup(
                             `Double jump to get all <br> ${CURRENCY_ICON} <br> while avoiding <br> <img src="resources/img/misc/bat_01.png"></img>`, 
                             false,
-                            () => Activities.goToWalk(App.handlers.open_underworld_menu)
+                            () => Activities.trickOrTreatGame(App.handlers.open_underworld_menu)
                         );
                     }
                 },

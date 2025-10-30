@@ -365,6 +365,7 @@ class PetDefinition {
                             stats: {
                                 player_friendship: friendDef.stats.player_friendship,
                                 is_player_family: friendDef.stats.is_player_family,
+                                is_ghost: friendDef.stats.is_ghost,
                             }
                         };
                     })

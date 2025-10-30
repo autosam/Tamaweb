@@ -200,7 +200,7 @@ class Pet extends Object2d {
 
         // bobbing animation
         const initialAdditionalY = this.additionalY;
-        let animationFloat = 0;
+        let animationFloat = Math.random() * Math.PI;
         this.onDraw = (me) => {
             const floatSpeed = me.isMoving ? 0.0075 : 0.005;
             animationFloat += floatSpeed * App.deltaTime;
