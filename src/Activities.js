@@ -336,6 +336,9 @@ class Activities {
 
         App.toggleGameplayControls(false, () => {
             return App.displayList([
+                // ...[npcA, npcB].map(npc => ({
+                //     name: `${npc}`
+                // }))
                 {
                     name: `${App.getIcon('city')} Return`,
                     onclick: () => {

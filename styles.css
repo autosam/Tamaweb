@@ -2665,3 +2665,41 @@ a.generic-btn:before {
     width: 100%;
     background-color: black;
 }
+
+/* ghost angel and devil csprite */
+c-sprite.ghost {
+    position: relative;
+    overflow: visible;
+    opacity: 0.75;
+    filter: saturate(0.5)
+}
+c-sprite.ghost.devil {
+    box-shadow: 2px 2px 0 red;
+}
+c-sprite.ghost.angel {
+    box-shadow: 2px 2px 0 forestgreen;
+}
+c-sprite.ghost.angel::after {
+    background: url('resources/img/misc/angel_halo_icon.png');
+    content: '';
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: -4px;
+    position: absolute;
+    background-size: contain;
+    image-rendering: pixelated;
+    background-repeat: no-repeat;
+}
+c-sprite.ghost.devil::after {
+    background: url('resources/img/misc/devil_horn_icon.png');
+    content: '';
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: -4px;
+    position: absolute;
+    background-size: contain;
+    image-rendering: pixelated;
+    background-repeat: no-repeat;
+}
