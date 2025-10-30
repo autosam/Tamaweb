@@ -194,14 +194,16 @@ class Object2d {
             currentBoundingBox.y + currentBoundingBox.height > otherBoundingBox.y
         );
     }
-    showOutline(color = '#7CE0E6'){
-        if(this._initialFilter == null) this._initialFilter = this.filter || '';
+    showOutline(color = '#7CE0E6', setAsInitial){
+        if(!setAsInitial){
+            if(this._initialFilter == null) this._initialFilter = this.filter || '';
+        }
         const outlineFilter = [
             `drop-shadow(0px 1px 0px ${color})`,
             `drop-shadow(1px 0px 0px ${color})`,
             `drop-shadow(-1px 0px 0px ${color})`,
         ].join(' ')
-        this.filter = `${this._initialFilter} ${outlineFilter}`
+        this.filter = `${this._initialFilter || ''} ${outlineFilter}`.trim()
     }
     hideOutline(){
         this.filter = this._initialFilter != null ? this._initialFilter : this.filter;

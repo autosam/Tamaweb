@@ -743,9 +743,9 @@ class Activities {
         activities, 
         floorImage = 'resources/img/background/outside/activities_base_01.png',
         scene = App.scene.emptyOutside,
-        id = 'default',
+        id,
     } = {}){
-        const tempId = `_outsideActivity_${id}`;
+        const tempId = App.handlers.getOutsideActivityId(id);
         
         App.setScene({
             ...scene,

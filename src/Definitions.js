@@ -2165,6 +2165,11 @@ App.definitions = (() => {
                 front: true,
                 price: -1,
             },
+            'demon horns': {
+                image: 'resources/img/accessory/demon_horns_01.png',
+                front: true,
+                price: -1,
+            },
             // pumpkin
             'pumpkin': {
                 image: 'resources/img/accessory/pumpkin_01.png',
