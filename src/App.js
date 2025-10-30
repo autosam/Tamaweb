@@ -1335,6 +1335,10 @@ const App = {
                 App.pet.hideOutline();
             }
         }),
+        angel_town_room: new Scene({
+            image: 'resources/img/background/house/angel_town_01.png',
+            noShadows: true,
+        }),
     },
     setScene(scene, noPositionChange, onLoadArg){
         App.currentScene?.onUnload?.(scene);
@@ -4900,10 +4904,110 @@ const App = {
                 return;
             }
 
+            const monsterIcon = `<img class="icon" src="resources/img/misc/devil_icon.png"></img>`
+            const angelIcon = `<img class="icon" src="resources/img/misc/angel_icon.png"></img>`
+
             let friendsList;
             const mappedFriendsList = friends.map((friendDef, index) => {
                 const name = friendDef.name || 'Unknown';
                 const icon = friendDef.getCSprite();
+
+                const getInteractionSet = (set, condition) => condition ? set : [];
+
+                // angel and monster interactions
+                const monsterInteractions = [
+                    {
+                        name: `Scare`,
+                        onclick: () => {
+                            Activities.demon_scare(friendDef);
+                            return true;
+                        }
+                    },
+                    {
+                        name: `Whisper`,
+                        onclick: () => {
+                            Activities.demon_whisper(friendDef);
+                            return true;
+                        }
+                    },
+                    {
+                        name: `Place curse`,
+                        onclick: () => {
+                            if(App.pet.stats.current_hunger < App.pet.stats.max_hunger / 2){
+                                return App.displayPopup("You don't have enough energy to do this.");
+                            }
+
+                            App.displayConfirm(`This will turn <b>${friendDef.name}</b> into a <div>${monsterIcon} <b style="color: red;">monster</b>,</div> do you want to continue?`, [
+                                {
+                                    name: 'yes',
+                                    onclick: () => {
+                                        Activities.ghost_convertOtherPet(
+                                            friendDef,
+                                            PetDefinition.GHOST_TYPE.devil
+                                        )
+                                    },
+                                },
+                                {
+                                    name: 'no',
+                                    class: 'back-btn',
+                                    onclick: () => {},
+                                },
+
+                            ])
+                            return true;
+                        }
+                    },
+                ].map(entry => ({
+                    ...entry,
+                    name: `${monsterIcon} <span style="color: red;">${entry.name}</span>`
+                }))
+                const angelInteractions = [
+                    {
+                        name: `Bless`,
+                        onclick: () => {
+                            Activities.angel_bless(friendDef);
+                            return true;
+                        }
+                    },
+                    {
+                        name: `Grant Wish`,
+                        onclick: () => {
+                            Activities.angel_grantWish(friendDef);
+                            return true;
+                        }
+                    },
+                    {
+                        name: `Gift Divinity`,
+                        onclick: () => {
+                            if(App.pet.stats.current_hunger < App.pet.stats.max_hunger / 2){
+                                return App.displayPopup("You don't have enough energy to do this.");
+                            }
+
+                            App.displayConfirm(`This will turn <b>${friendDef.name}</b> into an <div>${angelIcon} <b style="color: forestgreen;">angel</b>,</div> do you want to continue?`, [
+                                {
+                                    name: 'yes',
+                                    onclick: () => {
+                                        Activities.ghost_convertOtherPet(
+                                            friendDef,
+                                            PetDefinition.GHOST_TYPE.angel
+                                        )
+                                    },
+                                },
+                                {
+                                    name: 'no',
+                                    class: 'back-btn',
+                                    onclick: () => {},
+                                },
+
+                            ])
+                            return true;
+                        }
+                    },
+                ].map(entry => ({
+                    ...entry,
+                    name: `${angelIcon} <span style="color: forestgreen;">${entry.name}</span>`
+                }))
+
                 return {
                     name: icon + name,
                     onclick: () => {
@@ -4926,6 +5030,8 @@ const App = {
                                     return true;
                                 }
                             },
+                            ...getInteractionSet(monsterInteractions, App.pet.stats.is_ghost === PetDefinition.GHOST_TYPE.devil),
+                            ...getInteractionSet(angelInteractions, App.pet.stats.is_ghost === PetDefinition.GHOST_TYPE.angel),
                             {
                                 _ignore: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult || friendDef.lifeStage < PetDefinition.LIFE_STAGE.adult || friendDef.stats.is_player_family,
                                 name: `go on date`,
@@ -7272,7 +7378,7 @@ const App = {
     wait: function(ms = 0){
         return new Promise(resolve => setTimeout(resolve, ms))
     },
-    fadeScreen: function({ middleFn, speed = 0.005 } = {}) {
+    fadeScreen: function({ middleFn, endFn, speed = 0.005 } = {}) {
         let phase = 'fadeIn';
         new Object2d({
             image: App.getPreloadedResource('resources/img/misc/black_overlay_01.png'),
@@ -7291,6 +7397,7 @@ const App = {
                 } else if (phase === 'fadeOut') {
                     me.opacity -= step;
                     if (me.opacity <= 0) {
+                        endFn?.();
                         me.removeObject();
                     }
                 }
