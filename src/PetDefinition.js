@@ -352,6 +352,7 @@ class PetDefinition {
                     is_misbehaving: this.stats.is_misbehaving,
                     has_received_school_invite: this.stats.has_received_school_invite,
                     gender: this.stats.gender,
+                    is_ghost: this.stats.is_ghost,
                 }
                 return;
             }
@@ -810,5 +811,10 @@ class PetDefinition {
         teen: 1,
         adult: 2,
         elder: 3,
+    }
+
+    static GHOST_TYPE = {
+        angel: 1,
+        devil: 2,
     }
 }

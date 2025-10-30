@@ -1814,7 +1814,7 @@ const App = {
     },
     handlers: {
         go_to_home: function(){
-            App.temp.outsideActivityIndex = 1;
+            App.temp[App.handlers.getOutsideActivityId()] = 1;
             App.pet.x = '0%';
             App.pet.targetX = 50;
         },
@@ -4611,8 +4611,12 @@ const App = {
 
             return App.displayList([...list]);
         },
+        getOutsideActivityId: function(id = 'default'){
+            const tempId = `_outsideActivity_${id}`;
+            return tempId;
+        },
         open_activity_list: function(noIndexReset){
-            if(!noIndexReset) App.temp.outsideActivityIndex = 1;
+            if(!noIndexReset) App.temp[App.handlers.getOutsideActivityId()] = 1;
 
             return Activities.goToActivities({
                 activities: [

@@ -134,6 +134,15 @@ class Pet extends Object2d {
         })
     }
     equipAccessories(){
+        const ACCESSORY_CELL_SIZE = 64;
+        const ADULT_BASE_SIZE = this.petDefinition.spritesheetDefinitions[PetDefinition.LIFE_STAGE.adult]?.cellSize;
+        const OVERLAY_SCALE = (this.petDefinition.spritesheet.cellSize / ADULT_BASE_SIZE) || 1;
+
+        const overlayOffset = {
+            x: (ACCESSORY_CELL_SIZE - this.spritesheet.cellSize) / 2,
+            y: ((ACCESSORY_CELL_SIZE - this.spritesheet.cellSize) / 2),
+        }
+
         // removing old accessories
         this.accessoryObjects.forEach(accessoryObject => accessoryObject?.removeObject());
         this.accessoryObjects = [];
@@ -155,16 +164,18 @@ class Pet extends Object2d {
                         parent: this,
                         img: accessory.image,
                         z: accessory.front ? (this.z + 0.1) || 5.1 : (this.z - 0.1) || 4.9,
+                        scale: 1,
                         spritesheet: {
                             cellNumber: 1,
-                            cellSize: 64,
+                            cellSize: ACCESSORY_CELL_SIZE,
                             rows: 4,
                             columns: 4,
                         },
                         onDraw: (overlay) => {
                             overlay.mimicParent();
-                            overlay.x -= 16;
-                            overlay.y -= 16;
+                            overlay.scale = overlay.scale * (OVERLAY_SCALE);
+                            overlay.x -= overlayOffset.x;
+                            overlay.y -= overlayOffset.y;
                         }
                     });
 
@@ -174,11 +185,18 @@ class Pet extends Object2d {
     handleGhost(){
         if(!this.stats.is_ghost) return;
 
+        const isDevilGhostType = this.stats.is_ghost === PetDefinition.GHOST_TYPE.devil;
+
         this.castShadow = false;
         this.opacity = 0.7;
-        this.additionalAccessories = ['cupid wings', 'angel halo'];
+        this.additionalAccessories = isDevilGhostType 
+            ? ['demon wings', 'demon horns'] 
+            : ['cupid wings', 'angel halo'];
+        this.showOutline(isDevilGhostType ? '#B51919' : '#F9E07B', true)
+
         this.equipAccessories();
         this.animations.moving = this.animations.idle_side;
+
 
         // bobbing animation
         const initialAdditionalY = this.additionalY;
