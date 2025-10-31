@@ -337,11 +337,27 @@ class Pet extends Object2d {
             App.displayPopup('Wait for your egg to hatch');
         })
 
+        const getEggSpritesheet = () => {
+            if(this.stats.is_ghost === PetDefinition.GHOST_TYPE.angel)
+                return 'resources/img/misc/egg_angel_01.png'
+            
+            if(this.stats.is_ghost === PetDefinition.GHOST_TYPE.devil)
+                return 'resources/img/misc/egg_devil_01.png'
+
+            return 'resources/img/misc/egg_normal_01.png';
+        }
+
         if(!this.eggObject){
             this.eggStartTime = Date.now();
             this.hatchTime = this.eggStartTime + random(15000, 30000);
             this.eggObject = new Object2d({
-                img: 'resources/img/misc/egg.png',
+                img: getEggSpritesheet(),
+                spritesheet: {
+                    cellSize: 16,
+                    rows: 1,
+                    columns: 2,
+                    cellNumber: 1
+                },
                 x: '50%', 
                 y: '80%',
             });
@@ -356,7 +372,7 @@ class Pet extends Object2d {
         const motion = Math.sin(this.eggMotionFloat);
 
         if(this.eggMotionFloatSpeed === 0.02){
-            this.eggObject.setImg('resources/img/misc/egg_02.png')
+            this.eggObject.spritesheet.cellNumber = 2;
         }
         // this.eggObject.rotation = Math.round(motion / 22.5) * 22.5;
         this.eggObject.x = 40 + (motion * 1.5);
