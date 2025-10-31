@@ -1,5 +1,6 @@
 const SPRITES = [
 "accessory/angel_halo_01.png",
+"accessory/angel_wings_01.png",
 "accessory/bear_hat_01.png",
 "accessory/bouquet_01.png",
 "accessory/bunny_balloon_01.png",
@@ -9,6 +10,7 @@ const SPRITES = [
 "accessory/cupid_wings_01_icon.png",
 "accessory/demon_horns_01.png",
 "accessory/demon_wings_01.png",
+"accessory/demon_wings_02.png",
 "accessory/fork_01.png",
 "accessory/frooties_01.png",
 "accessory/gothic_hat_01.png",

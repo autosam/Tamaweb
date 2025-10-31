@@ -171,12 +171,14 @@ class Pet extends Object2d {
                             rows: 4,
                             columns: 4,
                         },
-                        onDraw: (overlay) => {
+                        onDraw: accessory.onDrawOverride ?? ((overlay) => {
                             overlay.mimicParent();
                             overlay.scale = overlay.scale * (OVERLAY_SCALE);
                             overlay.x -= overlayOffset.x;
                             overlay.y -= overlayOffset.y;
-                        }
+
+                            accessory.onDraw?.(overlay);
+                        })
                     });
 
             this.accessoryObjects.push(accessoryObject);
@@ -190,8 +192,8 @@ class Pet extends Object2d {
         this.castShadow = false;
         this.opacity = 0.7;
         this.additionalAccessories = isDevilGhostType 
-            ? ['demon wings', 'demon horns'] 
-            : ['cupid wings', 'angel halo'];
+            ? ['monster wings', 'demon horns'] 
+            : ['angel wings', 'angel halo'];
         this.showOutline(isDevilGhostType ? '#B51919' : '#F9E07B', true)
 
         this.equipAccessories();

@@ -2170,6 +2170,30 @@ App.definitions = (() => {
                 front: true,
                 price: -1,
             },
+            'angel wings': {
+                image: 'resources/img/accessory/angel_wings_01.png',
+                front: false,
+                price: -1,
+                onDraw: (overlay) => {
+                    const flapSpeed = overlay?.parent?.stats?.is_sleeping ? 0.0045 : 0.035; 
+                    if(!overlay._flappingMotion) overlay._flappingMotion = 0;
+                    overlay._flappingMotion += flapSpeed * App.deltaTime;
+                    if(overlay._flappingMotion > App.PI2) overlay._flappingMotion = 0;
+                    overlay.rotation = Math.sin(overlay._flappingMotion) * 4;
+                },
+            },
+            'monster wings': {
+                image: 'resources/img/accessory/demon_wings_02.png',
+                front: false,
+                price: -1,
+                onDraw: (overlay) => {
+                    const flapSpeed = overlay?.parent?.stats?.is_sleeping ? 0.0045 : 0.02; 
+                    if(!overlay._flappingMotion) overlay._flappingMotion = 0;
+                    overlay._flappingMotion += flapSpeed * App.deltaTime;
+                    if(overlay._flappingMotion > App.PI2) overlay._flappingMotion = 0;
+                    overlay.rotation = Math.sin(overlay._flappingMotion) * 6;
+                },
+            },
             // pumpkin
             'pumpkin': {
                 image: 'resources/img/accessory/pumpkin_01.png',
