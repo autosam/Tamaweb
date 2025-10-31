@@ -1227,6 +1227,11 @@ App.definitions = (() => {
                 price: 300,
                 isNew: false,
             },
+            "monster": {
+                image: 'resources/img/background/house/08.png',
+                price: 450,
+                isNew: true,
+            },
             "silky retreat": {
                 image: 'resources/img/background/house/ex_01.png',
                 price: 0,
