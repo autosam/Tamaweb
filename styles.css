@@ -2504,6 +2504,19 @@ a.generic-btn:before {
         drop-shadow(0px 2px 0px #000060) 
         drop-shadow(2px 2px 0px #f86000);
 }
+button.message-bubble {
+    margin: 0;
+    background: #E91E63;
+    color: white;
+    outline: 2px dashed;
+    outline-offset: -4px;
+}
+button.message-bubble:hover {
+    background: #dc1a5b;
+}
+button.message-bubble:active {
+    background: #a41142;
+}
 .message-bubble:after {
 	content: '';
 	position: absolute;
