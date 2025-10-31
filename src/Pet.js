@@ -185,6 +185,10 @@ class Pet extends Object2d {
         })
     }
     handleGhost(){
+        if(this.animations._moving){
+            this.animations.moving = this.animations._moving
+        }
+
         if(!this.stats.is_ghost) return;
 
         const isDevilGhostType = this.stats.is_ghost === PetDefinition.GHOST_TYPE.devil;
@@ -197,6 +201,7 @@ class Pet extends Object2d {
         this.showOutline(isDevilGhostType ? '#B51919' : '#F9E07B', true)
 
         this.equipAccessories();
+        this.animations._moving = this.animations.moving;
         this.animations.moving = this.animations.idle_side;
 
 
@@ -209,7 +214,7 @@ class Pet extends Object2d {
             if(animationFloat > App.PI2) animationFloat = 0;
             me._ghostAnimationFloat = animationFloat;
 
-            me.additionalY = App.pet.state === 'sitting' ? 
+            me.additionalY = ['eating', 'sitting'].includes(App.pet.state) ? 
                 initialAdditionalY :
                 initialAdditionalY - 3 - Math.sin(animationFloat) * 3;
         }
