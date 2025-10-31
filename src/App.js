@@ -143,6 +143,10 @@ const App = {
             'venus-mars',
         ],
         UNDERWORLD_TREAT_CURRENCY: 'spookandy',
+        SPANS: {
+            monster: `<div> <img class="icon" src="resources/img/misc/devil_icon.png"></img> <b style="color: red;">monster</b> </div>`,
+            angel: `<div> <img class="icon" src="resources/img/misc/angel_icon.png"></img> <b style="color: forestgreen;">angel</b> </div>`
+        }
     },
     routes: {
         BLOG: 'https://tamawebgame.github.io/blog/',
@@ -4952,9 +4956,8 @@ const App = {
 
             const monsterIcon = `<img class="icon" src="resources/img/misc/devil_icon.png"></img>`
             const angelIcon = `<img class="icon" src="resources/img/misc/angel_icon.png"></img>`
-
-            const monsterSpan = `<div> ${monsterIcon} <b style="color: red;">monster</b> </div>`;
-            const angelSpan = `<div> ${angelIcon} <b style="color: forestgreen;">angel</b> </div>`;
+            const monsterSpan = App.constants.SPANS.monster;
+            const angelSpan = App.constants.SPANS.angel;
 
             let friendsList;
             const mappedFriendsList = friends.map((friendDef, index) => {
@@ -4980,7 +4983,6 @@ const App = {
                         }
                     },
                     {
-                        _ignore: friendDef.stats.is_ghost === App.pet.stats.is_ghost,
                         name: `Place curse`,
                         onclick: () => {
                             if(App.pet.stats.current_hunger < App.pet.stats.max_hunger / 2){
@@ -5027,7 +5029,6 @@ const App = {
                         }
                     },
                     {
-                        _ignore: friendDef.stats.is_ghost === App.pet.stats.is_ghost,
                         name: `Gift Divinity`,
                         onclick: () => {
                             if(App.pet.stats.current_hunger < App.pet.stats.max_hunger / 2){
@@ -5093,7 +5094,7 @@ const App = {
                                 }
                             },
                             {
-                                _ignore: !friendDef.stats.is_ghost,
+                                _ignore: !friendDef.stats.is_ghost || friendDef.stats.is_ghost === App.pet.stats.is_ghost,
                                 name: `${isMonsterGhost ? monsterIcon : angelIcon} <span style="color: ${isMonsterGhost ? 'red' : 'forestgreen'};">Be converted</span>`,
                                 onclick: () => {
                                     if(friendDef.stats.player_friendship <= 98){
@@ -5106,10 +5107,32 @@ const App = {
                                             </div>
                                         `, 3500);
                                     }
+
+                                    return App.displayConfirm(`This will turn your pet into ${isMonsterGhost ? monsterSpan : angelSpan} are you sure you want to continue?`, [
+                                        {
+                                            name: 'yes',
+                                            onclick: () => {
+                                                Activities.ghost_beConverted(friendDef, friendDef.stats.is_ghost)
+                                            }
+                                        },
+                                        {
+                                            name: 'no',
+                                            class: 'back-btn',
+                                            onclick: () => {}
+                                        }
+                                    ])
                                 },
                             },
-                            ...getInteractionSet(monsterInteractions, App.pet.stats.is_ghost === PetDefinition.GHOST_TYPE.devil),
-                            ...getInteractionSet(angelInteractions, App.pet.stats.is_ghost === PetDefinition.GHOST_TYPE.angel),
+                            ...getInteractionSet(
+                                monsterInteractions, 
+                                App.pet.stats.is_ghost === PetDefinition.GHOST_TYPE.devil 
+                                && friendDef.stats.is_ghost !== App.pet.stats.is_ghost
+                            ),
+                            ...getInteractionSet(
+                                angelInteractions, 
+                                App.pet.stats.is_ghost === PetDefinition.GHOST_TYPE.angel 
+                                && friendDef.stats.is_ghost !== App.pet.stats.is_ghost
+                            ),
                             {
                                 _ignore: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult || friendDef.lifeStage < PetDefinition.LIFE_STAGE.adult || friendDef.stats.is_player_family,
                                 name: `go on date`,
@@ -7591,10 +7614,3 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
     checkForAwayTimeAndInit();
 });
-
-
-const debug_spawn = (isGhost = true) => {
-    App.pet.removeObject();
-    App.petDefinition.stats.is_ghost = isGhost;
-    App.pet = App.createActivePet(App.petDefinition);
-}

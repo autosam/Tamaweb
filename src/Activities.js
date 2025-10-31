@@ -1,4 +1,126 @@
 class Activities {
+    static async ghost_befriendingGame(otherPetDef = App.getRandomPetDef()){
+        const isTargetNegative = otherPetDef.stats.is_ghost === PetDefinition.GHOST_TYPE.devil;
+
+        App.closeAllDisplays();
+        App.setScene(App.scene.devil_town_gathering);
+        App.toggleGameplayControls(false);
+
+        const main = new TimelineDirector(App.pet);
+        const otherPet = new TimelineDirector(new Pet(otherPetDef));
+
+        main.setPosition({x: '70%'});
+        otherPet.setPosition({x: '30%'});
+
+        const negativeWords = ["cruel", "greedy", "deceitful", "jealous", "arrogant", "spiteful", "manipulative", "selfish", "reckless", "hostile", "sneaky", "vain", "stubborn", "ruthless", "vindictive", "malicious", "conniving", "callous", "petulant", "domineering", "depraved", "vengeful", "insidious", "belligerent", "narcissistic", "scheming", "abrasive", "boastful", "obnoxious", "irritable", "sullen", "grating", "unrepentant", "malcontent", "overbearing"];
+        const positiveWords = ["kind", "gentle", "honest", "loyal", "graceful", "hopeful", "pure", "generous", "patient", "forgiving", "humble", "joyful", "loving", "wise", "nurturing", "benevolent", "compassionate", "altruistic", "serene", "dignified", "virtuous", "steadfast", "tenderhearted", "uplifting", "magnanimous", "devoted", "sincere", "chivalrous", "empathetic", "faithful", "radiant", "merciful", "gracious", "principled", "respectful", "gentlehearted"];
+
+        App.displayPopup(`Try to use the words that best describe the ${isTargetNegative ? App.constants.SPANS.monster : App.constants.SPANS.angel}`, 3000);
+        await TimelineDirector.wait(3000);
+        
+        let remainingRounds = 3, wonRounds = 0;
+
+        const showNewRound = () => {
+            const screen = UI.empty();
+            document.querySelector('.screen-wrapper').appendChild(screen);
+            screen.innerHTML = `
+                <div class="flex flex-dir-col justify-between height-100p width-full" style="position: absolute; top: 0; left: 0;">
+                    <div class="inner-padding height-100p flex flex-dir-col justify-between menu-animation">
+                        <div class="message-bubble m-0 text-center">
+                            <small>
+                            <b>${otherPetDef.name}</b>
+                            is...
+                            </small>
+                        </div>
+                        <button class="btn message-bubble" id="a1"></button>
+                        <button class="btn message-bubble" id="a2"></button>
+                        <button class="btn message-bubble" id="a3"></button>
+                    </div>
+                </div>
+            `;
+
+            const progressRound = async (isChoiceCorrect) => {
+                remainingRounds--;
+                if(isChoiceCorrect) wonRounds++;
+                screen.remove();
+
+                if(remainingRounds <= 0){
+                    const hasWon = wonRounds >= 3;
+
+                    const friendSpan = `<div> ${otherPetDef.getCSprite()} <b>${otherPetDef.name}</b> </div>`
+
+                    if(hasWon){
+                        otherPet.setState('cheering');
+                        main.setState('blush');
+                    } else {
+                        otherPet.setState('angry');
+                        main.setState('uncomfortable');
+                    }
+                    await TimelineDirector.wait(2000);
+
+                    App.displayPopup(hasWon ? `${friendSpan} was impressed!` : `${friendSpan} was not impressed!`, 2000);
+                    await TimelineDirector.wait(1900);
+
+                    if(hasWon){
+                        App.displayConfirm(`Do you want to add ${friendSpan} to your friends list?`, [
+                            {
+                                name: 'yes',
+                                onclick: () => {
+                                    App.petDefinition.addFriend(otherPetDef, 1);
+                                    App.displayPopup(`${friendSpan} has been added to the friends list!`, 3000);
+                                }
+                            },
+                            {
+                                name: 'no',
+                                class: 'back-btn',
+                                onclick: () => {}
+                            }
+                        ])
+                    }
+
+                    App.fadeScreen({
+                        middleFn: () => {
+                            main.release();
+                            otherPet.remove();
+                            App.toggleGameplayControls(true);
+
+                            App.handlers.open_devil_town_activity_list(true);
+                        }
+                    })
+                    
+                    return;
+                }
+
+                showNewRound();
+            } 
+
+            const buttons = screen.querySelectorAll('button');
+            
+            let targetBucket = isTargetNegative ? negativeWords : positiveWords;
+            const randomTargetWord = randomFromArray(targetBucket)
+            let randomNonTargetWords = [];
+            while(randomNonTargetWords.length < buttons.length - 1){
+                const word = randomFromArray(isTargetNegative ? positiveWords : negativeWords);
+                if(randomNonTargetWords.includes(word)) continue;
+                randomNonTargetWords.push(word);
+            }
+
+            const shuffledButtons = shuffleArray(buttons);
+            shuffledButtons[0].textContent = randomTargetWord;
+            shuffledButtons[0].onclick = () => {
+                progressRound(true);
+            };
+
+            shuffledButtons.slice(1).forEach((btn, i) => {
+                btn.textContent = randomNonTargetWords[i];
+                btn.onclick = () => {
+                    progressRound(false);
+                }
+            })
+        }
+
+        showNewRound();
+    }
     static async angel_grantWish(otherPetDef = App.getRandomPetDef()){
         App.closeAllDisplays();
         App.setScene(App.scene.angel_town_room);
@@ -192,6 +314,66 @@ class Activities {
             },
         })
     }
+    static async ghost_beConverted(otherPetDef = App.getRandomPetDef(), ghostType = PetDefinition.GHOST_TYPE.angel){        
+        App.closeAllDisplays();
+        App.setScene(App.scene.reviverDen);
+        App.toggleGameplayControls(false);
+    
+
+        const otherPet = new TimelineDirector(new Pet(otherPetDef));
+        const main = new TimelineDirector(App.pet);
+
+        main.setPosition({x: '100%'});
+        otherPet.setPosition({x: '30%'});
+        await main.moveTo({x: '70%', speed: 0.02});
+
+        await TimelineDirector.wait(250);
+
+        for(let i = 0; i < 6; i++){
+            new Object2d({
+                img: 'resources/img/misc/foam_single.png',
+                x: '70%',
+                y: otherPet.actor.y - otherPet.actor.petDefinition.spritesheet.cellSize / 2,
+                opacity: 1,
+                scale: 1 + Math.random(),
+                rotation: random(0, 180),
+                z: App.constants.ACTIVE_PET_Z,
+                onDraw: (me) => {
+                    Object2d.animations.flip(me);
+                    Object2d.animations.pulseScale(me, 0.1, 0.01);
+                    me.scale -= 0.0009 * App.deltaTime;
+                    me.opacity -= 0.0009 * App.deltaTime;
+                    if(me.opacity <= 0) me.removeObject();
+                }
+            })
+        }
+
+        await TimelineDirector.wait(250);
+
+        App.pet.removeObject();
+        App.petDefinition.stats.is_ghost = ghostType;
+        App.pet = App.createActivePet(App.petDefinition);
+        const mainConverted = new TimelineDirector(App.pet);
+        mainConverted.setState('shocked');
+        mainConverted.setPosition({x: '70%'});
+        await TimelineDirector.wait(500);
+
+        mainConverted.setState('cheering');
+
+        otherPet.setState('blush');
+
+        await TimelineDirector.wait(3500);
+        App.fadeScreen({
+            middleFn: () => {
+                main.setPosition({x: '50%'});
+                mainConverted.release();
+                otherPet.remove();
+                App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
+                App.pet.playCheeringAnimation();
+            },
+        })
+    }
     static async demon_whisper(otherPetDef = App.getRandomPetDef()){
         App.closeAllDisplays();
         App.setScene(App.scene.home);
@@ -334,16 +516,28 @@ class Activities {
         npcA.setPosition({x: '25%', y: '90%'});
         npcB.setPosition({x: '75%', y: '90%'});
 
+        const cleanup = () => {
+            main.release();
+            sceneParent.removeObject();
+        }
+
         App.toggleGameplayControls(false, () => {
             return App.displayList([
-                // ...[npcA, npcB].map(npc => ({
-                //     name: `${npc}`
-                // }))
+                ...[npcB, npcA].map(npc => ({
+                    name: `
+                    ${npc.actor.petDefinition.getCSprite()} 
+                    ${npc.actor.petDefinition.name} 
+                    ${App.getBadge(`<img src="resources/img/misc/${npc.actor.petDefinition.stats.is_ghost === PetDefinition.GHOST_TYPE.devil ? 'devil_icon' : 'angel_icon'}.png"></img>`, 'transparent')}
+                    `,
+                    onclick: () => {
+                        cleanup();
+                        Activities.ghost_befriendingGame(npc.actor.petDefinition);
+                    }
+                })),
                 {
                     name: `${App.getIcon('city')} Return`,
                     onclick: () => {
-                        main.release();
-                        sceneParent.removeObject();
+                        cleanup();
                         App.handlers.open_devil_town_activity_list(true)
                     }
                 }
