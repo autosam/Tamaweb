@@ -1318,6 +1318,9 @@ input#background-color-picker {
 .opacity-09 {
     opacity: 0.9;
 }
+.opacity-07 {
+    opacity: 0.7;
+}
 
 .flex-container {
     display: flex;

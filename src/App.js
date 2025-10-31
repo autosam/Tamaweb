@@ -3978,6 +3978,11 @@ const App = {
                     title: 'Revived',
                     img: 'resources/img/misc/ghost_02.png',
                     condition: App.pet.stats.is_revived_once
+                },
+                {
+                    title: 'Immortal',
+                    img: 'resources/img/misc/infinity_01.png',
+                    condition: App.pet.stats.is_ghost
                 }
             ]
 
@@ -3989,10 +3994,19 @@ const App = {
                 <div class="flex-center flex-1 flex flex-gap-05 inner-padding surface-stylized height-auto relative">
                     ${App.petDefinition.getCSprite()}
                     <b>
-                    <span>${App.settings.genderedPets ? App.getIcon(App.pet.stats.gender, true) : ''} ${App.petDefinition.name} </span>
+                        <span>${App.settings.genderedPets ? App.getIcon(App.pet.stats.gender, true) : ''} ${App.petDefinition.name} </span>
                         <br>
                         <small>${App.petDefinition.getLifeStageLabel()} - gen ${App.petDefinition.family.length + 1}</small>
                     </b>
+                    ${
+                        App.pet.stats.is_ghost ?
+                        `
+                        <b>
+                            ${App.pet.stats.is_ghost === PetDefinition.GHOST_TYPE.angel ? App.constants.SPANS.angel : ''}
+                            ${App.pet.stats.is_ghost === PetDefinition.GHOST_TYPE.devil ? App.constants.SPANS.monster : ''}
+                        </b>
+                        ` : ''
+                    }
                     <span>
                         Born ${moment(App.petDefinition.birthday).fromNow()}
                     </span>
