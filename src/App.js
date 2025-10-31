@@ -2346,9 +2346,6 @@ const App = {
                 {
                     name: `accessories`,
                     onclick: () => {
-                        if(App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult){
-                            return App.displayPopup(`${App.petDefinition.name} is not old enough to wear accessories`);
-                        }
                         App.handlers.open_accessory_list();
                         return true;
                     }
@@ -6009,9 +6006,6 @@ const App = {
                     name: `buy accessories ${hasNewAccessory ? App.getBadge('new!') : ''}`,
                     onclick: () => {
                         App.handlers.open_accessory_list({buyMode: true});
-                        if(App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult){
-                            App.displayPopup(`${App.petDefinition.name} is not old enough to wear accessories yet, but you can buy some for later`);
-                        }
                         return true;
                     }
                 },
