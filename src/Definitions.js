@@ -958,6 +958,41 @@ App.definitions = (() => {
                 type: 'med',
                 unbuyable: true,
                 isNew: false,
+            },
+            "life essence": {
+                sprite: 1059,
+                price: 500,
+                type: 'med',
+                unbuyable: true,
+                isNew: true,
+                payload: () => {
+                    const wasGhost = App.petDefinition.stats.is_ghost;
+
+                    App.toggleGameplayControls(false);
+                    App.pet.triggerScriptedState('cheering', 10000, 0, true);
+                    App.pet.stopMove();
+                    Activities.task_foam(() => {
+                        App.pet.removeObject();
+                        App.petDefinition.stats.is_ghost = false;
+                        App.pet = App.createActivePet(App.petDefinition);
+                        App.pet.triggerScriptedState('shocked', 10000, 0, true);
+                        App.pet.stopMove();
+                        App.pet.x = '50%';
+                        App.pet.y = 60;
+                        App.pet.triggerScriptedState('blush', 3000, 0, true, () => {
+                        App.setScene(App.scene.home);
+                        App.pet.playCheeringAnimationIfTrue(wasGhost, () => {
+                            App.toggleGameplayControls(true);
+                            if(wasGhost){
+                                    App.displayPopup(`${App.petDefinition.name} is no longer an immortal!`);
+                            } else {
+                                    App.displayPopup(`Nothing happened!`);
+                                }
+                            });
+                        });
+                        App.sendAnalytics('potion life essence');
+                    });
+                }
             }
         },
     
