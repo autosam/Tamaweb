@@ -1410,10 +1410,23 @@ class Activities {
         }
 
         const petsToReveal = evolutions?.map((sprite, index) => {
+            const petDef = new PetDefinition({
+                sprite,
+            })
+            
+            // handle ghost combinations
+            if(!otherPetDef){
+                if(App.petDefinition.stats.is_ghost){
+                    petDef.stats.is_ghost = App.petDefinition.stats.is_ghost;
+                }
+            } else {
+                if(otherPetDef.stats.is_ghost) {
+                    petDef.stats.is_ghost = otherPetDef.stats.is_ghost;
+                }
+            }
+
             const pet = new Pet(
-                new PetDefinition({
-                    sprite,
-                }),
+                petDef,
                 {
                     x: '50%',
                     y: '55%',
@@ -1422,6 +1435,8 @@ class Activities {
                     castShadow: false,
                 }
             );
+            pet.opacity = 0; // reset opacity in case of being ghost
+
             if(evolutions.length > 1){
                 for(let i = 0; i < 3; i++){
                     new Object2d({
