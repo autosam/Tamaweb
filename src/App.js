@@ -4760,6 +4760,7 @@ const App = {
                 const candyAmount = App.pet.inventory.food[CURRENCY_NAME] || 0;
 
                 const foodNames = [
+                    'life essence',
                     'potion of aging up', 
                     'potion of fulfillment', 
                     'potion of misbehaving', 
