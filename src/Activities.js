@@ -1099,8 +1099,8 @@ class Activities {
         }
 
         const onEnter = () => {
-            onEnd();
             const currentActivity = activities[currentActivityIndex];
+            if(!currentActivity.skipUnloading) onEnd();
             // offset by 1
             App.temp[tempId] = currentActivityIndex + 1;
             currentActivity.onEnter?.();

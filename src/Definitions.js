@@ -2088,6 +2088,12 @@ App.definitions = (() => {
                     return cloof;
                 }
             },
+            'pumpkin': {
+                image: 'resources/img/accessory/pumpkin_01.png',
+                front: true,
+                price: 150,
+                isNew: true,
+            },
             // gothic
             'demon wings': {
                 image: 'resources/img/accessory/demon_wings_01.png',
@@ -2194,12 +2200,62 @@ App.definitions = (() => {
                     overlay.rotation = Math.sin(overlay._flappingMotion) * 6;
                 },
             },
-            // pumpkin
-            'pumpkin': {
-                image: 'resources/img/accessory/pumpkin_01.png',
+            // underworld shop
+            'cone cap': {
+                image: 'resources/img/accessory/cone_cap_01.png',
                 front: true,
-                price: 150,
+                price: 250,
                 isNew: true,
+                accessShop: 'devilsTown',
+            },
+            'dd head': {
+                image: 'resources/img/accessory/deer_head_01.png',
+                front: true,
+                price: 250,
+                isNew: true,
+                accessShop: 'devilsTown',
+            },
+            'tilted fedora': {
+                image: 'resources/img/accessory/fedora_01.png',
+                front: true,
+                price: 200,
+                isNew: true,
+                accessShop: 'devilsTown',
+            },
+            'kings crown': {
+                image: 'resources/img/accessory/kings_crown_01.png',
+                front: true,
+                price: 350,
+                isNew: true,
+                accessShop: 'devilsTown',
+            },
+            'kings rod': {
+                image: 'resources/img/accessory/kings_rod.png',
+                front: true,
+                price: 300,
+                isNew: true,
+                accessShop: 'devilsTown',
+            },
+            'monster hands': {
+                image: 'resources/img/accessory/monster_hands_01.png',
+                front: true,
+                price: 400,
+                isNew: true,
+                accessShop: 'devilsTown',
+            },
+            'woodland headdress': {
+                image: 'resources/img/accessory/woodland_headdress_01.png',
+                front: true,
+                price: 350,
+                isNew: true,
+                accessShop: 'devilsTown',
+            },
+            'tv head': {
+                image: 'resources/img/accessory/tv_head_01.png',
+                front: true,
+                price: 350,
+                isNew: true,
+                accessShop: 'devilsTown',
             },
         },
     

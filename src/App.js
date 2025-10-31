@@ -4386,18 +4386,26 @@ const App = {
             sliderInstance = App.displaySlider(list, null, {accept: 'Set'});
             return sliderInstance;
         },
-        open_accessory_list: function(buyMode, activeIndex, customPayload){
+        open_accessory_list: function(props = {}){
+            const { 
+                buyMode, 
+                activeIndex, 
+                accessShop,
+                onClose,
+            } = props;
+
             let list = [];
             let sliderInstance;
             let salesDay = App.isSalesDay();
             for(let accessoryName of Object.keys(App.definitions.accessories)){
-                // check if current pet has this item on its inventory
+                // check if current pet has this item in its inventory
                 if(!App.pet.inventory.accessory[accessoryName] && !buyMode){
                     continue;
                 }
                 let current = App.definitions.accessories[accessoryName];
 
                 if(buyMode && (current.isCraftable || current.price === -1)) continue;
+                if(buyMode && accessShop !== current.accessShop) continue;
 
                 // check for unlockables
                 if(current.unlockKey && !App.getRecord(current.unlockKey)){
@@ -4413,7 +4421,10 @@ const App = {
 
                 const reopen = (buyMode) => {
                     if(!buyMode) App.handlers.open_stuff_menu();
-                    App.handlers.open_accessory_list(buyMode, sliderInstance?.getCurrentIndex());
+                    App.handlers.open_accessory_list({
+                        ...props,
+                        activeIndex: sliderInstance?.getCurrentIndex()
+                    });
                     return false;
                 }
 
@@ -4655,17 +4666,29 @@ const App = {
                         onEnter: () => App.handlers.open_underworld_menu(),
                         isHome: true,
                     },
+                    // {
+                    //     name: "Restaurant",
+                    //     image: 'resources/img/misc/activity_building_devil_restaurant.png',
+                    //     onEnter: () => App.handlers.go_to_home(),
+                    //     isHome: true,
+                    // },
                     {
-                        name: "Restaurant",
-                        image: 'resources/img/misc/activity_building_devil_restaurant.png',
-                        onEnter: () => App.handlers.go_to_home(),
-                        isHome: true,
-                    },
-                    {
-                        name: "Town Hall",
+                        name: "Gathering",
                         image: 'resources/img/misc/activity_building_devil_gathering.png',
                         onEnter: () => Activities.goToDevilTownGathering(),
                         isHome: true,
+                    },
+                    {
+                        name: "Clothing Store",
+                        image: 'resources/img/misc/activity_building_devil_clothing_store.png',
+                        onEnter: () => {
+                            App.handlers.open_accessory_list({
+                                buyMode: true,
+                                accessShop: 'devilsTown'
+                            })
+                            return true;
+                        },
+                        skipUnloading: true,
                     },
                 ],
                 floorImage: 'resources/img/misc/devil_walkway_02.png',
@@ -5985,7 +6008,7 @@ const App = {
                 {
                     name: `buy accessories ${hasNewAccessory ? App.getBadge('new!') : ''}`,
                     onclick: () => {
-                        App.handlers.open_accessory_list(true);
+                        App.handlers.open_accessory_list({buyMode: true});
                         if(App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult){
                             App.displayPopup(`${App.petDefinition.name} is not old enough to wear accessories yet, but you can buy some for later`);
                         }
