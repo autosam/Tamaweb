@@ -16,6 +16,7 @@ class Pet extends Object2d {
     accessoryObjects = [];
     castShadow = true;
     speedOverride = 0;
+    additionalAccessories = [];
 
     constructor(petDefinition, additionalProps){
         const image = petDefinition.spriteSkin 
@@ -40,6 +41,7 @@ class Pet extends Object2d {
 
         this.createOverlays();
         this.equipAccessories();
+        this.handleGhost();
     }
 
     createOverlays(){
@@ -78,6 +80,8 @@ class Pet extends Object2d {
             z: 4.89,
             hidden: !this.castShadow,
             onDraw: (overlay) => {
+                overlay.hidden = !this.castShadow;
+
                 overlay.x = this.x;
 
                 if(App.currentScene.noShadows) {
@@ -130,12 +134,26 @@ class Pet extends Object2d {
         })
     }
     equipAccessories(){
+        const ACCESSORY_CELL_SIZE = 64;
+        const ADULT_BASE_SIZE = this.petDefinition.spritesheetDefinitions[PetDefinition.LIFE_STAGE.adult]?.cellSize ?? 32;
+        const OVERLAY_SCALE = (this.petDefinition.spritesheet.cellSize / ADULT_BASE_SIZE) || 1;
+
+        const overlayOffset = {
+            x: (ACCESSORY_CELL_SIZE - this.spritesheet.cellSize) / 2,
+            y: (ACCESSORY_CELL_SIZE - this.spritesheet.cellSize) / 2,
+        }
+
         // removing old accessories
         this.accessoryObjects.forEach(accessoryObject => accessoryObject?.removeObject());
         this.accessoryObjects = [];
 
-        if(!this.petDefinition.accessories) return;
-        this.petDefinition.accessories.forEach((accName) => {
+        const accessoriesToEquip = [
+            ...this.petDefinition.accessories,
+            ...this.additionalAccessories
+        ];
+
+        if(!accessoriesToEquip) return;
+        accessoriesToEquip.forEach((accName) => {
             const accessory = App.definitions.accessories[accName];
             if(!accessory) return;
 
@@ -146,21 +164,60 @@ class Pet extends Object2d {
                         parent: this,
                         img: accessory.image,
                         z: accessory.front ? (this.z + 0.1) || 5.1 : (this.z - 0.1) || 4.9,
+                        scale: 1,
                         spritesheet: {
                             cellNumber: 1,
-                            cellSize: 64,
+                            cellSize: ACCESSORY_CELL_SIZE,
                             rows: 4,
                             columns: 4,
                         },
-                        onDraw: (overlay) => {
+                        onDraw: accessory.onDrawOverride ?? ((overlay) => {
                             overlay.mimicParent();
-                            overlay.x -= 16;
-                            overlay.y -= 16;
-                        }
+                            overlay.scale = overlay.scale * (OVERLAY_SCALE);
+                            overlay.x -= overlayOffset.x;
+                            overlay.y -= overlayOffset.y;
+
+                            accessory.onDraw?.(overlay);
+                        })
                     });
 
             this.accessoryObjects.push(accessoryObject);
         })
+    }
+    handleGhost(){
+        if(this.animations._moving){
+            this.animations.moving = this.animations._moving
+        }
+
+        if(!this.stats.is_ghost) return;
+
+        const isDevilGhostType = this.stats.is_ghost === PetDefinition.GHOST_TYPE.devil;
+
+        this.castShadow = false;
+        this.opacity = 0.7;
+        this.additionalAccessories = isDevilGhostType 
+            ? ['monster wings', 'demon horns'] 
+            : ['angel wings', 'angel halo'];
+        this.showOutline(isDevilGhostType ? '#B51919' : '#F9E07B', true)
+
+        this.equipAccessories();
+        this.animations._moving = this.animations.moving;
+        this.animations.moving = this.animations.idle_side;
+
+
+        // bobbing animation
+        const initialAdditionalY = this.additionalY;
+        let animationFloat = Math.random() * Math.PI;
+        this.onDraw = (me) => {
+            const floatSpeed = me.isMoving ? 0.0075 : 0.005;
+            animationFloat += floatSpeed * App.deltaTime;
+            if(animationFloat > App.PI2) animationFloat = 0;
+            me._ghostAnimationFloat = animationFloat;
+
+            me.additionalY = ['eating', 'sitting'].includes(App.pet.state) ? 
+                initialAdditionalY :
+                initialAdditionalY - 3 - Math.sin(animationFloat) * 3;
+        }
     }
     onLateDraw() {
         this.behavior();
@@ -289,11 +346,27 @@ class Pet extends Object2d {
             App.displayPopup('Wait for your egg to hatch');
         })
 
+        const getEggSpritesheet = () => {
+            if(this.stats.is_ghost === PetDefinition.GHOST_TYPE.angel)
+                return 'resources/img/misc/egg_angel_01.png'
+            
+            if(this.stats.is_ghost === PetDefinition.GHOST_TYPE.devil)
+                return 'resources/img/misc/egg_devil_01.png'
+
+            return 'resources/img/misc/egg_normal_01.png';
+        }
+
         if(!this.eggObject){
             this.eggStartTime = Date.now();
             this.hatchTime = this.eggStartTime + random(15000, 30000);
             this.eggObject = new Object2d({
-                img: 'resources/img/misc/egg.png',
+                img: getEggSpritesheet(),
+                spritesheet: {
+                    cellSize: 16,
+                    rows: 1,
+                    columns: 2,
+                    cellNumber: 1
+                },
                 x: '50%', 
                 y: '80%',
             });
@@ -308,7 +381,7 @@ class Pet extends Object2d {
         const motion = Math.sin(this.eggMotionFloat);
 
         if(this.eggMotionFloatSpeed === 0.02){
-            this.eggObject.setImg('resources/img/misc/egg_02.png')
+            this.eggObject.spritesheet.cellNumber = 2;
         }
         // this.eggObject.rotation = Math.round(motion / 22.5) * 22.5;
         this.eggObject.x = 40 + (motion * 1.5);
@@ -796,7 +869,11 @@ class Pet extends Object2d {
         // spawning poop objects
         const spawnedPoopObjects = App.drawer.selectObjects('poop');
         const poopObjectsToBeSpawned = this.stats.has_poop_out - spawnedPoopObjects.length;
-        if(poopObjectsToBeSpawned > 0 && spawnedPoopObjects.length < App.constants.POOP_POSITIONS.length){
+        if(
+            poopObjectsToBeSpawned > 0
+            && spawnedPoopObjects.length < App.constants.POOP_POSITIONS.length 
+            && !this.isDuringScriptedState()
+        ){
             for(let i = 0; i < poopObjectsToBeSpawned; i++){
                 const position = App.constants.POOP_POSITIONS.at(i + spawnedPoopObjects.length);
                 if(!position) break;
@@ -841,7 +918,8 @@ class Pet extends Object2d {
         if(stats.current_health <= 0 && 
             stats.current_cleanliness <= 0 && 
             stats.current_fun <= 0 && 
-            stats.current_hunger <= 0
+            stats.current_hunger <= 0 &&
+            !stats.is_ghost
         ) stats.current_death_tick -= stats.death_tick_rate;
         else stats.current_death_tick = max_death_tick;
 
@@ -1104,11 +1182,10 @@ class Pet extends Object2d {
             this.nextRandomTargetSelect = 0;
         }
     }
-    jump(strength = 0.28, silent, onEndFn){
+    jump(strength = 0.28, silent, onEndFn, gravity = 0.001){
         if(this.isJumping) return false;
 
         this.isJumping = true;
-        const gravity = 0.001;
         const startY = this.y;
         let velocity = strength;
         if(!silent) this.playSound('resources/sounds/jump.ogg', true);
@@ -1194,7 +1271,7 @@ class Pet extends Object2d {
             this.statsManager(isOffline, hour);
 
             // prevents dying
-            this.stats.current_hunger += 1;
+            // this.stats.current_hunger += 1;
 
             let min = {m: i / 60, s: i, h: i / 60 / 60};
             if(this.stats.current_hunger <= 0 && !report.hunger) report.hunger = {...min, stat: this.stats.current_hunger};

@@ -1,4 +1,656 @@
 class Activities {
+    static async ghost_befriendingGame(otherPetDef = App.getRandomPetDef()){
+        const isTargetNegative = otherPetDef.stats.is_ghost === PetDefinition.GHOST_TYPE.devil;
+
+        App.closeAllDisplays();
+        App.setScene(App.scene.devil_town_gathering);
+        App.toggleGameplayControls(false);
+
+        const main = new TimelineDirector(App.pet);
+        const otherPet = new TimelineDirector(new Pet(otherPetDef));
+
+        main.setPosition({x: '70%'});
+        otherPet.setPosition({x: '30%'});
+
+        const negativeWords = ["cruel", "greedy", "deceitful", "jealous", "arrogant", "spiteful", "manipulative", "selfish", "reckless", "hostile", "sneaky", "vain", "stubborn", "ruthless", "vindictive", "malicious", "conniving", "callous", "petulant", "domineering", "depraved", "vengeful", "insidious", "belligerent", "narcissistic", "scheming", "abrasive", "boastful", "obnoxious", "irritable", "sullen", "grating", "unrepentant", "malcontent", "overbearing"];
+        const positiveWords = ["kind", "gentle", "honest", "loyal", "graceful", "hopeful", "pure", "generous", "patient", "forgiving", "humble", "joyful", "loving", "wise", "nurturing", "benevolent", "compassionate", "altruistic", "serene", "dignified", "virtuous", "steadfast", "tenderhearted", "uplifting", "magnanimous", "devoted", "sincere", "chivalrous", "empathetic", "faithful", "radiant", "merciful", "gracious", "principled", "respectful", "gentlehearted"];
+
+        App.displayPopup(`Try to use the words that best describe the ${isTargetNegative ? App.constants.SPANS.monster : App.constants.SPANS.angel}`, 3000);
+        await TimelineDirector.wait(3000);
+        
+        let remainingRounds = 3, wonRounds = 0;
+
+        const showNewRound = () => {
+            const screen = UI.empty();
+            document.querySelector('.screen-wrapper').appendChild(screen);
+            screen.innerHTML = `
+                <div class="flex flex-dir-col justify-between height-100p width-full" style="position: absolute; top: 0; left: 0;">
+                    <div class="inner-padding height-100p flex flex-dir-col justify-between menu-animation">
+                        <div class="message-bubble m-0 text-center">
+                            <small>
+                            <b>${otherPetDef.name}</b>
+                            is...
+                            </small>
+                        </div>
+                        <button class="btn message-bubble" id="a1"></button>
+                        <button class="btn message-bubble" id="a2"></button>
+                        <button class="btn message-bubble" id="a3"></button>
+                    </div>
+                </div>
+            `;
+
+            const progressRound = async (isChoiceCorrect) => {
+                remainingRounds--;
+                if(isChoiceCorrect) wonRounds++;
+                screen.remove();
+
+                if(remainingRounds <= 0){
+                    const hasWon = wonRounds >= 3;
+
+                    const friendSpan = `<div> ${otherPetDef.getCSprite()} <b>${otherPetDef.name}</b> </div>`
+
+                    if(hasWon){
+                        otherPet.setState('cheering');
+                        main.setState('blush');
+                    } else {
+                        otherPet.setState('angry');
+                        main.setState('uncomfortable');
+                    }
+                    await TimelineDirector.wait(2000);
+
+                    App.displayPopup(hasWon ? `${friendSpan} was impressed!` : `${friendSpan} was not impressed!`, 2000);
+                    await TimelineDirector.wait(1900);
+
+                    if(hasWon){
+                        App.displayConfirm(`Do you want to add ${friendSpan} to your friends list?`, [
+                            {
+                                name: 'yes',
+                                onclick: () => {
+                                    App.petDefinition.addFriend(otherPetDef, 1);
+                                    App.displayPopup(`${friendSpan} has been added to the friends list!`, 3000);
+                                }
+                            },
+                            {
+                                name: 'no',
+                                class: 'back-btn',
+                                onclick: () => {}
+                            }
+                        ])
+                    }
+
+                    App.fadeScreen({
+                        middleFn: () => {
+                            main.release();
+                            otherPet.remove();
+                            App.toggleGameplayControls(true);
+
+                            App.handlers.open_devil_town_activity_list(true);
+                        }
+                    })
+                    
+                    return;
+                }
+
+                showNewRound();
+            } 
+
+            const buttons = screen.querySelectorAll('button');
+            
+            let targetBucket = isTargetNegative ? negativeWords : positiveWords;
+            const randomTargetWord = randomFromArray(targetBucket)
+            let randomNonTargetWords = [];
+            while(randomNonTargetWords.length < buttons.length - 1){
+                const word = randomFromArray(isTargetNegative ? positiveWords : negativeWords);
+                if(randomNonTargetWords.includes(word)) continue;
+                randomNonTargetWords.push(word);
+            }
+
+            const shuffledButtons = shuffleArray(buttons);
+            shuffledButtons[0].textContent = randomTargetWord;
+            shuffledButtons[0].onclick = () => {
+                progressRound(true);
+            };
+
+            shuffledButtons.slice(1).forEach((btn, i) => {
+                btn.textContent = randomNonTargetWords[i];
+                btn.onclick = () => {
+                    progressRound(false);
+                }
+            })
+        }
+
+        showNewRound();
+    }
+    static async angel_grantWish(otherPetDef = App.getRandomPetDef()){
+        App.closeAllDisplays();
+        App.setScene(App.scene.angel_town_room);
+        App.toggleGameplayControls(false);
+
+        otherPetDef.increaseFriendship(20);
+
+        const otherPet = new TimelineDirector(new Pet(otherPetDef));
+        const main = new TimelineDirector(App.pet);
+
+        main.setPosition({x: '30%'});
+        otherPet.setPosition({x: '100%'});
+        otherPet.actor.staticShadow = false;
+        await otherPet.moveTo({x: '70%', speed: 0.02});
+
+        await TimelineDirector.wait(500);
+
+        // create wanted food
+        const wantedFood = randomFromArray(Object.keys(App.definitions.food));
+        const wantedFoodDef = App.definitions.food[wantedFood];
+
+        otherPet.setState('mild_uncomfortable');
+        otherPet.actor.showThought('food', wantedFood, 1500);
+        await TimelineDirector.wait(1000);
+
+        otherPet.setState('idle');
+        main.setState('blush');
+
+        await TimelineDirector.wait(1000);
+        const foodObject = new Object2d({
+            image: App.preloadedResources[App.constants.FOOD_SPRITESHEET],
+            spritesheet: {
+                ...App.constants.FOOD_SPRITESHEET_DIMENSIONS,
+                cellNumber: wantedFoodDef.sprite
+            },
+            scale: 0,
+            x: '50%',
+            y: '50%',
+            onDraw: (me) => {
+                me.scale = lerp(me.scale, 1, 0.001 * App.deltaTime)
+            },
+        })
+
+        const shine = new Object2d({
+            img: 'resources/img/misc/light_rays_03.png',
+            x: '50%',
+            y: '50%',
+            rotation: 0,
+            composite: 'screen',
+            scale: 0,
+            onDraw: (me) => {
+                me.rotation += 0.05 * App.deltaTime;
+                me.scale = lerp(me.scale, 0.5, 0.001 * App.deltaTime);
+            }
+        })
+
+        otherPet.setState('shocked');
+        await TimelineDirector.wait(1000);
+        otherPet.setState('cheering');
+
+        await TimelineDirector.wait(5000);
+        App.fadeScreen({
+            middleFn: () => {
+                main.setPosition({x: '50%'});
+                main.release();
+                otherPet.remove();
+                foodObject.removeObject();
+                shine.removeObject();
+                App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
+                App.pet.playCheeringAnimation();
+            },
+        })
+    }
+    static async angel_bless(otherPetDef = App.getRandomPetDef()){
+        App.closeAllDisplays();
+        App.setScene(App.scene.angel_town_room);
+        App.toggleGameplayControls(false);
+
+        otherPetDef.increaseFriendship(15);
+
+        const otherPet = new TimelineDirector(new Pet(otherPetDef));
+        const main = new TimelineDirector(App.pet);
+
+        main.setPosition({x: '30%'});
+        otherPet.setPosition({x: '100%'});
+        otherPet.actor.staticShadow = false;
+        await otherPet.moveTo({x: '70%', speed: 0.02});
+
+        await TimelineDirector.wait(500);
+        Activities.task_floatingObjects(10, ['resources/img/misc/yellow_star_01.png'], [50, App.drawer.bounds.height]);
+
+        main.setState('kissing');
+        main.lookAt(true);
+        otherPet.setState('blush');
+
+        await TimelineDirector.wait(1000);
+
+        main.setState('blush');
+        otherPet.setState('cheering');
+        otherPet.actor.showOutline('yellow');
+        const shine = new Object2d({
+            img: 'resources/img/misc/light_rays_03.png',
+            x: '70%',
+            y: '80%',
+            rotation: 0,
+            composite: 'screen',
+            scale: 0,
+            onDraw: (me) => {
+                me.rotation += 0.05 * App.deltaTime;
+                me.scale = lerp(me.scale, 2, 0.001 * App.deltaTime);
+            }
+        })
+
+        Activities.task_floatingObjects(20, ['resources/img/misc/yellow_star_01.png'], [50, App.drawer.bounds.height]);
+
+        await TimelineDirector.wait(3000);
+        App.fadeScreen({
+            middleFn: () => {
+                main.setPosition({x: '50%'});
+                main.release();
+                otherPet.remove();
+                shine.removeObject();
+                App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
+                App.pet.playCheeringAnimation();
+            },
+        })
+    }
+    static async ghost_convertOtherPet(otherPetDef = App.getRandomPetDef(), ghostType = App.petDefinition.stats.is_ghost){
+        const isTurningIntoDevil = ghostType === PetDefinition.GHOST_TYPE.devil;
+        
+        App.closeAllDisplays();
+        App.setScene(App.scene.reviverDen);
+        App.toggleGameplayControls(false);
+        
+        if(isTurningIntoDevil) otherPetDef.increaseFriendship(-random(10, 50));
+        else otherPetDef.increaseFriendship(random(5, 30));
+
+        const otherPet = new TimelineDirector(new Pet(otherPetDef));
+        const main = new TimelineDirector(App.pet);
+
+        main.setPosition({x: '30%'});
+        otherPet.setPosition({x: '100%'});
+        otherPet.actor.staticShadow = false;
+        await otherPet.moveTo({x: '70%', speed: 0.02});
+
+        await TimelineDirector.wait(250);
+
+        for(let i = 0; i < 6; i++){
+            new Object2d({
+                img: 'resources/img/misc/foam_single.png',
+                x: '70%',
+                y: otherPet.actor.y - otherPet.actor.petDefinition.spritesheet.cellSize / 2,
+                opacity: 1,
+                scale: 1 + Math.random(),
+                rotation: random(0, 180),
+                z: App.constants.ACTIVE_PET_Z,
+                onDraw: (me) => {
+                    Object2d.animations.flip(me);
+                    Object2d.animations.pulseScale(me, 0.1, 0.01);
+                    me.scale -= 0.0009 * App.deltaTime;
+                    me.opacity -= 0.0009 * App.deltaTime;
+                    if(me.opacity <= 0) me.removeObject();
+                }
+            })
+        }
+
+        await TimelineDirector.wait(250);
+
+        otherPet.remove();
+        otherPetDef.stats.is_ghost = ghostType;
+        const otherPetConverted = new TimelineDirector(new Pet(otherPetDef));
+        otherPetConverted.setState('shocked');
+        otherPetConverted.setPosition({x: '70%'});
+        await TimelineDirector.wait(500);
+
+        otherPetConverted.setState(isTurningIntoDevil ? 'uncomfortable' : 'cheering');
+
+        main.setState('blush');
+
+        await TimelineDirector.wait(3500);
+        App.fadeScreen({
+            middleFn: () => {
+                main.setPosition({x: '50%'});
+                main.release();
+                otherPetConverted.remove();
+                App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
+                App.pet.playCheeringAnimation();
+            },
+        })
+    }
+    static async ghost_beConverted(otherPetDef = App.getRandomPetDef(), ghostType = PetDefinition.GHOST_TYPE.angel){        
+        App.closeAllDisplays();
+        App.setScene(App.scene.reviverDen);
+        App.toggleGameplayControls(false);
+    
+
+        const otherPet = new TimelineDirector(new Pet(otherPetDef));
+        const main = new TimelineDirector(App.pet);
+
+        main.setPosition({x: '100%'});
+        otherPet.setPosition({x: '30%'});
+        await main.moveTo({x: '70%', speed: 0.02});
+
+        await TimelineDirector.wait(250);
+
+        for(let i = 0; i < 6; i++){
+            new Object2d({
+                img: 'resources/img/misc/foam_single.png',
+                x: '70%',
+                y: otherPet.actor.y - otherPet.actor.petDefinition.spritesheet.cellSize / 2,
+                opacity: 1,
+                scale: 1 + Math.random(),
+                rotation: random(0, 180),
+                z: App.constants.ACTIVE_PET_Z,
+                onDraw: (me) => {
+                    Object2d.animations.flip(me);
+                    Object2d.animations.pulseScale(me, 0.1, 0.01);
+                    me.scale -= 0.0009 * App.deltaTime;
+                    me.opacity -= 0.0009 * App.deltaTime;
+                    if(me.opacity <= 0) me.removeObject();
+                }
+            })
+        }
+
+        await TimelineDirector.wait(250);
+
+        App.pet.removeObject();
+        App.petDefinition.stats.is_ghost = ghostType;
+        App.pet = App.createActivePet(App.petDefinition);
+        const mainConverted = new TimelineDirector(App.pet);
+        mainConverted.setState('shocked');
+        mainConverted.setPosition({x: '70%'});
+        await TimelineDirector.wait(500);
+
+        mainConverted.setState('cheering');
+
+        otherPet.setState('blush');
+        
+        App.save();
+
+        await TimelineDirector.wait(3500);
+        App.fadeScreen({
+            middleFn: () => {
+                main.setPosition({x: '50%'});
+                mainConverted.release();
+                otherPet.remove();
+                App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
+                App.pet.playCheeringAnimation();
+            },
+        })
+    }
+    static async demon_whisper(otherPetDef = App.getRandomPetDef()){
+        App.closeAllDisplays();
+        App.setScene(App.scene.home);
+        App.toggleGameplayControls(false);
+
+        otherPetDef.increaseFriendship(random(-5, 5));
+
+        const otherPet = new TimelineDirector(new Pet(otherPetDef));
+        const main = new TimelineDirector(App.pet);
+
+        main.setPosition({x: '30%'});
+        otherPet.setPosition({x: '100%'});
+        otherPet.actor.staticShadow = false;
+        await otherPet.moveTo({x: '70%', speed: 0.02});
+
+        await TimelineDirector.wait(250);
+        main.setState('eating');
+        main.lookAt(true);
+        App.pet.say(randomFromArray([
+            '𒋦𒍹𒄦',
+            '꧁⎝ 𓆩༺✧༻𓆪 ⎠꧂',
+            '𖤍𒅒𒈔𒅒𒇫𒄆',
+        ]), 2500)
+        await TimelineDirector.wait(50);
+        App.playSound('resources/sounds/shock.ogg', true);
+        await otherPet.bob({animation: 'shocked', maxCycles: 2});
+        await TimelineDirector.wait(2000);
+        main.setState('idle');
+        await otherPet.moveTo({x: '0%'});
+        await otherPet.moveTo({x: '100%'});
+        main.moveTo({x: '50%', speed: 0.02});
+        await otherPet.moveTo({x: '0%'});
+        await otherPet.moveTo({x: '150%'});
+
+        main.setState('idle');
+
+        await TimelineDirector.wait(500);
+        App.fadeScreen({
+            middleFn: () => {
+                main.setPosition({x: '50%'});
+                main.release();
+                otherPet.remove();
+                App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
+                App.pet.playCheeringAnimation();
+            },
+        })
+    }
+    static async demon_scare(otherPetDef = App.getRandomPetDef()){
+        App.closeAllDisplays();
+        App.setScene(App.scene.home);
+        App.toggleGameplayControls(false);
+
+        otherPetDef.increaseFriendship(-random(2, 5));
+
+        const otherPet = new TimelineDirector(new Pet(otherPetDef));
+        const main = new TimelineDirector(App.pet);
+
+        main.setPosition({x: '150%'});
+        otherPet.setPosition({x: '100%'});
+        otherPet.actor.staticShadow = false;
+        await otherPet.moveTo({x: '50%', speed: 0.02});
+
+        await TimelineDirector.wait(250);
+        main.setPosition({x: '30%'});
+        main.fade({target: main.actor.opacity, from: 0.01, speed: 0.005})
+        otherPet.setState('idle_side');
+        otherPet.lookAt(true);
+        await TimelineDirector.wait(750);
+        otherPet.setState('mild_uncomfortable');
+        main.setPosition({x: '150%'});
+        await TimelineDirector.wait(750);
+        main.setPosition({x: '70%'});
+        main.fade({target: main.actor.opacity, from: 0.01, speed: 0.005})
+        otherPet.setState('idle_side');
+        otherPet.lookAt(false);
+        await TimelineDirector.wait(750);
+        otherPet.setState('mild_uncomfortable');
+        main.setPosition({x: '150%'});
+        await TimelineDirector.wait(750);
+        otherPet.setState('idle_side');
+        otherPet.lookAt(false);
+        await TimelineDirector.wait(750);
+        otherPet.lookAt(true);
+        main.setPosition({x: '70%'})
+        await TimelineDirector.wait(100);
+        otherPet.bob({animation: 'shocked', landAnimation: 'shocked', maxCycles: 1});
+        otherPet.moveTo({disableMoveAnimation: true, x: '30%'});
+        main.lookAt(false);
+        App.pet.playSound('resources/sounds/jump.ogg');
+        await main.bob({animation: 'angry', landAnimation: 'idle_side', maxCycles: 1});
+        await TimelineDirector.wait(200);
+        main.setState('cheering');
+        otherPet.setState('uncomfortable');
+
+        await TimelineDirector.wait(1500);
+        App.fadeScreen({
+            middleFn: () => {
+                main.setPosition({x: '50%'});
+                main.release();
+                otherPet.remove();
+                App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
+                App.pet.playCheeringAnimation();
+            }
+        })
+    }
+    static goToDevilTownGathering(){
+        App.setScene(App.scene.devil_town_gathering);
+
+        const sceneParent = new Object2d({});
+
+        const getRandomGhostPet = (ghostType = PetDefinition.GHOST_TYPE.devil) => {
+            const npcDef = App.getRandomPetDef();
+            npcDef.stats.is_ghost = ghostType;
+            return new Pet(npcDef, {parent: sceneParent});
+        }
+
+        const driverFnFactory = () => {
+            let timer = Math.random();
+            return (pet) => {
+                timer -= App.deltaTime;
+
+                if(timer < 0) timer = 750;
+                else return;
+
+                if(pet.state !== 'idle') return pet.setState('idle');
+
+                pet.setState(
+                    randomFromArray(['idle', 'cheering', 'blush'])
+                )
+            }
+        }
+
+        const main = new TimelineDirector(App.pet, {driverFn: driverFnFactory()});
+        const npcA = new TimelineDirector(getRandomGhostPet(PetDefinition.GHOST_TYPE.angel), {driverFn: driverFnFactory()});
+        const npcB = new TimelineDirector(getRandomGhostPet(PetDefinition.GHOST_TYPE.devil), {driverFn: driverFnFactory()});
+
+        main.setPosition({x: '50%', y: '95%'});
+        npcA.setPosition({x: '25%', y: '90%'});
+        npcB.setPosition({x: '75%', y: '90%'});
+
+        const cleanup = () => {
+            main.release();
+            sceneParent.removeObject();
+        }
+
+        App.toggleGameplayControls(false, () => {
+            return App.displayList([
+                ...[npcB, npcA].map(npc => ({
+                    name: `
+                    ${npc.actor.petDefinition.getCSprite()} 
+                    ${npc.actor.petDefinition.name} 
+                    ${App.getBadge(`<img src="resources/img/misc/${npc.actor.petDefinition.stats.is_ghost === PetDefinition.GHOST_TYPE.devil ? 'devil_icon' : 'angel_icon'}.png"></img>`, 'transparent')}
+                    `,
+                    onclick: () => {
+                        cleanup();
+                        Activities.ghost_befriendingGame(npc.actor.petDefinition);
+                    }
+                })),
+                {
+                    name: `${App.getIcon('city')} Return`,
+                    onclick: () => {
+                        cleanup();
+                        App.handlers.open_devil_town_activity_list(true)
+                    }
+                }
+            ])
+        })
+    }
+    static goToUnderworldEntrance(){
+        App.setScene(App.scene.reviverDen);
+        App.toggleGameplayControls(false, () => {
+            App.pet.stopScriptedState();
+        });
+
+        const reviverNpc = new Pet(
+            new PetDefinition({
+                sprite: 'resources/img/character/chara_193b.png',
+                name: 'The Exorcist',
+                accessories: ['reviver hood'],
+            }), 
+            {
+                x: '20%',
+                z: App.constants.ACTIVE_PET_Z - 1,
+            }
+        );
+        reviverNpc.triggerScriptedState('mild_uncomfortable', App.INF, false, true);
+
+        App.pet.triggerScriptedState('moving', 2500, null, true, () => {
+            App.setScene(App.scene.home);
+            App.handlers.open_underworld_menu();
+            App.toggleGameplayControls(true);
+
+            reviverNpc.removeObject();
+        }, Pet.scriptedEventDrivers.movingIn.bind({pet: App.pet}));
+    }
+    static async goToHomePlanet(otherPetDef){
+        App.setScene(App.scene.homeworld_getaways);
+        App.toggleGameplayControls(false)
+
+        const ufoObject = new Object2d({
+            image: App.preloadedResources['resources/img/misc/ufo_02.png'],
+            x: 0, y: 0, z: App.constants.ACTIVE_PET_Z + 1,
+        });
+        const ufoBeamObject = new Object2d({
+            image: App.preloadedResources['resources/img/misc/ufo_01.png'],
+            y: 0,
+            x: 0,
+            opacity: 0,
+            parent: ufoObject,
+        });
+
+        let other;
+        const main = new TimelineDirector(App.pet);
+
+        if(otherPetDef){
+            // increasing friendship
+            if(!App.temp.rabbitholeTraveledFriends) App.temp.rabbitholeTraveledFriends = [];
+            if(!App.temp.rabbitholeTraveledFriends.includes(otherPetDef)){
+                otherPetDef.increaseFriendship();
+            }
+            App.temp.rabbitholeTraveledFriends.push(otherPetDef);
+
+            other = new TimelineDirector(new Pet(otherPetDef));
+        }
+
+        main.setPosition({x: '105%', y: '90%'})
+        other?.setPosition({x: '120%', y: '90%'})
+        other?.moveTo({x: '85%', speed: 0.015});
+        await main.moveTo({x: '50%', speed: 0.025});
+        main.setState('cheering');
+        await TimelineDirector.wait(1000);
+
+        ufoBeamObject.onDraw = (me) => {
+            me.opacity = lerp(me.opacity, 1, 0.005 * App.deltaTime);
+        }
+
+
+        await main.bob({animation: 'shocked', maxCycles: 1});
+        other?.lookAt(false)
+        other?.setState('idle_side');
+        await TimelineDirector.wait(500);
+        other?.bob({animation: 'shocked', maxCycles: 1});
+        await main.fade({target: 0});
+        main.actor.scale = 1;
+        main.setPosition({x: 9999, y: 9999});
+
+
+        if(other){
+            other.actor.scale = 1;
+            await other.moveTo({x: '50%', speed: 0.025});
+            await other.bob({animation: 'cheering', maxCycles: 1, landAnimation: 'idle'});
+            await TimelineDirector.wait(500);
+            await other.fade({target: 0});
+            other.actor.scale = 1;
+            other.actor.removeObject();
+        }
+
+        ufoBeamObject.onDraw = (me) => {
+            me.opacity = lerp(me.opacity, 0, 0.002 * App.deltaTime);
+        }
+
+        await TimelineDirector.wait(350);
+        
+        App.fadeScreen({
+            middleFn: () => {
+                main.release()
+                ufoObject.removeObject();
+                App.toggleGameplayControls(true);
+                App.setScene(App.scene.home);
+                Activities.goToCurrentRabbitHole(false);
+            }
+        })
+    }
     static async goToSchool(onFail){
         // reset school attend limit of eligible
         const lastReset = moment(App.pet.stats.lastSchoolClassLimitReset);
@@ -371,9 +1023,16 @@ class Activities {
             mallNpc.removeObject();
         });
     }
-    static async goToActivities({ activities } = {}){
+    static async goToActivities({ 
+        activities, 
+        floorImage = 'resources/img/background/outside/activities_base_01.png',
+        scene = App.scene.emptyOutside,
+        id,
+    } = {}){
+        const tempId = App.handlers.getOutsideActivityId(id);
+        
         App.setScene({
-            ...App.scene.emptyOutside,
+            ...scene,
             petY: '94%',
         });
 
@@ -394,7 +1053,12 @@ class Activities {
         editDisplay.close = () => editDisplay.remove();
         editDisplay.innerHTML = `
             <div class="flex justify-center height-auto b-radius-10">
-                <span id="activity-name" class="directional-control__activity-name">$activity_name$</span>
+                <span class="directional-control__activity-name">
+                    <div class="flex flex-dir-col">
+                        <span id="activity-name">$activity_name$</span>
+                        <small id="activity-number" class="opacity-09 font-x-small"></small>
+                    </div>
+                </span>
             </div>
             <div class="directional-control__container">
                 <div class="controls-y">
@@ -437,15 +1101,15 @@ class Activities {
         }
 
         const onEnter = () => {
-            onEnd();
             const currentActivity = activities[currentActivityIndex];
+            if(!currentActivity.skipUnloading) onEnd();
             // offset by 1
-            App.temp.outsideActivityIndex = currentActivityIndex + 1;
+            App.temp[tempId] = currentActivityIndex + 1;
             currentActivity.onEnter?.();
             setTimeout(() => App.playSound('resources/sounds/ui_click_03.ogg', true));
         }
         
-        let currentActivityIndex = App.temp.outsideActivityIndex ?? 1;
+        let currentActivityIndex = App.temp[tempId] ?? 1;
         const updateSelectedActivity = (offset = 1) => {
             if(spawnedGameObjects.length > 3){
                 const toDespwan = spawnedGameObjects.shift();
@@ -457,6 +1121,8 @@ class Activities {
             if(currentActivityIndex < 0) currentActivityIndex = activities.length - 1;
             const currentActivity = activities[currentActivityIndex];
 
+
+            document.querySelector('#activity-number').innerHTML =  `#${currentActivityIndex + 1}`;
             document.querySelector('#activity-name').innerHTML =  `${currentActivity.name}`;
             if(currentActivity.isDisabled?.()){
                 document.querySelector('#activity-name').classList.add('disabled');
@@ -469,7 +1135,7 @@ class Activities {
             scenePositionX += App.drawer.bounds.width * offset;
 
             const background = new Object2d({
-                img: 'resources/img/background/outside/activities_base_01.png',
+                img: floorImage,
                 x: scenePositionX, y: 0,
             });
             new Object2d({
@@ -656,45 +1322,7 @@ class Activities {
             ])
         });
     }
-    static async goToCurrentRabbitHole(isStarting) {
-        if(isStarting) { // starting animation
-            App.pet.stopMove();
-            App.pet.x = '50%';
-            App.toggleGameplayControls(false);
-
-
-            const ufoObject = new Object2d({
-                image: App.preloadedResources['resources/img/misc/ufo_02.png'],
-                x: 0, y: 0, z: App.constants.ACTIVE_PET_Z + 1,
-                onDraw: (me) => {
-                    if(App.pet.y > 50) return;
-                    me.y = lerp(me.y, -50, 0.0005 * App.deltaTime)
-                }
-            });
-            const ufoBeamObject = new Object2d({
-                image: App.preloadedResources['resources/img/misc/ufo_01.png'],
-                y: -120,
-                x: 0,
-                parent: ufoObject,
-                onDraw: (me) => {
-                    me.y = (App.pet.y) - 70;
-                }
-            });
-
-            await App.pet.triggerScriptedState('shocked', 2000, false, true, 
-                // onEnd
-                () => {
-                    App.pet.y = '100%';
-                    App.pet.x = -999;
-                    ufoObject.removeObject();
-                },
-                // driver
-                () => {
-                    App.pet.y = lerp(App.pet.y, -100, 0.0005 * App.deltaTime);
-                }
-            )
-        }
-
+    static async goToCurrentRabbitHole() {
         const {current_rabbit_hole: currentRabbitHole} = App.pet.stats;
 
         const outOverlay = new Object2d({
@@ -703,11 +1331,6 @@ class Activities {
         });
 
         const onEndFn = (isInterrupted) => {
-            setTimeout(() => {
-                App.pet.x = '50%';
-                App.pet.stopMove();
-            })
-
             const rabbitHoleDefinition = App.definitions.rabbit_hole_activities.find(activity => activity.name === App.pet.stats.current_rabbit_hole.name);
 
             if(!isInterrupted){
@@ -725,9 +1348,16 @@ class Activities {
             }
 
             App.pet.stats.current_rabbit_hole.name = false;
-            App.toggleGameplayControls(true);
-            outOverlay.removeObject();
-            App.setScene(App.scene.home);
+
+            App.fadeScreen({
+                middleFn: () => {
+                    App.pet.x = '50%';
+                    App.pet.stopMove();
+                    App.toggleGameplayControls(true);
+                    outOverlay.removeObject();
+                    App.setScene(App.scene.home);
+                }
+            })
         }
 
         const driverFn = () => {
@@ -740,10 +1370,8 @@ class Activities {
             App.pet.x = -99;
         }
 
-        if(!isStarting){
-            const isAlreadyEnded = driverFn();
-            if(isAlreadyEnded) return;
-        }
+        const isAlreadyEnded = driverFn();
+        if(isAlreadyEnded) return;
 
         App.toggleGameplayControls(false, () => {
             App.displayConfirm(`
@@ -784,10 +1412,23 @@ class Activities {
         }
 
         const petsToReveal = evolutions?.map((sprite, index) => {
+            const petDef = new PetDefinition({
+                sprite,
+            })
+            
+            // handle ghost combinations
+            if(!otherPetDef){
+                if(App.petDefinition.stats.is_ghost){
+                    petDef.stats.is_ghost = App.petDefinition.stats.is_ghost;
+                }
+            } else {
+                if(otherPetDef.stats.is_ghost) {
+                    petDef.stats.is_ghost = otherPetDef.stats.is_ghost;
+                }
+            }
+
             const pet = new Pet(
-                new PetDefinition({
-                    sprite,
-                }),
+                petDef,
                 {
                     x: '50%',
                     y: '55%',
@@ -796,6 +1437,8 @@ class Activities {
                     castShadow: false,
                 }
             );
+            pet.opacity = 0; // reset opacity in case of being ghost
+
             if(evolutions.length > 1){
                 for(let i = 0; i < 3; i++){
                     new Object2d({
@@ -3848,6 +4491,269 @@ class Activities {
         
         return false;  
     }
+    static async trickOrTreatGame(onEndCallback){
+        App.closeAllDisplays();
+        App.setScene(App.scene.devil_town_exterior)
+
+        const backgroundMusic = App.playAdvancedSound({
+            src: 'resources/sounds/trick_or_treat_bm_01.mp3',
+            loop: true, 
+            volume: 0.4,
+        });
+
+        const currencyIcon = App.getFoodCSprite(App.definitions.food[App.constants.UNDERWORLD_TREAT_CURRENCY]?.sprite);
+
+        // init vars
+        let activeSpeed = 2.5, 
+            globalOffset = 0, 
+            lastGlobalOffsetLooped = App.INF,
+            globalSpawnOffset = App.drawer.bounds.width,
+            spawnTicks = 0;
+
+        // score vars
+        let lives = 3, score = 0;
+
+        const screen = UI.empty();
+        document.querySelector('.screen-wrapper').appendChild(screen);
+        screen.innerHTML = `
+        <div class="width-full pointer-events-none" style="position: absolute; top: 0; left: 0;">
+            <div class="flex-container" style="justify-content: space-between; padding: 4px">
+                <div class="flex-container flex-gap-05 mini-game-ui">
+                    ${currencyIcon}
+                    <div id="score">${score}</div>
+                </div>
+                <div class="flex-container">
+                    <div id="lives">${lives}</div>
+                </div>
+            </div>
+        </div>
+        `;
+        const uiScore = screen.querySelector('#score'),
+            uiLives = screen.querySelector('#lives');
+        const updateUI = () => {
+            uiScore.textContent = score;
+            uiLives.innerHTML = new Array(lives).fill('').map(() => {
+                return `<img src="resources/img/misc/heart_particle_01.png"></img>`
+            }).join(' ');
+        }
+        updateUI();
+
+        const sceneParent = new Object2d({})
+
+        const onEndFn = async () => {
+            screen.remove();
+            App.pet.stopScriptedState();
+            sceneParent.onDraw = undefined;
+            App.toggleGameplayControls(false);
+            backgroundMusic.stop();
+
+            App.addNumToObject(App.pet.inventory.food, App.constants.UNDERWORLD_TREAT_CURRENCY, score);
+
+            App.pet.triggerScriptedState('idle', App.INF, 0, true);
+            App.pet.x = '50%';
+            App.pet.y = '100%';
+
+            const msg = App.displayMessageBubble(`${currencyIcon} x${score}`)
+
+            const onEnd = () => {
+                App.toggleGameplayControls();
+                sceneParent.removeObject();
+                msg.close();
+                onEndCallback?.();
+            }
+
+            if(score >= 5) App.pet.playCheeringAnimation(onEnd);
+            else App.pet.playUncomfortableAnimation(onEnd);
+        }
+
+        let jumpCount = 0, groundPositionY = false;
+        App.toggleGameplayControls(false, () => {
+            if(groundPositionY === false) {
+                groundPositionY = App.pet.y;
+            }
+            const jump = () => {
+                App.pet.playSound('resources/sounds/jump.ogg', true);
+
+                const gravity = 0.001;
+                let velocity = 0.31;
+                App.pet.triggerScriptedState('talking', App.INF, 0, true, 
+                    () => {
+                        App.pet.y = groundPositionY;
+                        jumpCount = 0;
+                    },
+                    () => {
+                        velocity -= gravity * App.deltaTime;
+                        App.pet.y -= velocity * App.deltaTime;
+                        if(App.pet.y >= groundPositionY){
+                            App.pet.stopScriptedState();
+                            App.pet.triggerScriptedState('idle_side', App.INF, false, true)
+                        }
+                    }
+                )
+            }
+            if(++jumpCount <= 2){
+                jump();
+            }
+        })
+
+        const driverFn = () => {
+            activeSpeed += 0.000065 * App.deltaTime;
+            // activeSpeed = 1;
+            // activeSpeed -= (0.001 * App.deltaTime);
+            activeSpeed = clamp(activeSpeed, 0, 6);
+            globalOffset += activeSpeed * 0.025 * App.deltaTime;
+            if(!jumpCount) {
+                App.pet.setState(activeSpeed ? 'moving' : 'idle_side');
+            }
+            
+            const globalOffsetLooped = globalOffset % App.drawer.bounds.width;
+            if(globalOffsetLooped < lastGlobalOffsetLooped){
+                spawnEntities();
+            }
+            lastGlobalOffsetLooped = globalOffsetLooped;
+        }
+        sceneParent.onDraw = driverFn;
+
+        const spawnEntities = (xOffset = globalOffset) => {
+            spawnTicks++;
+            const moverFn = (me, moveSpeed = 1) => {
+                if (me._xOffset === undefined) me._xOffset = me.x + ((App.drawer.bounds.width / moveSpeed) - App.drawer.bounds.width);
+                me.x = ((globalOffset - xOffset - me._xOffset) * moveSpeed);
+                if (me.x >= App.drawer.bounds.width * 2) {
+                    me?.removeObject();
+                }
+            }
+            const spawnImpactEffect = (color = {r: 0, g: 255, b: 0}) => {
+                new Object2d({
+                    ...App.drawer.bounds,
+                    solidColor: color,
+                    x: 0, y: 0,
+                    opacity: 0.6,
+                    composite: 'additive',
+                    z: 999,
+                    onDraw: (me) => {
+                        me.opacity -= 0.0015 * App.deltaTime;
+                        if(me.opacity <= 0) {
+                            me.removeObject();
+                        }
+                    }
+                })
+            }
+            const progress = (isScoring) => {
+                if(isScoring) {
+                    score++;
+                    spawnImpactEffect({r: 0, g: 255, b: 0});
+                    App.playSound(`resources/sounds/cute.ogg`, true)
+                } else {
+                    lives--
+                    spawnImpactEffect({r: 255, g: 0, b: 0});
+                    App.playSound(`resources/sounds/sad.ogg`, true)
+                }
+                updateUI();
+                if(lives <= 0) onEndFn();
+            }
+
+            // background trees
+            for(let i = 0; i < 1; i++){
+                const tree = new Object2d({
+                    parent: sceneParent,
+                    img: 'resources/img/misc/devil_tree_01.png',
+                    x: (i * (App.drawer.bounds.width/1)) + random(-4, 4) + globalSpawnOffset,
+                    y: random(10, 60),
+                    z: -0.1,
+                    inverted: !!random(0, 1),
+                    onDraw: () => moverFn(tree, 0.8),
+                })
+            }
+
+            // foreground trees
+            for(let i = 0; i < 1; i++){
+                const tree = new Object2d({
+                    parent: sceneParent,
+                    img: 'resources/img/misc/devil_tree_01.png',
+                    x: (i * (App.drawer.bounds.width/1)) + random(-32, 32) + globalSpawnOffset,
+                    y: random(70, 80),
+                    z: App.pet.z + 1,
+                    inverted: !!random(0, 1),
+                    onDraw: () => moverFn(tree, 1.2),
+                })
+            }
+
+            // obstacle
+            if(spawnTicks > 5 && spawnTicks % 4 === 0){
+                const bat = new Object2d({
+                    parent: sceneParent,
+                    img: 'resources/img/misc/bat_01.png',
+                    x: ((App.drawer.bounds.width/1)) + 32 + globalSpawnOffset,
+                    y: `${randomFromArray([20, 70])}%`,
+                    z: App.pet.z + 0.1,
+                    onDraw: (me) => {
+                        if(!isNaN(me.y)){
+                            Object2d.animations.bob(me, 0.01)
+                        }
+                        moverFn(me, 1);
+                        if(me.isColliding(App.pet.getBoundingBox(12, 4))){
+                            me.removeObject();
+                            progress(false);
+                        }
+                    },
+                })
+                bat.showOutline('red');
+                return;
+            }
+
+            // treat
+            if(spawnTicks % 3 === 0){
+                const treat = new Object2d({
+                    parent: sceneParent,
+                    img: App.constants.FOOD_SPRITESHEET,
+                    spritesheet: {
+                        ...App.constants.FOOD_SPRITESHEET_DIMENSIONS,
+                        cellNumber: App.definitions.food[App.constants.UNDERWORLD_TREAT_CURRENCY].sprite,
+                    },
+                    x: ((App.drawer.bounds.width/1)) + globalSpawnOffset,
+                    y: `${randomFromArray([20, 70])}%`,
+                    z: App.pet.z - 0.1,
+                    onDraw: (me) => {
+                        if(!isNaN(me.y)){
+                            Object2d.animations.bob(me)
+                        }
+                        moverFn(me, 1);
+                        if(me.isColliding(App.pet.getBoundingBox())){
+                            me.removeObject();
+                            progress(true);
+                        }
+                    },
+                })
+                treat.showOutline();
+                // treat.showBoundingBox();
+            }
+        }
+        // initial spawning of the first two chunks
+        // otherwise the pet would run with no entities around at the start
+        spawnEntities(App.drawer.bounds.width * -1);
+        spawnEntities(App.drawer.bounds.width * -2);
+
+        const movingBackgrounds = new Array(2)
+        .fill(true)
+        .map((_, i) => 
+            new Object2d({
+                parent: sceneParent,
+                img: 'resources/img/misc/devil_walkway_01.png',
+                x: 0,
+                y: 0,
+                z: 0,
+                onDraw: (me) => {
+                    me.x = (globalOffset % App.drawer.bounds.width) + (-i * App.drawer.bounds.width);
+                }
+            })
+        )
+
+        App.pet.stopMove();
+        App.pet.triggerScriptedState('idle_side', App.INF, false, true);
+        App.pet.inverted = false;
+        App.pet.x = '80%';
+    }
 
     // school
     static async school_ExpressionGame({onEndFn, maxRounds = 3} = {}){
@@ -4679,17 +5585,19 @@ class Activities {
 // timeline animation director
 class TimelineDirector {
     registeredDrawEvents = [];
-    constructor(actor){
+    constructor(actor, config = {}){
         this.actor = actor;
-        this.actor.triggerScriptedState('idle', App.INF, false, true);
+        this.actor.triggerScriptedState('idle', App.INF, false, true, config.onEnd, config.driverFn);
         this.actor.stopMove();
     }
-    moveTo = ({x, y, speed = 0.15, endState = 'idle'}) => {
+    moveTo = ({x, y, speed = 0.15, endState = 'idle', disableMoveAnimation}) => {
         return new Promise(resolve => {
             if(!this.actor) return resolve();
 
             this.actor.scriptedEventDriverFn = (me) => {
-                me.setState(me.isMoving ? 'moving' : endState)
+                if(!disableMoveAnimation){
+                    me.setState(me.isMoving ? 'moving' : endState)
+                }
                 if(!me.isMoving) {
                     me.speedOverride = false;
                     resolve();
@@ -4705,6 +5613,7 @@ class TimelineDirector {
             this.actor.speedOverride = speed;
         })
     }
+
     setPosition = ({x, y}) => {
         if(!this.actor) return;
         if(x) this.actor.x = x;
@@ -4770,6 +5679,56 @@ class TimelineDirector {
         })
     }
     think = (...args) => this.actor?.showThought(...args);
+    resize = ({target, speed = 0.005, timeout = 1000} = {}) => {
+        return new Promise(resolve => {
+            const { actor } = this;
+
+            let drawEvent;
+
+            const end = () => {
+                App.unregisterOnDrawEvent(drawEvent);
+                actor.scale = target;
+                drawEvent = null;
+                resolve();
+            }
+
+            setTimeout(() => {
+                if(drawEvent) end();
+            }, timeout);
+
+            drawEvent = App.registerOnDrawEvent(() => {
+                actor.scale = lerp(actor.scale, target, speed * App.deltaTime);
+
+                if(actor.scale.toFixed(2) === target) end();
+            })
+        })
+    }
+    fade = ({target, speed = 0.005, timeout = 1000, from = this.actor.opacity} = {}) => {
+        const defaultOpacity = this.actor.opacity || 1;
+        this.actor.opacity = from;
+        return new Promise(resolve => {
+            const { actor } = this;
+
+            let drawEvent;
+
+            const end = () => {
+                App.unregisterOnDrawEvent(drawEvent);
+                actor.opacity = defaultOpacity;
+                drawEvent = null;
+                resolve();
+            }
+
+            setTimeout(() => {
+                if(drawEvent) end();
+            }, timeout);
+
+            drawEvent = App.registerOnDrawEvent(() => {
+                actor.opacity = lerp((actor.opacity || 1), target, speed * App.deltaTime);
+
+                if(actor.opacity.toFixed(2) === target) end();
+            })
+        })
+    } 
     
     static wait = (...args) => App.wait(...args);
 }

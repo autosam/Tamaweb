@@ -168,6 +168,11 @@ App.definitions = (() => {
                 image: 'resources/img/misc/activity_building_work.png',
                 onEnter: () => App.handlers.open_works_list(),
             },
+            {
+                name: `Underworld Entrance ${App.getBadge()}`,
+                image: 'resources/img/misc/activity_building_underworld.png',
+                onEnter: () => Activities.goToUnderworldEntrance(),
+            }
         ],
     
         /* FOOD AND SNACKS */
@@ -428,7 +433,7 @@ App.definitions = (() => {
                 price: 25,
                 cookableOnly: true,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
-                isNew: true,
+                isNew: false,
             },
             "pancakes": {
                 sprite: 806,
@@ -437,7 +442,7 @@ App.definitions = (() => {
                 health_replenish: 2,
                 price: 15,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
-                isNew: true,
+                isNew: false,
             },
             // cookable only
             "sky bread": {
@@ -740,7 +745,7 @@ App.definitions = (() => {
                 price: 5,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 type: 'treat',
-                isNew: true,
+                isNew: false,
             },
             "watermelon": {
                 sprite: 948,
@@ -750,7 +755,7 @@ App.definitions = (() => {
                 price: 10,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 type: 'treat',
-                isNew: true,
+                isNew: false,
             },
             "orange juice": {
                 sprite: 905,
@@ -760,7 +765,7 @@ App.definitions = (() => {
                 price: 5,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 type: 'treat',
-                isNew: true,
+                isNew: false,
             },
             "snackfin": {
                 sprite: 839,
@@ -770,7 +775,7 @@ App.definitions = (() => {
                 price: 5,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 type: 'treat',
-                isNew: true,
+                isNew: false,
             },
             "banana": {
                 sprite: 960,
@@ -780,7 +785,7 @@ App.definitions = (() => {
                 price: 8,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 type: 'treat',
-                isNew: true,
+                isNew: false,
             },
             "nuts": {
                 sprite: 920,
@@ -790,7 +795,7 @@ App.definitions = (() => {
                 price: 2,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 type: 'treat',
-                isNew: true,
+                isNew: false,
             },
             "santa cake": {
                 sprite: 848,
@@ -800,7 +805,7 @@ App.definitions = (() => {
                 price: 15,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 type: 'treat',
-                isNew: true,
+                isNew: false,
             },
             "kuchice": {
                 sprite: 890,
@@ -810,7 +815,18 @@ App.definitions = (() => {
                 price: 8,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 type: 'treat',
+                isNew: false,
+            },
+            "spookandy": {
+                sprite: 17,
+                hunger_replenish: 2,
+                fun_replenish: 1,
+                health_replenish: -1,
+                price: 2,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                type: 'treat',
                 isNew: true,
+                unbuyable: true,
             },
     
     
@@ -857,7 +873,7 @@ App.definitions = (() => {
                 price: 250,
                 type: 'med',
                 unbuyable: true,
-                isNew: true,
+                isNew: false,
             },
             "logic skill potion": {
                 sprite: 1053,
@@ -865,7 +881,7 @@ App.definitions = (() => {
                 price: 250,
                 type: 'med',
                 unbuyable: true,
-                isNew: true,
+                isNew: false,
             },
             "endurance skill potion": {
                 sprite: 1053,
@@ -873,7 +889,7 @@ App.definitions = (() => {
                 price: 250,
                 type: 'med',
                 unbuyable: true,
-                isNew: true,
+                isNew: false,
             },
             "potion of neglect": {
                 sprite: 1053,
@@ -884,7 +900,7 @@ App.definitions = (() => {
                 price: 2,
                 type: 'med',
                 unbuyable: true,
-                isNew: true,
+                isNew: false,
             },
             "potion of well behaving": {
                 sprite: 1053,
@@ -892,7 +908,7 @@ App.definitions = (() => {
                 price: 500,
                 type: 'med',
                 unbuyable: true,
-                isNew: true,
+                isNew: false,
             },
             "potion of misbehaving": {
                 sprite: 1053,
@@ -900,7 +916,7 @@ App.definitions = (() => {
                 price: 2,
                 type: 'med',
                 unbuyable: true,
-                isNew: true,
+                isNew: false,
             },
             "potion of fulfillment": {
                 sprite: 1053,
@@ -911,14 +927,14 @@ App.definitions = (() => {
                 price: 500,
                 type: 'med',
                 unbuyable: true,
-                isNew: true,
+                isNew: false,
             },
             "potion of aging up": {
                 sprite: 1053,
                 price: 250,
                 type: 'med',
                 unbuyable: true,
-                isNew: true,
+                isNew: false,
                 payload: () => {
                     App.toggleGameplayControls(false);
                     App.pet.triggerScriptedState('cheering', 10000, 0, true);
@@ -941,7 +957,42 @@ App.definitions = (() => {
                 price: 2,
                 type: 'med',
                 unbuyable: true,
+                isNew: false,
+            },
+            "life essence": {
+                sprite: 1059,
+                price: 500,
+                type: 'med',
+                unbuyable: true,
                 isNew: true,
+                payload: () => {
+                    const wasGhost = App.petDefinition.stats.is_ghost;
+
+                    App.toggleGameplayControls(false);
+                    App.pet.triggerScriptedState('cheering', 10000, 0, true);
+                    App.pet.stopMove();
+                    Activities.task_foam(() => {
+                        App.pet.removeObject();
+                        App.petDefinition.stats.is_ghost = false;
+                        App.pet = App.createActivePet(App.petDefinition);
+                        App.pet.triggerScriptedState('shocked', 10000, 0, true);
+                        App.pet.stopMove();
+                        App.pet.x = '50%';
+                        App.pet.y = 60;
+                        App.pet.triggerScriptedState('blush', 3000, 0, true, () => {
+                        App.setScene(App.scene.home);
+                        App.pet.playCheeringAnimationIfTrue(wasGhost, () => {
+                            App.toggleGameplayControls(true);
+                            if(wasGhost){
+                                    App.displayPopup(`${App.petDefinition.name} is no longer an immortal!`);
+                            } else {
+                                    App.displayPopup(`Nothing happened!`);
+                                }
+                            });
+                        });
+                        App.sendAnalytics('potion life essence');
+                    });
+                }
             }
         },
     
@@ -1211,6 +1262,11 @@ App.definitions = (() => {
                 price: 300,
                 isNew: false,
             },
+            "monster": {
+                image: 'resources/img/background/house/08.png',
+                price: 450,
+                isNew: true,
+            },
             "silky retreat": {
                 image: 'resources/img/background/house/ex_01.png',
                 price: 0,
@@ -1269,6 +1325,11 @@ App.definitions = (() => {
                 image: 'resources/img/background/house/cc_07.png',
                 price: 250,
                 isNew: false,
+            },
+            "pumpkin": {
+                image: 'resources/img/background/house/cc_09.png',
+                price: 350,
+                isNew: true,
             },
 
             // craftables
@@ -1537,6 +1598,28 @@ App.definitions = (() => {
                 image: 'resources/img/furniture/pot_astra.png',
                 id: "pot_astra",
                 price: 120,
+            },
+
+            {
+                name: 'Big Pumpkin',
+                image: 'resources/img/furniture/big_pumpkin.png',
+                id: "big_pumpkin",
+                price: 100,
+                isNew: true,
+            },
+            {
+                name: 'Small Pumpkin',
+                image: 'resources/img/furniture/small_pumpkin.png',
+                id: "small_pumpkin",
+                price: 100,
+                isNew: true,
+            },
+            {
+                name: 'Spooky Tree',
+                image: 'resources/img/furniture/spooky_tree.png',
+                id: "spooky_tree",
+                price: 50,
+                isNew: true,
             },
     
             // misc
@@ -2045,6 +2128,12 @@ App.definitions = (() => {
                     return cloof;
                 }
             },
+            'pumpkin': {
+                image: 'resources/img/accessory/pumpkin_01.png',
+                front: true,
+                price: 150,
+                isNew: true,
+            },
             // gothic
             'demon wings': {
                 image: 'resources/img/accessory/demon_wings_01.png',
@@ -2115,6 +2204,98 @@ App.definitions = (() => {
                 image: 'resources/img/accessory/reviver_hood_01.png',
                 front: true,
                 price: -1, // makes it not buyable
+            },
+            // angel / devil
+            'angel halo': {
+                image: 'resources/img/accessory/angel_halo_01.png',
+                front: true,
+                price: -1,
+            },
+            'demon horns': {
+                image: 'resources/img/accessory/demon_horns_01.png',
+                front: true,
+                price: -1,
+            },
+            'angel wings': {
+                image: 'resources/img/accessory/angel_wings_01.png',
+                front: false,
+                price: -1,
+                onDraw: (overlay) => {
+                    const flapSpeed = overlay?.parent?.stats?.is_sleeping ? 0.0045 : 0.009; 
+                    if(!overlay._flappingMotion) overlay._flappingMotion = 0;
+                    overlay._flappingMotion += flapSpeed * App.deltaTime * Math.sinh(overlay.parent._ghostAnimationFloat - (Math.PI/2));
+                    if(overlay._flappingMotion > App.PI2) overlay._flappingMotion = 0;
+                    overlay.rotation = Math.sin(overlay._flappingMotion) * 6;
+                },
+            },
+            'monster wings': {
+                image: 'resources/img/accessory/demon_wings_02.png',
+                front: false,
+                price: -1,
+                onDraw: (overlay) => {
+                    const flapSpeed = overlay?.parent?.stats?.is_sleeping ? 0.0045 : 0.02; 
+                    if(!overlay._flappingMotion) overlay._flappingMotion = 0;
+                    overlay._flappingMotion += flapSpeed * App.deltaTime;
+                    if(overlay._flappingMotion > App.PI2) overlay._flappingMotion = 0;
+                    overlay.rotation = Math.sin(overlay._flappingMotion) * 6;
+                },
+            },
+            // underworld shop
+            'cone cap': {
+                image: 'resources/img/accessory/cone_cap_01.png',
+                front: true,
+                price: 250,
+                isNew: true,
+                accessShop: 'devilsTown',
+            },
+            'dd head': {
+                image: 'resources/img/accessory/deer_head_01.png',
+                front: true,
+                price: 250,
+                isNew: true,
+                accessShop: 'devilsTown',
+            },
+            'tilted fedora': {
+                image: 'resources/img/accessory/fedora_01.png',
+                front: true,
+                price: 200,
+                isNew: true,
+                accessShop: 'devilsTown',
+            },
+            'kings crown': {
+                image: 'resources/img/accessory/kings_crown_01.png',
+                front: true,
+                price: 350,
+                isNew: true,
+                accessShop: 'devilsTown',
+            },
+            'kings rod': {
+                image: 'resources/img/accessory/kings_rod.png',
+                front: true,
+                price: 300,
+                isNew: true,
+                accessShop: 'devilsTown',
+            },
+            'monster hands': {
+                image: 'resources/img/accessory/monster_hands_01.png',
+                front: false,
+                price: 400,
+                isNew: true,
+                accessShop: 'devilsTown',
+            },
+            'woodland headdress': {
+                image: 'resources/img/accessory/woodland_headdress_01.png',
+                front: true,
+                price: 350,
+                isNew: true,
+                accessShop: 'devilsTown',
+            },
+            'tv head': {
+                image: 'resources/img/accessory/tv_head_01.png',
+                front: true,
+                price: 350,
+                isNew: true,
+                accessShop: 'devilsTown',
             },
         },
     
@@ -2675,6 +2856,16 @@ App.definitions = (() => {
                 onEnd: () => {
                     App.pet.stats.current_fun += 30;
                     App.pet.stats.current_health += 20;
+                }
+            },
+            {
+                name: 'Go to starlight disco',
+                duration: App.constants.ONE_HOUR * 1.5,
+                isNew: true,
+                onEnd: () => {
+                    App.pet.stats.current_fun += 90;
+                    App.pet.stats.current_hunger += 25;
+                    App.pet.stats.current_sleep -= 50;
                 }
             },
         ],

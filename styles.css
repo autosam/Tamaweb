@@ -1258,6 +1258,9 @@ input#background-color-picker {
 .badge.gold {
     outline: 1px solid;
 }
+.badge.transparent {
+    background: transparent;
+}
 
 .screen-wrapper {
     height: 192px;
@@ -1312,6 +1315,12 @@ input#background-color-picker {
 .opacity-third {
     opacity: 0.325;
 }
+.opacity-09 {
+    opacity: 0.9;
+}
+.opacity-07 {
+    opacity: 0.7;
+}
 
 .flex-container {
     display: flex;
@@ -1329,6 +1338,10 @@ input#background-color-picker {
     font-size: small;
 }
 
+.font-x-small {
+    font-size: x-small;
+}
+
 .flex-dir-col {
     flex-direction: column;
 }
@@ -1337,6 +1350,9 @@ input#background-color-picker {
     flex-direction: row;
 }
 
+.flex-gap-025 {
+    gap: 2px;
+}
 .flex-gap-05 {
     gap: 4px;
 }
@@ -2289,6 +2305,38 @@ a.generic-btn:before {
     }
 }
 
+.scrollable-indicator:after {
+    content: '\f103';
+    bottom: 4px;
+    right: 10px;
+    position: absolute;
+    z-index: 3;
+    pointer-events: none;
+    font-family: "Font Awesome 6 Free";
+    font-size: 11px;
+    animation: scrollable-indicator-anim 0.55s infinite alternate-reverse ease-in-out;
+    color: var(--prim-clr-b-text);
+    text-shadow: 
+        1px 0 var(--prim-clr-b-text-shadow), 
+        -1px 0 var(--prim-clr-b-text-shadow), 
+        2px 0 var(--prim-clr-b-text-shadow), 
+        -2px 0 var(--prim-clr-b-text-shadow), 
+        0px 1px var(--prim-clr-b-text-shadow), 
+        0px -1px var(--prim-clr-b-text-shadow),
+        0px 2px var(--prim-clr-b-text-shadow), 
+        0px -2px var(--prim-clr-b-text-shadow);
+}
+@keyframes scrollable-indicator-anim {
+    from {
+        opacity: 0.5;
+        transform: translateY(-3px);
+    }
+    to {
+        opacity: 0.9;
+        transform: rotateX(25deg);
+    }
+}
+
 .credit-author {
     margin: 5px -10px;
     padding: 5px 10px;
@@ -2459,6 +2507,19 @@ a.generic-btn:before {
         drop-shadow(0px 2px 0px #000060) 
         drop-shadow(2px 2px 0px #f86000);
 }
+button.message-bubble {
+    margin: 0;
+    background: #E91E63;
+    color: white;
+    outline: 2px dashed;
+    outline-offset: -4px;
+}
+button.message-bubble:hover {
+    background: #dc1a5b;
+}
+button.message-bubble:active {
+    background: #a41142;
+}
 .message-bubble:after {
 	content: '';
 	position: absolute;
@@ -2619,4 +2680,42 @@ a.generic-btn:before {
 .letter hr {
     width: 100%;
     background-color: black;
+}
+
+/* ghost angel and devil csprite */
+c-sprite.ghost {
+    position: relative;
+    overflow: visible;
+    opacity: 0.75;
+    filter: saturate(0.5)
+}
+c-sprite.ghost.devil {
+    box-shadow: 2px 2px 0 red;
+}
+c-sprite.ghost.angel {
+    box-shadow: 2px 2px 0 forestgreen;
+}
+c-sprite.ghost.angel::after {
+    background: url('resources/img/misc/angel_halo_icon.png');
+    content: '';
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: -4px;
+    position: absolute;
+    background-size: contain;
+    image-rendering: pixelated;
+    background-repeat: no-repeat;
+}
+c-sprite.ghost.devil::after {
+    background: url('resources/img/misc/devil_horn_icon.png');
+    content: '';
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: -4px;
+    position: absolute;
+    background-size: contain;
+    image-rendering: pixelated;
+    background-repeat: no-repeat;
 }

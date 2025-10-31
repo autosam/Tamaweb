@@ -61,6 +61,13 @@ const App = {
             rows: 28,
             columns: 28,
         },
+        MISC_SPRITESHEET: 'resources/img/item/misc.png',
+        MISC_SPRITESHEET_DIMENSIONS: {
+            cellNumber: 1,
+            cellSize: 24,
+            rows: 33,
+            columns: 33,
+        },
         MAX_ANIMALS: 16,
         MAX_PLANTS: 8,
         MIN_REVIVE_GOLDS: 250,
@@ -134,7 +141,12 @@ const App = {
             'mercury',
             'neuter',
             'venus-mars',
-        ]
+        ],
+        UNDERWORLD_TREAT_CURRENCY: 'spookandy',
+        SPANS: {
+            monster: `<div> <img class="icon" src="resources/img/misc/devil_icon.png"></img> <b style="color: red;">monster</b> </div>`,
+            angel: `<div> <img class="icon" src="resources/img/misc/angel_icon.png"></img> <b style="color: forestgreen;">angel</b> </div>`
+        }
     },
     routes: {
         BLOG: 'https://tamawebgame.github.io/blog/',
@@ -227,6 +239,7 @@ const App = {
             width: 96, height: 96, 
             z: App.constants.BACKGROUND_Z,
             noPreload: Boolean(App.mods.length),
+            static: true,
         })
         // App.foodsSpritesheet = new Object2d({
         //     image: App.preloadedResources["resources/img/item/foods.png"],
@@ -470,7 +483,6 @@ const App = {
             App.sendSessionEvent(false);
             // App.save();
         }
-
 
         if (navigator.storage && "persist" in navigator.storage) {
             navigator.storage.persist().then((persistent) => {
@@ -763,12 +775,21 @@ const App = {
                     });
                 })) return showAlreadyUsed();
                 break;
-            case "DISCORD3000":
+            case "TAMAWEBGIFT":
                 if(!addEvent(codeEventId, () => {
                     App.sendAnalytics('input_code', code);
-                    App.displayPopup(`You've redeemed <b>$3000</b> and <b>500 Mission pts</b>!<br><br> Thanks for playing!`, 5000, () => {
-                        App.pet.stats.gold += 3000;
+                    App.displayPopup(`You've redeemed <b>$1000</b>!<br><br> Thanks for playing!`, 5000, () => {
+                        App.pet.stats.gold += 1000;
+                    });
+                })) return showAlreadyUsed();
+                break;
+            case "HPPYHLWN":
+                if(!addEvent(codeEventId, () => {
+                    App.sendAnalytics('input_code', code);
+                    App.displayPopup(`You've redeemed <b>$2000</b>, <b>500 Mission pts</b> and <b>x100 ${App.constants.UNDERWORLD_TREAT_CURRENCY}</b>!<br><br> Thanks for playing!`, 5000, () => {
+                        App.pet.stats.gold += 2000;
                         Missions.currentPts += 500;
+                        App.addNumToObject(App.pet.inventory.food, App.constants.UNDERWORLD_TREAT_CURRENCY, 100)
                     });
                 })) return showAlreadyUsed();
                 break;
@@ -909,7 +930,7 @@ const App = {
         //     ])
         // })) return;
 
-        if(addEvent(`update_20_notice`, () => {
+        if(addEvent(`update_21_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
@@ -918,7 +939,7 @@ const App = {
                     bold: true,
                 },
                 {
-                    name: `Check out the newly added potions, food, snacks and improvements!`,
+                    name: `<img src="resources/img/ui/update_banner.png"></img> <br> Check out the new Immortal Monsters and Angels, The Underworld, mini games, accessories and a lot more!`,
                     type: 'text',
                 },
                 {
@@ -1266,6 +1287,14 @@ const App = {
                 App.pet.staticShadow = false;
             }
         }),
+        forest: new Scene({
+            image: 'resources/img/background/outside/transparent.png',
+            petY: '94%',
+            onLoad: () => {
+            },
+            onUnload: () => {
+            }
+        }),
         reviverDen: new Scene({
             image: 'resources/img/background/house/reviver_01.png',
             noShadows: true,
@@ -1293,7 +1322,35 @@ const App = {
         }),
         music_classroom: new Scene({
             image: 'resources/img/background/house/music_classroom_01.png',
-        })
+        }),
+        homeworld_getaways: new Scene({
+            image: 'resources/img/background/house/homeworld_getaways_01.png',
+            noShadows: true,
+        }),
+        devil_town_exterior: new Scene({
+            image: 'resources/img/background/house/devil_town_01.png',
+            noShadows: true,
+            onLoad: () => {
+                App.pet.showOutline();
+            },
+            onUnload: () => {
+                App.pet.hideOutline();
+            }
+        }),
+        devil_town_gathering: new Scene({
+            image: 'resources/img/background/house/devil_town_02.png',
+            noShadows: true,
+            onLoad: () => {
+                App.pet.showOutline();
+            },
+            onUnload: () => {
+                App.pet.hideOutline();
+            }
+        }),
+        angel_town_room: new Scene({
+            image: 'resources/img/background/house/angel_town_01.png',
+            noShadows: true,
+        }),
     },
     setScene(scene, noPositionChange, onLoadArg){
         App.currentScene?.onUnload?.(scene);
@@ -1320,7 +1377,9 @@ const App = {
         return App.scene.home.image?.includes('furnishable/');
     },
     getFurnishableBackground(backgroundSrc){
-        return backgroundSrc.replace('house/', 'house/furnishable/');
+        return backgroundSrc
+            .replace('house/', 'house/furnishable/')
+            .replace('outside/', 'outside/furnishable/')
     },
     getFurnitureDefFromId(id){
         return App.definitions.furniture.find(current => current.id === id);
@@ -1659,7 +1718,7 @@ const App = {
         newPetDefinition = new PetDefinition({
             name: getRandomName(),
             sprite,
-        }).setStats({is_egg: true});
+        }).setStats({is_egg: true, is_ghost: parentB.stats.is_ghost});
 
         newPetDefinition.friends = [
             parentA,
@@ -1767,7 +1826,7 @@ const App = {
         }
 
         // revived encounter
-        if(App.pet.stats.is_revived_once && random(0, 1200) === 13){
+        if(App.pet.stats.is_revived_once && random(0, 1300) === 13){
             return Activities.reckoning();
         }
 
@@ -1781,7 +1840,7 @@ const App = {
     },
     handlers: {
         go_to_home: function(){
-            App.temp.outsideActivityIndex = 1;
+            App.temp[App.handlers.getOutsideActivityId()] = 1;
             App.pet.x = '0%';
             App.pet.targetX = 50;
         },
@@ -2295,9 +2354,6 @@ const App = {
                 {
                     name: `accessories`,
                     onclick: () => {
-                        if(App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult){
-                            return App.displayPopup(`${App.petDefinition.name} is not old enough to wear accessories`);
-                        }
                         App.handlers.open_accessory_list();
                         return true;
                     }
@@ -3361,7 +3417,8 @@ const App = {
 
                         if(confirm('Set this as main character?')){
                             App.petDefinition.sprite = char;
-                            window.location.reload();
+                            App.save();
+                            setTimeout(() => window.location.reload(), 1000);
                         }
                     }
                 }
@@ -3929,6 +3986,11 @@ const App = {
                     title: 'Revived',
                     img: 'resources/img/misc/ghost_02.png',
                     condition: App.pet.stats.is_revived_once
+                },
+                {
+                    title: 'Immortal',
+                    img: 'resources/img/misc/infinity_01.png',
+                    condition: App.pet.stats.is_ghost
                 }
             ]
 
@@ -3940,10 +4002,19 @@ const App = {
                 <div class="flex-center flex-1 flex flex-gap-05 inner-padding surface-stylized height-auto relative">
                     ${App.petDefinition.getCSprite()}
                     <b>
-                    <span>${App.settings.genderedPets ? App.getIcon(App.pet.stats.gender, true) : ''} ${App.petDefinition.name} </span>
+                        <span>${App.settings.genderedPets ? App.getIcon(App.pet.stats.gender, true) : ''} ${App.petDefinition.name} </span>
                         <br>
                         <small>${App.petDefinition.getLifeStageLabel()} - gen ${App.petDefinition.family.length + 1}</small>
                     </b>
+                    ${
+                        App.pet.stats.is_ghost ?
+                        `
+                        <b>
+                            ${App.pet.stats.is_ghost === PetDefinition.GHOST_TYPE.angel ? App.constants.SPANS.angel : ''}
+                            ${App.pet.stats.is_ghost === PetDefinition.GHOST_TYPE.devil ? App.constants.SPANS.monster : ''}
+                        </b>
+                        ` : ''
+                    }
                     <span>
                         Born ${moment(App.petDefinition.birthday).fromNow()}
                     </span>
@@ -4334,18 +4405,26 @@ const App = {
             sliderInstance = App.displaySlider(list, null, {accept: 'Set'});
             return sliderInstance;
         },
-        open_accessory_list: function(buyMode, activeIndex, customPayload){
+        open_accessory_list: function(props = {}){
+            const { 
+                buyMode, 
+                activeIndex, 
+                accessShop,
+                onClose,
+            } = props;
+
             let list = [];
             let sliderInstance;
             let salesDay = App.isSalesDay();
             for(let accessoryName of Object.keys(App.definitions.accessories)){
-                // check if current pet has this item on its inventory
+                // check if current pet has this item in its inventory
                 if(!App.pet.inventory.accessory[accessoryName] && !buyMode){
                     continue;
                 }
                 let current = App.definitions.accessories[accessoryName];
 
                 if(buyMode && (current.isCraftable || current.price === -1)) continue;
+                if(buyMode && accessShop !== current.accessShop) continue;
 
                 // check for unlockables
                 if(current.unlockKey && !App.getRecord(current.unlockKey)){
@@ -4361,7 +4440,10 @@ const App = {
 
                 const reopen = (buyMode) => {
                     if(!buyMode) App.handlers.open_stuff_menu();
-                    App.handlers.open_accessory_list(buyMode, sliderInstance?.getCurrentIndex());
+                    App.handlers.open_accessory_list({
+                        ...props,
+                        activeIndex: sliderInstance?.getCurrentIndex()
+                    });
                     return false;
                 }
 
@@ -4577,27 +4659,246 @@ const App = {
 
             return App.displayList([...list]);
         },
+        getOutsideActivityId: function(id = 'default'){
+            const tempId = `_outsideActivity_${id}`;
+            return tempId;
+        },
         open_activity_list: function(noIndexReset){
-            if(!noIndexReset) App.temp.outsideActivityIndex = 1;
+            if(!noIndexReset) App.temp[App.handlers.getOutsideActivityId()] = 1;
+
             return Activities.goToActivities({
-                activities: App.definitions.outside_activities
+                activities: [
+                    ...App.definitions.outside_activities
+                ]  
             });
         },
+        open_devil_town_activity_list: function(noIndexReset){
+            const id = 'devilTown';
+
+            if(!noIndexReset) App.temp[App.handlers.getOutsideActivityId(id)] = 1;
+
+            return Activities.goToActivities({
+                activities: [
+                    {
+                        name: "Overworld Entrance",
+                        image: 'resources/img/misc/activity_building_devil_home.png',
+                        onEnter: () => App.handlers.open_underworld_menu(),
+                        isHome: true,
+                    },
+                    // {
+                    //     name: "Restaurant",
+                    //     image: 'resources/img/misc/activity_building_devil_restaurant.png',
+                    //     onEnter: () => App.handlers.go_to_home(),
+                    //     isHome: true,
+                    // },
+                    {
+                        name: "Gathering",
+                        image: 'resources/img/misc/activity_building_devil_gathering.png',
+                        onEnter: () => Activities.goToDevilTownGathering(),
+                        isHome: true,
+                    },
+                    {
+                        name: "Clothing Store",
+                        image: 'resources/img/misc/activity_building_devil_clothing_store.png',
+                        onEnter: () => {
+                            App.handlers.open_accessory_list({
+                                buyMode: true,
+                                accessShop: 'devilsTown'
+                            })
+                            return true;
+                        },
+                        skipUnloading: true,
+                    },
+                ],
+                floorImage: 'resources/img/misc/devil_walkway_02.png',
+                scene: App.scene.devil_town_exterior,
+                id,
+            })
+        },
+        open_underworld_menu: function(){
+            const CURRENCY_NAME = App.constants.UNDERWORLD_TREAT_CURRENCY;
+            const CURRENCY_ICON = App.getFoodCSprite(App.definitions.food[CURRENCY_NAME]?.sprite);
+
+            const TICKETS_PRICE = 50,
+                POTION_PRICE = 200;
+
+            const backFn = () => {
+                App.handlers.open_activity_list(true);
+            }
+
+            const payWithCustomCurrency = (amt) => {
+                const currentAmount = App.pet.inventory.food[CURRENCY_NAME] || 0;
+                if(amt > currentAmount) return App.displayPopup(`Don't have enough ${CURRENCY_NAME}!`);
+                App.addNumToObject(App.pet.inventory.food, CURRENCY_NAME, -amt);
+                return true;
+            }
+            const openPurchasableList = (activeIndex) => {
+                let sliderInstance;
+                const candyAmount = App.pet.inventory.food[CURRENCY_NAME] || 0;
+
+                const foodNames = [
+                    'life essence',
+                    'potion of aging up', 
+                    'potion of fulfillment', 
+                    'potion of misbehaving', 
+                    'potion of well behaving', 
+                    'potion of neglect',
+                    'expression skill potion',
+                    'logic skill potion',
+                    'endurance skill potion',
+                ]
+                const miscItems = [
+                    {
+                        name: 'underworld tickets',
+                        icon: App.getGenericCSprite(1, App.constants.MISC_SPRITESHEET, App.constants.MISC_SPRITESHEET_DIMENSIONS),
+                        price: TICKETS_PRICE,
+                        ownedAmount: App.pet.inventory.misc['underworld tickets'],
+                        onclick: () => {
+                            if(payWithCustomCurrency(TICKETS_PRICE)){
+                                App.addNumToObject(App.pet.inventory.misc, 'underworld tickets', 3);
+                                openPurchasableList(sliderInstance?.getCurrentIndex());
+                                return false;
+                            }
+                            return true;
+                        }
+                    }
+                ]
+                const itemDefs = [
+                    ...miscItems,
+                    ...foodNames.map(name => {
+                        const item = App.definitions.food[name];
+                        return {
+                            ...item,
+                            name,
+                            icon: App.getFoodCSprite(item.sprite),
+                            price: POTION_PRICE,
+                            ownedAmount: App.pet.inventory.food[name],
+                            onclick: () => {
+                                if(payWithCustomCurrency(POTION_PRICE)){
+                                    App.addNumToObject(App.pet.inventory.food, name, 1);
+                                    openPurchasableList(sliderInstance?.getCurrentIndex());
+                                    return false;
+                                }
+                                return true;
+                            }
+                        }
+                    })
+                ]
+                const allItems = [
+                    ...itemDefs,
+                ].map(current => {
+                    return {
+                        ...current,
+                        name: `
+                            ${current.icon} 
+                            ${current.name?.toUpperCase()} 
+                            (x${current.ownedAmount || 0})
+                            <b class="flex align-center flex-gap-025 justify-center">
+                                ${CURRENCY_ICON} <span>X${current.price || 0}</span> 
+                            </b>
+                            ${current.isNew ? App.getBadge('new!') : ''}
+                        `,
+                    }
+                })
+
+                sliderInstance = App.displaySlider(
+                    allItems, 
+                    activeIndex, 
+                    {
+                        accept: 'Purchase',
+                    },
+                    `
+                        <div class="flex align-center flex-gap-025">
+                            ${CURRENCY_ICON} x${candyAmount}
+                        </div>
+                    `
+                );
+
+                return sliderInstance;
+            }
+
+            return App.displayList([
+                {
+                    name: `Enter Underworld`,
+                    onclick: () => {
+                        const ownedTickets = App.pet.inventory.misc['underworld tickets'] || 0;
+                        const ticketIcon = App.getGenericCSprite(1, App.constants.MISC_SPRITESHEET, App.constants.MISC_SPRITESHEET_DIMENSIONS);
+                        const ticketSpan = `<div class="flex align-center justify-center flex-gap-1 bold">${ticketIcon} Ticket</div>`;
+                        if(!ownedTickets){
+                            return App.displayConfirm(`
+                                You don't have a 
+                                ${ticketSpan}
+                                purchase some from the shop using
+                                <div class="flex align-center justify-center flex-gap-1 bold">${CURRENCY_ICON} ${CURRENCY_NAME}</div>
+                                `, 
+                                [
+                                    {
+                                        name: 'open shop',
+                                        onclick: () => {
+                                            openPurchasableList()
+                                        }
+                                    },
+                                    {
+                                        name: 'close',
+                                        class: 'back-btn',
+                                        onclick: () => {}
+                                    },
+                                ]
+                            )
+                        }
+
+                        return App.displayConfirm(`Do you want to enter the Underworld? This will cost you x1 ${ticketSpan}`, [
+                            {
+                                name: 'yes',
+                                onclick: () => {
+                                    App.closeAllDisplays();
+                                    App.addNumToObject(App.pet.inventory.misc, 'underworld tickets', -1);
+                                    App.handlers.open_devil_town_activity_list();
+                                    App.sendAnalytics('enter_underworld');
+                                }
+                            },
+                            {
+                                name: 'no',
+                                class: 'back-btn',
+                                onclick: () => {}
+                            },
+
+                        ])
+                    }
+                },
+                {
+                    name: `Trick or Treat ${App.getBadge(CURRENCY_ICON, 'transparent')}`,
+                    onclick: () => {
+                        return App.displayPopup(
+                            `Double jump to get all <br> ${CURRENCY_ICON} <br> while avoiding <br> <img src="resources/img/misc/bat_01.png"></img>`, 
+                            false,
+                            () => Activities.trickOrTreatGame(App.handlers.open_underworld_menu)
+                        );
+                    }
+                },
+                {
+                    name: 'Shop',
+                    onclick: openPurchasableList,
+                },
+            ], backFn)
+        },
         open_rabbitholes_list: function(){
+            if(!App.temp.rabbitholeTraveledFriends) App.temp.rabbitholeTraveledFriends = []
+
             const backFn = () => {
                 App.handlers.open_activity_list(true);
             }
             return App.displayList([
                 ...App.definitions.rabbit_hole_activities
+                    .sort((a, b) => b.isNew || 0 - a.isNew || 0)
                     .map(hole => ({
-                        // name: `${hole.name} ${App.getBadge(`<span> <i class="fa-solid fa-clock fa-xs"></i> ${hole.duration / 1000 / 60}</span>`, 'neutral')}`,
                         name: `
                             <span class="ellipsis">${hole.name}<span>
-                            ${App.getBadge(`<span> <i class="fa-solid fa-clock fa-xs"></i> ${Math.ceil(hole.duration / 1000 / 60)}</span>`, 'neutral')}
+                            ${App.getBadge(`${hole.isNew ? 'New!' : ''} <span> <i class="fa-solid fa-clock fa-xs"></i> ${Math.ceil(hole.duration / 1000 / 60)}</span>`, hole.isNew ? false : 'neutral')}
                         `,
                         onclick: () => {
-                            const confirmFn = () => {
-                                App.displayConfirm(`Are you sure you want to <b>${hole.name}</b>? <br><br> ${App.petDefinition.name} will go out for <b>${moment(hole.duration + Date.now()).toNow(true)}</b>`, [
+                            const confirmFn = (otherPet) => {
+                                App.displayConfirm(`Are you sure you want to <b>${hole.name}</b>${otherPet ? ` with <i>${otherPet.name}</i>`: ''}? <br><br> ${App.petDefinition.name} will go out for <b>${moment(hole.duration + Date.now()).toNow(true)}</b>`, [
                                     {
                                         name: 'yes',
                                         onclick: () => {
@@ -4605,7 +4906,8 @@ const App = {
                                                 name: hole.name,
                                                 endTime: Date.now() + hole.duration
                                             }
-                                            Activities.goToCurrentRabbitHole(true);
+                                            // Activities.goToCurrentRabbitHole(true);
+                                            Activities.goToHomePlanet(otherPet);
                                             App.save();
                                             App.closeAllDisplays();
                                             App.sendAnalytics('rabbit_hole', hole.name);
@@ -4618,7 +4920,34 @@ const App = {
                                     },
                                 ])
                             }
-                            confirmFn();
+
+                            const dialog = App.displayList([
+                                {
+                                    name: `${hole.name} ${hole.isNew ? App.getBadge() : ''}`,
+                                    icon: 'lemon',
+                                    type: 'info',
+                                },
+                                {
+                                    name: 'Alone',
+                                    onclick: () => {
+                                        confirmFn()
+                                        return true;
+                                    }
+                                },
+                                {
+                                    name: `With a friend ${App.getBadge()}`,
+                                    onclick: () => {
+                                        App.handlers.open_friends_list(
+                                            (selectedFriend) => {
+                                                confirmFn(selectedFriend)
+                                            }
+                                        )
+                                        return true;
+                                    }
+                                },
+                            ], undefined, 'Back');
+
+                            // confirmFn();
                             return true;
                         }
                     })),
@@ -4638,32 +4967,185 @@ const App = {
                 return;
             }
 
+            const monsterIcon = `<img class="icon" src="resources/img/misc/devil_icon.png"></img>`
+            const angelIcon = `<img class="icon" src="resources/img/misc/angel_icon.png"></img>`
+            const monsterSpan = App.constants.SPANS.monster;
+            const angelSpan = App.constants.SPANS.angel;
+
             let friendsList;
             const mappedFriendsList = friends.map((friendDef, index) => {
                 const name = friendDef.name || 'Unknown';
                 const icon = friendDef.getCSprite();
+
+                const getInteractionSet = (set, condition) => condition ? set : [];
+
+                // angel and monster interactions
+                const monsterInteractions = [
+                    {
+                        name: `Scare`,
+                        onclick: () => {
+                            Activities.demon_scare(friendDef);
+                            return true;
+                        }
+                    },
+                    {
+                        name: `Whisper`,
+                        onclick: () => {
+                            Activities.demon_whisper(friendDef);
+                            return true;
+                        }
+                    },
+                    {
+                        name: `Place curse`,
+                        onclick: () => {
+                            if(App.pet.stats.current_hunger < App.pet.stats.max_hunger / 2){
+                                return App.displayPopup("You don't have enough energy to do this.");
+                            }
+
+                            App.displayConfirm(`This will turn <b>${friendDef.name}</b> into a ${monsterSpan},</div> do you want to continue?`, [
+                                {
+                                    name: 'yes',
+                                    onclick: () => {
+                                        Activities.ghost_convertOtherPet(
+                                            friendDef,
+                                            PetDefinition.GHOST_TYPE.devil
+                                        )
+                                    },
+                                },
+                                {
+                                    name: 'no',
+                                    class: 'back-btn',
+                                    onclick: () => {},
+                                },
+
+                            ])
+                            return true;
+                        }
+                    },
+                ].map(entry => ({
+                    ...entry,
+                    name: `${monsterIcon} <span style="color: red;">${entry.name}</span>`
+                }))
+                const angelInteractions = [
+                    {
+                        name: `Bless`,
+                        onclick: () => {
+                            Activities.angel_bless(friendDef);
+                            return true;
+                        }
+                    },
+                    {
+                        name: `Grant Wish`,
+                        onclick: () => {
+                            Activities.angel_grantWish(friendDef);
+                            return true;
+                        }
+                    },
+                    {
+                        name: `Gift Divinity`,
+                        onclick: () => {
+                            if(App.pet.stats.current_hunger < App.pet.stats.max_hunger / 2){
+                                return App.displayPopup("You don't have enough energy to do this.");
+                            }
+
+                            App.displayConfirm(`This will turn <b>${friendDef.name}</b> into an ${angelSpan},</div> do you want to continue?`, [
+                                {
+                                    name: 'yes',
+                                    onclick: () => {
+                                        Activities.ghost_convertOtherPet(
+                                            friendDef,
+                                            PetDefinition.GHOST_TYPE.angel
+                                        )
+                                    },
+                                },
+                                {
+                                    name: 'no',
+                                    class: 'back-btn',
+                                    onclick: () => {},
+                                },
+
+                            ])
+                            return true;
+                        }
+                    },
+                ].map(entry => ({
+                    ...entry,
+                    name: `${angelIcon} <span style="color: forestgreen;">${entry.name}</span>`
+                }))
+
                 return {
                     name: icon + name,
                     onclick: () => {
+                        const isMonsterGhost = friendDef.stats.is_ghost === PetDefinition.GHOST_TYPE.devil;
+                        const isAngelGhost = friendDef.stats.is_ghost === PetDefinition.GHOST_TYPE.angel;
                         if (onClickOverride) return onClickOverride(friendDef);
                         const friendActivitiesList = App.displayList([
                             {
                                 name: 'info',
                                 onclick: () => {
-                                    const list = UI.genericListContainer();
+                                    const list = UI.genericListContainer();                                
                                     UI.genericListContainerContent(`
-                                <div class="inner-padding uppercase surface-stylized b-radius-10">
-                                    ${icon} ${friendDef.name}
-                                    <br>
-                                    <b>Friendship:</b> ${App.createProgressbar(friendDef.getFriendship() / 100 * 100).node.outerHTML}
-                                    <hr>
-                                    <b>Age:</b> ${friendDef.getLifeStageLabel()}
-                                </div>
-                                `, list);
+                                        <div class="inner-padding uppercase surface-stylized b-radius-10 flex flex-dir-col flex-gap-2">
+                                            <div class="flex flex-dir-col flex-gap-05">
+                                                <div>${icon} ${friendDef.name}</div>
+                                                <small>(${friendDef.getLifeStageLabel()})</small>
+                                                <small>
+                                                    ${isMonsterGhost ? monsterSpan : ''}
+                                                    ${isAngelGhost ? angelSpan : ''}
+                                                </small>
+                                            </div>
+                                            <div></div>
+                                            <div class="relative flex flex-dir-row align-center flex-gap-1">
+                                                <div class="stats-label">Friendship</div>
+                                                <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('smile', true)}</b> 
+                                                ${App.createProgressbar( friendDef.getFriendship() / 100 * 100 ).node.outerHTML}
+                                            </div>
 
+                                        </div>
+                                    `, list)
                                     return true;
                                 }
                             },
+                            {
+                                _ignore: !friendDef.stats.is_ghost || friendDef.stats.is_ghost === App.pet.stats.is_ghost,
+                                name: `${isMonsterGhost ? monsterIcon : angelIcon} <span style="color: ${isMonsterGhost ? 'red' : 'forestgreen'};">Be converted</span>`,
+                                onclick: () => {
+                                    if(friendDef.stats.player_friendship <= 98){
+                                        return App.displayPopup(`
+                                            You need to be best friends with 
+                                            <b>${friendDef.name}</b> 
+                                            before asking to be converted to
+                                            <div>
+                                                ${isMonsterGhost ? monsterSpan : angelSpan}
+                                            </div>
+                                        `, 3500);
+                                    }
+
+                                    return App.displayConfirm(`This will turn your pet into ${isMonsterGhost ? monsterSpan : angelSpan} are you sure you want to continue?`, [
+                                        {
+                                            name: 'yes',
+                                            onclick: () => {
+                                                Activities.ghost_beConverted(friendDef, friendDef.stats.is_ghost)
+                                            }
+                                        },
+                                        {
+                                            name: 'no',
+                                            class: 'back-btn',
+                                            onclick: () => {}
+                                        }
+                                    ])
+                                },
+                            },
+                            ...getInteractionSet(
+                                monsterInteractions, 
+                                App.pet.stats.is_ghost === PetDefinition.GHOST_TYPE.devil 
+                                && friendDef.stats.is_ghost !== App.pet.stats.is_ghost
+                            ),
+                            ...getInteractionSet(
+                                angelInteractions, 
+                                App.pet.stats.is_ghost === PetDefinition.GHOST_TYPE.angel 
+                                && friendDef.stats.is_ghost !== App.pet.stats.is_ghost
+                            ),
                             {
                                 _ignore: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult || friendDef.lifeStage < PetDefinition.LIFE_STAGE.adult || friendDef.stats.is_player_family,
                                 name: `go on date`,
@@ -5546,10 +6028,7 @@ const App = {
                 {
                     name: `buy accessories ${hasNewAccessory ? App.getBadge('new!') : ''}`,
                     onclick: () => {
-                        App.handlers.open_accessory_list(true);
-                        if(App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult){
-                            App.displayPopup(`${App.petDefinition.name} is not old enough to wear accessories yet, but you can buy some for later`);
-                        }
+                        App.handlers.open_accessory_list({buyMode: true});
                         return true;
                     }
                 },
@@ -5912,16 +6391,6 @@ const App = {
         tabTitles.at(0).click();
     },
     displayList: function(listItems, backFn, backFnTitle){
-        // if(backFn !== false)
-        //     listItems.push({
-        //         name: /* '<i class="fa-solid fa-arrow-left"></i>' || */ 'BACK',
-        //         class: 'back-btn solid primary bold',
-        //         onclick: () => {
-        //             if(backFn) backFn();
-        //             return false;
-        //         }
-        //     });
-
         const list = UI.genericListContainer(backFn, backFnTitle);
         list._listItems = listItems;
 
@@ -5946,7 +6415,7 @@ const App = {
                     if(item.type === 'info'){
                         element.innerHTML = `
                             <small>
-                                <i class="fa-solid fa-info-circle"></i>
+                                ${App.getIcon(item.icon || 'info-circle', true)}
                                 ${item.name}
                             </small>
                         `;
@@ -6164,6 +6633,7 @@ const App = {
                     onEndFn();
                 }
             }
+        UI.attachScrollableIndicator(popup)
         setTimeout(() => {
             popup.close();
         }, ms || 2000);
@@ -6187,6 +6657,7 @@ const App = {
             list.close = function(){
                 list.remove();
             }
+        UI.attachScrollableIndicator(list)
 
         const btnContainer = list.querySelector('.buttons-container');
         buttons.forEach(def => {
@@ -6226,6 +6697,7 @@ const App = {
             list.close = function(){
                 list.remove();
             }
+        UI.attachScrollableIndicator(list);
             
         const btnContainer = list.querySelector('.buttons-container');
 
@@ -6533,6 +7005,16 @@ const App = {
         Object.keys(config).map(key => audioElement[key] = config[key]);
         audioElement.play();
         audioElement.muted = !App.settings.playSound || !App.settings.playMusic;
+
+        if(config.loopTime){
+            audioElement.addEventListener('timeupdate', () => {
+                if (audioElement.currentTime >= config.loopTime) {
+                    audioElement.currentTime = 0;
+                    audioElement.play();
+                }
+            })
+        }
+
         return {
             element: audioElement,
             stop: () => {
@@ -7007,7 +7489,7 @@ const App = {
     wait: function(ms = 0){
         return new Promise(resolve => setTimeout(resolve, ms))
     },
-    fadeScreen: function({ middleFn, speed = 0.005 } = {}) {
+    fadeScreen: function({ middleFn, endFn, speed = 0.005 } = {}) {
         let phase = 'fadeIn';
         new Object2d({
             image: App.getPreloadedResource('resources/img/misc/black_overlay_01.png'),
@@ -7026,6 +7508,7 @@ const App = {
                 } else if (phase === 'fadeOut') {
                     me.opacity -= step;
                     if (me.opacity <= 0) {
+                        endFn?.();
                         me.removeObject();
                     }
                 }
@@ -7141,20 +7624,3 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
     checkForAwayTimeAndInit();
 });
-
-
-const debug_spawn = () => {
-    const deliveryNpc = new Pet(
-        new PetDefinition({
-            sprite: 'resources/img/character/delivery_npc_01.png',
-        }),
-        {
-            spritesheet: {
-                cellNumber: 0,
-                cellSize: 36,
-                rows: 4,
-                columns: 4,
-            }
-        }
-    )
-}

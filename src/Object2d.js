@@ -1,5 +1,10 @@
 class Object2d {
     constructor(config) {
+        if(config.parent?.isRemoved){
+            console.error('Cannot instantiate, parent is removed.', config);
+            return false;
+        }
+
         // parent drawer
         if (!config.drawer) {
             if (Object2d.defaultDrawer) {
@@ -78,7 +83,7 @@ class Object2d {
         this.image.src = App.checkResourceOverride(this.image.src);
     }
     removeObject(){
-        this.drawer.removeObject(this);
+        this.drawer?.removeObject?.(this);
     }
     mimicParent(ignoreList = []){
         if(!this.parent) return;
@@ -141,7 +146,7 @@ class Object2d {
         const velocity = this.y + speed * 2 * App.deltaTime;
         this.y = velocity > maxY ? maxY : velocity;
     }
-    showBoundingBox(){
+    showBoundingBox(shrinkX, shrinkY){
         const parent = this;
         if(!this.boundingBoxElement){
             this.boundingBoxElement = new Object2d({
@@ -149,7 +154,7 @@ class Object2d {
                 img: 'resources/img/misc/red_pixel.png',
                 opacity: 0.25,
                 onDraw: (me) => {
-                    const bb = parent.getBoundingBox();
+                    const bb = parent.getBoundingBox(shrinkX, shrinkY);
 
                     me.x = bb.x;
                     me.y = bb.y;
@@ -173,12 +178,36 @@ class Object2d {
         this.boundingBoxElement?.removeObject?.();
         this.boundingBoxElement = null;
     }
-    getBoundingBox(){
-        const y = this.y + (this.additionalY || 0);
-        const x = this.x + (this.additionalX || 0);
-        const width = this.spritesheet?.cellSize || this.width || this.image.width;
-        const height = this.spritesheet?.cellSize || this.height || this.image.height;
+    getBoundingBox(shrinkX = 0, shrinkY = 0){
+        const y = this.y + (this.additionalY || 0) + shrinkY;
+        const x = this.x + (this.additionalX || 0) + shrinkX;
+        const width = (this.spritesheet?.cellSize || this.width || this.image.width) - (shrinkX * 2);
+        const height = (this.spritesheet?.cellSize || this.height || this.image.height) - (shrinkY * 2);
         return { x, y, width, height };
+    }
+    isColliding(otherBoundingBox){
+        const currentBoundingBox = this.getBoundingBox();
+        return (
+            currentBoundingBox.x < otherBoundingBox.x + otherBoundingBox.width &&
+            currentBoundingBox.x + currentBoundingBox.width > otherBoundingBox.x &&
+            currentBoundingBox.y < otherBoundingBox.y + otherBoundingBox.height &&
+            currentBoundingBox.y + currentBoundingBox.height > otherBoundingBox.y
+        );
+    }
+    showOutline(color = '#7CE0E6', setAsInitial){
+        if(!setAsInitial){
+            if(this._initialFilter == null) this._initialFilter = this.filter || '';
+        }
+        const outlineFilter = [
+            `drop-shadow(0px 1px 0px ${color})`,
+            `drop-shadow(1px 0px 0px ${color})`,
+            `drop-shadow(-1px 0px 0px ${color})`,
+        ].join(' ')
+        this.filter = `${this._initialFilter || ''} ${outlineFilter}`.trim()
+    }
+    hideOutline(){
+        this.filter = this._initialFilter != null ? this._initialFilter : this.filter;
+        this._initialFilter = this.filter;
     }
     static setDrawer(drawer) {
         Object2d.defaultDrawer = drawer;

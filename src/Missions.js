@@ -252,7 +252,7 @@ const Missions = {
                         <div> ${App.getIcon('flask')}nothingness+ </div>
                     </div>
                 `,
-                isNew: true,
+                isNew: false,
                 onClaim: () => {
                     const pool = [
                         ...exclusivePotionsPool
@@ -278,7 +278,7 @@ const Missions = {
                         + `<div><small>${App.getIcon('coins', true)} <span>${chest.price}</span></small></div>`
                         + chest.name 
                         + `<br><small class="inline-list">${chest.info}</small>`
-                        + (chest.isNew ? App.getBadge() : '')
+                        + (chest.isNew ? App.getBadge('New!') : '')
                         + '</div>',
                     _disable: chest.price > Missions.currentPts,
                     class: 'large',
@@ -318,6 +318,8 @@ const Missions = {
     openMenu: function(){
         if(!this.current?.length) return;
 
+        const SHOW_REWARDS_BADGE = false;
+
         const list = App.displayList([
             {
                 name: `
@@ -329,7 +331,7 @@ const Missions = {
                     </span>
                     <button onclick="Missions.openRewardsMenu()" class="generic-btn stylized">
                         ${App.getIcon('shopping-bag', true)}
-                        ${App.getBadge('!')}
+                        ${SHOW_REWARDS_BADGE ? App.getBadge('!') : ''}
                     </button>
                 `,
                 type: 'text',

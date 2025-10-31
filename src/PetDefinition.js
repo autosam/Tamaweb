@@ -247,6 +247,7 @@ class PetDefinition {
             endTime: false,
         },
         is_revived_once: false,
+        is_ghost: false,
         last_eaten: [],
 
         // skill points
@@ -276,7 +277,7 @@ class PetDefinition {
         },
         item: { 'rattle': 1 },
         accessory: {},
-        harvests: {}, seeds: {},
+        harvests: {}, seeds: {}, misc: {},
     }
     accessories = [];
 
@@ -351,6 +352,7 @@ class PetDefinition {
                     is_misbehaving: this.stats.is_misbehaving,
                     has_received_school_invite: this.stats.has_received_school_invite,
                     gender: this.stats.gender,
+                    is_ghost: this.stats.is_ghost,
                 }
                 return;
             }
@@ -363,6 +365,7 @@ class PetDefinition {
                             stats: {
                                 player_friendship: friendDef.stats.player_friendship,
                                 is_player_family: friendDef.stats.is_player_family,
+                                is_ghost: friendDef.stats.is_ghost,
                             }
                         };
                     })
@@ -579,7 +582,12 @@ class PetDefinition {
     }
 
     getCSprite(){
-        return PetDefinition.generateCSprite(this.sprite);
+        let className = '';
+        if(this.stats.is_ghost){
+            if(this.stats.is_ghost === PetDefinition.GHOST_TYPE.angel) className = 'ghost angel';
+            else className = 'ghost devil';
+        }
+        return PetDefinition.generateCSprite(this.sprite, undefined, className);
     }
 
     getFullCSprite(){
@@ -754,17 +762,17 @@ class PetDefinition {
         }
     }
 
-    static generateCSprite(sprite, noMargin){
+    static generateCSprite(sprite, noMargin, className){
         const margin = noMargin ? 0 : 10;
         const lifeStage = PetDefinition.getLifeStage(sprite);
         switch(lifeStage){
             case PetDefinition.LIFE_STAGE.baby:
-                return `<c-sprite width="16" height="16" index="0" src="${sprite}" pos-x="0" pos-y="0" style="margin-right: ${margin}px;"></c-sprite>`;
+                return `<c-sprite class="${className}" width="16" height="16" index="0" src="${sprite}" pos-x="0" pos-y="0" style="margin-right: ${margin}px;"></c-sprite>`;
             case PetDefinition.LIFE_STAGE.child:
             case PetDefinition.LIFE_STAGE.teen:
-                return `<c-sprite width="16" height="16" index="0" src="${sprite}" pos-x="4" pos-y="4" style="margin-right: ${margin}px;"></c-sprite>`;
+                return `<c-sprite class="${className}" width="16" height="16" index="0" src="${sprite}" pos-x="4" pos-y="4" style="margin-right: ${margin}px;"></c-sprite>`;
             default:
-                return `<c-sprite width="20" height="20" index="0" src="${sprite}" pos-x="6" pos-y="4" style="margin-right: ${margin}px;"></c-sprite>`;
+                return `<c-sprite class="${className}" width="20" height="20" index="0" src="${sprite}" pos-x="6" pos-y="4" style="margin-right: ${margin}px;"></c-sprite>`;
         }
     }
 
@@ -809,5 +817,10 @@ class PetDefinition {
         teen: 1,
         adult: 2,
         elder: 3,
+    }
+
+    static GHOST_TYPE = {
+        angel: 1,
+        devil: 2,
     }
 }
