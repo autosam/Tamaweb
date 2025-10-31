@@ -929,7 +929,7 @@ const App = {
         //     ])
         // })) return;
 
-        if(addEvent(`update_20_notice`, () => {
+        if(addEvent(`update_21_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
@@ -938,7 +938,7 @@ const App = {
                     bold: true,
                 },
                 {
-                    name: `Check out the newly added potions, food, snacks and improvements!`,
+                    name: `Check out the new Immortal Monsters and Angels, The Underworld, mini games, accessories and a lot more!`,
                     type: 'text',
                 },
                 {
