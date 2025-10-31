@@ -4728,7 +4728,10 @@ const App = {
 
             const payWithCustomCurrency = (amt) => {
                 const currentAmount = App.pet.inventory.food[CURRENCY_NAME] || 0;
-                if(amt > currentAmount) return App.displayPopup(`Don't have enough ${CURRENCY_NAME}!`);
+                if(amt > currentAmount) {
+                    App.displayPopup(`Don't have enough ${CURRENCY_NAME}!`);
+                    return false;
+                }
                 App.addNumToObject(App.pet.inventory.food, CURRENCY_NAME, -amt);
                 return true;
             }
