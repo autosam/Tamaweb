@@ -2278,7 +2278,7 @@ App.definitions = (() => {
             },
             'monster hands': {
                 image: 'resources/img/accessory/monster_hands_01.png',
-                front: true,
+                front: false,
                 price: 400,
                 isNew: true,
                 accessShop: 'devilsTown',
