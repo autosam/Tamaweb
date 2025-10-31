@@ -135,12 +135,12 @@ class Pet extends Object2d {
     }
     equipAccessories(){
         const ACCESSORY_CELL_SIZE = 64;
-        const ADULT_BASE_SIZE = this.petDefinition.spritesheetDefinitions[PetDefinition.LIFE_STAGE.adult]?.cellSize;
+        const ADULT_BASE_SIZE = this.petDefinition.spritesheetDefinitions[PetDefinition.LIFE_STAGE.adult]?.cellSize ?? 32;
         const OVERLAY_SCALE = (this.petDefinition.spritesheet.cellSize / ADULT_BASE_SIZE) || 1;
 
         const overlayOffset = {
             x: (ACCESSORY_CELL_SIZE - this.spritesheet.cellSize) / 2,
-            y: ((ACCESSORY_CELL_SIZE - this.spritesheet.cellSize) / 2),
+            y: (ACCESSORY_CELL_SIZE - this.spritesheet.cellSize) / 2,
         }
 
         // removing old accessories

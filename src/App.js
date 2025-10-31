@@ -484,15 +484,7 @@ const App = {
             // App.save();
         }
 
-
         if (navigator.storage && "persist" in navigator.storage) {
-            navigator.storage.persist().then((persistent) => {
-                App.isStoragePersistent = persistent;
-            });
-        }
-
-
-        if ("persist" in navigator.storage) {
             navigator.storage.persist().then((persistent) => {
                 App.isStoragePersistent = persistent;
             });
@@ -947,7 +939,7 @@ const App = {
                     bold: true,
                 },
                 {
-                    name: `Check out the new Immortal Monsters and Angels, The Underworld, mini games, accessories and a lot more!`,
+                    name: `<img src="resources/img/ui/update_banner.png"></img> <br> Check out the new Immortal Monsters and Angels, The Underworld, mini games, accessories and a lot more!`,
                     type: 'text',
                 },
                 {

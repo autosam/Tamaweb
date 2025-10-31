@@ -361,6 +361,8 @@ class Activities {
         mainConverted.setState('cheering');
 
         otherPet.setState('blush');
+        
+        App.save();
 
         await TimelineDirector.wait(3500);
         App.fadeScreen({
