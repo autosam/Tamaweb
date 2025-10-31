@@ -4804,10 +4804,11 @@ const App = {
                             )
                         }
 
-                        App.displayConfirm(`Do you want to enter the Underworld? This will cost you x1 ${ticketSpan}`, [
+                        return App.displayConfirm(`Do you want to enter the Underworld? This will cost you x1 ${ticketSpan}`, [
                             {
                                 name: 'yes',
                                 onclick: () => {
+                                    App.closeAllDisplays();
                                     App.addNumToObject(App.pet.inventory.misc, 'underworld tickets', -1);
                                     App.handlers.open_devil_town_activity_list();
                                     App.sendAnalytics('enter_underworld');
