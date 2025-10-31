@@ -1717,7 +1717,7 @@ const App = {
         newPetDefinition = new PetDefinition({
             name: getRandomName(),
             sprite,
-        }).setStats({is_egg: true});
+        }).setStats({is_egg: true, is_ghost: parentB.stats.is_ghost});
 
         newPetDefinition.friends = [
             parentA,
