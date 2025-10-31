@@ -1,7 +1,7 @@
 class Object2d {
     constructor(config) {
         if(config.parent?.isRemoved){
-            console.error('Cannot instantiate, parent is removed.');
+            console.error('Cannot instantiate, parent is removed.', config);
             return false;
         }
 
@@ -83,7 +83,7 @@ class Object2d {
         this.image.src = App.checkResourceOverride(this.image.src);
     }
     removeObject(){
-        this.drawer.removeObject(this);
+        this.drawer?.removeObject?.(this);
     }
     mimicParent(ignoreList = []){
         if(!this.parent) return;
