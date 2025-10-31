@@ -206,6 +206,8 @@ class Pet extends Object2d {
         this.onDraw = (me) => {
             const floatSpeed = me.isMoving ? 0.0075 : 0.005;
             animationFloat += floatSpeed * App.deltaTime;
+            if(animationFloat > App.PI2) animationFloat = 0;
+            me._ghostAnimationFloat = animationFloat;
 
             me.additionalY = App.pet.state === 'sitting' ? 
                 initialAdditionalY :

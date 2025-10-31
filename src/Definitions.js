@@ -2175,11 +2175,11 @@ App.definitions = (() => {
                 front: false,
                 price: -1,
                 onDraw: (overlay) => {
-                    const flapSpeed = overlay?.parent?.stats?.is_sleeping ? 0.0045 : 0.035; 
+                    const flapSpeed = overlay?.parent?.stats?.is_sleeping ? 0.0045 : 0.009; 
                     if(!overlay._flappingMotion) overlay._flappingMotion = 0;
-                    overlay._flappingMotion += flapSpeed * App.deltaTime;
+                    overlay._flappingMotion += flapSpeed * App.deltaTime * Math.sinh(overlay.parent._ghostAnimationFloat - (Math.PI/2));
                     if(overlay._flappingMotion > App.PI2) overlay._flappingMotion = 0;
-                    overlay.rotation = Math.sin(overlay._flappingMotion) * 4;
+                    overlay.rotation = Math.sin(overlay._flappingMotion) * 6;
                 },
             },
             'monster wings': {
