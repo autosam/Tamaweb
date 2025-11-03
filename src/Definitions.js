@@ -2526,7 +2526,7 @@ App.definitions = (() => {
                 ],
                 [
                     "Forecast: Bright Days Ahead!",
-                    "The future looks sunny and full of joy for our favorite reader! Keep smiling—good things are coming.",
+                    "The future looks sunny and full of joy for our favorite reader! Keep smiling, good things are coming.",
                 ],
                 [
                     "Exclusive Interview: Experts Agree - You’re Doing Great!",
@@ -2542,7 +2542,7 @@ App.definitions = (() => {
                 ],
                 [
                     "Public Notice: Bravery and Kindness Recognized!",
-                    "Officials have recognized an extraordinary individual for their courage and kindness—congratulations to you!",
+                    "Officials have recognized an extraordinary individual for their courage and kindness, congratulations to you!",
                 ],
                 [
                     "Daily Boost: You’re the Reason Today is Special!",
@@ -2570,7 +2570,7 @@ App.definitions = (() => {
                 ],
                 [
                     "Special Report: You’re the Star of Today’s Story!",
-                    "Our newsroom agrees—you’re doing incredible things and deserve the spotlight. Shine on!",
+                    "Our newsroom agrees, you’re doing incredible things and deserve the spotlight. Shine on!",
                 ],
                 [
                     "Public Announcement: You Make Every Day Better!",
@@ -2618,7 +2618,7 @@ App.definitions = (() => {
                 ],
                 [
                     "Exclusive Feature: Your Strength is Quietly Changing the World!",
-                    "We see it—the way you keep moving forward, even when it’s hard. That strength is something to be proud of.",
+                    "We see it, the way you keep moving forward, even when it’s hard. That strength is something to be proud of.",
                 ],
                 [
                     "Front Page Story: You Are Loved More Than You Know!",
@@ -2626,7 +2626,7 @@ App.definitions = (() => {
                 ],
                 [
                     "Breaking Update: You’re Learning and Growing Every Day!",
-                    "Every challenge you face is shaping you into someone even more incredible. Trust the process—you’re doing great.",
+                    "Every challenge you face is shaping you into someone even more incredible. Trust the process, you’re doing great.",
                 ],
                 [
                     "Special Report: Your Kind Heart Makes Life Better!",
@@ -2634,11 +2634,11 @@ App.definitions = (() => {
                 ],
                 [
                     "Top Story: You’re So Much Stronger Than You Feel Right Now!",
-                    "It’s okay to have tough days, but remember—your resilience has carried you through so much already. Keep believing in yourself.",
+                    "It’s okay to have tough days, but remember, your resilience has carried you through so much already. Keep believing in yourself.",
                 ],
                 [
                     "Daily Reminder: You Deserve the Good Things Coming Your Way!",
-                    "The kindness you’ve shown and the love you’ve shared are coming back to you. Be ready to receive them—you’ve earned it.",
+                    "The kindness you’ve shown and the love you’ve shared are coming back to you. Be ready to receive them, you’ve earned it.",
                 ],
                 [
                     "Breaking Alert: Your Voice Matters and So Do You!",
@@ -2646,11 +2646,11 @@ App.definitions = (() => {
                 ],
                 [
                     "Personal Feature: You’re Exactly Where You Need to Be!",
-                    "Life isn’t a race, and every step you take is part of your unique story. You’re on the right path—trust yourself.",
+                    "Life isn’t a race, and every step you take is part of your unique story. You’re on the right path, trust yourself.",
                 ],
                 [
                     "Headline Scoop: You Have a Light That Guides Others!",
-                    "Even when you don’t see it, your kindness and warmth inspire those around you. Keep shining—it’s beautiful.",
+                    "Even when you don’t see it, your kindness and warmth inspire those around you. Keep shining, it’s beautiful.",
                 ],
                 [
                     "Forecast: Healing and Happiness Are On the Horizon!",
