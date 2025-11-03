@@ -1029,6 +1029,7 @@ const App = {
     scene: {
         home: new Scene({
             image: 'resources/img/background/house/02.png',
+            overrideImage: false,
             petX: '50%', petY: '100%',
             onLoad: () => {
                 App.drawer.selectObjects('poop').forEach(p => p.absHidden = false);
@@ -1362,7 +1363,7 @@ const App = {
         }
         if(scene.foodsX) App.foods.x = scene.foodsX;
         if(scene.foodsY) App.foods.y = scene.foodsY;
-        App.background.setImg(scene.image);
+        App.background.setImg(scene.overrideImage || scene.image);
 
         if(scene.onLoad){
             scene.onLoad(onLoadArg);
@@ -1409,11 +1410,13 @@ const App = {
                 onDraw: (me) => {
                     furnitureDef.onDraw?.(me);
 
+                    me.invisible = Boolean(App.currentScene.overrideImage);
+
                     if(lastY === me.y) return;
                     lastY = me.y;
                     me.z = App.constants.BACKGROUND_Z + 
-                            0.3 + 
-                            ((me.y + (me.image.height)) * 0.01);
+                        0.3 + 
+                        ((me.y + (me.image.height)) * 0.01);
                 }
             })
             App.activeFurnitureObjects.push(furnitureObject);
@@ -4666,6 +4669,8 @@ const App = {
         open_activity_list: function(noIndexReset){
             if(!noIndexReset) App.temp[App.handlers.getOutsideActivityId()] = 1;
 
+            App.scene.home.overrideImage = false;
+
             return Activities.goToActivities({
                 activities: [
                     ...App.definitions.outside_activities
@@ -6292,6 +6297,31 @@ const App = {
                 }
             })
         },
+        move_around: function(reset){
+            if(!App.temp.wanderSceneIndex) App.temp.wanderSceneIndex = 0;
+
+            const scenes = [
+                {image: false},
+                App.scene.bathroom,
+                App.scene.kitchen
+            ]
+
+            let currentSceneOverride = scenes.at(++App.temp.wanderSceneIndex);
+            if(!currentSceneOverride){
+                currentSceneOverride = scenes[0];
+                App.temp.wanderSceneIndex = 0;
+            }
+
+            App.toggleGameplayControls(false);
+            App.fadeScreen({
+                middleFn: () => {
+                    App.scene.home.overrideImage = currentSceneOverride.image;
+                    App.reloadScene()
+                    App.pet.stopMove();
+                    App.toggleGameplayControls(true)
+                }
+            })
+        }
     },
     toggleGameplayControls: function(state, onclick){
         App.disableGameplayControls = !state;
