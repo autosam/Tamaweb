@@ -182,12 +182,7 @@ class Object2d {
     }
     isColliding(otherBoundingBox){
         const currentBoundingBox = this.getBoundingBox();
-        return (
-            currentBoundingBox.x < otherBoundingBox.x + otherBoundingBox.width &&
-            currentBoundingBox.x + currentBoundingBox.width > otherBoundingBox.x &&
-            currentBoundingBox.y < otherBoundingBox.y + otherBoundingBox.height &&
-            currentBoundingBox.y + currentBoundingBox.height > otherBoundingBox.y
-        );
+        return Object2d.checkAabbCollision(currentBoundingBox, otherBoundingBox);
     }
     showOutline(color = '#7CE0E6', setAsInitial){
         if(!setAsInitial){
@@ -292,5 +287,13 @@ class Object2d {
                 me._cycleThroughFrames.nextTime = App.time + delay;
             }
         },
+    }
+    static checkAabbCollision(a, b){
+        return (
+            a.x < b.x + b.width &&
+            a.x + a.width > b.x &&
+            a.y < b.y + b.height &&
+            a.y + a.height > b.y
+        );
     }
 }

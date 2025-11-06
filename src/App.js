@@ -1,7 +1,7 @@
 const App = {
     PI2: Math.PI * 2, INF: 999999999,
     deltaTime: 0, lastTime: 0, playTime: 0, hour: 12,
-    mouse: { x: 0, y: 0 },
+    mouse: { x: 0, y: 0, isInBounds : false },
     userId: '_', userName: null, sessionId: Math.round(Math.random() * 9999999999),
     ENV: location.port == 5500 ? 'dev' : 'prod', isOnItch: false, isOnElectronClient: false,
     shellBackground: '', deferredInstallPrompt: null,
@@ -465,6 +465,9 @@ const App = {
             const target = evt.type.startsWith("touch") ? evt.targetTouches[0] : evt;
                 x = target.clientX - rect.left;
                 y = target.clientY - rect.top;
+
+            App.mouse.isInBounds = x >= 0 && y >= 0 
+                && x < rect.width && y < rect.height;
         
             x = Math.max(0, Math.min(x, rect.width));
             y = Math.max(0, Math.min(y, rect.height));
@@ -1878,11 +1881,34 @@ const App = {
     createActivePet: function(petDef, props = {}){
         if(petDef.sprite) App.handlers.add_active_pet_to_collection(petDef.sprite);
 
+        let registeredInteractionDetector;
+
+        const interactionHandler = () => {
+            if(!App.mouse.isDown){
+                App.pet.isInteractingWith = false;
+                App.disableGameplayControls = false;
+                App.pet.handleDirectInteractionEnd();
+                App.unregisterOnDrawEvent(interactionHandler);
+                registeredInteractionDetector = null;
+                return;
+            }
+
+            if(App.pet.isDuringScriptedState()) return;
+            
+            App.pet.handleDirectInteractionStart();
+            App.disableGameplayControls = true;
+        }
+
         return new Pet(petDef, {
             z: App.constants.ACTIVE_PET_Z, 
             scale: 1, 
             castShadow: true,
-            ...props
+            ...props,
+            onHover: (me) => {
+                if(registeredInteractionDetector || !App.mouse.isDown) return;
+
+                registeredInteractionDetector = App.registerOnDrawEvent(interactionHandler);
+            }
         });
     },
     _queueEventKeys: {},

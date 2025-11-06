@@ -236,12 +236,34 @@ class Pet extends Object2d {
         if(this.stats.is_dead) return this.handleDead();
         if(this.stats.is_egg) return this.handleEgg();
 
+        if(this.isInteractingWith) {
+            this.stateManager();
+        }
+
         this.think();
         this.moveToTarget(this.speedOverride || this.stats.speed);
         this.stateManager();
         this.handleAnimation();
 
         Object2d.animations.pixelBreath(this);
+    }
+    handleDirectInteractionStart(){
+        const me = this;
+        this.isInteractingWith = true;
+        console.log('calling start')
+        this.triggerScriptedState('shocked', App.INF, false, true, 
+            () => {
+                me.isInteractingWith = false;
+            }, 
+            () => {
+                this.x = App.mouse.x;
+                this.y = App.mouse.y;
+            }
+        )
+    }
+    handleDirectInteractionEnd(){
+        console.log('calling end')
+        this.stopScriptedState();
     }
     handleWants(){
         if(!this.isMainPet || App.haveAnyDisplays()) return;

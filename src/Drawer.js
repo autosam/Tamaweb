@@ -37,7 +37,6 @@ class Drawer {
             }
             return (a.z || 0) - (b.z || 0);
         });
-        
 
         objects.forEach(object => {
             if(!object || object.hidden || object.absHidden) return;
@@ -45,6 +44,14 @@ class Drawer {
             object.onDraw?.(object);
 
             if(object.invisible) return;
+
+            // check for currently hovered over object
+            if (App.mouse.isInBounds && object?.onHover) {
+                const box = object?.getBoundingBox?.();
+                if (box && Object2d.checkAabbCollision({ x: App.mouse.x, y: App.mouse.y, width: 1, height: 1 }, box)) {
+                    object.onHover(object);
+                }
+            }
 
             if (object.x?.toString().indexOf('%') >= 0) {
                 let width = object.spritesheet ? object.spritesheet.cellSize : object.width || object.image.width;
