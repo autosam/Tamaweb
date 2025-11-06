@@ -1651,6 +1651,22 @@ class Activities {
         }, 3000);
     }
     static goToInnerGarden(){
+        const screen = UI.empty();
+        document.querySelector('.screen-wrapper').appendChild(screen);
+        screen.innerHTML = `
+            <div class="flex flex-dir-col justify-between" style="position: absolute; top: 4px; right: 4px;">
+                <button class="generic-btn stylized slide-action" id="backyard">
+                    ${App.getIcon('paw', true)}
+                </button>
+            </div>
+        `;
+        screen.querySelector('#backyard').onclick = () => {
+            const controller = App.getGameplayControlsState()
+            if(!controller.state && !controller.onclick) return;
+            screen.remove();
+            App.fadeScreen({middleFn: () => Activities.goToGarden()})
+        }
+
         Activities.task_handleLeavingAnimals();
         
         App.pet.stopScriptedState();
@@ -1864,6 +1880,7 @@ class Activities {
                         App.pet.stopScriptedState();
                         App.pet.x = '0%';
                         App.pet.targetX = 50;
+                        screen.remove();
                     }
                 },
                 // {
@@ -1881,6 +1898,22 @@ class Activities {
         App.toggleGameplayControls(false, displayMainList)
     }
     static goToGarden(){
+        const screen = UI.empty();
+        document.querySelector('.screen-wrapper').appendChild(screen);
+        screen.innerHTML = `
+            <div class="flex flex-dir-col justify-between" style="position: absolute; top: 4px; left: 4px;">
+                <button class="generic-btn stylized slide-action" id="garden">
+                    ${App.getIcon('seedling', true)}
+                </button>
+            </div>
+        `;
+        screen.querySelector('#garden').onclick = () => {
+            const controller = App.getGameplayControlsState()
+            if(!controller.state && !controller.onclick) return;
+            screen.remove();
+            App.fadeScreen({middleFn: () => Activities.goToInnerGarden()})
+        }
+
         const openChooseNameDialog = (animalDef, onEndFn) => {
             return App.displayPrompt(`Choose a name for ${animalDef.getFullCSprite()}:`, [
                 {
@@ -2041,6 +2074,14 @@ class Activities {
                                             onclick: () => openChooseNameDialog(animalDef, () => App.closeAllDisplays())
                                         },
                                         {
+                                            _mount: (e) => e.innerHTML = `indoor: <i>${animalDef.spawnIndoors ? 'yes' : 'no'}</i> ${App.getBadge()}`,
+                                            onclick: (btn) => {
+                                                animalDef.spawnIndoors = !animalDef.spawnIndoors;
+                                                btn._mount();
+                                                return true;
+                                            }
+                                        },
+                                        {
                                             name: `<span style="color: red;">Release</span>`,
                                             onclick: () => {
                                                 return App.displayConfirm(`Are you sure you want release ${animalDef.name} back into the wild?`, [
@@ -2079,7 +2120,7 @@ class Activities {
                                                     }
                                                 ])
                                             }
-                                        }
+                                        },
                                     ])
                                 }
                             })),
@@ -2126,6 +2167,7 @@ class Activities {
                         App.pet.stopScriptedState();
                         App.pet.x = '0%';
                         App.pet.targetX = 50;
+                        screen.remove();
                     }
                 }
             ])

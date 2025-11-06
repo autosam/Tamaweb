@@ -1050,6 +1050,7 @@ const App = {
                 }
 
                 App.handleFurnitureSpawn();
+                App.handleAnimalsSpawn(true);
             },
             onUnload: () => {
                 App.drawer.selectObjects('poop').forEach(p => p.absHidden = true);
@@ -1059,6 +1060,7 @@ const App = {
                 }
                 this.christmasTree?.removeObject();
                 App.handleFurnitureSpawn(null, true);
+                App.handleAnimalsSpawn(false);
             }
         }),
         kitchen: new Scene({
@@ -1570,7 +1572,14 @@ const App = {
             return false;
         }
 
-        this.spawnedAnimals = App.animals.list?.map(animalDef => {
+        const getSpawnableAnimals = () => {
+            if(App.scene.home) return App.animals.list?.filter(animalDef => animalDef.spawnIndoors);
+
+            return App.animals.list;
+        }
+
+
+        this.spawnedAnimals = getSpawnableAnimals()?.map(animalDef => {
             const animal = new Animal(animalDef, {
                 x: random(0, App.drawer.bounds.width),
             })

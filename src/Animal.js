@@ -13,6 +13,7 @@ class AnimalDefinition extends PetDefinition {
             buff: config.stats?.buff || App.getRandomGameplayBuff(),
         };
         this.lastStatsUpdate = config.lastStatsUpdate || Date.now();
+        this.spawnIndoors = config.spawnIndoors || false;
     }
     getLifeStage(){
         return PetDefinition.LIFE_STAGE.baby;
@@ -27,6 +28,7 @@ class AnimalDefinition extends PetDefinition {
         return {
             ...App.minimalizePetDef(this.serializeStats(true)),
             lastStatsUpdate: this.lastStatsUpdate,
+            spawnIndoors: this.spawnIndoors,
             stats: {
                 current_happiness: this.stats.current_happiness,
                 buff: this.stats.buff,
