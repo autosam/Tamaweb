@@ -1573,7 +1573,10 @@ const App = {
         }
 
         const getSpawnableAnimals = () => {
-            if(App.scene.home) return App.animals.list?.filter(animalDef => animalDef.spawnIndoors);
+            switch(App.currentScene){
+                case App.scene.home:
+                    return App.animals.list?.filter(animalDef => animalDef.spawnIndoors);
+            }
 
             return App.animals.list;
         }
@@ -3540,10 +3543,13 @@ const App = {
                 activeIndex, 
                 filterType, 
                 sellMode, 
-                useMode, 
+                useMode,
+                useModeLabel = 'Use',
+                useAmount = 1,
                 age = App.petDefinition.lifeStage,
                 getListOnly,
                 allowCookableOnly,
+                limitFilter,
             } = props;
 
             let list = [];
@@ -3552,8 +3558,11 @@ const App = {
             let index = -1;
             const getIsOutOfStock = App.getOutOfStockCounter(App.getDayId(true) + 25);
             for(let food of Object.keys(App.definitions.food)){
+                let isDisabled = false;
+
                 let current = App.definitions.food[food];
                 const currentType = current.type || 'food';
+                const ownedAmount = App.pet.inventory.food[food];
 
                 // lifestage check
                 if('age' in current && !current.age.includes(age)) continue;
@@ -3561,13 +3570,18 @@ const App = {
                 // buy mode and should skip
                 if(buyMode && (current.price === 0 || (!allowCookableOnly && current.cookableOnly) || current.unbuyable)) continue;
 
-                // filter check
+                // filter type check
                 if(filterType && currentType !== filterType) continue;
 
+                if(limitFilter?.({...current, ownedAmount})) isDisabled = true;
+
                 // check if current pet has this food on its inventory
-                if(current.price && !App.pet.inventory.food[food] && !buyMode){
+                if(current.price && !ownedAmount && !buyMode){
                     continue;
                 }
+
+                // auto disable if more less than useAmount
+                if(ownedAmount < useAmount) isDisabled = true;
 
                 // some entries become randomly unavailable to buy for the day
                 const isOutOfStock = ++index && buyMode && getIsOutOfStock(20) && currentType !== 'med';
@@ -3583,14 +3597,14 @@ const App = {
                 if(salesDay) price = Math.round(price / 2);
 
                 list.push({
-                    disabled: Boolean(isOutOfStock),
+                    disabled: Boolean(isOutOfStock || isDisabled),
                     current,
                     foodName: food,
                     name: `
                         ${App.getFoodCSprite(current.sprite)} 
                         ${current.cookableOnly ? '★ ' : ''}
                         ${food.toUpperCase()} 
-                        (x${App.pet.inventory.food[food] > 0 ? App.pet.inventory.food[food] : (!current.price ? '∞' : 0)})
+                        (x${ownedAmount > 0 ? ownedAmount : (!current.price ? '∞' : 0)})
                         ${
                             isOutOfStock 
                             ? `<b class="red-label">OUT OF STOCK</b>`
@@ -3625,14 +3639,20 @@ const App = {
                             return false;
                         }
 
-                        const removeOneFoodFromInventory = () => {
-                            if(App.pet.inventory.food[food] > 0)
-                                App.pet.inventory.food[food] -= 1;
+                        const removeFoodFromInventory = (amount = useAmount) => {
+                            const ownedAmount = App.pet.inventory.food[food];
+
+                            if(ownedAmount >= amount) {
+                                App.pet.inventory.food[food] -= amount;
+                                return true;
+                            }
+
+                            return false;
                         }
 
                         if(useMode){
                             const useResult = useMode(current);
-                            if(useResult) removeOneFoodFromInventory();
+                            if(useResult) removeFoodFromInventory();
                             return;
                         }
 
@@ -3646,7 +3666,7 @@ const App = {
                         App.closeAllDisplays();
                         let ateFood = App.pet.feed(current.sprite, current.hunger_replenish ?? 0, currentType, null, reopenFn);
                         if(ateFood) {
-                            removeOneFoodFromInventory();
+                            removeFoodFromInventory();
 
                             App.pet.stats.current_fun += current.fun_replenish ?? 0;
                             App.pet.stats.current_sleep += current.sleep_replenish ?? 0;
@@ -3684,7 +3704,7 @@ const App = {
             let acceptLabel = 'Eat';
             if(buyMode) acceptLabel = 'Purchase';
             else if(sellMode) acceptLabel = 'Sell';
-            else if(useMode) acceptLabel = 'Use';
+            else if(useMode) acceptLabel = useModeLabel;
             sliderInstance = App.displaySlider(
                 list.sort((a, b) => (b?.current?.isNew || 0) - (a?.current?.isNew || 0)), 
                 activeIndex, 

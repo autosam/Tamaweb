@@ -1985,6 +1985,47 @@ class Activities {
         App.pet.x = '100%';
         App.pet.targetX = 50;
 
+        const feedAnimal = (animalDef, selectedFood) => {
+            App.closeAllDisplays();
+            animalDef.feed(selectedFood.hunger_replenish * 3);
+
+            const startTime = App.time - Math.random() * 15;
+            const spawnedAnimal = App.spawnedAnimals.find(a => a.animalDefinition === animalDef);
+            const foodObject = new Object2d({
+                parent: spawnedAnimal,
+                // image: App.preloadedResources[App.constants.FOOD_SPRITESHEET],
+                img: App.constants.FOOD_SPRITESHEET,
+                spritesheet: {
+                    ...App.constants.FOOD_SPRITESHEET_DIMENSIONS,
+                    cellNumber: selectedFood.sprite
+                },
+                scale: 0.75,
+                x: spawnedAnimal.x + spawnedAnimal.spritesheet.cellSize,
+                y: spawnedAnimal.y - spawnedAnimal.spritesheet.cellSize,
+                noPreload: true,
+                onDraw: (me) => {
+                    App.pet.setLocalZBasedOnSelf(me);
+                },
+            })
+            spawnedAnimal.stopMove();
+            spawnedAnimal.inverted = true;
+            spawnedAnimal.triggerScriptedState('eating', App.INF, false, true, 
+                () => {
+                    foodObject.removeObject();
+                    spawnedAnimal.playCheeringAnimation(null, true);
+                },
+                () => {
+                    const elapsedTime = App.time - startTime;
+                    const spriteOffset = Math.floor(elapsedTime / 1500);
+                    foodObject.spritesheet.cellNumber = selectedFood.sprite + clamp(spriteOffset, 0, 2);
+                    // foodObject.scale = 1 - (spriteOffset * 0.2);
+                    if(spriteOffset > 2) spawnedAnimal.stopScriptedState();
+                }
+            );
+            Missions.done(Missions.TYPES.feed_animal);
+            return true;
+        }
+
         App.toggleGameplayControls(false, () => {
             return App.displayList([
                 {
@@ -2012,44 +2053,7 @@ class Activities {
                                         {
                                             name: 'feed',
                                             onclick: () => {
-                                                const onUseFn = (selectedFood) => {
-                                                    App.closeAllDisplays();
-                                                    animalDef.feed(selectedFood.hunger_replenish * 3);
-
-                                                    const startTime = App.time;
-                                                    const spawnedAnimal = App.spawnedAnimals.find(a => a.animalDefinition === animalDef);
-                                                    const foodObject = new Object2d({
-                                                        parent: spawnedAnimal,
-                                                        image: App.preloadedResources[App.constants.FOOD_SPRITESHEET],
-                                                        spritesheet: {
-                                                            ...App.constants.FOOD_SPRITESHEET_DIMENSIONS,
-                                                            cellNumber: selectedFood.sprite
-                                                        },
-                                                        scale: 1,
-                                                        x: spawnedAnimal.x + spawnedAnimal.spritesheet.cellSize,
-                                                        y: spawnedAnimal.y - spawnedAnimal.spritesheet.cellSize,
-                                                        onDraw: (me) => {
-                                                            App.pet.setLocalZBasedOnSelf(me);
-                                                        },
-                                                    })
-                                                    spawnedAnimal.stopMove();
-                                                    spawnedAnimal.inverted = true;
-                                                    spawnedAnimal.triggerScriptedState('eating', App.INF, false, true, 
-                                                        () => {
-                                                            foodObject.removeObject();
-                                                            spawnedAnimal.playCheeringAnimation(null, true);
-                                                        },
-                                                        () => {
-                                                            const elapsedTime = App.time - startTime;
-                                                            const spriteOffset = Math.floor(elapsedTime / 1500);
-                                                            foodObject.spritesheet.cellNumber = selectedFood.sprite + clamp(spriteOffset, 0, 2);
-                                                            // foodObject.scale = 1 - (spriteOffset * 0.2);
-                                                            if(spriteOffset > 2) spawnedAnimal.stopScriptedState();
-                                                        }
-                                                    );
-                                                    Missions.done(Missions.TYPES.feed_animal);
-                                                    return true;
-                                                }
+                                                const onUseFn = (selectedFood) => feedAnimal(animalDef, selectedFood);
                                                 return App.handlers.open_food_list({buyMode: false, filterType: 'food', useMode: onUseFn, age: PetDefinition.LIFE_STAGE.adult});
                                             }
                                         },
@@ -2124,6 +2128,27 @@ class Activities {
                                     ])
                                 }
                             })),
+                            {
+                                name: `${App.getIcon('bell-concierge')} feed all ${App.getBadge()}`,
+                                onclick: () => {
+                                    const onUseFn = (selectedFood) => {
+                                        App.animals.list.forEach((animalDef, i) => {
+                                            feedAnimal(animalDef, selectedFood);
+                                        })
+                                        return true;
+                                    }
+                                    const openFoodList = () => App.handlers.open_food_list({
+                                        buyMode: false, 
+                                        filterType: 'food', 
+                                        useMode: onUseFn, 
+                                        age: PetDefinition.LIFE_STAGE.adult, 
+                                        useModeLabel: `Use (x${App.animals.list.length})`,
+                                        useAmount: App.animals.list.length,
+                                    });
+                                    openFoodList();
+                                    return true;
+                                }
+                            },
                             {
                                 _disable: App.animals.list.length >= App.constants.MAX_ANIMALS,
                                 name: '<i class="fa-solid fa-plus icon"></i> Attract Animal',
