@@ -581,13 +581,13 @@ class PetDefinition {
         return false;
     }
 
-    getCSprite(){
+    getCSprite(noMargin){
         let className = '';
         if(this.stats.is_ghost){
             if(this.stats.is_ghost === PetDefinition.GHOST_TYPE.angel) className = 'ghost angel';
             else className = 'ghost devil';
         }
-        return PetDefinition.generateCSprite(this.sprite, undefined, className);
+        return PetDefinition.generateCSprite(this.sprite, noMargin, className);
     }
 
     getFullCSprite(){

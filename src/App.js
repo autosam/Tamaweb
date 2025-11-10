@@ -860,6 +860,7 @@ const App = {
                                             },
                                             {
                                                 name: 'cancel',
+                                                class: 'back-btn',
                                                 onclick: () => {}
                                             }
                                         ])
@@ -4000,7 +4001,7 @@ const App = {
             const content = UI.empty('flex flex-dir-col flex-1');
             content.innerHTML = `
                 <div class="flex-center flex-1 flex flex-gap-05 inner-padding surface-stylized height-auto relative">
-                    ${App.petDefinition.getCSprite()}
+                    ${App.petDefinition.getCSprite(true)}
                     <b>
                         <span>${App.settings.genderedPets ? App.getIcon(App.pet.stats.gender, true) : ''} ${App.petDefinition.name} </span>
                         <br>
@@ -7244,6 +7245,11 @@ const App = {
         json.animals?.list?.forEach(a => {
             a.lastStatsUpdate = Date.now();
         });
+
+        // handle auto-age on by resetting last birthday
+        if(json.pet){
+            json.pet.birthday = Date.now();
+        }
 
         for(let key of Object.keys(json)){
             if(ignoreKeys.includes(key)) continue;
