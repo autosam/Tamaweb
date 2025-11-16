@@ -6277,6 +6277,7 @@ const App = {
             App.save();
         },
         clean: function(){
+            // todo: this belongs in activities
             App.pet.stopMove();
             App.pet.triggerScriptedState('idle', App.INF, false, true);
             App.pet.x = 20;
@@ -6284,7 +6285,7 @@ const App = {
             App.toggleGameplayControls(false);
             Missions.done(Missions.TYPES.clean_room);
 
-            const dragObjectWithMop = (object2d, size) => {
+            const getDraggedWithMop = (object2d, size) => {
                 if(object2d.x <= mop.x + mop.width){
                     object2d.x = mop.x + mop.width;
                     if(!object2d._dragStart){
@@ -6311,8 +6312,9 @@ const App = {
                     Object2d.animations.flip(me);
                     this.x += 1;
 
-                    dragObjectWithMop(App.pet, App.petDefinition.spritesheet.cellSize);
-                    poopObjects.forEach(poop => dragObjectWithMop(poop));
+                    getDraggedWithMop(App.pet, App.petDefinition.spritesheet.cellSize);
+                    poopObjects.forEach(poop => getDraggedWithMop(poop));
+                    App.spawnedAnimals?.forEach(animal => getDraggedWithMop(animal))
 
                     if(this.x >= mop.width/1.5){
                         me.hidden = true;
@@ -6327,6 +6329,7 @@ const App = {
                                 App.pet.playCheeringAnimationIfTrue(App.pet.stats.has_poop_out, () => {});
                                 App.pet.stats.has_poop_out = false;
                                 poopObjects.forEach(poop => poop.removeObject())
+                                App.spawnedAnimals?.forEach(animal => animal.x = `${random(20, 80)}%`);
                             }
                         })
                     }
