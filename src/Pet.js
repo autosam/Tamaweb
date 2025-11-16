@@ -206,6 +206,12 @@ class Pet extends Object2d {
 
 
         // bobbing animation
+        const bobStoppingStates =  [
+            'eating', 
+            'sitting',
+            'kissing',
+        ];
+
         const initialAdditionalY = this.additionalY;
         let animationFloat = Math.random() * Math.PI;
         this.onDraw = (me) => {
@@ -214,7 +220,7 @@ class Pet extends Object2d {
             if(animationFloat > App.PI2) animationFloat = 0;
             me._ghostAnimationFloat = animationFloat;
 
-            me.additionalY = ['eating', 'sitting'].includes(App.pet.state) ? 
+            me.additionalY = bobStoppingStates.includes(App.pet.state) ? 
                 initialAdditionalY :
                 initialAdditionalY - 3 - Math.sin(animationFloat) * 3;
         }
