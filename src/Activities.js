@@ -2129,6 +2129,7 @@ class Activities {
                                 }
                             })),
                             {
+                                _ignore: !App.animals.list?.length,
                                 name: `${App.getIcon('bell-concierge')} feed all ${App.getBadge()}`,
                                 onclick: () => {
                                     const onUseFn = (selectedFood) => {
