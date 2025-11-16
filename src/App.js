@@ -1755,6 +1755,9 @@ const App = {
             birthday: petDef.birthday,
             accessories: petDef.accessories || [],
             lastBirthday: petDef.lastBirthday,
+            stats: {
+                is_ghost: petDef.stats.is_ghost,
+            }
         }
     },
     createActivePet: function(petDef, props = {}){
@@ -3503,19 +3506,20 @@ const App = {
                     ${
                         petDefinition.family.map((partners, i) => {
                             const [a, b] = partners;
+
                             return `
                                 <div class="family-tree__partners-container">
                                     <div class="family-tree__gen-badge">${i + 1}</div>
 
                                     <div class="family-tree__member-container">
-                                        ${PetDefinition.generateFullCSprite(b.sprite)}
+                                        ${PetDefinition.generateFullCSprite(b.sprite, null, PetDefinition.getSpriteClassName(b))}
                                         <small>${b.name}</small>
                                     </div>
 
                                     <div class="family-tree__vertical-line"></div>  
 
                                     <div class="family-tree__member-container">
-                                        ${PetDefinition.generateFullCSprite(a.sprite)}
+                                        ${PetDefinition.generateFullCSprite(a.sprite, null, PetDefinition.getSpriteClassName(a))}
                                         <small>${a.name}</small>
                                     </div>
                                 </div>
