@@ -98,7 +98,7 @@ class Animal extends Pet {
         const target = randomFromArray(
             [...App.spawnedAnimals, App.pet]
                 .filter(a => a !== this)
-                .filter(a => !a.isDuringScriptedState())
+                .filter(a => !a.isDuringScriptedState() && !a?.stats?.is_sleeping)
         );
         return target;
     }
@@ -177,7 +177,7 @@ class Animal extends Pet {
                 const rareAnimation = [
                     {name: 'sleeping', length: random(10000, 30000)},
                 ];
-                const animation = randomFromArray([
+                let animation = randomFromArray([
                     ...commonAnimations,
                     ...commonAnimations,
                     ...commonAnimations,
@@ -188,6 +188,9 @@ class Animal extends Pet {
                     ...commonAnimations,
                     ...rareAnimation,
                 ]);
+                if(App.pet.stats.is_sleeping){
+                    animation = {name: 'sleeping', length: random(10000, 30000)};
+                }
                 this.triggerScriptedState(animation.name, animation.length, random(10000, 20000));
                 this.stopMove();
             } else if(random(0, 105) < 3){
