@@ -101,6 +101,7 @@ const SPRITES = [
 "background/house/reviver_01.png",
 "background/house/wedding_01.png",
 "background/house/wedding_overlay.png",
+"background/outside/09.png",
 "background/outside/activities_base_01.png",
 "background/outside/garden_01.png",
 "background/outside/garden_inner_01.png",
@@ -320,4 +321,5 @@ const SPRITES = [
 "ui/shell_background_cloof_01.png",
 "ui/tap_01.png",
 "ui/ui_mask_01.png",
+"ui/update_banner.png",
 ].map(resource => 'resources/img/' + resource);

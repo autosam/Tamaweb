@@ -825,7 +825,7 @@ App.definitions = (() => {
                 price: 2,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 type: 'treat',
-                isNew: true,
+                isNew: false,
                 unbuyable: true,
             },
     
@@ -964,7 +964,7 @@ App.definitions = (() => {
                 price: 500,
                 type: 'med',
                 unbuyable: true,
-                isNew: true,
+                isNew: false,
                 payload: () => {
                     const wasGhost = App.petDefinition.stats.is_ghost;
 
@@ -1265,6 +1265,11 @@ App.definitions = (() => {
             "monster": {
                 image: 'resources/img/background/house/08.png',
                 price: 450,
+                isNew: false,
+            },
+            "forest": {
+                image: 'resources/img/background/outside/09.png',
+                price: 450,
                 isNew: true,
             },
             "silky retreat": {
@@ -1329,7 +1334,7 @@ App.definitions = (() => {
             "pumpkin": {
                 image: 'resources/img/background/house/cc_09.png',
                 price: 350,
-                isNew: true,
+                isNew: false,
             },
 
             // craftables
@@ -1605,21 +1610,21 @@ App.definitions = (() => {
                 image: 'resources/img/furniture/big_pumpkin.png',
                 id: "big_pumpkin",
                 price: 100,
-                isNew: true,
+                isNew: false,
             },
             {
                 name: 'Small Pumpkin',
                 image: 'resources/img/furniture/small_pumpkin.png',
                 id: "small_pumpkin",
                 price: 100,
-                isNew: true,
+                isNew: false,
             },
             {
                 name: 'Spooky Tree',
                 image: 'resources/img/furniture/spooky_tree.png',
                 id: "spooky_tree",
                 price: 50,
-                isNew: true,
+                isNew: false,
             },
     
             // misc
@@ -2132,7 +2137,7 @@ App.definitions = (() => {
                 image: 'resources/img/accessory/pumpkin_01.png',
                 front: true,
                 price: 150,
-                isNew: true,
+                isNew: false,
             },
             // gothic
             'demon wings': {
@@ -2245,56 +2250,56 @@ App.definitions = (() => {
                 image: 'resources/img/accessory/cone_cap_01.png',
                 front: true,
                 price: 250,
-                isNew: true,
+                isNew: false,
                 accessShop: 'devilsTown',
             },
             'dd head': {
                 image: 'resources/img/accessory/deer_head_01.png',
                 front: true,
                 price: 250,
-                isNew: true,
+                isNew: false,
                 accessShop: 'devilsTown',
             },
             'tilted fedora': {
                 image: 'resources/img/accessory/fedora_01.png',
                 front: true,
                 price: 200,
-                isNew: true,
+                isNew: false,
                 accessShop: 'devilsTown',
             },
             'kings crown': {
                 image: 'resources/img/accessory/kings_crown_01.png',
                 front: true,
                 price: 350,
-                isNew: true,
+                isNew: false,
                 accessShop: 'devilsTown',
             },
             'kings rod': {
                 image: 'resources/img/accessory/kings_rod.png',
                 front: true,
                 price: 300,
-                isNew: true,
+                isNew: false,
                 accessShop: 'devilsTown',
             },
             'monster hands': {
                 image: 'resources/img/accessory/monster_hands_01.png',
                 front: false,
                 price: 400,
-                isNew: true,
+                isNew: false,
                 accessShop: 'devilsTown',
             },
             'woodland headdress': {
                 image: 'resources/img/accessory/woodland_headdress_01.png',
                 front: true,
                 price: 350,
-                isNew: true,
+                isNew: false,
                 accessShop: 'devilsTown',
             },
             'tv head': {
                 image: 'resources/img/accessory/tv_head_01.png',
                 front: true,
                 price: 350,
-                isNew: true,
+                isNew: false,
                 accessShop: 'devilsTown',
             },
         },
@@ -2861,7 +2866,7 @@ App.definitions = (() => {
             {
                 name: 'Go to starlight disco',
                 duration: App.constants.ONE_HOUR * 1.5,
-                isNew: true,
+                isNew: false,
                 onEnd: () => {
                     App.pet.stats.current_fun += 90;
                     App.pet.stats.current_hunger += 25;
