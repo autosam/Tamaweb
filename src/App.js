@@ -7125,6 +7125,7 @@ const App = {
             'plants',
             'animals',
             'play_time',
+            'last_time',
         ];
 
         let savingData = [];
