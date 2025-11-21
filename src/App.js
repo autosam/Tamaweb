@@ -7103,11 +7103,28 @@ const App = {
         }
 
         App.temp.lastSaved = Infinity; // prevent re-saving until save is complete
+        const localStorageItemKeys = [
+            'user_name', 
+            'user_id', 
+            'pet', 
+            'records', 
+            'ingame_events_history', 
+            'missions',
+            'furniture',
+            'plants',
+            'animals',
+            'play_time',
+        ];
 
         let savingData = [];
         const setItem = (key, value) => {
             savingData = [...savingData, [key, value]];
+
+            if(localStorageItemKeys.includes(key)){
+                localStorage?.setItem(key, JSON.stringify(value))
+            }
         }
+
         setItem('pet', App.pet.serializeStats());
         setItem('settings', (App.settings));
         setItem('last_time', Date.now());
@@ -7163,16 +7180,30 @@ const App = {
     },
     load: async function() {
         let hasLoadError = false;
+        const getLocalStorageItem = (key) => {
+            const item = window.localStorage?.getItem(key);
+            try {
+                const json = JSON.parse(item);
+                return json;
+            } catch(e) {}
+            return false;
+        }
         const getItem = async (key, defaultValue) => {
             if(!window.idbKeyval) {
                 hasLoadError = true;
                 return defaultValue;
             }
             const value = await window.idbKeyval.get(key);
-            return value !== null && value !== undefined ? value : defaultValue;
+            const fallbackValue = getLocalStorageItem(key);
+            if(fallbackValue && !value){
+                console.log('save data fallback', {key, value, fallbackValue})
+            }
+            return value !== null && value !== undefined 
+                ? value 
+                : fallbackValue || defaultValue;
         }
     
-        const pet = await getItem('pet', {});
+        const pet = await getItem('pet', {}, true);
         const settings = await getItem('settings', null);
         const lastTime = await getItem('last_time', false);
         const eventsHistory = await getItem('ingame_events_history', null);
