@@ -3159,9 +3159,14 @@ const App = {
 
                                     App.displayPopup('resetting...', App.INF);
 
+                                    window.localStorage?.removeItem('pet');
+                                    window.localStorage?.removeItem('last_time');
                                     await window.idbKeyval.delMany(['last_time', 'pet']);
 
-                                    location.reload();
+                                    setTimeout(() => {
+                                        location.reload();
+                                    }, 1000)
+
                                     return false;
                                 }
                             },
@@ -3187,8 +3192,14 @@ const App = {
                                             onclick: async () => {
                                                 App.save = () => {};
                                                 App.displayPopup('resetting...', App.INF);
+
+                                                window.localStorage?.clear()
                                                 await window.idbKeyval.clear();
-                                                location.reload();
+
+                                                setTimeout(() => {
+                                                    location.reload();
+                                                }, 1000)
+
                                                 return false;
                                             }
                                         },
@@ -7121,7 +7132,7 @@ const App = {
             savingData = [...savingData, [key, value]];
 
             if(localStorageItemKeys.includes(key)){
-                localStorage?.setItem(key, JSON.stringify(value))
+                window.localStorage?.setItem(key, JSON.stringify(value))
             }
         }
 
@@ -7203,7 +7214,7 @@ const App = {
                 : fallbackValue || defaultValue;
         }
     
-        const pet = await getItem('pet', {}, true);
+        const pet = await getItem('pet', {});
         const settings = await getItem('settings', null);
         const lastTime = await getItem('last_time', false);
         const eventsHistory = await getItem('ingame_events_history', null);
