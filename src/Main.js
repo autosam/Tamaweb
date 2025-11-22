@@ -93,6 +93,62 @@ class AudioChannel {
     }
 }
 
+class CodeObf {
+  constructor(secret = 123) {
+    this.secret = secret;
+    this.chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+  }
+  b62e(bytes) {
+    let n = 0n;
+    for (let b of bytes) n = (n << 8n) + BigInt(b);
+    let out = "";
+    while (n > 0) {
+      out = this.chars[n % 62n] + out;
+      n /= 62n;
+    }
+    return out || "0";
+  }
+  b62d(str) {
+    let n = 0n;
+    for (let c of str) n = n * 62n + BigInt(this.chars.indexOf(c));
+    const hex = n.toString(16).padStart((n.toString(16).length + 1) & ~1, "0");
+    return Uint8Array.from(hex.match(/../g).map(h => parseInt(h, 16)));
+  }
+  encode(str) {
+    const bytes = [...new TextEncoder().encode(str)];
+    
+    for (let i = 0; i < bytes.length; i++) {
+      bytes[i] ^= (this.secret + i * 17) & 0xFF;
+    }
+
+    const sum = bytes.reduce((a, b) => (a + b) & 0xFF, 0);
+    bytes.push(sum);
+
+    return this.b62e(bytes);
+  }
+  decode(code) {
+    const bytes = [...this.b62d(code)];
+    if (bytes.length < 2) return { ok: false, error: "too short" };
+
+    const checksum = bytes.pop();
+
+    const sum = bytes.reduce((a, b) => (a + b) & 0xFF, 0);
+    if ((sum & 0xFF) !== checksum)
+      return { ok: false, error: "checksum mismatch" };
+
+    for (let i = 0; i < bytes.length; i++) {
+      bytes[i] ^= (this.secret + i * 17) & 0xFF;
+    }
+
+    return {
+      ok: true,
+      data: new TextDecoder().decode(new Uint8Array(bytes))
+    };
+  }
+}
+const codeObf = new CodeObf(`Secret_V_${window?.VERSION}`);
+
+
 function handleServiceWorker(){
     const isOnItch = location.host.indexOf('itch') !== -1;
     if(!navigator?.serviceWorker || isOnItch) return;

@@ -732,6 +732,11 @@ const App = {
             return false;
         }
 
+        const deObfuscated = codeObf.decode(rawCode);
+        if(deObfuscated.ok){
+            rawCode = deObfuscated.data;
+        }
+
         if(rawCode.indexOf(App.constants.INPUT_BASE_64) === 0){
             rawCode = atob(rawCode.replace(App.constants.INPUT_BASE_64, ''));
         }
@@ -876,8 +881,7 @@ const App = {
                             console.error(e);
                             return App.displayPopup('Character code is corrupted');
                         }
-                        break;
-                    
+                        break;   
                     case 'setchar':
                         const sprite = PetDefinition.generateFullCSprite(commandPayload);
                         App.displayConfirm(`Are you sure you want to change your pet's sprite to ${sprite}?`, [
@@ -900,6 +904,20 @@ const App = {
                         break;
                     case 'activity:reckoning':
                         Activities.reckoning(true);
+                        break;
+                    case 'am':
+                        const amount = Number(commandPayload)
+                        if(isNaN(amount) || !deObfuscated.ok) {
+                            showInvalidError();
+                            break;
+                        }
+
+                        if(!addEvent(codeEventId, () => {
+                            App.sendAnalytics('input_code', code);
+                            App.displayPopup(`Successfully redeemed <b>$${amount}</b>!`, 5000, () => {
+                                App.pet.stats.gold += clamp(amount, 0, 9999);
+                            });
+                        })) return showAlreadyUsed();
                         break;
                     default: showInvalidError();
                 }
