@@ -169,7 +169,7 @@ App.definitions = (() => {
                 onEnter: () => App.handlers.open_works_list(),
             },
             {
-                name: `Underworld Entrance ${App.getBadge()}`,
+                name: `Underworld Entrance`,
                 image: 'resources/img/misc/activity_building_underworld.png',
                 onEnter: () => Activities.goToUnderworldEntrance(),
             }

@@ -4971,7 +4971,7 @@ const App = {
 
                             const dialog = App.displayList([
                                 {
-                                    name: `${hole.name} ${hole.isNew ? App.getBadge() : ''}`,
+                                    name: `${hole.name} ${hole.isNew ? App.getBadge('new!') : ''}`,
                                     icon: 'lemon',
                                     type: 'info',
                                 },
@@ -4983,7 +4983,7 @@ const App = {
                                     }
                                 },
                                 {
-                                    name: `With a friend ${App.getBadge()}`,
+                                    name: `With a friend`,
                                     onclick: () => {
                                         App.handlers.open_friends_list(
                                             (selectedFriend) => {
