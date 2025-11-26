@@ -2224,7 +2224,7 @@ const App = {
             App.displayGrid([
                 ...renderingMainMenu,
                 {
-                    name: '<i class="fa-solid fa-arrow-left back-sound"></i>',
+                    name: App.getIcon('arrow-left', true),
                     class: 'back-sound',
                     onclick: () => { }
                 }
