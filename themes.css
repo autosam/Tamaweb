@@ -1196,6 +1196,16 @@
 .theme-color.azure { --custom-clr: #0080FF }
 .theme-color.gray { --custom-clr: #797979 }
 .theme-color.black { --custom-clr: #000000 }
+.theme-color.slateblue { --custom-clr: mediumslateblue }
+.theme-color.lavender {
+    --prim-back-text-clr: #9b9b84;
+    --prim-clr-a: #FAFAE6;
+    --prim-back-text-clr: #E68181;
+    --prim-clr-a: #FAE6E6;
+    --custom-clr: #e6e6fa;
+    --prim-clr-b-text: #9090E9;
+    --prim-clr-c-text: #9090E9;
+}
 .theme-color {
     --custom-clr: #000000;
     --prim-back-text-clr: white;
@@ -1379,23 +1389,23 @@
     .post-text {
         background: #ffffff;
         border-top: 5px solid var(--prim-clr-a);
-        color: #12004e;
+        color: color-mix(in srgb, var(--prim-back-text-clr) 50%, black);
     }
     .post-header {
         background: var(--prim-clr-a);
         border-bottom: 1px solid #ffffff5c;
-        color: white;
+        color: var(--prim-back-text-clr);
     }
     .post-header:after {
         background: var(--post-striped);
     }
     .post-close {
         background: #ffffff1a;
-        color: #ffffff;
+        color: var(--prim-back-text-clr);
     }
     .post-next {
         background: var(--prim-clr-a);
-        color: #ffffff;
+        color: var(--prim-back-text-clr);
     }
     .post-profile-icon {
         background: var(--post-striped);

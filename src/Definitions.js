@@ -50,6 +50,8 @@ App.definitions = (() => {
             'color green',
             'color purple',
             'color black',
+            'color slateblue',
+            'color lavender',
         ],
         /* MAIN MENU */
         main_menu: [

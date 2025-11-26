@@ -3000,12 +3000,12 @@ const App = {
                     }
                 },
                 {
-                    name: `Change Theme`,
+                    name: `Change Theme ${App.getBadge()}`,
                     onclick: () => {
-                        const newThemes = [];
+                        const newThemes = ['color lavender', 'color slateblue'];
                         return App.displayList(
-                            App.definitions.themes.map(themeName => ({
-                                name: `${themeName} ${newThemes.includes(themeName) ? App.getBadge('new!') : ''}`,
+                            [...App.definitions.themes].sort((a, b) => newThemes.includes(b) - newThemes.includes(a)).map(themeName => ({
+                                name: `${themeName.replace('color ', '')} ${newThemes.includes(themeName) ? App.getBadge('new!') : ''}`,
                                 // class: `theme-${themeName}`,
                                 onclick: () => {
                                     App.settings.theme = themeName;
