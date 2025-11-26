@@ -274,9 +274,7 @@
         background: #ED254E;
         color: white;
     }
-    .pet-trait-icons-container {
-        background-color: #ffe3c7;
-    }
+
     .pet-trait-icon {
         background: #ffcc97;
     }
@@ -544,10 +542,6 @@
     .sales-notice {
         background: #ED254E;
         color: white;
-    }
-    .pet-trait-icons-container {
-        background-color: #ffffff;
-        border: 2px solid var(--prim-clr-c-text);
     }
     .pet-trait-icon {
         background: var(--prim-clr-c-text);
@@ -875,9 +869,6 @@
         background: #ED254E;
         color: white;
     }
-    .pet-trait-icons-container {
-        background-color: #ffe3c7;
-    }
     .pet-trait-icon {
         background: #ffcc97;
     }
@@ -1168,9 +1159,6 @@
         color: white;
     }
 
-    .pet-trait-icons-container {
-        background-color: #fff7ed;
-    }
     .pet-trait-icon {
         background: #fdba74;
     }
@@ -1210,6 +1198,7 @@
 .theme-color.black { --custom-clr: #000000 }
 .theme-color {
     --custom-clr: #000000;
+    --prim-back-text-clr: white;
     /* vars */
     --container-background: linear-gradient(0deg, #ffcf9d, #ffb1ee);
     --background-a: repeating-linear-gradient(-45deg, color-mix(in srgb, var(--custom-clr) 20%, white) 0 15px, color-mix(in srgb, var(--custom-clr) 30%, white) 15px 30px);
@@ -1252,7 +1241,7 @@
     .generic-btn.stylized.back-btn,
     .generic-btn.primary.solid {
         background: var(--prim-clr-a);
-        color: white;
+        color: var(--prim-back-text-clr);
         border-color: #00000066 !important;
     }
     .generic-btn.stylized.back-btn:active,
@@ -1489,9 +1478,6 @@
     .sales-notice {
         background: #ED254E;
         color: white;
-    }
-    .pet-trait-icons-container {
-        background-color: #ffe3c7;
     }
     .pet-trait-icon {
         background: #ffcc97;

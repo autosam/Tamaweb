@@ -274,9 +274,6 @@
         background: #ED254E;
         color: white;
     }
-    .pet-trait-icons-container {
-        background-color: #ffe3c7;
-    }
     .pet-trait-icon {
         background: #ffcc97;
     }
@@ -1121,6 +1118,7 @@ c-sprite {
     margin: 6px -10px 0 -10px;
     flex-wrap: wrap;
     justify-content: center;
+    background-color: #00000010;
 }
 .pet-trait-icon {
     width: 22px;
