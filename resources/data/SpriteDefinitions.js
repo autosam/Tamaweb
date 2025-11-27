@@ -286,6 +286,7 @@ const SPRITES = [
 "misc/thought_exclaim.png",
 "misc/thought_heart.png",
 "misc/thought_heart_broken.png",
+"misc/thought_paw.png",
 "misc/thought_poop.png",
 "misc/thought_question.png",
 "misc/thought_talk.png",

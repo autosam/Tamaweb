@@ -1621,6 +1621,7 @@ const App = {
         else if(h >= EVENING_TIME[0] && h < EVENING_TIME[1]) sky = 'evening';
         else if(h >= NIGHT_TIME[0] || h < NIGHT_TIME[1]) sky = 'night';
         else sky = 'morning';
+        App.sky.name = sky;
         App.sky.setImage(App.preloadedResources[`resources/img/background/sky/${sky}.png`]);
         App.skyOverlay.setImage(App.preloadedResources[`resources/img/background/sky/${sky}_overlay.png`]);
         setTimeout(() => App.skyOverlay.hidden = !isOutside)
@@ -1857,6 +1858,11 @@ const App = {
             : random(0, 256);
         if(encounterChance === 1){
             return Activities.encounter();
+        }
+
+        // getting robbed
+        if(random(0, 100) <= 4 && App.pet.stats.is_sleeping && App.sky.name === 'night'){
+            return Activities.getRobbed();
         }
     },
     handlers: {

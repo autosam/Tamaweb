@@ -713,6 +713,8 @@ class Pet extends Object2d {
             }
         } */
 
+        if(App.time < 5000) return false;
+
         // bad animations
         if(random(0, 100) < 10){
             if(this.hasMoodlet('sleepy')){

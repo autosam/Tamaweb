@@ -1,4 +1,58 @@
 class Activities {
+    static async getRobbed(){
+        const hasIndoorAnimal = App.animals.list?.some(animalDef => animalDef.spawnIndoors);
+
+        const npc = new Pet(
+            new PetDefinition({
+                sprite: 'resources/img/character/robber_01.png',
+            })
+        )
+        npc.animations.moving.frameTime = 200;
+
+        const robber = new TimelineDirector(npc);
+
+        const checkDriver = App.registerOnDrawEvent(() => {
+            const flee = async () => {
+                robber.release();
+                const fleeingRobber = new TimelineDirector(npc);
+
+                fleeingRobber.setState('idle');
+                fleeingRobber.think(hasIndoorAnimal ? 'thought_paw' : 'thought_exclaim');
+                npc.animations.moving.frameTime = 100;
+                await fleeingRobber.bob({animation: 'moving', maxCycles: 1});
+                await TimelineDirector.wait(200);
+                await fleeingRobber.moveTo({x: '-30%', speed: 0.05});
+                fleeingRobber.remove();
+            }
+
+            if(!App.pet.stats.is_sleeping || hasIndoorAnimal){
+                flee();
+                App.unregisterOnDrawEvent(checkDriver);
+            }
+        })
+        
+        robber.setPosition({x: `${random(20, 80)}%`, y: '85%'});
+
+        for(let i = 0; i < 4; i++){
+            await robber.moveTo({x: `${random(20, 80)}%`, speed: 0.005});
+            robber.think('thought_talk')
+            if(i === 2){
+                const stealingAmount = random(10, 100);
+                if(App.pet.stats.gold < stealingAmount){
+                    robber.actor.say(`Why so poor??`);
+                } else {
+                    robber.actor.say(`-$${stealingAmount}`);
+                    App.pet.stats.gold -= stealingAmount;
+                }
+            }
+            await TimelineDirector.wait(random(2000, 5000))
+        }
+
+        npc.animations.moving.frameTime = 100;
+        await robber.moveTo({x: '-30%', speed: 0.05});
+        robber.remove();
+        App.unregisterOnDrawEvent(checkDriver);
+    }
     static async goToRestaurant(otherPetDef = App.getRandomPetDef()){
         App.toggleGameplayControls(false);
         App.setScene(App.scene.restaurant);
