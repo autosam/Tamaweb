@@ -2717,3 +2717,22 @@ c-sprite.ghost.devil::after {
     image-rendering: pixelated;
     background-repeat: no-repeat;
 }
+
+.option {
+    content: "";
+    top: calc(50% - 7px);
+    left: -10px;
+    width: 12px;
+    height: 12px;
+    display: block;
+    pointer-events: none;
+    position: fixed;
+    border: 1px solid var(--prim-clr-b-border);
+    border-radius: 4px;
+}
+.option.on {
+    background: lightgreen;
+}
+.option.off {
+    background: lightgray;
+}

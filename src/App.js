@@ -34,6 +34,7 @@ const App = {
         showWantName: true,
         genderedPets: false,
         playMusic: true,
+        skillsAffectingEvolution: true,
     },
     constants: {
         ONE_HOUR: 1000 * 60 * 60,
@@ -2797,38 +2798,14 @@ const App = {
                 },
                 { type: 'separator', _ignore: ignoreFirstDivider },
                 {
-                    name: `gameplay settings`,
+                    name: `gameplay settings ${App.getBadge()}`,
                     onclick: () => {
+                        const getStateIcon = (state) => {
+                            const className = state ? 'option on' : 'option off';
+                            return `<div class="${className}"></div>`
+                        }
+
                         return App.displayList([
-                            {
-                                _mount: (e) => e.innerHTML = `Auto aging: <i>${App.settings.automaticAging ? 'On' : 'Off'}</i>`,
-                                onclick: (e) => {
-                                    if(!App.settings.automaticAging){
-                                        App.displayConfirm(`Are you sure? This will make your pets automatically age up after a certain amount of time`, [
-                                            {
-                                                name: 'yes',
-                                                onclick: () => {
-                                                    App.settings.automaticAging = true;
-                                                    App.displayPopup(`Automatic aging turned on`);
-                                                    e._mount();
-                                                    App.save();
-                                                }
-                                            },
-                                            {
-                                                name: 'no',
-                                                class: 'back-btn',
-                                                onclick: () => {}
-                                            }
-                                        ])
-                                    } else {
-                                        App.settings.automaticAging = false;
-                                        App.displayPopup(`Automatic aging turned off`);
-                                        App.save();
-                                    }
-                                    e._mount();
-                                    return true;
-                                }
-                            },
                             {
                                 name: `Sleeping Hours`,
                                 onclick: (e) => {
@@ -2888,7 +2865,36 @@ const App = {
                                 }
                             },
                             {
-                                _mount: (e) => e.innerHTML = `show want name: <i>${App.settings.showWantName ? 'On' : 'Off'}</i>`,
+                                _mount: (e) => e.innerHTML = `${getStateIcon(App.settings.automaticAging)} Auto aging: <i>${App.settings.automaticAging ? 'On' : 'Off'}</i>`,
+                                onclick: (e) => {
+                                    if(!App.settings.automaticAging){
+                                        App.displayConfirm(`Are you sure? This will make your pets automatically age up after a certain amount of time`, [
+                                            {
+                                                name: 'yes',
+                                                onclick: () => {
+                                                    App.settings.automaticAging = true;
+                                                    App.displayPopup(`Automatic aging turned on`);
+                                                    e._mount();
+                                                    App.save();
+                                                }
+                                            },
+                                            {
+                                                name: 'no',
+                                                class: 'back-btn',
+                                                onclick: () => {}
+                                            }
+                                        ])
+                                    } else {
+                                        App.settings.automaticAging = false;
+                                        App.displayPopup(`Automatic aging turned off`);
+                                        App.save();
+                                    }
+                                    e._mount();
+                                    return true;
+                                }
+                            },
+                            {
+                                _mount: (e) => e.innerHTML = `${getStateIcon(App.settings.showWantName)} show want name: <i>${App.settings.showWantName ? 'On' : 'Off'}</i>`,
                                 onclick: (item) => {
                                     App.settings.showWantName = !App.settings.showWantName;
                                     App.applySettings();
@@ -2897,9 +2903,25 @@ const App = {
                                 }
                             },
                             {
-                                _mount: (e) => e.innerHTML = `gendered pets: <i>${App.settings.genderedPets ? 'On' : 'Off'}</i>`,
+                                _mount: (e) => e.innerHTML = `${getStateIcon(App.settings.genderedPets)} gendered pets: <i>${App.settings.genderedPets ? 'On' : 'Off'}</i>`,
                                 onclick: (item) => {
                                     App.settings.genderedPets = !App.settings.genderedPets;
+                                    item._mount(); 
+                                    return true;
+                                }
+                            },
+                            {
+                                _mount: (e) => e.innerHTML = `
+                                ${getStateIcon(App.settings.skillsAffectingEvolution)} 
+                                <div class="overflow-hidden flex">
+                                    <div class="marquee">
+                                        skills affecting evolution: <i>${App.settings.skillsAffectingEvolution ? 'On' : 'Off'}</i>
+                                    </div>
+                                </div>
+                                ${App.getBadge()}
+                                `,
+                                onclick: (item) => {
+                                    App.settings.skillsAffectingEvolution = !App.settings.skillsAffectingEvolution;
                                     item._mount(); 
                                     return true;
                                 }
@@ -3365,7 +3387,7 @@ const App = {
                                     <b>CARE:</b> <div style="display: inline-flex; gap: 1px">${getCareRatingIcons()}</div>
                                 </div>
                             </div>
-                            <div class="inner-padding b-radius-10 uppercase list-text surface-stylized">
+                            <div class="inner-padding b-radius-10 uppercase list-text surface-stylized ${!App.settings.skillsAffectingEvolution ? 'hidden' : ''}">
                                 <small>
                                     <i class="fa-solid fa-info-circle"></i>
                                     High enough skills will override care ratings above 1 when evolving.

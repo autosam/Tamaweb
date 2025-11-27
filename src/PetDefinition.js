@@ -539,7 +539,7 @@ class PetDefinition {
         }, null)?.[0];
 
         let finalRating = careRating;
-        if(careRating > 1){
+        if(careRating > 1 && App.settings.skillsAffectingEvolution){
             const topSkillRating = ratings[topSkill];
             if(topSkillRating) finalRating = topSkillRating;
         }
