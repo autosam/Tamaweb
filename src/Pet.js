@@ -620,7 +620,7 @@ class Pet extends Object2d {
             if(shouldIncreaseDiscipline){
                 this.stats.last_time_praise_given = App.fullTime;
                 Activities.task_nonSwayingFloatingObjects(10, ['resources/img/misc/arrow_up_green_01.png'], [100, 150]);
-                this.stats.current_discipline += random(5, 15);
+                this.stats.current_discipline += random(1, 6);
                 App.save();
             }
             this.playCheeringAnimation(false, !shouldIncreaseDiscipline);
@@ -631,7 +631,7 @@ class Pet extends Object2d {
                 this.petDefinition.refreshWant()
                 this.showCurrentWant();
             }
-            this.stats.current_discipline -= random(2, 4);
+            this.stats.current_discipline -= random(1, 4);
         }
     }
     scold(){
@@ -640,7 +640,7 @@ class Pet extends Object2d {
         if(this.stats.is_misbehaving) {
             const isSuccessful = random(0, 4) > 0;
             if(isSuccessful) {
-                this.stats.current_discipline += random(5, 10);
+                this.stats.current_discipline += random(1, 4);
                 this.stats.is_misbehaving = false;
                 this.triggerScriptedState('mild_uncomfortable', 2000, null, true);
                 Activities.task_nonSwayingFloatingObjects(10, ['resources/img/misc/arrow_up_green_01.png'], [100, 150]);
