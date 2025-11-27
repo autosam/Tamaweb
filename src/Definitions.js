@@ -165,6 +165,11 @@ App.definitions = (() => {
                 onEnter: () => App.handlers.go_to_clinic(),
             },
             {
+                name: `Restaurant ${App.getBadge()}`,
+                image: 'resources/img/misc/activity_building_restaurant.png',
+                onEnter: () => Activities.goToRestaurant(),
+            },
+            {
                 isDisabled: () => App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult,
                 name: 'Work',
                 image: 'resources/img/misc/activity_building_work.png',
@@ -175,11 +180,6 @@ App.definitions = (() => {
                 image: 'resources/img/misc/activity_building_underworld.png',
                 onEnter: () => Activities.goToUnderworldEntrance(),
             },
-            {
-                name: `Restaurant`,
-                image: 'resources/img/misc/activity_building_restaurant.png',
-                onEnter: () => Activities.goToRestaurant(),
-            }
         ],
     
         /* FOOD AND SNACKS */
