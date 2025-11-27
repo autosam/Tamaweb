@@ -1861,7 +1861,7 @@ const App = {
         }
 
         // getting robbed
-        if(random(0, 100) <= 4 && App.pet.stats.is_sleeping && App.sky.name === 'night'){
+        if(random(0, 100) <= 10 && App.pet.stats.is_sleeping && App.sky.name === 'night'){
             return Activities.getRobbed();
         }
     },

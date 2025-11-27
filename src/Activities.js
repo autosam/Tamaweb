@@ -39,7 +39,13 @@ class Activities {
             if(i === 2){
                 const stealingAmount = random(10, 100);
                 if(App.pet.stats.gold < stealingAmount){
-                    robber.actor.say(`Why so poor??`);
+                    const lines = [
+                        'Why so poor??',
+                        'Where...?',
+                        'You poorer than me...',
+                        'No money...?',
+                    ]
+                    robber.actor.say(randomFromArray(lines));
                 } else {
                     robber.actor.say(`-$${stealingAmount}`);
                     App.pet.stats.gold -= stealingAmount;
