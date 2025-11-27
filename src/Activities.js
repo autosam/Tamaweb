@@ -1,4 +1,151 @@
 class Activities {
+    static async goToRestaurant(otherPetDef = App.getRandomPetDef()){
+        App.toggleGameplayControls(false);
+        App.setScene(App.scene.restaurant);
+
+        const tableObject = new Object2d({
+            img: 'resources/img/misc/restaurant_table_01.png',
+            x: 0, y: 0, z: App.pet.z + 1,
+        })
+
+        App.pet.stopMove();
+        const pet = new TimelineDirector(App.pet);
+
+        const waiter = new TimelineDirector(
+            new Pet(new PetDefinition({
+                sprite: randomFromArray([
+                    'resources/img/character/chara_179b.png', 
+                    'resources/img/character/chara_220b.png'
+                ]),
+            }))
+        )
+        waiter.setPosition({x: '-25%', y: '75%'});
+
+        pet.setPosition({x: '100%'});
+        await pet.moveTo({x: '80%', speed: 0.025});
+
+        await pet.jumpTo({x:'85%', y: '80%', speed: 0.002})
+
+        await waiter.moveTo({x: '30%', speed: 0.025});
+        waiter.setState('jumping')
+
+        waiter.actor.say('Welcome!', 1000);
+        await TimelineDirector.wait(1000);
+        waiter.actor.say('What can I get you?', 2000);
+
+        await TimelineDirector.wait(2000);
+
+        const onEnd = () => {
+            pet.release();
+            tableObject.removeObject();
+            App.toggleGameplayControls(true);
+            App.handlers.open_activity_list(true);
+            waiter.remove();
+        }
+        const spawnAndEatFood = async (foodItem) => {
+            waiter.setPosition({x: '-30%'});
+            await waiter.moveTo({x: '40%', speed: 0.03});
+
+            new Object2d({
+                img: 'resources/img/misc/foam_single.png',
+                x: '65%',
+                y: '70%',
+                opacity: 1,
+                scale: 1.5,
+                rotation: random(0, 180),
+                z: App.constants.ACTIVE_PET_Z + 2,
+                onDraw: (me) => {
+                    Object2d.animations.flip(me);
+                    Object2d.animations.pulseScale(me, 0.1, 0.01);
+                    me.scale -= 0.0009 * App.deltaTime;
+                    me.opacity -= 0.0009 * App.deltaTime;
+                    if(me.opacity <= 0) me.removeObject();
+                }
+            })
+
+            const { sprite, hunger_replenish = 24 } = foodItem.current;
+            const foodObject = new Object2d({
+                image: App.preloadedResources[App.constants.FOOD_SPRITESHEET],
+                spritesheet: {
+                    ...App.constants.FOOD_SPRITESHEET_DIMENSIONS,
+                    cellNumber: sprite
+                },
+                scale: 1,
+                x: '65%',
+                y: '70%',
+                z: App.pet.z + 1.5,
+                noPreload: true,
+            })
+
+            await pet.bob({maxCycles: 1, animation: 'cheering', landAnimation: 'jumping'});
+            waiter.bob({maxCycles: 1, animation: 'jumping', landAnimation: 'jumping'});
+
+            await TimelineDirector.wait(500);
+
+            waiter.actor.say('Enjoy!', 1000);
+
+            await TimelineDirector.wait(1000);
+
+            await waiter.moveTo({x: '-30%', speed: 0.03});
+
+            pet.lookAt(false);
+            pet.setState('eating');
+
+            App.pet.stats.current_hunger += hunger_replenish * 1.25;
+            App.pet.stats.current_fun += random(15, 30);
+
+            await TimelineDirector.wait(1500);
+            foodObject.spritesheet.cellNumber = sprite + 1;
+            await TimelineDirector.wait(1500);
+            foodObject.spritesheet.cellNumber = sprite + 2;
+            await TimelineDirector.wait(1500);
+            foodObject.removeObject();
+            
+            pet.setState('blush');
+            
+            await TimelineDirector.wait(1000);
+
+            pet.release();
+            App.pet.playCheeringAnimation(onEnd);
+        }
+        
+        const getMenuItems = () => {
+            if(App.temp.restaurantMenuItems) return App.temp.restaurantMenuItems;
+
+            const possibleFoodItems = App.handlers.open_food_list({
+                buyMode: true,
+                getListOnly: true,
+                filterType: 'food',
+                age: PetDefinition.LIFE_STAGE.adult,
+                allowCookableOnly: random(0, 4) === 0,
+                outOfStockPercent: 0,
+                priceMult: 2,
+            });
+            const menuItems = shuffleArray(possibleFoodItems)
+                .slice(0, 6);
+            App.temp.restaurantMenuItems = menuItems;
+
+            return menuItems;
+        }
+
+        const menuItems = getMenuItems()
+            .map(item => ({
+                ...item, 
+                disabled: false,
+                onclick: () => {
+                    if(App.pay(item.price)){
+                        spawnAndEatFood(item);
+                        return false;
+                    }
+                    return true;
+                },
+            }));
+
+        App.displaySlider(menuItems, false, {
+            accept: 'Order',
+            onCancel: onEnd
+        }, `$${App.pet.stats.gold + (App.isSalesDay() ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}`);
+    }
     static async ghost_befriendingGame(otherPetDef = App.getRandomPetDef()){
         const isTargetNegative = otherPetDef.stats.is_ghost === PetDefinition.GHOST_TYPE.devil;
 
@@ -5690,6 +5837,9 @@ class TimelineDirector {
     setState = (state) => this.actor?.setState?.(state);
     lookAt = (direction) => this.actor && (this.actor.inverted = direction);
     release = () => {
+        if(!this.actor) return;
+
+        this.released = true;
         this.actor.stopScriptedState();
         this.actor = false;
         this.registeredDrawEvents.forEach(e => App.unregisterOnDrawEvent(e));
@@ -5797,6 +5947,54 @@ class TimelineDirector {
             })
         })
     } 
+    jumpTo = ({x, y, curve = 0.5, speed = 0.02, endState = 'idle', animation = 'jumping'}) => {
+        return new Promise(resolve => {
+            if (!this.actor) return resolve();
+
+            const actor = this.actor;
+            const startX = actor.x;
+            const startY = actor.y;
+
+            if (typeof x === 'string') {
+                const percent = parseFloat(x);
+                x = App.drawer.getRelativePositionX(percent) - (this.getSize() / 2);
+            }
+            if (typeof y === 'string') {
+                const percent = parseFloat(y);
+                y = App.drawer.getRelativePositionY(percent) - (this.getSize() / 2);
+            }
+
+            let progress = 0;
+
+            const drawEvent = App.registerOnDrawEvent(() => {
+                if (!actor) {
+                    App.unregisterOnDrawEvent(drawEvent);
+                    return;
+                }
+
+                progress += speed * App.deltaTime;
+                if (progress >= 1) {
+                    actor.x = x;
+                    actor.y = y;
+                    actor.setState(endState);
+                    App.unregisterOnDrawEvent(drawEvent);
+                    resolve();
+                    return;
+                }
+
+                const nx = lerp(startX, x, progress);
+                const ny = lerp(startY, y, progress);
+
+                const arc = Math.sin(progress * Math.PI) * curve * this.getSize();
+                actor.x = nx;
+                actor.y = ny - arc;
+
+                actor.setState(animation);
+            });
+
+            this.registeredDrawEvents.push(drawEvent);
+        });
+    }
     
     static wait = (...args) => App.wait(...args);
 }

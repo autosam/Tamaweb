@@ -174,6 +174,11 @@ App.definitions = (() => {
                 name: `Underworld Entrance`,
                 image: 'resources/img/misc/activity_building_underworld.png',
                 onEnter: () => Activities.goToUnderworldEntrance(),
+            },
+            {
+                name: `Restaurant`,
+                image: 'resources/img/misc/activity_building_restaurant.png',
+                onEnter: () => Activities.goToRestaurant(),
             }
         ],
     

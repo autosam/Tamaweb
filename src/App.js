@@ -1354,6 +1354,10 @@ const App = {
             image: 'resources/img/background/house/angel_town_01.png',
             noShadows: true,
         }),
+        restaurant: new Scene({
+            image: 'resources/img/background/house/restaurant_01.png',
+            noShadows: true,
+        })
     },
     setScene(scene, noPositionChange, onLoadArg){
         App.currentScene?.onUnload?.(scene);
@@ -3554,6 +3558,8 @@ const App = {
                 getListOnly,
                 allowCookableOnly,
                 limitFilter,
+                outOfStockPercent = 20,
+                priceMult = 1,
             } = props;
 
             let list = [];
@@ -3588,10 +3594,10 @@ const App = {
                 if(ownedAmount < useAmount) isDisabled = true;
 
                 // some entries become randomly unavailable to buy for the day
-                const isOutOfStock = ++index && buyMode && getIsOutOfStock(20) && currentType !== 'med';
+                const isOutOfStock = ++index && buyMode && getIsOutOfStock(outOfStockPercent) && currentType !== 'med';
 
                 // 50% off on sales day
-                let price = current.price;
+                let price = current.price * priceMult;
                 if(sellMode) {
                     if(current.price === 0) continue;
                     price = current.cookableOnly 
@@ -3604,6 +3610,7 @@ const App = {
                     disabled: Boolean(isOutOfStock || isDisabled),
                     current,
                     foodName: food,
+                    price,
                     name: `
                         ${App.getFoodCSprite(current.sprite)} 
                         ${current.cookableOnly ? '★ ' : ''}
@@ -6592,6 +6599,7 @@ const App = {
         list.getCurrentIndex = () => currentIndex;
 
         cancelBtn.onclick = () => {
+            options?.onCancel?.();
             list.close();
         }
 
