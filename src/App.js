@@ -778,20 +778,20 @@ const App = {
                 break;
             case "TAMAWEBGIFT":
                 if(!addEvent(codeEventId, () => {
-                    App.sendAnalytics('input_code', code);
                     App.displayPopup(`You've redeemed <b>$1000</b>!<br><br> Thanks for playing!`, 5000, () => {
                         App.pet.stats.gold += 1000;
                     });
                 })) return showAlreadyUsed();
                 break;
-            case "HPPYHLWN":
+            // update specific
+            case "HPPYTNXGVN":
+            case "LAVENDER":
+            case "INVITEANIMALS":
                 if(!addEvent(codeEventId, () => {
-                    App.sendAnalytics('input_code', code);
-                    App.displayPopup(`You've redeemed <b>$2000</b>, <b>500 Mission pts</b> and <b>x100 ${App.constants.UNDERWORLD_TREAT_CURRENCY}</b>!<br><br> Thanks for playing!`, 5000, () => {
-                        App.pet.stats.gold += 2000;
-                        Missions.currentPts += 500;
-                        App.addNumToObject(App.pet.inventory.food, App.constants.UNDERWORLD_TREAT_CURRENCY, 100)
-                    });
+                    const goldAmount = 200, missionPtsAmount = 50;
+                    App.pet.stats.gold += goldAmount;
+                    Missions.currentPts += missionPtsAmount;
+                    App.displayPopup(`You've redeemed <b>$${goldAmount}</b>, <b>${missionPtsAmount} Mission pts</b>!`, 4000);
                 })) return showAlreadyUsed();
                 break;
             default:
