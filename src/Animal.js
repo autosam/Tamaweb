@@ -74,6 +74,9 @@ class AnimalDefinition extends PetDefinition {
 class Animal extends Pet {
     constructor(definition, additionalProps){
         super(definition, additionalProps);
+
+        this.selector = 'animal';
+
         this.z = App.constants.ACTIVE_PET_Z;
         this.animalDefinition = this.petDefinition;
     }
@@ -103,6 +106,15 @@ class Animal extends Pet {
         return target;
     }
     onDraw(){
+        if(!this.currentScenePets) {
+            this.currentScenePets = App.drawer.selectObjects('pet');
+        }
+
+        if(this.currentScenePets?.length){
+            const lastPet = this.currentScenePets[this.currentScenePets.length - 1];
+            return lastPet?.setLocalZBasedOnSelf?.(this);
+        }
+
         App.pet.setLocalZBasedOnSelf(this);
     }
     wander() {

@@ -1988,7 +1988,10 @@ const App = {
                                 
                                 prompt.close();
                                 try {
-                                    const def = new PetDefinition(JSON.parse(data.data));
+                                    const parsedJson = JSON.parse(data.data);
+                                    const def = new PetDefinition(parsedJson).setStats({
+                                        is_ghost: parsedJson.is_ghost || 0,
+                                    })
                                     App.displayConfirm(`Do you want to add ${def.getCSprite()} ${def.name} to your friends list?`, [
                                         {
                                             name: 'yes',
@@ -7667,6 +7670,9 @@ const App = {
                     name: App.petDefinition.name,
                     sprite: App.petDefinition.sprite,
                     accessories: App.petDefinition.accessories,
+                    is_ghost: App.petDefinition.stats.is_ghost !== 0 
+                        ? App.petDefinition.stats.is_ghost 
+                        : undefined,
                 })
             });
             return App.apiService.sendRequest(params);
@@ -7697,6 +7703,8 @@ const App = {
                             sprite: sanitize(petDef.sprite),
                             ownerId: petDef.ownerId,
                             interactions: petDef.interactions,
+                        }).setStats({
+                            is_ghost: petDef.is_ghost || 0,
                         })
                     );
                 }
