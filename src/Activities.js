@@ -4111,15 +4111,16 @@ class Activities {
             const wantedFriendDef = App.petDefinition.friends[App.pet.stats.current_want.item];
             App.petDefinition.checkWant(otherPetDef == wantedFriendDef, App.constants.WANT_TYPES.playdate)
         }
-        App.pet.x = '50%';
         App.setScene(App.scene.park);
         App.toggleGameplayControls(false, () => App.pet.stopScriptedState());
         App.pet.speedOverride = 0.025;
+        App.pet.x = '50%';
+        App.pet.y = '92%';
 
         let otherPet;
         if(otherPetDef){
             otherPet = new Pet(otherPetDef, {
-                x: '75%', speedOverride: random(15, 35) * 0.001,
+                x: '75%', y: '90%', speedOverride: random(15, 35) * 0.001,
             });
             otherPet.triggerScriptedState('playing', 10000, null, true, false, Pet.scriptedEventDrivers.playing.bind({pet: otherPet}));
 
