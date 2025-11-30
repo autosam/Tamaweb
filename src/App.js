@@ -2480,18 +2480,16 @@ const App = {
                             </a>
                         </div>
                         <div class="credit-author">
-                            <a href="https://vairasmythe.carrd.co/" target="_blank">
-                                Vaira Smythe
+                            <a href="https://www.instagram.com/abysmdelirium" target="_blank">
+                                abysmDelirium
                             </a>
+                        </div>
+                        <div class="credit-author">
+                            gawkyToaster
                         </div>
                         <div class="credit-author">
                             <a href="https://www.artstation.com/pistispixel" target="_blank">
                                 Piixel_Nun
-                            </a>
-                        </div>
-                        <div class="credit-author">
-                            <a href="https://www.instagram.com/abysmdelirium" target="_blank">
-                                abysmDelirium
                             </a>
                         </div>
                         <div class="credit-author">
@@ -2501,6 +2499,11 @@ const App = {
                         </div>
                         <div class="credit-author">
                             Thunderputz
+                        </div>
+                        <div class="credit-author">
+                            <a href="https://vairasmythe.carrd.co/" target="_blank">
+                                Vaira Smythe
+                            </a>
                         </div>
                     `
                 },
