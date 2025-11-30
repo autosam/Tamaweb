@@ -35,6 +35,8 @@ class Pet extends Object2d {
         this.animations = this.petDefinition.animations;
         this.additionalY += this.petDefinition.spritesheet.offsetY || 0;
 
+        this.selector = 'pet';
+
         for(let prop in additionalProps){
             this[prop] = additionalProps[prop];
         }
@@ -206,6 +208,12 @@ class Pet extends Object2d {
 
 
         // bobbing animation
+        const bobStoppingStates =  [
+            'eating', 
+            'sitting',
+            'kissing',
+        ];
+
         const initialAdditionalY = this.additionalY;
         let animationFloat = Math.random() * Math.PI;
         this.onDraw = (me) => {
@@ -214,7 +222,7 @@ class Pet extends Object2d {
             if(animationFloat > App.PI2) animationFloat = 0;
             me._ghostAnimationFloat = animationFloat;
 
-            me.additionalY = ['eating', 'sitting'].includes(App.pet.state) ? 
+            me.additionalY = bobStoppingStates.includes(App.pet.state) ? 
                 initialAdditionalY :
                 initialAdditionalY - 3 - Math.sin(animationFloat) * 3;
         }
@@ -614,7 +622,7 @@ class Pet extends Object2d {
             if(shouldIncreaseDiscipline){
                 this.stats.last_time_praise_given = App.fullTime;
                 Activities.task_nonSwayingFloatingObjects(10, ['resources/img/misc/arrow_up_green_01.png'], [100, 150]);
-                this.stats.current_discipline += random(5, 15);
+                this.stats.current_discipline += random(1, 6);
                 App.save();
             }
             this.playCheeringAnimation(false, !shouldIncreaseDiscipline);
@@ -625,7 +633,7 @@ class Pet extends Object2d {
                 this.petDefinition.refreshWant()
                 this.showCurrentWant();
             }
-            this.stats.current_discipline -= random(2, 4);
+            this.stats.current_discipline -= random(1, 4);
         }
     }
     scold(){
@@ -634,7 +642,7 @@ class Pet extends Object2d {
         if(this.stats.is_misbehaving) {
             const isSuccessful = random(0, 4) > 0;
             if(isSuccessful) {
-                this.stats.current_discipline += random(5, 10);
+                this.stats.current_discipline += random(1, 4);
                 this.stats.is_misbehaving = false;
                 this.triggerScriptedState('mild_uncomfortable', 2000, null, true);
                 Activities.task_nonSwayingFloatingObjects(10, ['resources/img/misc/arrow_up_green_01.png'], [100, 150]);
@@ -706,6 +714,8 @@ class Pet extends Object2d {
                 return;
             }
         } */
+
+        if(App.time < 5000) return false;
 
         // bad animations
         if(random(0, 100) < 10){

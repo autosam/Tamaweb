@@ -274,9 +274,7 @@
         background: #ED254E;
         color: white;
     }
-    .pet-trait-icons-container {
-        background-color: #ffe3c7;
-    }
+
     .pet-trait-icon {
         background: #ffcc97;
     }
@@ -544,10 +542,6 @@
     .sales-notice {
         background: #ED254E;
         color: white;
-    }
-    .pet-trait-icons-container {
-        background-color: #ffffff;
-        border: 2px solid var(--prim-clr-c-text);
     }
     .pet-trait-icon {
         background: var(--prim-clr-c-text);
@@ -875,9 +869,6 @@
         background: #ED254E;
         color: white;
     }
-    .pet-trait-icons-container {
-        background-color: #ffe3c7;
-    }
     .pet-trait-icon {
         background: #ffcc97;
     }
@@ -1168,9 +1159,6 @@
         color: white;
     }
 
-    .pet-trait-icons-container {
-        background-color: #fff7ed;
-    }
     .pet-trait-icon {
         background: #fdba74;
     }
@@ -1208,8 +1196,32 @@
 .theme-color.azure { --custom-clr: #0080FF }
 .theme-color.gray { --custom-clr: #797979 }
 .theme-color.black { --custom-clr: #000000 }
+.theme-color.slateblue { --custom-clr: mediumslateblue }
+.theme-color.lavender {
+    --prim-back-text-clr: #E68181;
+    --prim-clr-a: #FAE6E6;
+    --custom-clr: #e6e6fa;
+    --prim-clr-b-text: #9090E9;
+    --prim-clr-c-text: #9090E9;
+    .grid-item {
+        color: rgb(255, 255, 255);
+        text-shadow: 0px 0px 10px #00000024, 2px 2px 2px #00000017;
+        font-size: 28px;
+    }
+    --mm-clr-1: #E6E6FA;
+    --mm-clr-2: #FAE6F0;
+    --mm-clr-3: #FAFAE6;
+    --mm-clr-4: #E6FAF0;
+    --mm-clr-5: #E6E6FA;
+    --mm-clr-6: #FAE6F0;
+    --mm-clr-7: #FAFAE6;
+    --mm-clr-8: #E6FAF0;
+    --classic-main-menu-outline: #E68181;
+}
 .theme-color {
     --custom-clr: #000000;
+    --prim-back-text-clr: white;
+    --classic-main-menu-outline: white;
     /* vars */
     --container-background: linear-gradient(0deg, #ffcf9d, #ffb1ee);
     --background-a: repeating-linear-gradient(-45deg, color-mix(in srgb, var(--custom-clr) 20%, white) 0 15px, color-mix(in srgb, var(--custom-clr) 30%, white) 15px 30px);
@@ -1252,7 +1264,7 @@
     .generic-btn.stylized.back-btn,
     .generic-btn.primary.solid {
         background: var(--prim-clr-a);
-        color: white;
+        color: var(--prim-back-text-clr);
         border-color: #00000066 !important;
     }
     .generic-btn.stylized.back-btn:active,
@@ -1365,6 +1377,17 @@
     .classic-main-menu__item:nth-child(8){
         color: var(--mm-clr-8)
     }
+    .classic-main-menu__item > i {
+        text-shadow: 
+            1px 0px 0px var(--classic-main-menu-outline), 
+            -1px 0px 0px var(--classic-main-menu-outline), 
+            0px 1px 0px var(--classic-main-menu-outline), 
+            0px -1px 0px var(--classic-main-menu-outline),
+            2px 0px 0px var(--classic-main-menu-outline), 
+            -2px 0px 0px var(--classic-main-menu-outline), 
+            0px 2px 0px var(--classic-main-menu-outline), 
+            0px -2px 0px var(--classic-main-menu-outline);
+    }
     /* family tree */
     .family-tree__vertical-line {
         background: var(--prim-clr-a);
@@ -1390,23 +1413,23 @@
     .post-text {
         background: #ffffff;
         border-top: 5px solid var(--prim-clr-a);
-        color: #12004e;
+        color: color-mix(in srgb, var(--prim-back-text-clr) 50%, black);
     }
     .post-header {
         background: var(--prim-clr-a);
         border-bottom: 1px solid #ffffff5c;
-        color: white;
+        color: var(--prim-back-text-clr);
     }
     .post-header:after {
         background: var(--post-striped);
     }
     .post-close {
         background: #ffffff1a;
-        color: #ffffff;
+        color: var(--prim-back-text-clr);
     }
     .post-next {
         background: var(--prim-clr-a);
-        color: #ffffff;
+        color: var(--prim-back-text-clr);
     }
     .post-profile-icon {
         background: var(--post-striped);
@@ -1489,9 +1512,6 @@
     .sales-notice {
         background: #ED254E;
         color: white;
-    }
-    .pet-trait-icons-container {
-        background-color: #ffe3c7;
     }
     .pet-trait-icon {
         background: #ffcc97;

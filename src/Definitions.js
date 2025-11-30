@@ -50,6 +50,8 @@ App.definitions = (() => {
             'color green',
             'color purple',
             'color black',
+            'color slateblue',
+            'color lavender',
         ],
         /* MAIN MENU */
         main_menu: [
@@ -163,16 +165,21 @@ App.definitions = (() => {
                 onEnter: () => App.handlers.go_to_clinic(),
             },
             {
+                name: `Restaurant ${App.getBadge()}`,
+                image: 'resources/img/misc/activity_building_restaurant.png',
+                onEnter: () => Activities.goToRestaurant(),
+            },
+            {
                 isDisabled: () => App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult,
                 name: 'Work',
                 image: 'resources/img/misc/activity_building_work.png',
                 onEnter: () => App.handlers.open_works_list(),
             },
             {
-                name: `Underworld Entrance ${App.getBadge()}`,
+                name: `Underworld Entrance`,
                 image: 'resources/img/misc/activity_building_underworld.png',
                 onEnter: () => Activities.goToUnderworldEntrance(),
-            }
+            },
         ],
     
         /* FOOD AND SNACKS */
@@ -825,7 +832,7 @@ App.definitions = (() => {
                 price: 2,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 type: 'treat',
-                isNew: true,
+                isNew: false,
                 unbuyable: true,
             },
     
@@ -964,7 +971,7 @@ App.definitions = (() => {
                 price: 500,
                 type: 'med',
                 unbuyable: true,
-                isNew: true,
+                isNew: false,
                 payload: () => {
                     const wasGhost = App.petDefinition.stats.is_ghost;
 
@@ -1265,6 +1272,11 @@ App.definitions = (() => {
             "monster": {
                 image: 'resources/img/background/house/08.png',
                 price: 450,
+                isNew: false,
+            },
+            "forest": {
+                image: 'resources/img/background/outside/09.png',
+                price: 450,
                 isNew: true,
             },
             "silky retreat": {
@@ -1329,7 +1341,7 @@ App.definitions = (() => {
             "pumpkin": {
                 image: 'resources/img/background/house/cc_09.png',
                 price: 350,
-                isNew: true,
+                isNew: false,
             },
 
             // craftables
@@ -1605,21 +1617,21 @@ App.definitions = (() => {
                 image: 'resources/img/furniture/big_pumpkin.png',
                 id: "big_pumpkin",
                 price: 100,
-                isNew: true,
+                isNew: false,
             },
             {
                 name: 'Small Pumpkin',
                 image: 'resources/img/furniture/small_pumpkin.png',
                 id: "small_pumpkin",
                 price: 100,
-                isNew: true,
+                isNew: false,
             },
             {
                 name: 'Spooky Tree',
                 image: 'resources/img/furniture/spooky_tree.png',
                 id: "spooky_tree",
                 price: 50,
-                isNew: true,
+                isNew: false,
             },
     
             // misc
@@ -2132,7 +2144,7 @@ App.definitions = (() => {
                 image: 'resources/img/accessory/pumpkin_01.png',
                 front: true,
                 price: 150,
-                isNew: true,
+                isNew: false,
             },
             // gothic
             'demon wings': {
@@ -2245,56 +2257,56 @@ App.definitions = (() => {
                 image: 'resources/img/accessory/cone_cap_01.png',
                 front: true,
                 price: 250,
-                isNew: true,
+                isNew: false,
                 accessShop: 'devilsTown',
             },
             'dd head': {
                 image: 'resources/img/accessory/deer_head_01.png',
                 front: true,
                 price: 250,
-                isNew: true,
+                isNew: false,
                 accessShop: 'devilsTown',
             },
             'tilted fedora': {
                 image: 'resources/img/accessory/fedora_01.png',
                 front: true,
                 price: 200,
-                isNew: true,
+                isNew: false,
                 accessShop: 'devilsTown',
             },
             'kings crown': {
                 image: 'resources/img/accessory/kings_crown_01.png',
                 front: true,
                 price: 350,
-                isNew: true,
+                isNew: false,
                 accessShop: 'devilsTown',
             },
             'kings rod': {
                 image: 'resources/img/accessory/kings_rod.png',
                 front: true,
                 price: 300,
-                isNew: true,
+                isNew: false,
                 accessShop: 'devilsTown',
             },
             'monster hands': {
                 image: 'resources/img/accessory/monster_hands_01.png',
                 front: false,
                 price: 400,
-                isNew: true,
+                isNew: false,
                 accessShop: 'devilsTown',
             },
             'woodland headdress': {
                 image: 'resources/img/accessory/woodland_headdress_01.png',
                 front: true,
                 price: 350,
-                isNew: true,
+                isNew: false,
                 accessShop: 'devilsTown',
             },
             'tv head': {
                 image: 'resources/img/accessory/tv_head_01.png',
                 front: true,
                 price: 350,
-                isNew: true,
+                isNew: false,
                 accessShop: 'devilsTown',
             },
         },
@@ -2526,7 +2538,7 @@ App.definitions = (() => {
                 ],
                 [
                     "Forecast: Bright Days Ahead!",
-                    "The future looks sunny and full of joy for our favorite reader! Keep smiling—good things are coming.",
+                    "The future looks sunny and full of joy for our favorite reader! Keep smiling, good things are coming.",
                 ],
                 [
                     "Exclusive Interview: Experts Agree - You’re Doing Great!",
@@ -2542,7 +2554,7 @@ App.definitions = (() => {
                 ],
                 [
                     "Public Notice: Bravery and Kindness Recognized!",
-                    "Officials have recognized an extraordinary individual for their courage and kindness—congratulations to you!",
+                    "Officials have recognized an extraordinary individual for their courage and kindness, congratulations to you!",
                 ],
                 [
                     "Daily Boost: You’re the Reason Today is Special!",
@@ -2570,7 +2582,7 @@ App.definitions = (() => {
                 ],
                 [
                     "Special Report: You’re the Star of Today’s Story!",
-                    "Our newsroom agrees—you’re doing incredible things and deserve the spotlight. Shine on!",
+                    "Our newsroom agrees, you’re doing incredible things and deserve the spotlight. Shine on!",
                 ],
                 [
                     "Public Announcement: You Make Every Day Better!",
@@ -2618,7 +2630,7 @@ App.definitions = (() => {
                 ],
                 [
                     "Exclusive Feature: Your Strength is Quietly Changing the World!",
-                    "We see it—the way you keep moving forward, even when it’s hard. That strength is something to be proud of.",
+                    "We see it, the way you keep moving forward, even when it’s hard. That strength is something to be proud of.",
                 ],
                 [
                     "Front Page Story: You Are Loved More Than You Know!",
@@ -2626,7 +2638,7 @@ App.definitions = (() => {
                 ],
                 [
                     "Breaking Update: You’re Learning and Growing Every Day!",
-                    "Every challenge you face is shaping you into someone even more incredible. Trust the process—you’re doing great.",
+                    "Every challenge you face is shaping you into someone even more incredible. Trust the process, you’re doing great.",
                 ],
                 [
                     "Special Report: Your Kind Heart Makes Life Better!",
@@ -2634,11 +2646,11 @@ App.definitions = (() => {
                 ],
                 [
                     "Top Story: You’re So Much Stronger Than You Feel Right Now!",
-                    "It’s okay to have tough days, but remember—your resilience has carried you through so much already. Keep believing in yourself.",
+                    "It’s okay to have tough days, but remember, your resilience has carried you through so much already. Keep believing in yourself.",
                 ],
                 [
                     "Daily Reminder: You Deserve the Good Things Coming Your Way!",
-                    "The kindness you’ve shown and the love you’ve shared are coming back to you. Be ready to receive them—you’ve earned it.",
+                    "The kindness you’ve shown and the love you’ve shared are coming back to you. Be ready to receive them, you’ve earned it.",
                 ],
                 [
                     "Breaking Alert: Your Voice Matters and So Do You!",
@@ -2646,11 +2658,11 @@ App.definitions = (() => {
                 ],
                 [
                     "Personal Feature: You’re Exactly Where You Need to Be!",
-                    "Life isn’t a race, and every step you take is part of your unique story. You’re on the right path—trust yourself.",
+                    "Life isn’t a race, and every step you take is part of your unique story. You’re on the right path, trust yourself.",
                 ],
                 [
                     "Headline Scoop: You Have a Light That Guides Others!",
-                    "Even when you don’t see it, your kindness and warmth inspire those around you. Keep shining—it’s beautiful.",
+                    "Even when you don’t see it, your kindness and warmth inspire those around you. Keep shining, it’s beautiful.",
                 ],
                 [
                     "Forecast: Healing and Happiness Are On the Horizon!",
@@ -2861,7 +2873,7 @@ App.definitions = (() => {
             {
                 name: 'Go to starlight disco',
                 duration: App.constants.ONE_HOUR * 1.5,
-                isNew: true,
+                isNew: false,
                 onEnd: () => {
                     App.pet.stats.current_fun += 90;
                     App.pet.stats.current_hunger += 25;

@@ -360,9 +360,11 @@ class PetDefinition {
             switch(serializable){
                 case "friends":
                     s['friends'] = this.friends.map(friendDef => {
+                        const minimizedPetDef = App.minimalizePetDef(friendDef.serializeStats(true));
                         return {
-                            ...App.minimalizePetDef(friendDef.serializeStats(true)), 
+                            ...minimizedPetDef, 
                             stats: {
+                                ...minimizedPetDef.stats,
                                 player_friendship: friendDef.stats.player_friendship,
                                 is_player_family: friendDef.stats.is_player_family,
                                 is_ghost: friendDef.stats.is_ghost,
@@ -537,7 +539,7 @@ class PetDefinition {
         }, null)?.[0];
 
         let finalRating = careRating;
-        if(careRating > 1){
+        if(careRating > 1 && App.settings.skillsAffectingEvolution){
             const topSkillRating = ratings[topSkill];
             if(topSkillRating) finalRating = topSkillRating;
         }
@@ -582,16 +584,13 @@ class PetDefinition {
     }
 
     getCSprite(noMargin){
-        let className = '';
-        if(this.stats.is_ghost){
-            if(this.stats.is_ghost === PetDefinition.GHOST_TYPE.angel) className = 'ghost angel';
-            else className = 'ghost devil';
-        }
+        const className = PetDefinition.getSpriteClassName(this);
         return PetDefinition.generateCSprite(this.sprite, noMargin, className);
     }
 
     getFullCSprite(){
-        return PetDefinition.generateFullCSprite(this.sprite);
+        const className = PetDefinition.getSpriteClassName(this);
+        return PetDefinition.generateFullCSprite(this.sprite, null, className);
     }
 
     getParents(){
@@ -776,17 +775,17 @@ class PetDefinition {
         }
     }
 
-    static generateFullCSprite(sprite){
+    static generateFullCSprite(sprite, noMargin, className){
         const lifeStage = PetDefinition.getLifeStage(sprite);
 
         switch(lifeStage){
             case PetDefinition.LIFE_STAGE.baby:
-                return `<c-sprite width="16" height="16" index="0" src="${sprite}" pos-x="0" pos-y="0"></c-sprite>`;
+                return `<c-sprite class="${className}" width="16" height="16" index="0" src="${sprite}" pos-x="0" pos-y="0"></c-sprite>`;
             case PetDefinition.LIFE_STAGE.child:
             case PetDefinition.LIFE_STAGE.teen:
-                return `<c-sprite width="24" height="24" index="0" src="${sprite}" pos-x="0" pos-y="0"></c-sprite>`;
+                return `<c-sprite class="${className}" width="24" height="24" index="0" src="${sprite}" pos-x="0" pos-y="0"></c-sprite>`;
             default:
-                return `<c-sprite width="32" height="32" index="0" src="${sprite}" pos-x="0" pos-y="0"></c-sprite>`;
+                return `<c-sprite class="${className}" width="32" height="32" index="0" src="${sprite}" pos-x="0" pos-y="0"></c-sprite>`;
         }
     }
 
@@ -809,6 +808,15 @@ class PetDefinition {
         const sprite = pRandomFromArray(spritesArray) || spritesArray[0];
         pRandom.load();
         return sprite;
+    }
+
+    static getSpriteClassName(petDef){
+        if(!petDef?.stats?.is_ghost) return '';
+
+        if(petDef.stats.is_ghost === PetDefinition.GHOST_TYPE.angel) 
+            return 'ghost angel';
+
+        return 'ghost devil';
     }
 
     static LIFE_STAGE = {

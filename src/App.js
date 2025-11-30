@@ -34,6 +34,7 @@ const App = {
         showWantName: true,
         genderedPets: false,
         playMusic: true,
+        skillsAffectingEvolution: true,
     },
     constants: {
         ONE_HOUR: 1000 * 60 * 60,
@@ -777,20 +778,20 @@ const App = {
                 break;
             case "TAMAWEBGIFT":
                 if(!addEvent(codeEventId, () => {
-                    App.sendAnalytics('input_code', code);
                     App.displayPopup(`You've redeemed <b>$1000</b>!<br><br> Thanks for playing!`, 5000, () => {
                         App.pet.stats.gold += 1000;
                     });
                 })) return showAlreadyUsed();
                 break;
-            case "HPPYHLWN":
+            // update specific
+            case "HPPYTNXGVN":
+            case "LAVENDER":
+            case "INVITEANIMALS":
                 if(!addEvent(codeEventId, () => {
-                    App.sendAnalytics('input_code', code);
-                    App.displayPopup(`You've redeemed <b>$2000</b>, <b>500 Mission pts</b> and <b>x100 ${App.constants.UNDERWORLD_TREAT_CURRENCY}</b>!<br><br> Thanks for playing!`, 5000, () => {
-                        App.pet.stats.gold += 2000;
-                        Missions.currentPts += 500;
-                        App.addNumToObject(App.pet.inventory.food, App.constants.UNDERWORLD_TREAT_CURRENCY, 100)
-                    });
+                    const goldAmount = 200, missionPtsAmount = 50;
+                    App.pet.stats.gold += goldAmount;
+                    Missions.currentPts += missionPtsAmount;
+                    App.displayPopup(`You've redeemed <b>$${goldAmount}</b>, <b>${missionPtsAmount} Mission pts</b>!`, 4000);
                 })) return showAlreadyUsed();
                 break;
             default:
@@ -931,7 +932,7 @@ const App = {
         //     ])
         // })) return;
 
-        if(addEvent(`update_21_notice`, () => {
+        if(addEvent(`update_22_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
@@ -940,7 +941,13 @@ const App = {
                     bold: true,
                 },
                 {
-                    name: `<img src="resources/img/ui/update_banner.png"></img> <br> Check out the new Immortal Monsters and Angels, The Underworld, mini games, accessories and a lot more!`,
+                    name: `
+                        <img class="update-banner" src="resources/img/ui/update_banner.png"></img>
+                        <br>
+                        <div>
+                        Check out the <b>Restaurant</b>, <b>Animal Updates</b>, <b>Room Background</b>, <b>Gameplay Settings</b>, Events, and more!
+                        </div>
+                    `,
                     type: 'text',
                 },
                 {
@@ -1050,6 +1057,7 @@ const App = {
                 }
 
                 App.handleFurnitureSpawn();
+                App.handleAnimalsSpawn(true);
             },
             onUnload: () => {
                 App.drawer.selectObjects('poop').forEach(p => p.absHidden = true);
@@ -1059,6 +1067,7 @@ const App = {
                 }
                 this.christmasTree?.removeObject();
                 App.handleFurnitureSpawn(null, true);
+                App.handleAnimalsSpawn(false);
             }
         }),
         kitchen: new Scene({
@@ -1352,6 +1361,10 @@ const App = {
             image: 'resources/img/background/house/angel_town_01.png',
             noShadows: true,
         }),
+        restaurant: new Scene({
+            image: 'resources/img/background/house/restaurant_01.png',
+            noShadows: true,
+        })
     },
     setScene(scene, noPositionChange, onLoadArg){
         App.currentScene?.onUnload?.(scene);
@@ -1570,7 +1583,17 @@ const App = {
             return false;
         }
 
-        this.spawnedAnimals = App.animals.list?.map(animalDef => {
+        const getSpawnableAnimals = () => {
+            switch(App.currentScene){
+                case App.scene.home:
+                    return App.animals.list?.filter(animalDef => animalDef.spawnIndoors);
+            }
+
+            return App.animals.list;
+        }
+
+
+        this.spawnedAnimals = getSpawnableAnimals()?.map(animalDef => {
             const animal = new Animal(animalDef, {
                 x: random(0, App.drawer.bounds.width),
             })
@@ -1604,6 +1627,7 @@ const App = {
         else if(h >= EVENING_TIME[0] && h < EVENING_TIME[1]) sky = 'evening';
         else if(h >= NIGHT_TIME[0] || h < NIGHT_TIME[1]) sky = 'night';
         else sky = 'morning';
+        App.sky.name = sky;
         App.sky.setImage(App.preloadedResources[`resources/img/background/sky/${sky}.png`]);
         App.skyOverlay.setImage(App.preloadedResources[`resources/img/background/sky/${sky}_overlay.png`]);
         setTimeout(() => App.skyOverlay.hidden = !isOutside)
@@ -1743,6 +1767,9 @@ const App = {
             birthday: petDef.birthday,
             accessories: petDef.accessories || [],
             lastBirthday: petDef.lastBirthday,
+            stats: {
+                is_ghost: petDef.stats.is_ghost,
+            }
         }
     },
     createActivePet: function(petDef, props = {}){
@@ -1837,6 +1864,11 @@ const App = {
             : random(0, 256);
         if(encounterChance === 1){
             return Activities.encounter();
+        }
+
+        // getting robbed
+        if(random(0, 100) <= 10 && App.pet.stats.is_sleeping && App.sky.name === 'night'){
+            return Activities.getRobbed();
         }
     },
     handlers: {
@@ -1962,7 +1994,10 @@ const App = {
                                 
                                 prompt.close();
                                 try {
-                                    const def = new PetDefinition(JSON.parse(data.data));
+                                    const parsedJson = JSON.parse(data.data);
+                                    const def = new PetDefinition(parsedJson).setStats({
+                                        is_ghost: parsedJson.is_ghost || 0,
+                                    })
                                     App.displayConfirm(`Do you want to add ${def.getCSprite()} ${def.name} to your friends list?`, [
                                         {
                                             name: 'yes',
@@ -2209,7 +2244,7 @@ const App = {
             App.displayGrid([
                 ...renderingMainMenu,
                 {
-                    name: '<i class="fa-solid fa-arrow-left back-sound"></i>',
+                    name: App.getIcon('arrow-left', true),
                     class: 'back-sound',
                     onclick: () => { }
                 }
@@ -2451,18 +2486,16 @@ const App = {
                             </a>
                         </div>
                         <div class="credit-author">
-                            <a href="https://vairasmythe.carrd.co/" target="_blank">
-                                Vaira Smythe
+                            <a href="https://www.instagram.com/abysmdelirium" target="_blank">
+                                abysmDelirium
                             </a>
+                        </div>
+                        <div class="credit-author">
+                            gawkyToaster
                         </div>
                         <div class="credit-author">
                             <a href="https://www.artstation.com/pistispixel" target="_blank">
                                 Piixel_Nun
-                            </a>
-                        </div>
-                        <div class="credit-author">
-                            <a href="https://www.instagram.com/abysmdelirium" target="_blank">
-                                abysmDelirium
                             </a>
                         </div>
                         <div class="credit-author">
@@ -2472,6 +2505,11 @@ const App = {
                         </div>
                         <div class="credit-author">
                             Thunderputz
+                        </div>
+                        <div class="credit-author">
+                            <a href="https://vairasmythe.carrd.co/" target="_blank">
+                                Vaira Smythe
+                            </a>
                         </div>
                     `
                 },
@@ -2778,38 +2816,14 @@ const App = {
                 },
                 { type: 'separator', _ignore: ignoreFirstDivider },
                 {
-                    name: `gameplay settings`,
+                    name: `gameplay settings ${App.getBadge()}`,
                     onclick: () => {
+                        const getStateIcon = (state) => {
+                            const className = state ? 'option on' : 'option off';
+                            return `<div class="${className}"></div>`
+                        }
+
                         return App.displayList([
-                            {
-                                _mount: (e) => e.innerHTML = `Auto aging: <i>${App.settings.automaticAging ? 'On' : 'Off'}</i>`,
-                                onclick: (e) => {
-                                    if(!App.settings.automaticAging){
-                                        App.displayConfirm(`Are you sure? This will make your pets automatically age up after a certain amount of time`, [
-                                            {
-                                                name: 'yes',
-                                                onclick: () => {
-                                                    App.settings.automaticAging = true;
-                                                    App.displayPopup(`Automatic aging turned on`);
-                                                    e._mount();
-                                                    App.save();
-                                                }
-                                            },
-                                            {
-                                                name: 'no',
-                                                class: 'back-btn',
-                                                onclick: () => {}
-                                            }
-                                        ])
-                                    } else {
-                                        App.settings.automaticAging = false;
-                                        App.displayPopup(`Automatic aging turned off`);
-                                        App.save();
-                                    }
-                                    e._mount();
-                                    return true;
-                                }
-                            },
                             {
                                 name: `Sleeping Hours`,
                                 onclick: (e) => {
@@ -2869,7 +2883,36 @@ const App = {
                                 }
                             },
                             {
-                                _mount: (e) => e.innerHTML = `show want name: <i>${App.settings.showWantName ? 'On' : 'Off'}</i>`,
+                                _mount: (e) => e.innerHTML = `${getStateIcon(App.settings.automaticAging)} Auto aging: <i>${App.settings.automaticAging ? 'On' : 'Off'}</i>`,
+                                onclick: (e) => {
+                                    if(!App.settings.automaticAging){
+                                        App.displayConfirm(`Are you sure? This will make your pets automatically age up after a certain amount of time`, [
+                                            {
+                                                name: 'yes',
+                                                onclick: () => {
+                                                    App.settings.automaticAging = true;
+                                                    App.displayPopup(`Automatic aging turned on`);
+                                                    e._mount();
+                                                    App.save();
+                                                }
+                                            },
+                                            {
+                                                name: 'no',
+                                                class: 'back-btn',
+                                                onclick: () => {}
+                                            }
+                                        ])
+                                    } else {
+                                        App.settings.automaticAging = false;
+                                        App.displayPopup(`Automatic aging turned off`);
+                                        App.save();
+                                    }
+                                    e._mount();
+                                    return true;
+                                }
+                            },
+                            {
+                                _mount: (e) => e.innerHTML = `${getStateIcon(App.settings.showWantName)} show want name: <i>${App.settings.showWantName ? 'On' : 'Off'}</i>`,
                                 onclick: (item) => {
                                     App.settings.showWantName = !App.settings.showWantName;
                                     App.applySettings();
@@ -2878,9 +2921,25 @@ const App = {
                                 }
                             },
                             {
-                                _mount: (e) => e.innerHTML = `gendered pets: <i>${App.settings.genderedPets ? 'On' : 'Off'}</i>`,
+                                _mount: (e) => e.innerHTML = `${getStateIcon(App.settings.genderedPets)} gendered pets: <i>${App.settings.genderedPets ? 'On' : 'Off'}</i>`,
                                 onclick: (item) => {
                                     App.settings.genderedPets = !App.settings.genderedPets;
+                                    item._mount(); 
+                                    return true;
+                                }
+                            },
+                            {
+                                _mount: (e) => e.innerHTML = `
+                                ${getStateIcon(App.settings.skillsAffectingEvolution)} 
+                                <div class="overflow-hidden flex">
+                                    <div class="marquee">
+                                        skills affecting evolution: <i>${App.settings.skillsAffectingEvolution ? 'On' : 'Off'}</i>
+                                    </div>
+                                </div>
+                                ${App.getBadge()}
+                                `,
+                                onclick: (item) => {
+                                    App.settings.skillsAffectingEvolution = !App.settings.skillsAffectingEvolution;
                                     item._mount(); 
                                     return true;
                                 }
@@ -2985,12 +3044,12 @@ const App = {
                     }
                 },
                 {
-                    name: `Change Theme`,
+                    name: `Change Theme ${App.getBadge()}`,
                     onclick: () => {
-                        const newThemes = [];
+                        const newThemes = ['color lavender', 'color slateblue'];
                         return App.displayList(
-                            App.definitions.themes.map(themeName => ({
-                                name: `${themeName} ${newThemes.includes(themeName) ? App.getBadge('new!') : ''}`,
+                            [...App.definitions.themes].sort((a, b) => newThemes.includes(b) - newThemes.includes(a)).map(themeName => ({
+                                name: `${themeName.replace('color ', '')} ${newThemes.includes(themeName) ? App.getBadge('new!') : ''}`,
                                 // class: `theme-${themeName}`,
                                 onclick: () => {
                                     App.settings.theme = themeName;
@@ -3346,7 +3405,7 @@ const App = {
                                     <b>CARE:</b> <div style="display: inline-flex; gap: 1px">${getCareRatingIcons()}</div>
                                 </div>
                             </div>
-                            <div class="inner-padding b-radius-10 uppercase list-text surface-stylized">
+                            <div class="inner-padding b-radius-10 uppercase list-text surface-stylized ${!App.settings.skillsAffectingEvolution ? 'hidden' : ''}">
                                 <small>
                                     <i class="fa-solid fa-info-circle"></i>
                                     High enough skills will override care ratings above 1 when evolving.
@@ -3491,19 +3550,20 @@ const App = {
                     ${
                         petDefinition.family.map((partners, i) => {
                             const [a, b] = partners;
+
                             return `
                                 <div class="family-tree__partners-container">
                                     <div class="family-tree__gen-badge">${i + 1}</div>
 
                                     <div class="family-tree__member-container">
-                                        ${PetDefinition.generateFullCSprite(b.sprite)}
+                                        ${PetDefinition.generateFullCSprite(b.sprite, null, PetDefinition.getSpriteClassName(b))}
                                         <small>${b.name}</small>
                                     </div>
 
                                     <div class="family-tree__vertical-line"></div>  
 
                                     <div class="family-tree__member-container">
-                                        ${PetDefinition.generateFullCSprite(a.sprite)}
+                                        ${PetDefinition.generateFullCSprite(a.sprite, null, PetDefinition.getSpriteClassName(a))}
                                         <small>${a.name}</small>
                                     </div>
                                 </div>
@@ -3531,10 +3591,15 @@ const App = {
                 activeIndex, 
                 filterType, 
                 sellMode, 
-                useMode, 
+                useMode,
+                useModeLabel = 'Use',
+                useAmount = 1,
                 age = App.petDefinition.lifeStage,
                 getListOnly,
                 allowCookableOnly,
+                limitFilter,
+                outOfStockPercent = 20,
+                priceMult = 1,
             } = props;
 
             let list = [];
@@ -3543,8 +3608,11 @@ const App = {
             let index = -1;
             const getIsOutOfStock = App.getOutOfStockCounter(App.getDayId(true) + 25);
             for(let food of Object.keys(App.definitions.food)){
+                let isDisabled = false;
+
                 let current = App.definitions.food[food];
                 const currentType = current.type || 'food';
+                const ownedAmount = App.pet.inventory.food[food];
 
                 // lifestage check
                 if('age' in current && !current.age.includes(age)) continue;
@@ -3552,19 +3620,24 @@ const App = {
                 // buy mode and should skip
                 if(buyMode && (current.price === 0 || (!allowCookableOnly && current.cookableOnly) || current.unbuyable)) continue;
 
-                // filter check
+                // filter type check
                 if(filterType && currentType !== filterType) continue;
 
+                if(limitFilter?.({...current, ownedAmount})) isDisabled = true;
+
                 // check if current pet has this food on its inventory
-                if(current.price && !App.pet.inventory.food[food] && !buyMode){
+                if(current.price && !ownedAmount && !buyMode){
                     continue;
                 }
 
+                // auto disable if more less than useAmount
+                if(ownedAmount < useAmount) isDisabled = true;
+
                 // some entries become randomly unavailable to buy for the day
-                const isOutOfStock = ++index && buyMode && getIsOutOfStock(20) && currentType !== 'med';
+                const isOutOfStock = ++index && buyMode && getIsOutOfStock(outOfStockPercent) && currentType !== 'med';
 
                 // 50% off on sales day
-                let price = current.price;
+                let price = current.price * priceMult;
                 if(sellMode) {
                     if(current.price === 0) continue;
                     price = current.cookableOnly 
@@ -3574,14 +3647,15 @@ const App = {
                 if(salesDay) price = Math.round(price / 2);
 
                 list.push({
-                    disabled: Boolean(isOutOfStock),
+                    disabled: Boolean(isOutOfStock || isDisabled),
                     current,
                     foodName: food,
+                    price,
                     name: `
                         ${App.getFoodCSprite(current.sprite)} 
                         ${current.cookableOnly ? '★ ' : ''}
                         ${food.toUpperCase()} 
-                        (x${App.pet.inventory.food[food] > 0 ? App.pet.inventory.food[food] : (!current.price ? '∞' : 0)})
+                        (x${ownedAmount > 0 ? ownedAmount : (!current.price ? '∞' : 0)})
                         ${
                             isOutOfStock 
                             ? `<b class="red-label">OUT OF STOCK</b>`
@@ -3616,14 +3690,20 @@ const App = {
                             return false;
                         }
 
-                        const removeOneFoodFromInventory = () => {
-                            if(App.pet.inventory.food[food] > 0)
-                                App.pet.inventory.food[food] -= 1;
+                        const removeFoodFromInventory = (amount = useAmount) => {
+                            const ownedAmount = App.pet.inventory.food[food];
+
+                            if(ownedAmount >= amount) {
+                                App.pet.inventory.food[food] -= amount;
+                                return true;
+                            }
+
+                            return false;
                         }
 
                         if(useMode){
                             const useResult = useMode(current);
-                            if(useResult) removeOneFoodFromInventory();
+                            if(useResult) removeFoodFromInventory();
                             return;
                         }
 
@@ -3637,7 +3717,7 @@ const App = {
                         App.closeAllDisplays();
                         let ateFood = App.pet.feed(current.sprite, current.hunger_replenish ?? 0, currentType, null, reopenFn);
                         if(ateFood) {
-                            removeOneFoodFromInventory();
+                            removeFoodFromInventory();
 
                             App.pet.stats.current_fun += current.fun_replenish ?? 0;
                             App.pet.stats.current_sleep += current.sleep_replenish ?? 0;
@@ -3675,7 +3755,7 @@ const App = {
             let acceptLabel = 'Eat';
             if(buyMode) acceptLabel = 'Purchase';
             else if(sellMode) acceptLabel = 'Sell';
-            else if(useMode) acceptLabel = 'Use';
+            else if(useMode) acceptLabel = useModeLabel;
             sliderInstance = App.displaySlider(
                 list.sort((a, b) => (b?.current?.isNew || 0) - (a?.current?.isNew || 0)), 
                 activeIndex, 
@@ -4938,7 +5018,7 @@ const App = {
 
                             const dialog = App.displayList([
                                 {
-                                    name: `${hole.name} ${hole.isNew ? App.getBadge() : ''}`,
+                                    name: `${hole.name} ${hole.isNew ? App.getBadge('new!') : ''}`,
                                     icon: 'lemon',
                                     type: 'info',
                                 },
@@ -4950,7 +5030,7 @@ const App = {
                                     }
                                 },
                                 {
-                                    name: `With a friend ${App.getBadge()}`,
+                                    name: `With a friend`,
                                     onclick: () => {
                                         App.handlers.open_friends_list(
                                             (selectedFriend) => {
@@ -6248,6 +6328,7 @@ const App = {
             App.save();
         },
         clean: function(){
+            // todo: this belongs in activities
             App.pet.stopMove();
             App.pet.triggerScriptedState('idle', App.INF, false, true);
             App.pet.x = 20;
@@ -6255,7 +6336,7 @@ const App = {
             App.toggleGameplayControls(false);
             Missions.done(Missions.TYPES.clean_room);
 
-            const dragObjectWithMop = (object2d, size) => {
+            const getDraggedWithMop = (object2d, size) => {
                 if(object2d.x <= mop.x + mop.width){
                     object2d.x = mop.x + mop.width;
                     if(!object2d._dragStart){
@@ -6282,8 +6363,9 @@ const App = {
                     Object2d.animations.flip(me);
                     this.x += 1;
 
-                    dragObjectWithMop(App.pet, App.petDefinition.spritesheet.cellSize);
-                    poopObjects.forEach(poop => dragObjectWithMop(poop));
+                    getDraggedWithMop(App.pet, App.petDefinition.spritesheet.cellSize);
+                    poopObjects.forEach(poop => getDraggedWithMop(poop));
+                    App.spawnedAnimals?.forEach(animal => getDraggedWithMop(animal))
 
                     if(this.x >= mop.width/1.5){
                         me.hidden = true;
@@ -6298,6 +6380,7 @@ const App = {
                                 App.pet.playCheeringAnimationIfTrue(App.pet.stats.has_poop_out, () => {});
                                 App.pet.stats.has_poop_out = false;
                                 poopObjects.forEach(poop => poop.removeObject())
+                                App.spawnedAnimals?.forEach(animal => animal.x = `${random(20, 80)}%`);
                             }
                         })
                     }
@@ -6556,6 +6639,7 @@ const App = {
         list.getCurrentIndex = () => currentIndex;
 
         cancelBtn.onclick = () => {
+            options?.onCancel?.();
             list.close();
         }
 
@@ -7595,6 +7679,9 @@ const App = {
                     name: App.petDefinition.name,
                     sprite: App.petDefinition.sprite,
                     accessories: App.petDefinition.accessories,
+                    is_ghost: App.petDefinition.stats.is_ghost !== 0 
+                        ? App.petDefinition.stats.is_ghost 
+                        : undefined,
                 })
             });
             return App.apiService.sendRequest(params);
@@ -7625,6 +7712,8 @@ const App = {
                             sprite: sanitize(petDef.sprite),
                             ownerId: petDef.ownerId,
                             interactions: petDef.interactions,
+                        }).setStats({
+                            is_ghost: petDef.is_ghost || 0,
                         })
                     );
                 }

@@ -1,4 +1,211 @@
 class Activities {
+    static async getRobbed(){
+        const hasIndoorAnimal = App.animals.list?.some(animalDef => animalDef.spawnIndoors);
+
+        const npc = new Pet(
+            new PetDefinition({
+                sprite: 'resources/img/character/robber_01.png',
+            })
+        )
+        npc.animations.moving.frameTime = 200;
+
+        const robber = new TimelineDirector(npc);
+
+        const checkDriver = App.registerOnDrawEvent(() => {
+            const flee = async () => {
+                robber.release();
+                const fleeingRobber = new TimelineDirector(npc);
+
+                fleeingRobber.setState('idle');
+                fleeingRobber.think(hasIndoorAnimal ? 'thought_paw' : 'thought_exclaim');
+                npc.animations.moving.frameTime = 100;
+                await fleeingRobber.bob({animation: 'moving', maxCycles: 1});
+                await TimelineDirector.wait(200);
+                await fleeingRobber.moveTo({x: '-30%', speed: 0.05});
+                fleeingRobber.remove();
+            }
+
+            if(!App.pet.stats.is_sleeping || hasIndoorAnimal){
+                flee();
+                App.unregisterOnDrawEvent(checkDriver);
+            }
+        })
+        
+        robber.setPosition({x: `${random(20, 80)}%`, y: '85%'});
+
+        for(let i = 0; i < 4; i++){
+            await robber.moveTo({x: `${random(20, 80)}%`, speed: 0.005});
+            robber.think('thought_talk')
+            if(i === 2){
+                const stealingAmount = random(10, 100);
+                if(App.pet.stats.gold < stealingAmount){
+                    const lines = [
+                        'Why so poor??',
+                        'Where...?',
+                        'You poorer than me...',
+                        'No money...?',
+                    ]
+                    robber.actor.say(randomFromArray(lines));
+                } else {
+                    robber.actor.say(`-$${stealingAmount}`);
+                    App.pet.stats.gold -= stealingAmount;
+                }
+            }
+            await TimelineDirector.wait(random(2000, 5000))
+        }
+
+        npc.animations.moving.frameTime = 100;
+        await robber.moveTo({x: '-30%', speed: 0.05});
+        robber.remove();
+        App.unregisterOnDrawEvent(checkDriver);
+    }
+    static async goToRestaurant(otherPetDef = App.getRandomPetDef()){
+        App.toggleGameplayControls(false);
+        App.setScene(App.scene.restaurant);
+
+        const tableObject = new Object2d({
+            img: 'resources/img/misc/restaurant_table_01.png',
+            x: 0, y: 0, z: App.pet.z + 1,
+        })
+
+        App.pet.stopMove();
+        const pet = new TimelineDirector(App.pet);
+
+        const waiter = new TimelineDirector(
+            new Pet(new PetDefinition({
+                sprite: randomFromArray([
+                    'resources/img/character/chara_179b.png', 
+                    'resources/img/character/chara_220b.png'
+                ]),
+            }))
+        )
+        waiter.setPosition({x: '-25%', y: '75%'});
+
+        pet.setPosition({x: '100%'});
+        await pet.moveTo({x: '80%', speed: 0.025});
+
+        await pet.jumpTo({x:'85%', y: '80%', speed: 0.002})
+
+        await waiter.moveTo({x: '30%', speed: 0.025});
+        waiter.setState('jumping')
+
+        waiter.actor.say('Welcome!', 1000);
+        await TimelineDirector.wait(1000);
+        waiter.actor.say('What can I get you?', 2000);
+
+        await TimelineDirector.wait(2000);
+
+        const onEnd = () => {
+            pet.release();
+            tableObject.removeObject();
+            App.toggleGameplayControls(true);
+            App.handlers.open_activity_list(true);
+            waiter.remove();
+        }
+        const spawnAndEatFood = async (foodItem) => {
+            waiter.setPosition({x: '-30%'});
+            await waiter.moveTo({x: '40%', speed: 0.03});
+
+            new Object2d({
+                img: 'resources/img/misc/foam_single.png',
+                x: '65%',
+                y: '70%',
+                opacity: 1,
+                scale: 1.5,
+                rotation: random(0, 180),
+                z: App.constants.ACTIVE_PET_Z + 2,
+                onDraw: (me) => {
+                    Object2d.animations.flip(me);
+                    Object2d.animations.pulseScale(me, 0.1, 0.01);
+                    me.scale -= 0.0009 * App.deltaTime;
+                    me.opacity -= 0.0009 * App.deltaTime;
+                    if(me.opacity <= 0) me.removeObject();
+                }
+            })
+
+            const { sprite, hunger_replenish = 24 } = foodItem.current;
+            const foodObject = new Object2d({
+                image: App.preloadedResources[App.constants.FOOD_SPRITESHEET],
+                spritesheet: {
+                    ...App.constants.FOOD_SPRITESHEET_DIMENSIONS,
+                    cellNumber: sprite
+                },
+                scale: 1,
+                x: '65%',
+                y: '70%',
+                z: App.pet.z + 1.5,
+                noPreload: true,
+            })
+
+            await pet.bob({maxCycles: 1, animation: 'cheering', landAnimation: 'jumping'});
+            waiter.bob({maxCycles: 1, animation: 'jumping', landAnimation: 'jumping'});
+
+            await TimelineDirector.wait(500);
+
+            waiter.actor.say('Enjoy!', 1000);
+
+            await TimelineDirector.wait(1000);
+
+            await waiter.moveTo({x: '-30%', speed: 0.03});
+
+            pet.lookAt(false);
+            pet.setState('eating');
+
+            App.pet.stats.current_hunger += hunger_replenish * 1.25;
+            App.pet.stats.current_fun += random(15, 30);
+
+            await TimelineDirector.wait(1500);
+            foodObject.spritesheet.cellNumber = sprite + 1;
+            await TimelineDirector.wait(1500);
+            foodObject.spritesheet.cellNumber = sprite + 2;
+            await TimelineDirector.wait(1500);
+            foodObject.removeObject();
+            
+            pet.setState('blush');
+            
+            await TimelineDirector.wait(1000);
+
+            pet.release();
+            App.pet.playCheeringAnimation(onEnd);
+        }
+        
+        const getMenuItems = () => {
+            if(App.temp.restaurantMenuItems) return App.temp.restaurantMenuItems;
+
+            const possibleFoodItems = App.handlers.open_food_list({
+                buyMode: true,
+                getListOnly: true,
+                filterType: 'food',
+                age: PetDefinition.LIFE_STAGE.adult,
+                allowCookableOnly: random(0, 4) === 0,
+                outOfStockPercent: 0,
+                priceMult: 2,
+            });
+            const menuItems = shuffleArray(possibleFoodItems)
+                .slice(0, 6);
+            App.temp.restaurantMenuItems = menuItems;
+
+            return menuItems;
+        }
+
+        const menuItems = getMenuItems()
+            .map(item => ({
+                ...item, 
+                disabled: false,
+                onclick: () => {
+                    if(App.pay(item.price)){
+                        spawnAndEatFood(item);
+                        return false;
+                    }
+                    return true;
+                },
+            }));
+
+        App.displaySlider(menuItems, false, {
+            accept: 'Order',
+            onCancel: onEnd
+        }, `$${App.pet.stats.gold + (App.isSalesDay() ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}`);
+    }
     static async ghost_befriendingGame(otherPetDef = App.getRandomPetDef()){
         const isTargetNegative = otherPetDef.stats.is_ghost === PetDefinition.GHOST_TYPE.devil;
 
@@ -1651,6 +1858,22 @@ class Activities {
         }, 3000);
     }
     static goToInnerGarden(){
+        const screen = UI.empty();
+        document.querySelector('.screen-wrapper').appendChild(screen);
+        screen.innerHTML = `
+            <div class="flex flex-dir-col justify-between" style="position: absolute; top: 4px; right: 4px;">
+                <button class="generic-btn stylized slide-action" id="backyard">
+                    ${App.getIcon('paw', true)}
+                </button>
+            </div>
+        `;
+        screen.querySelector('#backyard').onclick = () => {
+            const controller = App.getGameplayControlsState()
+            if(!controller.state && !controller.onclick) return;
+            screen.remove();
+            App.fadeScreen({middleFn: () => Activities.goToGarden()})
+        }
+
         Activities.task_handleLeavingAnimals();
         
         App.pet.stopScriptedState();
@@ -1864,6 +2087,7 @@ class Activities {
                         App.pet.stopScriptedState();
                         App.pet.x = '0%';
                         App.pet.targetX = 50;
+                        screen.remove();
                     }
                 },
                 // {
@@ -1881,6 +2105,22 @@ class Activities {
         App.toggleGameplayControls(false, displayMainList)
     }
     static goToGarden(){
+        const screen = UI.empty();
+        document.querySelector('.screen-wrapper').appendChild(screen);
+        screen.innerHTML = `
+            <div class="flex flex-dir-col justify-between" style="position: absolute; top: 4px; left: 4px;">
+                <button class="generic-btn stylized slide-action" id="garden">
+                    ${App.getIcon('seedling', true)}
+                </button>
+            </div>
+        `;
+        screen.querySelector('#garden').onclick = () => {
+            const controller = App.getGameplayControlsState()
+            if(!controller.state && !controller.onclick) return;
+            screen.remove();
+            App.fadeScreen({middleFn: () => Activities.goToInnerGarden()})
+        }
+
         const openChooseNameDialog = (animalDef, onEndFn) => {
             return App.displayPrompt(`Choose a name for ${animalDef.getFullCSprite()}:`, [
                 {
@@ -1952,6 +2192,47 @@ class Activities {
         App.pet.x = '100%';
         App.pet.targetX = 50;
 
+        const feedAnimal = (animalDef, selectedFood) => {
+            App.closeAllDisplays();
+            animalDef.feed(selectedFood.hunger_replenish * 3);
+
+            const startTime = App.time - Math.random() * 15;
+            const spawnedAnimal = App.spawnedAnimals.find(a => a.animalDefinition === animalDef);
+            const foodObject = new Object2d({
+                parent: spawnedAnimal,
+                // image: App.preloadedResources[App.constants.FOOD_SPRITESHEET],
+                img: App.constants.FOOD_SPRITESHEET,
+                spritesheet: {
+                    ...App.constants.FOOD_SPRITESHEET_DIMENSIONS,
+                    cellNumber: selectedFood.sprite
+                },
+                scale: 0.75,
+                x: spawnedAnimal.x + spawnedAnimal.spritesheet.cellSize,
+                y: spawnedAnimal.y - spawnedAnimal.spritesheet.cellSize,
+                noPreload: true,
+                onDraw: (me) => {
+                    App.pet.setLocalZBasedOnSelf(me);
+                },
+            })
+            spawnedAnimal.stopMove();
+            spawnedAnimal.inverted = true;
+            spawnedAnimal.triggerScriptedState('eating', App.INF, false, true, 
+                () => {
+                    foodObject.removeObject();
+                    spawnedAnimal.playCheeringAnimation(null, true);
+                },
+                () => {
+                    const elapsedTime = App.time - startTime;
+                    const spriteOffset = Math.floor(elapsedTime / 1500);
+                    foodObject.spritesheet.cellNumber = selectedFood.sprite + clamp(spriteOffset, 0, 2);
+                    // foodObject.scale = 1 - (spriteOffset * 0.2);
+                    if(spriteOffset > 2) spawnedAnimal.stopScriptedState();
+                }
+            );
+            Missions.done(Missions.TYPES.feed_animal);
+            return true;
+        }
+
         App.toggleGameplayControls(false, () => {
             return App.displayList([
                 {
@@ -1979,44 +2260,7 @@ class Activities {
                                         {
                                             name: 'feed',
                                             onclick: () => {
-                                                const onUseFn = (selectedFood) => {
-                                                    App.closeAllDisplays();
-                                                    animalDef.feed(selectedFood.hunger_replenish * 3);
-
-                                                    const startTime = App.time;
-                                                    const spawnedAnimal = App.spawnedAnimals.find(a => a.animalDefinition === animalDef);
-                                                    const foodObject = new Object2d({
-                                                        parent: spawnedAnimal,
-                                                        image: App.preloadedResources[App.constants.FOOD_SPRITESHEET],
-                                                        spritesheet: {
-                                                            ...App.constants.FOOD_SPRITESHEET_DIMENSIONS,
-                                                            cellNumber: selectedFood.sprite
-                                                        },
-                                                        scale: 1,
-                                                        x: spawnedAnimal.x + spawnedAnimal.spritesheet.cellSize,
-                                                        y: spawnedAnimal.y - spawnedAnimal.spritesheet.cellSize,
-                                                        onDraw: (me) => {
-                                                            App.pet.setLocalZBasedOnSelf(me);
-                                                        },
-                                                    })
-                                                    spawnedAnimal.stopMove();
-                                                    spawnedAnimal.inverted = true;
-                                                    spawnedAnimal.triggerScriptedState('eating', App.INF, false, true, 
-                                                        () => {
-                                                            foodObject.removeObject();
-                                                            spawnedAnimal.playCheeringAnimation(null, true);
-                                                        },
-                                                        () => {
-                                                            const elapsedTime = App.time - startTime;
-                                                            const spriteOffset = Math.floor(elapsedTime / 1500);
-                                                            foodObject.spritesheet.cellNumber = selectedFood.sprite + clamp(spriteOffset, 0, 2);
-                                                            // foodObject.scale = 1 - (spriteOffset * 0.2);
-                                                            if(spriteOffset > 2) spawnedAnimal.stopScriptedState();
-                                                        }
-                                                    );
-                                                    Missions.done(Missions.TYPES.feed_animal);
-                                                    return true;
-                                                }
+                                                const onUseFn = (selectedFood) => feedAnimal(animalDef, selectedFood);
                                                 return App.handlers.open_food_list({buyMode: false, filterType: 'food', useMode: onUseFn, age: PetDefinition.LIFE_STAGE.adult});
                                             }
                                         },
@@ -2039,6 +2283,14 @@ class Activities {
                                         {
                                             name: 'rename',
                                             onclick: () => openChooseNameDialog(animalDef, () => App.closeAllDisplays())
+                                        },
+                                        {
+                                            _mount: (e) => e.innerHTML = `indoor: <i>${animalDef.spawnIndoors ? 'yes' : 'no'}</i> ${App.getBadge()}`,
+                                            onclick: (btn) => {
+                                                animalDef.spawnIndoors = !animalDef.spawnIndoors;
+                                                btn._mount();
+                                                return true;
+                                            }
                                         },
                                         {
                                             name: `<span style="color: red;">Release</span>`,
@@ -2079,10 +2331,32 @@ class Activities {
                                                     }
                                                 ])
                                             }
-                                        }
+                                        },
                                     ])
                                 }
                             })),
+                            {
+                                _ignore: !App.animals.list?.length,
+                                name: `${App.getIcon('bell-concierge')} feed all ${App.getBadge()}`,
+                                onclick: () => {
+                                    const onUseFn = (selectedFood) => {
+                                        App.animals.list.forEach((animalDef, i) => {
+                                            feedAnimal(animalDef, selectedFood);
+                                        })
+                                        return true;
+                                    }
+                                    const openFoodList = () => App.handlers.open_food_list({
+                                        buyMode: false, 
+                                        filterType: 'food', 
+                                        useMode: onUseFn, 
+                                        age: PetDefinition.LIFE_STAGE.adult, 
+                                        useModeLabel: `Use (x${App.animals.list.length})`,
+                                        useAmount: App.animals.list.length,
+                                    });
+                                    openFoodList();
+                                    return true;
+                                }
+                            },
                             {
                                 _disable: App.animals.list.length >= App.constants.MAX_ANIMALS,
                                 name: '<i class="fa-solid fa-plus icon"></i> Attract Animal',
@@ -2126,6 +2400,7 @@ class Activities {
                         App.pet.stopScriptedState();
                         App.pet.x = '0%';
                         App.pet.targetX = 50;
+                        screen.remove();
                     }
                 }
             ])
@@ -3836,15 +4111,16 @@ class Activities {
             const wantedFriendDef = App.petDefinition.friends[App.pet.stats.current_want.item];
             App.petDefinition.checkWant(otherPetDef == wantedFriendDef, App.constants.WANT_TYPES.playdate)
         }
-        App.pet.x = '50%';
         App.setScene(App.scene.park);
         App.toggleGameplayControls(false, () => App.pet.stopScriptedState());
         App.pet.speedOverride = 0.025;
+        App.pet.x = '50%';
+        App.pet.y = '92%';
 
         let otherPet;
         if(otherPetDef){
             otherPet = new Pet(otherPetDef, {
-                x: '75%', speedOverride: random(15, 35) * 0.001,
+                x: '75%', y: '90%', speedOverride: random(15, 35) * 0.001,
             });
             otherPet.triggerScriptedState('playing', 10000, null, true, false, Pet.scriptedEventDrivers.playing.bind({pet: otherPet}));
 
@@ -5622,6 +5898,9 @@ class TimelineDirector {
     setState = (state) => this.actor?.setState?.(state);
     lookAt = (direction) => this.actor && (this.actor.inverted = direction);
     release = () => {
+        if(!this.actor) return;
+
+        this.released = true;
         this.actor.stopScriptedState();
         this.actor = false;
         this.registeredDrawEvents.forEach(e => App.unregisterOnDrawEvent(e));
@@ -5729,6 +6008,54 @@ class TimelineDirector {
             })
         })
     } 
+    jumpTo = ({x, y, curve = 0.5, speed = 0.02, endState = 'idle', animation = 'jumping'}) => {
+        return new Promise(resolve => {
+            if (!this.actor) return resolve();
+
+            const actor = this.actor;
+            const startX = actor.x;
+            const startY = actor.y;
+
+            if (typeof x === 'string') {
+                const percent = parseFloat(x);
+                x = App.drawer.getRelativePositionX(percent) - (this.getSize() / 2);
+            }
+            if (typeof y === 'string') {
+                const percent = parseFloat(y);
+                y = App.drawer.getRelativePositionY(percent) - (this.getSize() / 2);
+            }
+
+            let progress = 0;
+
+            const drawEvent = App.registerOnDrawEvent(() => {
+                if (!actor) {
+                    App.unregisterOnDrawEvent(drawEvent);
+                    return;
+                }
+
+                progress += speed * App.deltaTime;
+                if (progress >= 1) {
+                    actor.x = x;
+                    actor.y = y;
+                    actor.setState(endState);
+                    App.unregisterOnDrawEvent(drawEvent);
+                    resolve();
+                    return;
+                }
+
+                const nx = lerp(startX, x, progress);
+                const ny = lerp(startY, y, progress);
+
+                const arc = Math.sin(progress * Math.PI) * curve * this.getSize();
+                actor.x = nx;
+                actor.y = ny - arc;
+
+                actor.setState(animation);
+            });
+
+            this.registeredDrawEvents.push(drawEvent);
+        });
+    }
     
     static wait = (...args) => App.wait(...args);
 }

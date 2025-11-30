@@ -274,9 +274,6 @@
         background: #ED254E;
         color: white;
     }
-    .pet-trait-icons-container {
-        background-color: #ffe3c7;
-    }
     .pet-trait-icon {
         background: #ffcc97;
     }
@@ -1121,6 +1118,7 @@ c-sprite {
     margin: 6px -10px 0 -10px;
     flex-wrap: wrap;
     justify-content: center;
+    background-color: #00000010;
 }
 .pet-trait-icon {
     width: 22px;
@@ -2718,4 +2716,31 @@ c-sprite.ghost.devil::after {
     background-size: contain;
     image-rendering: pixelated;
     background-repeat: no-repeat;
+}
+
+.option {
+    content: "";
+    top: calc(50% - 7px);
+    left: -10px;
+    width: 12px;
+    height: 12px;
+    display: block;
+    pointer-events: none;
+    position: fixed;
+    border: 1px solid var(--prim-clr-b-border);
+    border-radius: 4px;
+}
+.option.on {
+    background: lightgreen;
+}
+.option.off {
+    background: lightgray;
+}
+
+.update-banner {
+    width: 100%;
+    border-radius: 10px;
+    image-rendering: auto !important;
+    outline: 2px solid;
+    margin-bottom: 8px;
 }

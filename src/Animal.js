@@ -13,6 +13,7 @@ class AnimalDefinition extends PetDefinition {
             buff: config.stats?.buff || App.getRandomGameplayBuff(),
         };
         this.lastStatsUpdate = config.lastStatsUpdate || Date.now();
+        this.spawnIndoors = config.spawnIndoors || false;
     }
     getLifeStage(){
         return PetDefinition.LIFE_STAGE.baby;
@@ -27,6 +28,7 @@ class AnimalDefinition extends PetDefinition {
         return {
             ...App.minimalizePetDef(this.serializeStats(true)),
             lastStatsUpdate: this.lastStatsUpdate,
+            spawnIndoors: this.spawnIndoors,
             stats: {
                 current_happiness: this.stats.current_happiness,
                 buff: this.stats.buff,
@@ -72,6 +74,9 @@ class AnimalDefinition extends PetDefinition {
 class Animal extends Pet {
     constructor(definition, additionalProps){
         super(definition, additionalProps);
+
+        this.selector = 'animal';
+
         this.z = App.constants.ACTIVE_PET_Z;
         this.animalDefinition = this.petDefinition;
     }
@@ -96,11 +101,20 @@ class Animal extends Pet {
         const target = randomFromArray(
             [...App.spawnedAnimals, App.pet]
                 .filter(a => a !== this)
-                .filter(a => !a.isDuringScriptedState())
+                .filter(a => !a.isDuringScriptedState() && !a?.stats?.is_sleeping)
         );
         return target;
     }
     onDraw(){
+        if(!this.currentScenePets) {
+            this.currentScenePets = App.drawer.selectObjects('pet');
+        }
+
+        if(this.currentScenePets?.length){
+            const lastPet = this.currentScenePets[this.currentScenePets.length - 1];
+            return lastPet?.setLocalZBasedOnSelf?.(this);
+        }
+
         App.pet.setLocalZBasedOnSelf(this);
     }
     wander() {
@@ -175,7 +189,7 @@ class Animal extends Pet {
                 const rareAnimation = [
                     {name: 'sleeping', length: random(10000, 30000)},
                 ];
-                const animation = randomFromArray([
+                let animation = randomFromArray([
                     ...commonAnimations,
                     ...commonAnimations,
                     ...commonAnimations,
@@ -186,6 +200,9 @@ class Animal extends Pet {
                     ...commonAnimations,
                     ...rareAnimation,
                 ]);
+                if(App.pet.stats.is_sleeping){
+                    animation = {name: 'sleeping', length: random(10000, 30000)};
+                }
                 this.triggerScriptedState(animation.name, animation.length, random(10000, 20000));
                 this.stopMove();
             } else if(random(0, 105) < 3){

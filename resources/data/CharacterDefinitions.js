@@ -404,6 +404,7 @@ const NPC_CHARACTERS = [
     "resources/img/character/mailman_01.png",
     "resources/img/character/mall_npc_01.png",
     "resources/img/character/delivery_npc_01.png",
+    "resources/img/character/robber_01.png",
 ];
 
 const ANIMAL_CHARACTERS = [
@@ -415,8 +416,16 @@ const ANIMAL_CHARACTERS = [
     "resources/img/animal/cat_06.png",
     "resources/img/animal/cat_07.png",
     "resources/img/animal/cat_08.png",
+    "resources/img/animal/cat_09.png",
+    "resources/img/animal/cat_10.png",
     "resources/img/animal/dog_01.png",
     "resources/img/animal/dog_02.png",
     "resources/img/animal/dog_03.png",
+    "resources/img/animal/dog_04.png",
+    "resources/img/animal/dog_05.png",
     "resources/img/animal/other_01.png",
+    "resources/img/animal/other_02.png",
+    "resources/img/animal/other_03.png",
+    "resources/img/animal/other_04.png",
+    "resources/img/animal/other_05.png",
 ];
