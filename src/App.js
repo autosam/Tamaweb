@@ -932,7 +932,7 @@ const App = {
         //     ])
         // })) return;
 
-        if(addEvent(`update_21_notice`, () => {
+        if(addEvent(`update_22_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
@@ -941,7 +941,13 @@ const App = {
                     bold: true,
                 },
                 {
-                    name: `<img src="resources/img/ui/update_banner.png"></img> <br> Check out the new Immortal Monsters and Angels, The Underworld, mini games, accessories and a lot more!`,
+                    name: `
+                        <img class="update-banner" src="resources/img/ui/update_banner.png"></img>
+                        <br>
+                        <div>
+                        Check out the <b>Restaurant</b>, <b>Animal Updates</b>, <b>Room Background</b>, <b>Gameplay Settings</b>, Events, and more!
+                        </div>
+                    `,
                     type: 'text',
                 },
                 {

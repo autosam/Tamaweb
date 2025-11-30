@@ -2736,3 +2736,11 @@ c-sprite.ghost.devil::after {
 .option.off {
     background: lightgray;
 }
+
+.update-banner {
+    width: 100%;
+    border-radius: 10px;
+    image-rendering: auto !important;
+    outline: 2px solid;
+    margin-bottom: 8px;
+}
