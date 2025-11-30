@@ -421,7 +421,11 @@ const ANIMAL_CHARACTERS = [
     "resources/img/animal/dog_01.png",
     "resources/img/animal/dog_02.png",
     "resources/img/animal/dog_03.png",
+    "resources/img/animal/dog_04.png",
+    "resources/img/animal/dog_05.png",
     "resources/img/animal/other_01.png",
     "resources/img/animal/other_02.png",
     "resources/img/animal/other_03.png",
+    "resources/img/animal/other_04.png",
+    "resources/img/animal/other_05.png",
 ];
