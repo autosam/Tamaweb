@@ -178,11 +178,18 @@ class Object2d {
         this.boundingBoxElement?.removeObject?.();
         this.boundingBoxElement = null;
     }
-    getBoundingBox(shrinkX = 0, shrinkY = 0){
-        const y = this.y + (this.additionalY || 0) + shrinkY;
-        const x = this.x + (this.additionalX || 0) + shrinkX;
-        const width = (this.spritesheet?.cellSize || this.width || this.image.width) - (shrinkX * 2);
-        const height = (this.spritesheet?.cellSize || this.height || this.image.height) - (shrinkY * 2);
+    getBoundingBox(shrinkX = 0, shrinkY = 0) {
+        const scale = this.scale ?? 1;
+
+        const baseWidth = this.spritesheet?.cellSize || this.width || this.image.width;
+        const baseHeight = this.spritesheet?.cellSize || this.height || this.image.height;
+
+        const width = (baseWidth - shrinkX * 2) * scale;
+        const height = (baseHeight - shrinkY * 2) * scale;
+
+        const x = (this.x + (this.additionalX || 0)) - (width - (baseWidth - shrinkX * 2)) / 2;
+        const y = (this.y + (this.additionalY || 0)) - (height - (baseHeight - shrinkY * 2)) / 2;
+
         return { x, y, width, height };
     }
     isColliding(otherBoundingBox){
