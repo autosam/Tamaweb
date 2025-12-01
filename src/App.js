@@ -768,7 +768,7 @@ const App = {
                     App.pet.stats.current_health = App.pet.stats.max_health;
                 });
                 break;
-            case "TNMRLUI7":
+            case "UXTW77":
                 if(!addEvent(codeEventId, () => {
                     App.displayPopup(`Sorry for the inconvenience, here's 250 mission pts and $400!`, 5000, () => {
                         App.pet.stats.gold += 400;
@@ -3631,7 +3631,7 @@ const App = {
                 }
 
                 // auto disable if more less than useAmount
-                if(ownedAmount < useAmount) isDisabled = true;
+                if(!buyMode && ownedAmount < useAmount) isDisabled = true;
 
                 // some entries become randomly unavailable to buy for the day
                 const isOutOfStock = ++index && buyMode && getIsOutOfStock(outOfStockPercent) && currentType !== 'med';
