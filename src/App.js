@@ -7120,6 +7120,7 @@ const App = {
     playAdvancedSound: function(config){
         const audioElement = new Audio();
         Object.keys(config).map(key => audioElement[key] = config[key]);
+        audioElement.play();
         audioElement.muted = !App.settings.playSound || !App.settings.playMusic;
 
         if(config.loopTime){
@@ -7131,17 +7132,13 @@ const App = {
             })
         }
 
-        audioElement.play();
-
         return {
             element: audioElement,
             stop: () => {
                 const fadeOutEvent = App.registerOnDrawEvent(() => {
                     const volume = audioElement.volume - (0.0005 * App.deltaTime)
                     audioElement.volume = clamp(volume, 0, 1);
-                    if(audioElement.volume <= 0.002){
-                        audioElement.currentTime = 0.001;
-                        audioElement.volume = 0.001;
+                    if(audioElement.volume <= 0){
                         audioElement.pause();
                         App.unregisterOnDrawEvent(fadeOutEvent);
                     }
@@ -7231,7 +7228,6 @@ const App = {
             'animals',
             'play_time',
             'last_time',
-            'settings',
         ];
 
         let savingData = [];
