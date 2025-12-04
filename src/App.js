@@ -3613,12 +3613,13 @@ const App = {
                 let current = App.definitions.food[food];
                 const currentType = current.type || 'food';
                 const ownedAmount = App.pet.inventory.food[food];
+                const isFree = current.price === 0;
 
                 // lifestage check
                 if('age' in current && !current.age.includes(age)) continue;
 
                 // buy mode and should skip
-                if(buyMode && (current.price === 0 || (!allowCookableOnly && current.cookableOnly) || current.unbuyable)) continue;
+                if(buyMode && (isFree || (!allowCookableOnly && current.cookableOnly) || current.unbuyable)) continue;
 
                 // filter type check
                 if(filterType && currentType !== filterType) continue;
@@ -3631,7 +3632,7 @@ const App = {
                 }
 
                 // auto disable if more less than useAmount
-                if(!buyMode && ownedAmount < useAmount) isDisabled = true;
+                if(!buyMode && !isFree && ownedAmount < useAmount) isDisabled = true;
 
                 // some entries become randomly unavailable to buy for the day
                 const isOutOfStock = ++index && buyMode && getIsOutOfStock(outOfStockPercent) && currentType !== 'med';
@@ -3639,7 +3640,7 @@ const App = {
                 // 50% off on sales day
                 let price = current.price * priceMult;
                 if(sellMode) {
-                    if(current.price === 0) continue;
+                    if(isFree) continue;
                     price = current.cookableOnly 
                     ? Math.floor(price * 1.5) 
                     : Math.floor(price * 0.75);
