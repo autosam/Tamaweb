@@ -36,6 +36,7 @@ const App = {
         genderedPets: false,
         playMusic: true,
         skillsAffectingEvolution: true,
+        season: 'auto',
     },
     constants: {
         ONE_HOUR: 1000 * 60 * 60,
@@ -148,6 +149,17 @@ const App = {
         SPANS: {
             monster: `<div> <img class="icon" src="resources/img/misc/devil_icon.png"></img> <b style="color: red;">monster</b> </div>`,
             angel: `<div> <img class="icon" src="resources/img/misc/angel_icon.png"></img> <b style="color: forestgreen;">angel</b> </div>`
+        },
+        SEASON_COLORS: {
+            source: {
+                shadow0: '#C016B2',
+                shadow1: '#C017B2',
+                base: '#EF1CDE',
+                highlight: '#F248E4',
+            },
+            winter: ['#C6DDFF', '#E8F1FF', '#FFFFFF'],
+            autumn: ['#CE4429', '#ED782F', '#FF9D60'],
+            spring: ['#63A04B', '#7FD060', '#96F271'],
         }
     },
     routes: {
@@ -166,28 +178,7 @@ const App = {
         // init
         this.initSound();
         App.drawer = new Drawer(document.querySelector('.graphics-canvas'));
-
-        const winterColors = [
-            ['#C016B2', '#C6DDFF'],
-            ['#C017B2', '#C6DDFF'],
-            ['#EF1CDE', '#E8F1FF'],
-            ['#F248E4', '#FFFFFF'],
-        ]
-        const autumn = [
-            ['#C016B2', '#CE4429'],
-            ['#C017B2', '#CE4429'],
-            ['#EF1CDE', '#ED782F'],
-            ['#F248E4', '#FF9D60'],
-        ]
-        const spring = [
-            ['#C016B2', '#63A04B'],
-            ['#C017B2', '#63A04B'],
-            ['#EF1CDE', '#7FD060'],
-            ['#F248E4', '#96F271'],
-        ]
-
         Object2d.setDrawer(App.drawer);
-        Object2d.setColorOverrides(autumn);
 
         // moment settings
         moment.relativeTimeThreshold('m', 59);
@@ -614,6 +605,12 @@ const App = {
                 App.scene.home.shadowOffset = App.temp.defaultHomeSceneConfig.shadowOffset;
             }
         }
+
+        // season
+        const currentSeason = App.getSeason();
+        const currentSeasonColors = App.getSeasonColor(currentSeason);
+        Object2d.setColorOverrides(currentSeasonColors);
+
         if(App.currentScene){
             App.reloadScene();
         }
@@ -2953,6 +2950,26 @@ const App = {
                                         App.displayPopup(`Automatic aging turned off`);
                                         App.save();
                                     }
+                                    e._mount();
+                                    return true;
+                                }
+                            },
+                            {
+                                _ignore: true,
+                                _mount: (e) => e.innerHTML = `${getStateIcon(App.settings.season)} Season: <i>${App.settings.season}</i>`,
+                                onclick: (e) => {
+                                    const possibleOptions = [
+                                        'auto',
+                                        'spring',
+                                        'summer',
+                                        'autumn',
+                                        'winter'
+                                    ];
+                                    const currentSettingIndex = possibleOptions.indexOf(App.settings.season);
+                                    App.settings.season = possibleOptions[
+                                        (currentSettingIndex + 1) % possibleOptions.length
+                                    ];
+                                    App.applySettings();
                                     e._mount();
                                     return true;
                                 }
@@ -7012,6 +7029,37 @@ const App = {
             App.constants.SLEEP_START + App.settings.sleepingHoursOffset,
             App.constants.SLEEP_END + App.settings.sleepingHoursOffset
         );
+    },
+    getSeason: function(date = moment()){
+        if(App.settings.season !== 'auto'){
+            return App.settings.season;
+        }
+
+        const month = date.month(); // 0 = january, 11 = december
+
+        if (month >= 2 && month <= 4) {
+            return "spring";   // march, april, may
+        } else if (month >= 5 && month <= 7) {
+            return "summer";   // june, july, august
+        } else if (month >= 8 && month <= 10) {
+            return "autumn";   // september, october, november
+        } else {
+            return "winter";   // december, january, february
+        }
+    },
+    getSeasonColor: function(name){
+        const { SEASON_COLORS } = App.constants;
+        const { source } = SEASON_COLORS;
+
+        const currentSeason = SEASON_COLORS[name] || SEASON_COLORS['spring'];
+        const [shadow, base, highlight] = currentSeason;
+
+        return [
+            [source.shadow0, shadow],
+            [source.shadow1, shadow],
+            [source.base, base],
+            [source.highlight, highlight],
+        ]
     },
     isWithinHour: function(current, start, end){
         start = App.clampWithin24HourFormat(start);
