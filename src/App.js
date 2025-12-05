@@ -179,11 +179,18 @@ const App = {
             ['#EF1CDE', '#ED782F'],
             ['#F248E4', '#FF9D60'],
         ]
+        const spring = [
+            ['#C016B2', '#63A04B'],
+            ['#C017B2', '#63A04B'],
+            ['#EF1CDE', '#7FD060'],
+            ['#F248E4', '#96F271'],
+        ]
 
         App.drawer.replaceColors = [
             // ['#EF1CDE', '#30B94F'],
             // ...winterColors,
-            ...autumn,
+            // ...autumn,
+            ...spring,
         ];
         Object2d.setDrawer(App.drawer);
 
