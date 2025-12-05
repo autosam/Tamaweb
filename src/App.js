@@ -166,6 +166,25 @@ const App = {
         // init
         this.initSound();
         App.drawer = new Drawer(document.querySelector('.graphics-canvas'));
+
+        const winterColors = [
+            ['#C016B2', '#C6DDFF'],
+            ['#C017B2', '#C6DDFF'],
+            ['#EF1CDE', '#E8F1FF'],
+            ['#F248E4', '#FFFFFF'],
+        ]
+        const autumn = [
+            ['#C016B2', '#CE4429'],
+            ['#C017B2', '#CE4429'],
+            ['#EF1CDE', '#ED782F'],
+            ['#F248E4', '#FF9D60'],
+        ]
+
+        App.drawer.replaceColors = [
+            // ['#EF1CDE', '#30B94F'],
+            // ...winterColors,
+            ...autumn,
+        ];
         Object2d.setDrawer(App.drawer);
 
         // moment settings
