@@ -200,6 +200,66 @@ function downscaleImage(imageUrl, sizeX = 256, sizeY = 256, quality = 1) {
         };
     });
 }
+function hexToRgb(hex) {
+    hex = hex.replace('#', '');
+    if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+    const num = parseInt(hex, 16);
+    return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+}
+
+function recolorImage(originalImage, replaceColors) {
+    if(!originalImage.width || !originalImage.height)
+        return originalImage;
+
+    const cacheKey = `${originalImage.src}${originalImage.width}x${originalImage.height}${replaceColors.toString()}`;
+
+    const asNewImage = (sourceImg) => {
+        const image = new Image();
+        image.src = sourceImg?.src || '';
+        return image;
+    }
+
+    if(recolorImage.cache[cacheKey]) {
+        return asNewImage(recolorImage.cache[cacheKey]);
+    }
+
+    const offCanvas = document.createElement('canvas');
+    offCanvas.width = originalImage.width;
+    offCanvas.height = originalImage.height;
+    const ctx = offCanvas.getContext('2d');
+
+    ctx.drawImage(originalImage, 0, 0);
+
+    const imageData = ctx.getImageData(0, 0, offCanvas.width, offCanvas.height);
+    const { data } = imageData;
+
+    const colorMap = {};
+    replaceColors.forEach(([fromHex, toHex]) => {
+        const from = hexToRgb(fromHex);
+        const to = hexToRgb(toHex);
+        colorMap[`${from.r},${from.g},${from.b}`] = to;
+    });
+
+    for (let i = 0; i < data.length; i += 4) {
+        const key = `${data[i]},${data[i + 1]},${data[i + 2]}`;
+        if (colorMap[key]) {
+            const to = colorMap[key];
+            data[i] = to.r;
+            data[i + 1] = to.g;
+            data[i + 2] = to.b;
+        }
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+
+    const newImg = new Image();
+    newImg.src = offCanvas.toDataURL();
+    recolorImage.cache[cacheKey] = newImg;
+
+    return asNewImage(newImg);
+}
+recolorImage.cache = [];
+
 function downloadTextFile(filename, text = '') {
     const element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));

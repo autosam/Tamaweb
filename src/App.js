@@ -186,13 +186,8 @@ const App = {
             ['#F248E4', '#96F271'],
         ]
 
-        App.drawer.replaceColors = [
-            // ['#EF1CDE', '#30B94F'],
-            // ...winterColors,
-            // ...autumn,
-            ...spring,
-        ];
         Object2d.setDrawer(App.drawer);
+        Object2d.setColorOverrides(autumn);
 
         // moment settings
         moment.relativeTimeThreshold('m', 59);
