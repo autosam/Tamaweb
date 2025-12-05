@@ -244,6 +244,11 @@ class Drawer {
 
             object.onLateDraw?.(object);
         })
+
+        if (this.replaceColors) {
+            this.replaceColors.forEach(([from, to]) => this.replaceColorInContext(from, to));
+        }
+        
         return this;
     }
     pixelate(){
@@ -305,5 +310,35 @@ class Drawer {
     }
     selectObjects(selector){
         return this.objects.filter((object) => object?.selector === selector);
+    }
+    hexToRgb(hex) {
+        hex = hex.replace('#', '');
+        if (hex.length === 3) {
+            hex = hex.split('').map(c => c + c).join('');
+        }
+        const num = parseInt(hex, 16);
+        return {
+            r: (num >> 16) & 255,
+            g: (num >> 8) & 255,
+            b: num & 255
+        };
+    }
+    replaceColorInContext(fromColorHex, toColorHex) {
+        const imageData = this.context.getImageData(0, 0, this.bounds.width, this.bounds.height);
+        const data = imageData.data;
+
+        const from = this.hexToRgb(fromColorHex);
+        const to = this.hexToRgb(toColorHex);
+
+        for (let i = 0; i < data.length; i += 4) {
+            const r = data[i], g = data[i + 1], b = data[i + 2];
+            if (r === from.r && g === from.g && b === from.b) {
+                data[i] = to.r;
+                data[i + 1] = to.g;
+                data[i + 2] = to.b;
+            }
+        }
+
+        this.context.putImageData(imageData, 0, 0);
     }
 }
