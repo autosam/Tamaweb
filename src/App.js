@@ -3664,13 +3664,17 @@ const App = {
                 }
                 if(salesDay) price = Math.round(price / 2);
 
+                const foodIcon = App.getFoodCSprite(current.sprite);
+
                 list.push({
                     disabled: Boolean(isOutOfStock || isDisabled),
                     current,
                     foodName: food,
                     price,
+                    icon: foodIcon,
+                    shortName: `<div class="icon">${foodIcon}</div> <span class="ellipsis">${food.toUpperCase()}</span>`,
                     name: `
-                        ${App.getFoodCSprite(current.sprite)} 
+                        ${foodIcon} 
                         ${current.cookableOnly ? '★ ' : ''}
                         ${food.toUpperCase()} 
                         (x${ownedAmount > 0 ? ownedAmount : (!current.price ? '∞' : 0)})
@@ -3779,6 +3783,7 @@ const App = {
                 activeIndex, 
                 {accept: acceptLabel}, 
                 (buyMode || sellMode) ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}` : null);
+            
             return sliderInstance;
         },
         open_seed_list: function(buyMode, activeIndex, payloadFn){
@@ -3805,10 +3810,13 @@ const App = {
                 let price = current.price;
                 if(salesDay) price = Math.round(price / 2);
 
+                const plantIcon = Plant.getCSprite(plant, Plant.AGE.grown, 'seed-pack');
+
                 list.push({
                     disabled: isOutOfStock,
+                    shortName: `<div class="icon">${Plant.getCSprite(plant, Plant.AGE.grown)}</div> <span class="ellipsis">${plant.toUpperCase()}</span>`,
                     name: `
-                        ${Plant.getCSprite(plant, Plant.AGE.grown, 'seed-pack')} 
+                        ${plantIcon} 
                         ${plant.toUpperCase()} seeds 
                         (x${App.pet.inventory.seeds[plant] > 0 ? App.pet.inventory.seeds[plant] : (!current.price ? '∞' : 0)}) 
                         ${
@@ -4287,7 +4295,13 @@ const App = {
 
                 list.push({
                     isNew: !!current.isNew,
-                    name: `${iconElement} ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>${buyMode ? `$${price}` : ''}</b> ${current.isNew ? App.getBadge('new!') : ''}`,
+                    shortName: `<div class="icon">${iconElement}</div> <span class="ellipsis">${item.toUpperCase()}</span>`,
+                    name: `
+                        ${iconElement} 
+                        ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) 
+                        <b>${buyMode ? `$${price}` : ''}</b> 
+                        ${current.isNew ? App.getBadge('new!') : ''}
+                    `,
                     onclick: (btn, list) => {
                         if(buyMode){
                             if(!App.pay(price)) return true;
@@ -4346,6 +4360,7 @@ const App = {
             const getCraftableUIDef = (current, type, owned) => ({
                 current,
                 isNew: !!current.isNew,
+                shortName: `<span class="ellipsis">${current.name.toUpperCase()}</span>`,
                 name: `
                     ${
                         current.icon ??
@@ -4472,6 +4487,7 @@ const App = {
 
                 list.push({
                     isNew: !!current.isNew,
+                    shortName: `<span class="ellipsis">${room.toUpperCase()}</span>`,
                     name: `<img style="min-height: 64px" src="${App.checkResourceOverride(current.image)}"></img> ${room.toUpperCase()} <b>$${price}</b> ${current.isNew ? App.getBadge('new!') : ''}`,
                     onclick: (btn, list) => {
                         if(current.image === defaultTypeImage){
@@ -4557,10 +4573,13 @@ const App = {
                     return false;
                 }
 
+                const accessoryIcon = App.getAccessoryCSprite(accessoryName);
+
                 list.push({
                     isNew: !!current.isNew,
+                    shortName: `<span class="ellipsis">${accessoryName.toUpperCase()}</span>`,
                     name: `
-                        ${App.getAccessoryCSprite(accessoryName)}
+                        ${accessoryIcon}
                         ${accessoryName.toUpperCase()} 
                         <b>
                         ${
@@ -4652,6 +4671,7 @@ const App = {
 
                 list.push({
                     isNew: !!current.isNew,
+                    shortName: `<span class="ellipsis">${current.name.toUpperCase()}</span>`,
                     name,
                     onclick: (btn, list) => {
                         if(owned) return App.displayPopup(`You already own the this furniture!`);
@@ -4902,6 +4922,7 @@ const App = {
                 ].map(current => {
                     return {
                         ...current,
+                        shortName: `<div class="icon">${current.icon}</div> <span class="ellipsis">${current.name?.toUpperCase()}</span>`,
                         name: `
                             ${current.icon} 
                             ${current.name?.toUpperCase()} 
@@ -6634,6 +6655,8 @@ const App = {
         return list;
     },
     displaySlider: function(listItems, activeIndex, options, additionalText){
+        const hasIndexMenu = listItems.some(item => item?.shortName);
+
         let list = document.querySelector('.cloneables .generic-slider-container').cloneNode(true);
 
         if(activeIndex !== 0 && !activeIndex){
@@ -6661,31 +6684,43 @@ const App = {
             list.close();
         }
 
-        changeIndex = diff => {
-            if(!diff) diff = 0;
+        changeIndex = (diff = 0, asAbsoluteIndex) => {
             currentIndex += diff;
             if(currentIndex >= maxIndex) currentIndex = 0;
             else if(currentIndex < 0) currentIndex = maxIndex - 1;
 
+            if(asAbsoluteIndex) currentIndex = diff;
+
             let item = listItems[currentIndex];
-            let button = document.createElement('div');
-                button.className = 'slider-item' + (item.class ? item.class : '');
-                button.innerHTML = item.name;
-                button.setAttribute('data-index', currentIndex);
+            let itemContent = document.createElement('div');
+                itemContent.className = 'slider-item' + (item.class ? item.class : '');
+                itemContent.innerHTML = item.name;
+                itemContent.setAttribute('data-index', currentIndex);
                 acceptBtn.innerHTML = item.acceptLabel || defaultAcceptButtonLabel;
                 acceptBtn.disabled = item.disabled;
                 acceptBtn.onclick = () => {
-                    let result = item.onclick(button, list);
+                    let result = item.onclick(itemContent, list);
                     if(!result){
                         list.close();
                     }
                 };
             
             let animationStart = diff < 0 ?  'slider-item-anim-in-left' : 'slider-item-anim-in-right';
-            button.style.animation = `${diff ? animationStart : ''} 0.1s linear forwards`;
+            itemContent.style.animation = `${diff ? animationStart : ''} 0.1s linear forwards`;
 
             contentElement.innerHTML = '';
-            contentElement.appendChild(button);
+            contentElement.appendChild(itemContent);
+        }
+
+        const displayItemsList = () => {
+            App.displayList(listItems?.map((item, index) => ({
+                _disable: item.disabled,
+                name: item.shortName,
+                class: (index === currentIndex) ? 'active' : '',
+                onclick: () => {
+                    changeIndex(index, true)
+                }
+            })), null, 'Back');
         }
 
         list.querySelector('.slide-left').onclick = () => {
@@ -6698,8 +6733,15 @@ const App = {
         }
 
         if(additionalText){
-            list.querySelector('.additional-text').innerHTML = additionalText;
-        } else list.querySelector('.additional-text').remove();
+            list.querySelector('.top-slot.left').innerHTML = additionalText;
+        } else list.querySelector('.top-slot.left').remove();
+
+        if(hasIndexMenu){
+            const rightSlot = list.querySelector('.top-slot.right');
+            rightSlot.innerHTML = `<div class="pointer-events-none">${App.getIcon('list', true)}</div>`;
+            rightSlot.classList.add('cursor-pointer', 'click-sound');
+            rightSlot.onclick = displayItemsList;
+        } else list.querySelector('.top-slot.right').remove();
 
         if(maxIndex === 1){
             list.querySelector('.slide-left').classList.add('disabled');
