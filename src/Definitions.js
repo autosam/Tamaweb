@@ -42,6 +42,7 @@ App.definitions = (() => {
             'pardis', 
             'sunset', 
             'uni', 
+            'color lavender',
             'color pink',
             'color azure',
             'color gray',
@@ -51,7 +52,6 @@ App.definitions = (() => {
             'color purple',
             'color black',
             'color slateblue',
-            'color lavender',
         ],
         /* MAIN MENU */
         main_menu: [
@@ -165,7 +165,7 @@ App.definitions = (() => {
                 onEnter: () => App.handlers.go_to_clinic(),
             },
             {
-                name: `Restaurant ${App.getBadge()}`,
+                name: `Restaurant`,
                 image: 'resources/img/misc/activity_building_restaurant.png',
                 onEnter: () => Activities.goToRestaurant(),
             },
@@ -1277,7 +1277,6 @@ App.definitions = (() => {
             "forest": {
                 image: 'resources/img/background/outside/09.png',
                 price: 450,
-                isNew: true,
             },
             "silky retreat": {
                 image: 'resources/img/background/house/ex_01.png',
