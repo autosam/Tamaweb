@@ -42,6 +42,7 @@ App.definitions = (() => {
             'pardis', 
             'sunset', 
             'uni', 
+            'color lavender',
             'color pink',
             'color azure',
             'color gray',
@@ -51,7 +52,6 @@ App.definitions = (() => {
             'color purple',
             'color black',
             'color slateblue',
-            'color lavender',
         ],
         /* MAIN MENU */
         main_menu: [
