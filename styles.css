@@ -524,6 +524,7 @@ hr {
 .grid-item:hover:after,
 .generic-btn:active:after,
 .generic-btn:hover:after,
+.generic-btn.active:after,
 .simon-says-button.active:after
 {
     width: 11px;
@@ -671,6 +672,9 @@ hr {
     width: 80%;
     position: relative;
 }
+.slider-item > * {
+    pointer-events: none;
+}
 
 .slide-btn:before {
     box-shadow: inset 0px -4px 0px 2px #0000001a;
@@ -767,19 +771,22 @@ input:focus {
     animation: pulse-anim 0.25s infinite alternate;
 }
 
-.generic-slider-container .additional-text {
+.generic-slider-container .top-slot {
     position: absolute;
-    top: 5px;
-    pointer-events: none;
-    left: 5px;
     background: #ffffffb5;
     padding: 2px 5px;
     border-radius: 5px;
     animation: fade-in-anim 0.2s;
     text-wrap: nowrap;
     font-size: smaller;
-    left: 0px;
-    top: 0px;
+    top: 0;
+}
+.generic-slider-container .top-slot.right {
+    right: 0;
+}
+.generic-slider-container .top-slot.left {
+    left: 0;
+    pointer-events: none;
 }
 
 @keyframes fade-in-anim {
