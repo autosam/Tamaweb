@@ -787,8 +787,26 @@ const App = {
             case "HPPYTNXGVN":
             case "LAVENDER":
             case "INVITEANIMALS":
+                App.displayPopup('This gift code is expired');
+                break;
                 if(!addEvent(codeEventId, () => {
                     const goldAmount = 200, missionPtsAmount = 50;
+                    App.pet.stats.gold += goldAmount;
+                    Missions.currentPts += missionPtsAmount;
+                    App.displayPopup(`You've redeemed <b>$${goldAmount}</b>, <b>${missionPtsAmount} Mission pts</b>!`, 4000);
+                })) return showAlreadyUsed();
+                break;
+            case "JINIINTHEBOTTLE":
+                if(!addEvent(codeEventId, () => {
+                    const goldAmount = 3000, missionPtsAmount = 500;
+                    App.pet.stats.gold += goldAmount;
+                    Missions.currentPts += missionPtsAmount;
+                    App.displayPopup(`You've redeemed <b>$${goldAmount}</b>, <b>${missionPtsAmount} Mission pts</b>!`, 4000);
+                })) return showAlreadyUsed();
+                break;
+            case "DISCORD5K":
+                if(!addEvent(codeEventId, () => {
+                    const goldAmount = 5000, missionPtsAmount = 500;
                     App.pet.stats.gold += goldAmount;
                     Missions.currentPts += missionPtsAmount;
                     App.displayPopup(`You've redeemed <b>$${goldAmount}</b>, <b>${missionPtsAmount} Mission pts</b>!`, 4000);
