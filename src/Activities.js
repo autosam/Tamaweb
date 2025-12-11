@@ -2285,7 +2285,7 @@ class Activities {
                                             onclick: () => openChooseNameDialog(animalDef, () => App.closeAllDisplays())
                                         },
                                         {
-                                            _mount: (e) => e.innerHTML = `indoor: <i>${animalDef.spawnIndoors ? 'yes' : 'no'}</i> ${App.getBadge()}`,
+                                            _mount: (e) => e.innerHTML = `indoor: <i>${animalDef.spawnIndoors ? 'yes' : 'no'}</i>`,
                                             onclick: (btn) => {
                                                 animalDef.spawnIndoors = !animalDef.spawnIndoors;
                                                 btn._mount();
@@ -2337,7 +2337,7 @@ class Activities {
                             })),
                             {
                                 _ignore: !App.animals.list?.length,
-                                name: `${App.getIcon('bell-concierge')} feed all ${App.getBadge()}`,
+                                name: `${App.getIcon('bell-concierge')} feed all`,
                                 onclick: () => {
                                     const onUseFn = (selectedFood) => {
                                         App.animals.list.forEach((animalDef, i) => {

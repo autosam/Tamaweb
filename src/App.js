@@ -2834,7 +2834,7 @@ const App = {
                 },
                 { type: 'separator', _ignore: ignoreFirstDivider },
                 {
-                    name: `gameplay settings ${App.getBadge()}`,
+                    name: `gameplay settings`,
                     onclick: () => {
                         const getStateIcon = (state) => {
                             const className = state ? 'option on' : 'option off';
@@ -2954,7 +2954,6 @@ const App = {
                                         skills affecting evolution: <i>${App.settings.skillsAffectingEvolution ? 'On' : 'Off'}</i>
                                     </div>
                                 </div>
-                                ${App.getBadge()}
                                 `,
                                 onclick: (item) => {
                                     App.settings.skillsAffectingEvolution = !App.settings.skillsAffectingEvolution;
@@ -3062,9 +3061,9 @@ const App = {
                     }
                 },
                 {
-                    name: `Change Theme ${App.getBadge()}`,
+                    name: `Change Theme`,
                     onclick: () => {
-                        const newThemes = ['color lavender', 'color slateblue'];
+                        const newThemes = [];
                         return App.displayList(
                             [...App.definitions.themes].sort((a, b) => newThemes.includes(b) - newThemes.includes(a)).map(themeName => ({
                                 name: `${themeName.replace('color ', '')} ${newThemes.includes(themeName) ? App.getBadge('new!') : ''}`,
