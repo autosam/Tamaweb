@@ -5364,8 +5364,8 @@ const App = {
         open_phone: function(){
             App.displayList([
                 {
-                    _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby,
-                    name: `<span style="color: #ff00c6"><i class="icon fa-solid fa-globe"></i> hubchi</span>`,
+                    _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby || !navigator?.onLine,
+                    name: `<span style="color: #ff00c6"><i class="icon fa-solid fa-globe"></i> hubchi</span> ${!navigator?.onLine ? App.getBadge('offline', 'gray') : ''}`,
                     onclick: () => {
                         if(App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby){
                             return App.displayPopup(`${App.petDefinition.name} is not old enough to go to hubchi!`);

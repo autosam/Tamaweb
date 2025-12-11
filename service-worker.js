@@ -60,10 +60,25 @@ const ASSETS = [
 self.addEventListener("install", (e) => {
   channel.postMessage({ type: "install" });
   e.waitUntil(
-    caches
-      .open(CACHE_NAME)
-      .then((cache) => cache.addAll(ASSETS))
-      .then(self.skipWaiting())
+    (async () => {
+      try {
+        const cache = await caches.open(CACHE_NAME);
+
+        for (const asset of ASSETS) {
+          try {
+            await cache.add(asset);
+          } catch (err) {
+            console.warn("[SW] Failed to cache asset:", asset, err);
+          }
+        }
+
+        await self.skipWaiting();
+      } catch (err) {
+        console.error("[SW] Install FAILED, clearing corrupted cache", err);
+        await caches.delete(CACHE_NAME);
+        throw err;
+      }
+    })()
   );
 });
 
@@ -75,7 +90,7 @@ self.addEventListener("activate", (event) => {
       const keys = await caches.keys();
       const deletePromises = keys.map(async (cache) => {
         if (cache !== CACHE_NAME) {
-          console.log("Service Worker: Removing old cache: " + cache);
+          console.log("[SW] Removing old cache: " + cache);
           return caches.delete(cache);
         }
       });
@@ -87,29 +102,61 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.headers.get("range")) {
-    return fetch(event.request);
+    event.respondWith(fetch(event.request));
+    return;
   }
-
+    
   if (event.request.url.startsWith(self.location.origin)) {
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          if (
-            !response ||
-            response.status !== 200 ||
-            response.type !== "basic"
-          ) {
-            return response;
-          }
-
-          return caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, response.clone());
-            return response;
-          });
-        })
-        .catch(() => {
-          return caches.match(event.request);
-        })
-    );
+    // if (event.request.mode === "navigate") {
+    //   handleOfflineFirst(event);
+    // } else {
+    //   handleOfflineFirst(event);
+    // }
+    handleOfflineFirst(event);
   }
 });
+
+const handleOnlineFirst = (event) => {
+  event.respondWith(
+    fetch(event.request)
+      .then((response) => {
+        if (!response || response.status !== 200 || response.type !== "basic") {
+          return response;
+        }
+
+        return caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, response.clone());
+          return response;
+        });
+      })
+      .catch(() => {
+        return caches.match(event.request);
+      })
+  );
+};
+
+const handleOfflineFirst = (event) => {
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+
+      return caches.open(CACHE_NAME).then((cache) => {
+        return fetch(event.request)
+          .then((response) => {
+            if (
+              !response ||
+              response.status !== 200 ||
+              response.type !== "basic"
+            ) {
+              return response;
+            }
+            cache.put(event.request, response.clone());
+            return response;
+          })
+          .catch(() => new Response("", { status: 404 }));
+      });
+    })
+  );
+};
