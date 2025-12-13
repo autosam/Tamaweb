@@ -62,13 +62,21 @@ self.addEventListener("install", (e) => {
       try {
         const cache = await caches.open(CACHE_NAME);
 
-        for (const asset of ASSETS) {
+        /* for (const asset of ASSETS) {
           try {
             await cache.add(asset);
           } catch (err) {
             console.warn("[SW] Failed to cache asset:", asset, err);
           }
-        }
+        } */
+
+        await Promise.all(
+          ASSETS.map(asset =>
+            cache.add(asset).catch(err => {
+              console.warn("[SW] Failed to cache asset:", asset, err);
+            })
+          )
+        );
 
         await self.skipWaiting();
       } catch (err) {
