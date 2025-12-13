@@ -35,9 +35,7 @@ const ASSETS = [
   "src/libs/moment.js",
   "src/libs/idb-keyval.js",
   // cdn
-  "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css",
-  "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css",
-  "https://cdn.jsdelivr.net/npm/profanity-cleaner@latest",
+  "src/libs/profanity-cleaner-0.0.3.js",
   // other
   "resources/font/PixelifySans-VariableFont_wght.ttf",
   "resources/font/PixelColeco.otf",
@@ -105,35 +103,19 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(fetch(event.request));
     return;
   }
-    
-  if (event.request.url.startsWith(self.location.origin)) {
-    // if (event.request.mode === "navigate") {
-    //   handleOfflineFirst(event);
-    // } else {
-    //   handleOfflineFirst(event);
-    // }
-    handleOfflineFirst(event);
+
+  if (!event.request.url.startsWith(self.location.origin)) return;
+
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request)
+        .catch(() => caches.match("index.html"))
+    )
+    return;
   }
+  
+  handleOfflineFirst(event);
 });
-
-const handleOnlineFirst = (event) => {
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        if (!response || response.status !== 200 || response.type !== "basic") {
-          return response;
-        }
-
-        return caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, response.clone());
-          return response;
-        });
-      })
-      .catch(() => {
-        return caches.match(event.request);
-      })
-  );
-};
 
 const handleOfflineFirst = (event) => {
   event.respondWith(
@@ -158,5 +140,24 @@ const handleOfflineFirst = (event) => {
           .catch(() => new Response("", { status: 404 }));
       });
     })
+  );
+};
+
+const handleOnlineFirst = (event) => {
+  event.respondWith(
+    fetch(event.request)
+      .then((response) => {
+        if (!response || response.status !== 200 || response.type !== "basic") {
+          return response;
+        }
+
+        return caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, response.clone());
+          return response;
+        });
+      })
+      .catch(() => {
+        return caches.match(event.request);
+      })
   );
 };
