@@ -62,13 +62,23 @@ self.addEventListener("install", (e) => {
       try {
         const cache = await caches.open(CACHE_NAME);
 
-        for (const asset of ASSETS) {
+        /* for (const asset of ASSETS) {
           try {
             await cache.add(asset);
           } catch (err) {
             console.warn("[SW] Failed to cache asset:", asset, err);
           }
-        }
+        } */
+
+        /* await Promise.all(
+          ASSETS.map(asset =>
+            cache.add(asset).catch(err => {
+              console.warn("[SW] Failed to cache asset:", asset, err);
+            })
+          )
+        ); */
+
+        await cacheInBatches(cache, ASSETS);
 
         await self.skipWaiting();
       } catch (err) {
@@ -161,3 +171,16 @@ const handleOnlineFirst = (event) => {
       })
   );
 };
+
+async function cacheInBatches(cache, assets, batchSize = 20) {
+  for (let i = 0; i < assets.length; i += batchSize) {
+    const batch = assets.slice(i, i + batchSize);
+    await Promise.all(
+      batch.map(asset =>
+        cache.add(asset).catch(err => {
+          console.warn("[SW] Failed to cache asset:", asset, err);
+        })
+      )
+    );
+  }
+}
