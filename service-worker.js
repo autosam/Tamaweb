@@ -57,6 +57,16 @@ const ASSETS = [
 
 self.addEventListener("install", (e) => {
   channel.postMessage({ type: "install" });
+
+  // opt-out of ServiceWorkerAutoPreload
+  // https://github.com/WICG/service-worker-auto-preload?tab=readme-ov-file#opt-out
+  e.addRoutes({
+    condition: {
+      urlPattern: new URLPattern({})
+    },
+    source: "fetch-event"
+  });
+
   e.waitUntil(
     (async () => {
       try {
