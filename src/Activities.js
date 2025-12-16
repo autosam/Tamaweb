@@ -4832,7 +4832,7 @@ class Activities {
             const msg = App.displayMessageBubble(`${currencyIcon} x${score}`)
 
             const onEnd = () => {
-                App.toggleGameplayControls();
+                App.toggleGameplayControls(true);
                 sceneParent.removeObject();
                 msg.close();
                 onEndCallback?.();
@@ -4843,7 +4843,8 @@ class Activities {
         }
 
         let jumpCount = 0, groundPositionY = false;
-        App.toggleGameplayControls(false, () => {
+
+        const handleOnJump = () => {
             if(groundPositionY === false) {
                 groundPositionY = App.pet.y;
             }
@@ -4870,13 +4871,19 @@ class Activities {
             if(++jumpCount <= 2){
                 jump();
             }
-        })
+        }
+
+        App.toggleGameplayControls(false, () => {})
 
         const driverFn = () => {
-            activeSpeed += 0.000065 * App.deltaTime;
-            // activeSpeed = 1;
+            if(App.mouse.isDown){
+                App.mouse.isDown = false;
+                handleOnJump();
+            }
+
+            activeSpeed += 0.000045 * App.deltaTime;
             // activeSpeed -= (0.001 * App.deltaTime);
-            activeSpeed = clamp(activeSpeed, 0, 6);
+            activeSpeed = clamp(activeSpeed, 0, 5);
             globalOffset += activeSpeed * 0.025 * App.deltaTime;
             if(!jumpCount) {
                 App.pet.setState(activeSpeed ? 'moving' : 'idle_side');
@@ -4980,29 +4987,33 @@ class Activities {
 
             // treat
             if(spawnTicks % 3 === 0){
-                const treat = new Object2d({
-                    parent: sceneParent,
-                    img: App.constants.FOOD_SPRITESHEET,
-                    spritesheet: {
-                        ...App.constants.FOOD_SPRITESHEET_DIMENSIONS,
-                        cellNumber: App.definitions.food[App.constants.UNDERWORLD_TREAT_CURRENCY].sprite,
-                    },
-                    x: ((App.drawer.bounds.width/1)) + globalSpawnOffset,
-                    y: `${randomFromArray([20, 70])}%`,
-                    z: App.pet.z - 0.1,
-                    onDraw: (me) => {
-                        if(!isNaN(me.y)){
-                            Object2d.animations.bob(me)
-                        }
-                        moverFn(me, 1);
-                        if(me.isColliding(App.pet.getBoundingBox())){
-                            me.removeObject();
-                            progress(true);
-                        }
-                    },
-                })
-                treat.showOutline();
-                // treat.showBoundingBox();
+                const spawnAmount = random(0, 100) <= 45 ? 2 : 1;
+                for(let i = 0; i < spawnAmount; i++){
+                    const treat = new Object2d({
+                        parent: sceneParent,
+                        img: App.constants.FOOD_SPRITESHEET,
+                        spritesheet: {
+                            ...App.constants.FOOD_SPRITESHEET_DIMENSIONS,
+                            cellNumber: App.definitions.food[App.constants.UNDERWORLD_TREAT_CURRENCY].sprite,
+                        },
+                        x: ((App.drawer.bounds.width/1)) + globalSpawnOffset + (i * 16),
+                        y: `${randomFromArray([20, 70])}%`,
+                        z: App.pet.z - 0.1,
+                        bobFloat: Math.random(),
+                        onDraw: (me) => {
+                            if(!isNaN(me.y)){
+                                Object2d.animations.bob(me)
+                            }
+                            moverFn(me, 1);
+                            if(me.isColliding(App.pet.getBoundingBox())){
+                                me.removeObject();
+                                progress(true);
+                            }
+                        },
+                    })
+                    treat.showOutline();
+                    // treat.showBoundingBox();
+                }
             }
         }
         // initial spawning of the first two chunks
