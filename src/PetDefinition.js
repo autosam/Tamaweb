@@ -428,6 +428,7 @@ class PetDefinition {
         this.stats.is_dead = false;
         this.stats.is_misbehaving = false;
         this.stats.current_discipline = 100;
+        this.stats.current_care = 3;
     }
 
     loadAccessories(accessories){
