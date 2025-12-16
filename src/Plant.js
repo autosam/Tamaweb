@@ -1,8 +1,8 @@
 class Plant {
     isWatered = false;
-    growthDelay = App.constants.ONE_HOUR * 8;
+    growthDelay = App.constants.ONE_HOUR * 9;
     wateredDuration = App.constants.ONE_HOUR * 2;
-    deathDuration = App.constants.ONE_HOUR * 10;
+    deathDuration = App.constants.ONE_HOUR * 20;
 
     constructor(config){
         const {
