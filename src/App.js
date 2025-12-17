@@ -24,6 +24,7 @@ const App = {
         displayShellLogo: true,
         shellShape: 6,
         backgroundColor: '#FFDEAD',
+        backgroundPattern: false,
         notifications: false,
         automaticAging: true,
         sleepingHoursOffset: 0,
@@ -530,11 +531,17 @@ const App = {
             document.body.className = `theme-${this.settings.theme}`;
         }
 
-        // background
+        // background color
         document.body.style.backgroundColor = this.settings.backgroundColor;
         const metaThemeColor = document.querySelector('meta[name="theme-color"]');
         metaThemeColor?.setAttribute('content', this.settings.backgroundColor);
         document.querySelector('.loading-text').style.background = this.settings.backgroundColor;
+
+        // background pattern
+        const root = document.querySelector('.root');
+        if(this.settings.backgroundPattern){
+            root.style.background = `url(${this.settings.backgroundPattern})`
+        }
 
         // screen / shell size
         this.settings.shellAdditionalSize = clamp(this.settings.shellAdditionalSize, -0.5, 5);
