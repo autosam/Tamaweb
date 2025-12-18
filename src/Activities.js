@@ -4171,7 +4171,9 @@ class Activities {
 
         // accessory gift
         const EXCLUSIVE_ACCESSORY = 'santa hat';
-        let randomAccessory = randomFromArray(Object.keys(App.definitions.accessories));
+        const accessoriesPool = Object.keys(App.definitions.accessories)
+        .filter(key => App.definitions.accessories[key].price !== -1);
+        let randomAccessory = randomFromArray(accessoriesPool);
         if(!App.pet.inventory.accessory[EXCLUSIVE_ACCESSORY]){
             randomAccessory = EXCLUSIVE_ACCESSORY;
         }
