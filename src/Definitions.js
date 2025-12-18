@@ -873,6 +873,7 @@ App.definitions = (() => {
                 sleep_replenish: 999,
                 price: 120,
                 type: 'med',
+                nonCraftable: true,
             },
             "expression skill potion": {
                 sprite: 1053,
@@ -881,6 +882,7 @@ App.definitions = (() => {
                 type: 'med',
                 unbuyable: true,
                 isNew: false,
+                nonCraftable: true,
             },
             "logic skill potion": {
                 sprite: 1053,
@@ -889,6 +891,7 @@ App.definitions = (() => {
                 type: 'med',
                 unbuyable: true,
                 isNew: false,
+                nonCraftable: true,
             },
             "endurance skill potion": {
                 sprite: 1053,
@@ -897,6 +900,7 @@ App.definitions = (() => {
                 type: 'med',
                 unbuyable: true,
                 isNew: false,
+                nonCraftable: true,
             },
             "potion of neglect": {
                 sprite: 1053,
@@ -908,6 +912,7 @@ App.definitions = (() => {
                 type: 'med',
                 unbuyable: true,
                 isNew: false,
+                nonCraftable: true,
             },
             "potion of well behaving": {
                 sprite: 1053,
@@ -916,6 +921,7 @@ App.definitions = (() => {
                 type: 'med',
                 unbuyable: true,
                 isNew: false,
+                nonCraftable: true,
             },
             "potion of misbehaving": {
                 sprite: 1053,
@@ -924,6 +930,7 @@ App.definitions = (() => {
                 type: 'med',
                 unbuyable: true,
                 isNew: false,
+                nonCraftable: true,
             },
             "potion of fulfillment": {
                 sprite: 1053,
@@ -935,6 +942,7 @@ App.definitions = (() => {
                 type: 'med',
                 unbuyable: true,
                 isNew: false,
+                nonCraftable: true,
             },
             "potion of aging up": {
                 sprite: 1053,
@@ -942,6 +950,7 @@ App.definitions = (() => {
                 type: 'med',
                 unbuyable: true,
                 isNew: false,
+                nonCraftable: true,
                 payload: () => {
                     App.toggleGameplayControls(false);
                     App.pet.triggerScriptedState('cheering', 10000, 0, true);
@@ -965,6 +974,7 @@ App.definitions = (() => {
                 type: 'med',
                 unbuyable: true,
                 isNew: false,
+                nonCraftable: true,
             },
             "life essence": {
                 sprite: 1059,
@@ -972,6 +982,7 @@ App.definitions = (() => {
                 type: 'med',
                 unbuyable: true,
                 isNew: false,
+                nonCraftable: true,
                 payload: () => {
                     const wasGhost = App.petDefinition.stats.is_ghost;
 
