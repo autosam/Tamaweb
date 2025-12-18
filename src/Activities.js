@@ -4114,7 +4114,7 @@ class Activities {
 
         setTimeout(() => {
             App.playSound('resources/sounds/santa_bm_01.mp3', true);
-        })
+        }, 100);
 
         const main = new TimelineDirector(App.pet);
         const santa = new TimelineDirector(npc);

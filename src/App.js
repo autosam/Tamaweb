@@ -2677,7 +2677,7 @@ const App = {
                 {
                     name: `
                         ${App.getIcon('floppy-disk')} 
-                        <span class="flex flex-dir-col">
+                        <span class="flex flex-dir-col pointer-events-none">
                             <span>Manual Save</span>
                             <small style="font-size: x-small">auto-saves every ${App.constants.AUTO_SAVE_INTERVAL_SECS} secs</small> 
                         </span>
