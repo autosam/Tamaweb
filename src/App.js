@@ -321,9 +321,10 @@ const App = {
             x: 0, y: 0, z: 999.1,
             composite: "xor",
             static: true,
+            flipSpeed: 200,
             // hidden: true,
             onDraw: (me) => {
-                Object2d.animations.flip(me, 200);
+                Object2d.animations.flip(me, me.flipSpeed);
             }
         })
         App.petDefinition = new PetDefinition({
@@ -1652,27 +1653,71 @@ const App = {
 
         const isOutside = App.background.imageSrc?.indexOf('outside/') != -1;
 
+        const season = App.getSeason();
+
         // weather
         App.skyWeather.z = isOutside ? 999.1 : -998;
+
         let weatherEffectChance = random(3, 10, date.getDate())
-        // if(App.isDuringChristmas()) weatherEffectChance += 500;
-        // if(App.isChristmasDay()) weatherEffectChance += 100;
-        // App.setWeather('snow');
-        const seed = h + date.getDate() + App.userId;
+        if(App.isDuringChristmas()) weatherEffectChance += 25;
+        if(App.isChristmasDay()) weatherEffectChance += 100;
+
+        // pRandom setup
         pRandom.save();
+        const seed = h + date.getDate() + App.userId;
         pRandom.seed = seed;
+
+        // weather effect
+        let weatherEffect = 'rain';
+        switch(season){
+            case "spring": break;
+            case "summer": break;
+            case "autumn":
+                weatherEffectChance += 5;
+                weatherEffect = pRandomFromArray(['snow', 'rain', 'rain', 'rain']);
+                break;
+            case "winter": 
+                weatherEffectChance += 15;
+                weatherEffect = 'snow';
+                break;
+        }
+        App.setWeather(weatherEffect);
         App.skyWeather.hidden = !pRandom.getPercent(weatherEffectChance);
+
+        // pRandom reset
         pRandom.load();
         
         // sky
         let sky;
-        if(h >= AFTERNOON_TIME[0] && h < AFTERNOON_TIME[1] && App.skyWeather.hidden) sky = 'afternoon';
+        if(h >= AFTERNOON_TIME[0] && h < AFTERNOON_TIME[1]) sky = 'afternoon';
         else if(h >= EVENING_TIME[0] && h < EVENING_TIME[1]) sky = 'evening';
         else if(h >= NIGHT_TIME[0] || h < NIGHT_TIME[1]) sky = 'night';
         else sky = 'morning';
+
+        // weather / season affecting sky
+        let renderedSky = sky;
+        switch(season){
+            case "winter":
+                // if(sky === 'evening') renderedSky = 'afternoon_cold';
+                break;
+        }
+        if(!App.skyWeather.hidden){
+            const currentWeather = App.skyWeather.name;
+            switch(currentWeather){
+                case "rain":
+                    if(sky === 'afternoon') renderedSky = 'morning';
+                    break;
+                case "snow":
+                    if(sky === 'afternoon') renderedSky = 'morning';
+                    if(sky === 'night') renderedSky = 'night_cold';
+                    if(sky === 'evening') renderedSky = 'evening_cold';
+                    break;
+            }
+        }
+
         App.sky.name = sky;
-        App.sky.setImage(App.preloadedResources[`resources/img/background/sky/${sky}.png`]);
-        App.skyOverlay.setImage(App.preloadedResources[`resources/img/background/sky/${sky}_overlay.png`]);
+        App.sky.setImage(App.preloadedResources[`resources/img/background/sky/${renderedSky}.png`]);
+        App.skyOverlay.setImage(App.preloadedResources[`resources/img/background/sky/${renderedSky}_overlay.png`]);
         setTimeout(() => App.skyOverlay.hidden = !isOutside)
         if(sky == 'afternoon' || sky == 'morning') App.skyOverlay.hidden = true;
     },
@@ -1681,12 +1726,15 @@ const App = {
             case 'rain':
                 App.skyWeather.image = App.preloadedResources["resources/img/background/sky/rain_01.png"];
                 App.skyWeather.composite = "xor";
+                App.skyWeather.flipSpeed = 200;
                 break;
             case 'snow':
                 App.skyWeather.image = App.preloadedResources["resources/img/background/sky/snow_01.png"];
                 App.skyWeather.composite = "normal";
+                App.skyWeather.flipSpeed = 400;
                 break;
         }
+        App.skyWeather.name = type;
     },
     isWeatherEffectActive(){
         return !App.skyWeather.hidden;
