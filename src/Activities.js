@@ -4101,7 +4101,116 @@ class Activities {
 
         task_otherPetMoveIn();
     }
+    static async encounterSanta(onEndFn){
+        App.toggleGameplayControls(false);
+
+        App.setScene(App.scene.park);
+
+        const npc = new Pet(
+            new PetDefinition({
+                sprite: 'resources/img/character/santa_01.png',
+            })
+        )
+
+        const main = new TimelineDirector(App.pet);
+        const santa = new TimelineDirector(npc);
+
+        santa.setPosition({x: '25%'});
+        santa.lookAt(true);
+        main.setPosition({x: '100%'})
+        await main.moveTo({x: '75%', speed: 0.015});
+
+        main.bob({maxCycles: 1, animation: 'cheering'});
+        await santa.bob({maxCycles: 1, animation: 'cheering'});
+
+        await TimelineDirector.wait(1000);
+
+        main.setState('blush');
+        main.think('thought_gift', false, 1500);
+        santa.setState('jumping');
+
+        await TimelineDirector.wait(2000);
+
+        await main.moveTo({x: '70%', speed: 0.01});
+        await santa.moveTo({x: '30%', speed: 0.01});
+
+        await TimelineDirector.wait(500);
+
+        const gift = new Object2d({
+            img: 'resources/img/misc/gift.png',
+            x: '50%', y: '85%', z: App.constants.ACTIVE_PET_Z + 0.1,
+        });
+        new Object2d({
+            img: 'resources/img/misc/foam_single.png',
+            x: '50%',
+            y: '85%',
+            opacity: 1,
+            scale: 1.5,
+            rotation: random(0, 180),
+            z: App.constants.ACTIVE_PET_Z + 2,
+            onDraw: (me) => {
+                Object2d.animations.flip(me);
+                Object2d.animations.pulseScale(me, 0.1, 0.01);
+                me.scale -= 0.0009 * App.deltaTime;
+                me.opacity -= 0.0009 * App.deltaTime;
+                if(me.opacity <= 0) me.removeObject();
+            }
+        })
+
+        await TimelineDirector.wait(500);
+
+        main.setState('cheering_with_icon');
+        santa.setState('cheering');
+
+        santa.actor.say('Merry Christmas!', 2000)
+        await TimelineDirector.wait(2000);
+
+        // accessory gift
+        const EXCLUSIVE_ACCESSORY = 'santa hat';
+        let randomAccessory = randomFromArray(Object.keys(App.definitions.accessories));
+        if(!App.pet.inventory.accessory[EXCLUSIVE_ACCESSORY]){
+            randomAccessory = EXCLUSIVE_ACCESSORY;
+        }
+        const isAccessoryNew = !App.pet.inventory.accessory[randomAccessory];
+        App.pet.inventory.accessory[randomAccessory] = true;
+        App.displayPopup(`
+            <small>Gift</small>
+            <div class="pulse">
+                ${App.getAccessoryCSprite(randomAccessory)}
+            </div>
+            <div>${randomAccessory}${isAccessoryNew ? App.getBadge('New!') : ''}</div>
+            <div>
+                <small>Accessory</small>
+            </div>
+        `, 4000, false, true)
+        await TimelineDirector.wait(4500);
+
+        // money gift
+        const prize = random(250, 500);
+        App.pet.stats.gold += prize;
+        santa.actor.say(`+ $${prize}`, 3000);
+
+        await TimelineDirector.wait(4000);
+
+        App.fadeScreen({middleFn: () => {
+            App.toggleGameplayControls(true);
+            main.release();
+            santa.remove();
+            gift.removeObject();
+            onEndFn?.();
+        }})
+    }
     static goToPark(otherPetDef, onEndFn){
+        if(
+            !otherPetDef && !App.temp.encounteredSanta && (
+                (App.isDuringChristmas() && random(0, 100) <= 20) ||
+                (App.isChristmasDay())
+            )
+        ){
+            App.temp.encounteredSanta = true;
+            return Activities.encounterSanta(onEndFn);
+        }
+
         if(!otherPetDef){
             if(random(1, 100) <= 60){
                 otherPetDef = App.getRandomPetDef(App.petDefinition.lifeStage);

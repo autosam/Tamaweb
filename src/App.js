@@ -7817,7 +7817,7 @@ const App = {
         new Object2d({
             image: App.getPreloadedResource('resources/img/misc/black_overlay_01.png'),
             opacity: 0,
-            x: 0, y: 0, z: 100,
+            x: 0, y: 0, z: 1000,
             onDraw: (me) => {
                 const step = speed * App.deltaTime;
 

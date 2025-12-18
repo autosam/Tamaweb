@@ -2309,6 +2309,13 @@ App.definitions = (() => {
                 isNew: false,
                 accessShop: 'devilsTown',
             },
+            'santa hat': {
+                image: 'resources/img/accessory/santa_hat_01.png',
+                front: true,
+                price: 350,
+                isNew: true,
+                accessShop: 'none',
+            },
         },
     
         /* ACHIEVEMENTS */
