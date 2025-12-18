@@ -4112,6 +4112,10 @@ class Activities {
             })
         )
 
+        setTimeout(() => {
+            App.playSound('resources/sounds/santa_bm_01.mp3', true);
+        })
+
         const main = new TimelineDirector(App.pet);
         const santa = new TimelineDirector(npc);
 
@@ -4123,7 +4127,7 @@ class Activities {
         main.bob({maxCycles: 1, animation: 'cheering'});
         await santa.bob({maxCycles: 1, animation: 'cheering'});
 
-        await TimelineDirector.wait(1000);
+        await TimelineDirector.wait(1500);
 
         main.setState('blush');
         main.think('thought_gift', false, 1500);
@@ -4162,8 +4166,8 @@ class Activities {
         main.setState('cheering_with_icon');
         santa.setState('cheering');
 
-        santa.actor.say('Merry Christmas!', 2000)
-        await TimelineDirector.wait(2000);
+        santa.actor.say('Merry Christmas!', 3000)
+        await TimelineDirector.wait(3000);
 
         // accessory gift
         const EXCLUSIVE_ACCESSORY = 'santa hat';
@@ -4190,7 +4194,7 @@ class Activities {
         App.pet.stats.gold += prize;
         santa.actor.say(`+ $${prize}`, 3000);
 
-        await TimelineDirector.wait(4000);
+        await TimelineDirector.wait(5000);
 
         App.fadeScreen({middleFn: () => {
             App.toggleGameplayControls(true);
