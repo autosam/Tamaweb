@@ -6218,7 +6218,8 @@ const App = {
                     accessory.unlockKey ? 
                     App.getRecord(accessory.unlockKey) : 
                     true;
-                return accessory.isNew && isUnlocked && !accessory.isCraftable;
+                const accessShopExclusive = accessory.accessShop;
+                return accessory.isNew && isUnlocked && !accessory.isCraftable && !accessShopExclusive;
             });
             const hasNewItem = Object.keys(App.definitions.item).some(key => {
                 const isUnlocked = 
