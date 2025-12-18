@@ -103,6 +103,7 @@ const SPRITES = [
 "background/house/wedding_01.png",
 "background/house/wedding_overlay.png",
 "background/outside/09.png",
+"background/outside/09_icon.png",
 "background/outside/activities_base_01.png",
 "background/outside/furnishable/09.png",
 "background/outside/garden_01.png",

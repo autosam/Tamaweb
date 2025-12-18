@@ -4578,10 +4578,12 @@ const App = {
 
                 const defaultTypeImage = scene.image || App.scene.home.image;
 
+                const icon = current.icon || current.image;
+
                 list.push({
                     isNew: !!current.isNew,
                     shortName: `<span class="ellipsis">${room.toUpperCase()}</span>`,
-                    name: `<img style="min-height: 64px" src="${App.checkResourceOverride(current.image)}"></img> ${room.toUpperCase()} <b>$${price}</b> ${current.isNew ? App.getBadge('new!') : ''}`,
+                    name: `<img style="min-height: 64px" src="${App.checkResourceOverride(icon)}"></img> ${room.toUpperCase()} <b>$${price}</b> ${current.isNew ? App.getBadge('new!') : ''}`,
                     onclick: (btn, list) => {
                         if(current.image === defaultTypeImage){
                             App.displayPopup('You already own this room');

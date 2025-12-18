@@ -1275,6 +1275,7 @@ App.definitions = (() => {
                 isNew: false,
             },
             "forest": {
+                icon: 'resources/img/background/outside/09_icon.png',
                 image: 'resources/img/background/outside/09.png',
                 price: 450,
             },
