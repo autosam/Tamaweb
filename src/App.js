@@ -930,6 +930,7 @@ const App = {
                                 name: 'yes',
                                 onclick: () => {
                                     App.petDefinition.sprite = commandPayload;
+                                    App.save();
                                     window.location.reload();
                                 }
                             },
@@ -941,6 +942,7 @@ const App = {
                         break;
                     case 'settester':
                         App.settings.isTester = commandPayload === '1';
+                        App.save();
                         App.displayPopup(`Set tester: ${App.settings.isTester}`, 1000, () => window.location.reload());
                         break;
                     case 'activity:reckoning':
@@ -6441,6 +6443,7 @@ const App = {
             }
             App.displayList([
                 {
+                    _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.child,
                     name: `flags ${App.getBadge()}`,
                     onclick: () => {
                         const image = `
@@ -6460,6 +6463,7 @@ const App = {
                     }
                 },
                 {
+                    _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.child,
                     name: `pet grooming`,
                     onclick: () => {
                         App.displayPopup(`Press the wash icon <i class="fa-solid fa-hands-wash"></i> as much as possible before the timer runs out!`, tutorialDisplayTime, () => Activities.dogWashingGame())
@@ -6489,6 +6493,7 @@ const App = {
                     }
                 },
                 {
+                    _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.child,
                     name: 'rod rush',
                     onclick: () => {
                         App.displayPopup(`Stop the pointer at the perfect time!`, tutorialDisplayTime, () => Activities.barTimingGame())

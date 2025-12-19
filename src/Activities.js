@@ -4275,7 +4275,7 @@ class Activities {
         App.pet.triggerScriptedState('idle', App.INF, null, true);
         App.pet.stopMove();
         App.pet.x = '50%';
-        App.pet.y = '80%';
+        App.pet.y = '70%';
 
         const screen = UI.empty();
         document.querySelector('.screen-wrapper').appendChild(screen);
@@ -4291,7 +4291,7 @@ class Activities {
         const baseFlagConfig = {
             img: 'resources/img/misc/flag_01.png',
             parent,
-            y: '60%',
+            y: '50%',
             z: App.constants.ACTIVE_PET_Z - 0.1,
             width: 38,
             height: 39,
@@ -4368,6 +4368,7 @@ class Activities {
             if(isWinFrame){
                 App.pet.setState('shocked');
                 App.playSound('resources/sounds/cute.ogg');
+                App.vibrate();
                 cyclesWithoutWinFrame = 0;
             } else {
                 App.playSound('resources/sounds/ui_click_04.ogg');

@@ -429,6 +429,21 @@ hr {
     display: flex;
     align-items: center;
     justify-content: center;
+    background-size: 256px;
+    animation: background-scroll 120s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .root {
+    animation: none;
+  }
+}
+@keyframes background-scroll {
+    from {
+        background-position: 0 0;
+    }
+    to {
+        background-position: 256px 256px;
+    }
 }
 
 .generic-empty-container {
