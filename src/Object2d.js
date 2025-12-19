@@ -1,4 +1,7 @@
 class Object2d {
+    defaultDrawer;
+    colorOverrides;
+
     constructor(config) {
         if(config.parent?.isRemoved){
             console.error('Cannot instantiate, parent is removed.', config);
@@ -39,31 +42,6 @@ class Object2d {
 
         this.id = this.drawer.addObject(this);
     }
-    /* setImg(img){ // this one gets image url
-        if(!img) return;
-
-        const preloaded = App.preloadedResources[img];
-        if(preloaded){
-            console.log('is preloaded', img)
-            return this.setImage(preloaded);
-        }
-        console.log('not preloaded', img)
-        this.imageSrc = img;
-        const resource = App.checkResourceOverride(img);
-        const newImage = new Image();
-        newImage.src = resource;
-        newImage.onload = () => {
-            this.image = newImage;
-        }
-    }
-    setImage(image){ // this one gets img object (presume preloadedResource)
-        if(!image) return;
-        
-        this.imageSrc = image.src;
-        const resource = App.checkResourceOverride(image.src);
-        this.image = image;
-        // this.image.src = resource;
-    } */
     setImg(img){ // this one gets image url
         if(!img) return;
 
@@ -76,11 +54,21 @@ class Object2d {
 
         this.imageSrc = img;
         this.image.src = App.checkResourceOverride(img);
+        this.image.onload = () => { 
+            this.image = this.applyColorOverrides(this.image);
+        }
     }
     setImage(image){ // this one gets img object (presume preloadedResource)
         this.imageSrc = image.src;
         this.image = image;
         this.image.src = App.checkResourceOverride(this.image.src);
+        this.image.onload = () => { 
+            this.image = this.applyColorOverrides(this.image);
+        }
+    }
+    applyColorOverrides(image) {
+        if (!Object2d.colorOverrides) return image;
+        return recolorImage(image, Object2d.colorOverrides);
     }
     removeObject(){
         this.drawer?.removeObject?.(this);
@@ -215,6 +203,9 @@ class Object2d {
     hideOutline(){
         this.filter = this._initialFilter != null ? this._initialFilter : this.filter;
         this._initialFilter = this.filter;
+    }
+    static setColorOverrides(colors){
+        Object2d.colorOverrides = colors;
     }
     static setDrawer(drawer) {
         Object2d.defaultDrawer = drawer;

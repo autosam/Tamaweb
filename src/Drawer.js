@@ -244,6 +244,7 @@ class Drawer {
 
             object.onLateDraw?.(object);
         })
+        
         return this;
     }
     pixelate(){

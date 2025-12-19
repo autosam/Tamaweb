@@ -2751,3 +2751,21 @@ c-sprite.ghost.devil::after {
     outline: 2px solid;
     margin-bottom: 8px;
 }
+
+.score-circle {
+    width: 16px;
+    height: 16px;
+    content: "";
+    background: white;
+    border-radius: 100%;
+    border: 2px solid var(--prim-clr-a);
+    opacity: 0.5;
+}
+.score-circle.red {
+    background-color: red;
+    opacity: 1;
+}
+.score-circle.green {
+    background-color: greenyellow;
+    opacity: 1;
+}
