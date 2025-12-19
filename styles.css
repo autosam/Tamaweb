@@ -430,7 +430,7 @@ hr {
     align-items: center;
     justify-content: center;
     background-size: 256px;
-    animation: background-scroll 120s linear infinite;
+    animation: background-scroll 60s linear infinite;
 }
 @media (prefers-reduced-motion: reduce) {
   .root {
