@@ -310,6 +310,8 @@ const SPRITES = [
 "misc/wedding_heart_01.png",
 "misc/xmas_tree_01.png",
 "misc/yellow_star_01.png",
+"ui/bg_pattern_01.png",
+"ui/bg_pattern_02.png",
 "ui/facing_center.png",
 "ui/facing_left.png",
 "ui/facing_right.png",
