@@ -1784,13 +1784,37 @@ App.definitions = (() => {
         /* SHELL BACKGROUNDS */
         shell_background: [
             {
-                image: 'resources/img/ui/shell_background_07.png',
+                image: 'resources/img/ui/shell_background_13.png',
+                isNew: true,
+                isDefault: true,
+            },
+            {
+                image: 'resources/img/ui/shell_background_17.png',
+                isNew: true,
+            },
+            {
+                image: 'resources/img/ui/shell_background_18.png',
+                isNew: true,
+            },
+            {
+                image: 'resources/img/ui/shell_background_20.png',
+                isNew: true,
+            },
+            {
+                image: 'resources/img/ui/shell_background_19.png',
+                isNew: true,
+            },
+            {
+                image: 'resources/img/ui/shell_background_21.png',
+                isNew: true,
+            },
+            {
+                image: 'resources/img/ui/shell_background_16.png',
                 isNew: false,
             },
             {
-                image: 'resources/img/ui/shell_background_13.png',
+                image: 'resources/img/ui/shell_background_07.png',
                 isNew: false,
-                isDefault: true,
             },
             {
                 image: 'resources/img/ui/shell_background_12.png',

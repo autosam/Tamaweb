@@ -3187,7 +3187,7 @@ const App = {
                     }
                 },
                 {
-                    name: `Shell Settings`,
+                    name: `Shell Settings ${App.getBadge()}`,
                     onclick: () => {
                         // App.handlers.open_shell_background_list();
                         // return true;
@@ -3295,6 +3295,27 @@ const App = {
                                                     {name: 'cancel', class: 'back-btn', onclick: () => {}},
                                                 ]);
                                                 return true;
+                                            }
+                                        },
+                                        {
+                                            _ignore: !App.isTester,
+                                            name: 'from clipboard',
+                                            onclick: async () => {
+                                                try {
+                                                    const clipboardItems = await navigator.clipboard.read();
+    
+                                                    const item = clipboardItems[0];
+                                                    const type = item.types[0]; 
+                                                    const blob = await item.getType(type);
+    
+                                                    const reader = new FileReader();
+                                                    reader.onload = (event) => {
+                                                        App.setShellBackground(event.target.result);
+                                                    };
+                                                    reader.readAsDataURL(blob);
+                                                } catch(e) {
+                                                    console.error(e);
+                                                }
                                             }
                                         }
                                     ]);
