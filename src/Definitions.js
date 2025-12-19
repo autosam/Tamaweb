@@ -133,7 +133,7 @@ App.definitions = (() => {
                 onEnter: () => Activities.goToMarket(),
             },
             {
-                name: `Game Center`,
+                name: `Game Center ${App.getBadge()}`,
                 image: 'resources/img/misc/activity_building_arcade.png',
                 onEnter: () => Activities.goToArcade(),
             },
