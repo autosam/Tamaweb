@@ -334,15 +334,15 @@ const wordBank = {
     "hat", "book", "pen", "box", "map", "coin", "chair", "blanket", "pillow", "bed", "window", "mirror", "key", "door",
     "bag", "lamp", "rope", "glove", "ring", "necklace", "watch", "phone", "screen", "button", "switch", "remote",
     "cloud", "rain", "snow", "sun", "moon", "tree", "flower", "leaf", "rock", "sand", "fire", "water", "wind", "fog",
-    "castle", "tower", "bridge", "path", "hole", "trap", "room", "house", "school", "forest", "cave", "island", "planet",
+    "castle", "tower", "bridge", "path", "trap", "room", "house", "school", "forest", "cave", "island", "planet",
     "color", "shape", "pattern", "number", "letter", "word", "story", "joke", "truth", "lie", "game", "challenge", "push",
-    "pull", "lift", "throw", "catch", "cut", "burn", "freeze", "melt", "grow",
+    "pull", "lift", "throw", "catch", "cut", "freeze", "melt", "grow",
     "shine", "glow", "fade", "enter", "leave", "stay", "wait", "move", "turn", "spin",
     "clap", "stomp", "kick", "punch", "wave", "nod", "bow", "dance", "cheer", "whistle", "mountain", 
     "valley", "river", "lake", "ocean", "desert", "volcano", "starfall", "comet", "galaxy",
     "armor", "sword", "shield", "bow", "arrow", "helmet", "crown", "cloak", "staff", "wand",
     "painting", "statue", "poem", "scroll", "note", "message", "signal", "alarm", "flag", "sign",
-    "energy", "spark", "flame", "smoke", "shadow", "illusion", "portal", "dimension", "spirit", "soul",
+    "energy", "spark", "flame", "shadow", "illusion", "portal", "dimension", "spirit", "soul",
   ],
 
   questionStarters: [
