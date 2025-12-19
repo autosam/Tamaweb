@@ -812,11 +812,9 @@ const App = {
                 })) return showAlreadyUsed();
                 break;
             // update specific
-            case "HPPYTNXGVN":
-            case "LAVENDER":
-            case "INVITEANIMALS":
-                App.displayPopup('This gift code is expired');
-                break;
+            case "HPPYXMAS":
+            case "SANTA":
+            case "FLAGS":
                 if(!addEvent(codeEventId, () => {
                     const goldAmount = 200, missionPtsAmount = 50;
                     App.pet.stats.gold += goldAmount;
