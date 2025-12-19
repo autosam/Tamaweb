@@ -1408,6 +1408,9 @@ const App = {
         restaurant: new Scene({
             image: 'resources/img/background/house/restaurant_01.png',
             noShadows: true,
+        }),
+        full_grass: new Scene({
+            image: 'resources/img/background/outside/full_grass_01.png',
         })
     },
     setScene(scene, noPositionChange, onLoadArg){
@@ -6377,6 +6380,18 @@ const App = {
                 App.handlers.open_activity_list(true);
             }
             App.displayList([
+                {
+                    name: `flags ${App.getBadge()}`,
+                    onclick: () => {
+                        const image = `
+                        <div class="flex justify-center">
+                            <img src="resources/img/ui/flags.png"></img>
+                        </div>
+                        `
+                        App.displayPopup(`Tap when both flags are facing down! ${image}`, tutorialDisplayTime, () => Activities.flagsGame())
+                        return false;
+                    }
+                },
                 {
                     name: `crop match`,
                     onclick: () => {

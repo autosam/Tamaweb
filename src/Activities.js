@@ -4264,6 +4264,133 @@ class Activities {
 
 
     // games
+    static async flagsGame(){
+        App.closeAllDisplays();
+        App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.sendAnalytics('minigame_flags');
+
+        App.toggleGameplayControls(false, () => {});
+        App.setScene(App.scene.full_grass);
+
+        App.pet.triggerScriptedState('idle', App.INF, null, true);
+        App.pet.stopMove();
+        App.pet.x = '50%';
+        App.pet.y = '80%';
+
+        const screen = UI.empty();
+        document.querySelector('.screen-wrapper').appendChild(screen);
+        screen.innerHTML = `
+        <div class="width-full" style="position: absolute; top: 0; left: 0;">
+            <div class="flex-container" style="justify-content: space-between; padding: 4px">
+                <div class="flex flex-dir-row" id="score"></div>
+            </div>
+        </div>
+        `;
+
+        const parent = new Object2d({});
+        const baseFlagConfig = {
+            img: 'resources/img/misc/flag_01.png',
+            parent,
+            y: '60%',
+            z: App.constants.ACTIVE_PET_Z - 0.1,
+            width: 38,
+            height: 39,
+            onDraw: (me) => me.opacity = me.parent.opacity,
+        }
+        const rightFlag = new Object2d({
+            x: '65%',
+            inverted: false,
+            ...baseFlagConfig
+        })
+        const leftFlag = new Object2d({
+            x: '35%',
+            inverted: true,
+            ...baseFlagConfig
+        })
+
+        const possibleRotations = [0, 45, 90];
+
+        const winFrameRotation = 90;
+        let isWinFrame = false, currentDelayMs = 800, scoreArray = new Array(3).fill(undefined), paused = false, cyclesWithoutWinFrame = 0;
+        let nextPoseUpdate = App.time;
+
+        const updateUI = () => {
+            const scoreElement = screen.querySelector('#score');
+            scoreElement.innerHTML = scoreArray.map(state => `
+                <div class="score-circle ${state !== undefined ? (state ? 'green' : 'red') : ''}"></div>
+            `).join(' ');
+        }
+        updateUI();
+
+        const driverFn = App.registerOnDrawEvent(() => {
+            if(App.mouse.isDown && !paused){
+                const scoreIndex = scoreArray.findIndex(e => e === undefined)
+                parent.opacity = 0.25;
+                App.mouse.isDown = false;
+                nextPoseUpdate = App.time + 2000;
+                if(isWinFrame){
+                    App.pet.setState('cheering');
+                    currentDelayMs = clamp(currentDelayMs - 210, 250, 1000);
+                } else {
+                    App.pet.setState('uncomfortable');
+                }
+                scoreArray[scoreIndex] = isWinFrame ? true : false;
+                updateUI();
+                isWinFrame = false;
+                cyclesWithoutWinFrame = 0;
+                paused = true;
+            }
+
+            if(App.time <= nextPoseUpdate) return;
+            nextPoseUpdate = App.time + currentDelayMs;
+            
+            if(scoreArray.every(e => e !== undefined)){
+                return endFn();
+            }
+            
+            paused = false;
+            parent.opacity = 1;
+            App.pet.setState('idle');
+
+            let rightFlagRotation = randomFromArray(possibleRotations.filter(rot => rot !== rightFlag.rotation)),
+                leftFlagRotation = -randomFromArray(possibleRotations.filter(rot => rot !== -leftFlag.rotation));
+
+            if(cyclesWithoutWinFrame > 5){
+                rightFlagRotation = winFrameRotation;
+                leftFlagRotation = -winFrameRotation;
+            }
+
+            rightFlag.rotation = rightFlagRotation;
+            leftFlag.rotation = leftFlagRotation;
+
+            isWinFrame = [rightFlag, leftFlag].every(flag => Math.abs(flag.rotation) === winFrameRotation);
+
+            if(isWinFrame){
+                App.pet.setState('shocked');
+                App.playSound('resources/sounds/cute.ogg');
+                cyclesWithoutWinFrame = 0;
+            } else {
+                App.playSound('resources/sounds/ui_click_04.ogg');
+                cyclesWithoutWinFrame++
+            }
+        })
+
+        const endFn = () => {
+            // cleanup
+            screen.remove();
+            App.unregisterOnDrawEvent(driverFn);
+            App.toggleGameplayControls(false);
+            parent.removeObject();
+            App.reloadScene();
+
+            const winScore = scoreArray.filter(e => e === true).length;
+            Activities.task_winMoneyFromArcade({
+                amount: winScore * 25,
+                hasWon: winScore >= 2,
+                happiness: winScore * 3,
+            })
+        }
+    }
     static async dogWashingGame(){
         App.closeAllDisplays();
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
