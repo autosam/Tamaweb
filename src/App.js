@@ -545,10 +545,14 @@ const App = {
         }
 
         // background color
-        document.body.style.backgroundColor = this.settings.backgroundColor;
+        document.documentElement.style.setProperty(
+            '--bg-color',
+            this.settings.backgroundColor
+        );
         const metaThemeColor = document.querySelector('meta[name="theme-color"]');
         metaThemeColor?.setAttribute('content', this.settings.backgroundColor);
-        document.querySelector('.loading-text').style.background = this.settings.backgroundColor;
+        // document.body.style.backgroundColor = this.settings.backgroundColor;
+        // document.querySelector('.loading-text').style.background = this.settings.backgroundColor;
 
         // background pattern
         const root = document.querySelector('.root');
