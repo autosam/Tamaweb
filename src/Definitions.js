@@ -1844,9 +1844,9 @@ App.definitions = (() => {
                 image: 'resources/img/ui/shell_background_11.png',
                 isNew: false,
             },
-            {
+            /* {
                 image: 'resources/img/ui/shell_background_02.png',
-            },
+            }, */
             {
                 image: 'resources/img/ui/shell_background_01.png',
             },
