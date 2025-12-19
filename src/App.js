@@ -436,7 +436,7 @@ const App = {
         setTimeout(() => {
             UI.fadeOut(document.querySelector('.loading-text'));
             App.loadingEnded = true;
-        })
+        }, 50)
 
         // rudder stack
         this.initRudderStack();
