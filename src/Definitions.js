@@ -1847,6 +1847,20 @@ App.definitions = (() => {
                 unlockKey: 'unlock_cloof_shell_bg',
             },
         ],
+
+        /* BACKGROUND PATTERNS */
+        background_pattern: [
+            {
+                name: 'Snowy Stars',
+                image: 'resources/img/ui/bg_pattern_01.png',
+                isNew: true,
+            },
+            {
+                name: 'Shells',
+                image: 'resources/img/ui/bg_pattern_02.png',
+                isNew: true,
+            },
+        ],
     
         /* ACCESSORIES */
         accessories: {

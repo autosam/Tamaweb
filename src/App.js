@@ -24,7 +24,7 @@ const App = {
         displayShellLogo: true,
         shellShape: 6,
         backgroundColor: '#FFDEAD',
-        backgroundPattern: false,
+        backgroundPattern: 'resources/img/ui/bg_pattern_01.png', // todo: disable after xmass
         notifications: false,
         automaticAging: true,
         sleepingHoursOffset: 0,
@@ -554,6 +554,8 @@ const App = {
         const root = document.querySelector('.root');
         if(this.settings.backgroundPattern){
             root.style.background = `url(${this.settings.backgroundPattern})`
+        } else {
+            root.style.background = '';
         }
 
         // screen / shell size
@@ -3061,7 +3063,7 @@ const App = {
                     }
                 },
                 {
-                    name: `system settings`,
+                    name: `system settings ${App.getBadge()}`,
                     onclick: () => {
                         App.displayList([
                             {
@@ -3098,7 +3100,7 @@ const App = {
                                 }
                             },
                             {
-                                name: `background color`,
+                                name: `back color`,
                                 onclick: () => {
                                     App.displayList([
                                         {
@@ -3125,6 +3127,19 @@ const App = {
                                             }
                                         }
                                     ])
+                                    return true;
+                                }
+                            },
+                            {
+                                _mount: (btn) => {
+                                    const hasNew = App.definitions.background_pattern.some((entry) => {
+                                        const isUnlocked = entry.unlockKey ? App.getRecord(entry.unlockKey) : true;
+                                        return entry.isNew && isUnlocked;
+                                    });
+                                    btn.innerHTML = `back pattern ${hasNew ? App.getBadge('new!') : ''}`
+                                },
+                                onclick: () => {
+                                    App.handlers.open_background_pattern_list();
                                     return true;
                                 }
                             },
@@ -3249,7 +3264,6 @@ const App = {
                                         const isUnlocked = entry.unlockKey ? App.getRecord(entry.unlockKey) : true;
                                         return entry.isNew && isUnlocked;
                                     });
-                                    console.log({hasNew})
                                     e.innerHTML = `change shell ${hasNew ? App.getBadge('new!') : ''}`
                                 },
                                 onclick: () => {
@@ -4627,6 +4641,33 @@ const App = {
             })
 
             sliderInstance = App.displaySlider(list, null, {accept: 'Set'});
+            return sliderInstance;
+        },
+        open_background_pattern_list: function(){
+            let sliderInstance;
+            const list = App.definitions.background_pattern
+            .filter(current => !(current.unlockKey && !App.getRecord(current.unlockKey)))
+            .sort((a, b) => b.isNew - a.isNew)
+            .map(current => {
+                return {
+                    name: `
+                        <img style="box-shadow: inset 0 0 0 100vw #0000009e;" src="${current.image}"></img>
+                        ${current.isNew ? App.getBadge('new!') : ''}
+                        <div>
+                            ${current.name}
+                        </div>
+                    `,
+                    onclick: () => {
+                        if(App.settings.backgroundPattern === current.image) App.settings.backgroundPattern = false;
+                        else App.settings.backgroundPattern = current.image;
+                        App.applySettings();
+                        App.save();
+                        return true;
+                    }
+                }
+            })
+
+            sliderInstance = App.displaySlider(list, null, {accept: 'Toggle'});
             return sliderInstance;
         },
         open_accessory_list: function(props = {}){
