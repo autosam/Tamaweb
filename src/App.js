@@ -978,7 +978,7 @@ const App = {
         //     ])
         // })) return;
 
-        if(addEvent(`update_22_notice`, () => {
+        if(addEvent(`update_23_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
@@ -991,7 +991,7 @@ const App = {
                         <img class="update-banner" src="resources/img/ui/update_banner.png"></img>
                         <br>
                         <div>
-                        Check out the <b>Restaurant</b>, <b>Animal Updates</b>, <b>Room Background</b>, <b>Gameplay Settings</b>, Events, and more!
+                        Check out the <b>Seasons</b> feature, <b>Santa Encounter</b>, <b>New Flags Minigame</b>, <b>Rebalances</b> and more!
                         </div>
                     `,
                     type: 'text',
