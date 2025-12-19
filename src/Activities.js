@@ -4385,7 +4385,7 @@ class Activities {
 
             const winScore = scoreArray.filter(e => e === true).length;
             Activities.task_winMoneyFromArcade({
-                amount: winScore * 25,
+                amount: winScore * 20,
                 hasWon: winScore >= 2,
                 happiness: winScore * 3,
             })
@@ -4446,7 +4446,7 @@ class Activities {
             screen.close();
             animal.removeObject();
             App.pet.y = '100%';
-            const moneyWon = Math.floor(score * 1.7);
+            const moneyWon = Math.floor(score * 2.3);
             const hasWon = score > 18;
             if(hasWon){
                 App.definitions.achievements.perfect_minigame_petgroom_win_x_times.advance();
@@ -4579,7 +4579,7 @@ class Activities {
                     App.definitions.achievements.perfect_minigame_cropmatch_win_x_times.advance();
                 }
 
-                const moneyWon = Math.max((correctChoices - 1) * 25, 0);
+                const moneyWon = Math.max((correctChoices - 1) * 20, 0);
                 Activities.task_winMoneyFromArcade({
                     amount: moneyWon,
                     happiness: moneyWon / 5,
@@ -4840,7 +4840,7 @@ class Activities {
                 }
             } else {
                 App.playSound(`resources/sounds/cute.ogg`, true);
-                moneyWon += random(1, 2);
+                moneyWon += random(1, 3);
             }
 
             updateUI();
@@ -4866,7 +4866,7 @@ class Activities {
             if(playedRounds >= totalRounds){
                 opponentPet.removeObject();
                 App.setScene(App.scene.arcade_game01);
-                const moneyWon = roundsWon * random(20, 30);
+                const moneyWon = roundsWon * 30;
                 if(roundsWon === totalRounds){
                     App.definitions.achievements.perfect_minigame_mimic_win_x_times.advance();
                 }
