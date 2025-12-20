@@ -426,7 +426,7 @@ hr {
     border-top-right-radius: 1000px; */
 }
 
-.background-pattern {
+.bg-pattern {
     pointer-events: none;
     position: fixed;
     left: -100%;
@@ -435,14 +435,14 @@ hr {
     height: 200%;
     background-size: 256px;
     will-change: transform;
-    animation: background-pattern-scroll 60s linear infinite;
+    animation: bg-pattern-scroll 60s linear infinite;
 }
 @media (prefers-reduced-motion: reduce) {
-  .background-pattern {
+  .bg-pattern {
     animation: none;
   }
 }
-@keyframes background-pattern-scroll {
+@keyframes bg-pattern-scroll {
   from { transform: translate(0,0); }
   to   { transform: translate(256px,256px); }
 }
