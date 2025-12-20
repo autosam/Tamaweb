@@ -7501,7 +7501,7 @@ const App = {
         setItem('user_name', App.userName);
         setItem('ingame_events_history', (App.gameEventsHistory));
         setItem('play_time', App.playTime);
-        setItem('shell_background_v2.1', App.shellBackground);
+        setItem('shell_background_v2.2', App.shellBackground);
         setItem('mods', (App.mods));
         setItem('records', (App.records));
         setItem('room_customization', ({
@@ -7588,7 +7588,7 @@ const App = {
     
         App.playTime = parseInt(await getItem('play_time', 0), 10);
     
-        const shellBackground = await getItem('shell_background_v2.1', 
+        const shellBackground = await getItem('shell_background_v2.2', 
             App.definitions.shell_background.find(shell => shell.isDefault).image ||
             App.definitions.shell_background[1].image);
     
@@ -7636,7 +7636,7 @@ const App = {
             'play_time',
             'last_time',
             'mods',
-            'shell_background_v2.1',
+            'shell_background_v2.2',
         ]
         App.save();
         App.save = () => {};
@@ -7668,7 +7668,7 @@ const App = {
     getSaveCode: async function(providedStorage){
         const storage = providedStorage ?? await App.getDBItems();
         const serializableStorage = Object.assign({}, storage);
-        const unserializableAttributes = ['shell_background_v2.1', 'mods'];
+        const unserializableAttributes = ['shell_background_v2.2', 'mods'];
         unserializableAttributes.forEach(attribute => delete serializableStorage[attribute]);
         const charCode = `save:${btoa(encodeURIComponent(JSON.stringify(serializableStorage)))}:endsave`;
         return charCode;
