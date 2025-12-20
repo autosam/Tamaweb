@@ -333,6 +333,7 @@ body {
     color: white;
     overflow: hidden;
     text-transform: uppercase;
+    background-color: var(--bg-color, black);
 }
 
 a {
@@ -386,7 +387,8 @@ hr {
     font-size: xx-large;
     /* box-shadow: inset 10px -12px 25px 8px rgba(0, 0, 0, 0.25); */
     flex-direction: column;
-    background: rgb(0, 0, 0);
+    background: var(--bg-color, black);
+    transition: background 0.2s ease;
 }
 .loading-text #loading-error {
     color: rgb(255, 170, 170);
@@ -424,7 +426,29 @@ hr {
     border-top-right-radius: 1000px; */
 }
 
+.bg-pattern {
+    pointer-events: none;
+    position: fixed;
+    left: -100%;
+    top: -100;
+    width: 200%;
+    height: 200%;
+    background-size: 256px;
+    will-change: transform;
+    animation: bg-pattern-scroll 60s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bg-pattern {
+    animation: none;
+  }
+}
+@keyframes bg-pattern-scroll {
+  from { transform: translate(0,0); }
+  to   { transform: translate(256px,256px); }
+}
+
 .root {
+    color-scheme: only light;
     height: 100vh;
     display: flex;
     align-items: center;
@@ -524,6 +548,7 @@ hr {
 .grid-item:hover:after,
 .generic-btn:active:after,
 .generic-btn:hover:after,
+.generic-btn.active:after,
 .simon-says-button.active:after
 {
     width: 11px;
@@ -671,6 +696,9 @@ hr {
     width: 80%;
     position: relative;
 }
+.slider-item > * {
+    pointer-events: none;
+}
 
 .slide-btn:before {
     box-shadow: inset 0px -4px 0px 2px #0000001a;
@@ -767,19 +795,22 @@ input:focus {
     animation: pulse-anim 0.25s infinite alternate;
 }
 
-.generic-slider-container .additional-text {
+.generic-slider-container .top-slot {
     position: absolute;
-    top: 5px;
-    pointer-events: none;
-    left: 5px;
     background: #ffffffb5;
     padding: 2px 5px;
     border-radius: 5px;
     animation: fade-in-anim 0.2s;
     text-wrap: nowrap;
     font-size: smaller;
-    left: 0px;
-    top: 0px;
+    top: 0;
+}
+.generic-slider-container .top-slot.right {
+    right: 0;
+}
+.generic-slider-container .top-slot.left {
+    left: 0;
+    pointer-events: none;
 }
 
 @keyframes fade-in-anim {
@@ -1009,8 +1040,12 @@ button {
     background: 50% 50% / cover rgb(255, 237, 217);
     border-radius: 100% 100% 95% 95%;
     overflow: hidden;
-    box-shadow: rgba(0, 0, 0, 0.333) 20px 20px 32px inset, rgb(255 255 255 / 33%) -12px -20px 16px inset;
-    filter: drop-shadow(rgba(0, 0, 0, 0.082) 4px 10px 18px);
+    /* box-shadow: rgba(0, 0, 0, 0.333) 20px 20px 32px inset, rgb(255 255 255 / 33%) -12px -20px 16px inset; */
+    box-shadow: rgba(0, 0, 0, 0.333) 20px 20px 32px inset,
+    color-mix(in srgb, transparent 60%, var(--bg-color, transparent)) 40px -40px 40px inset,
+    color-mix(in srgb, transparent 50%, var(--bg-color, transparent)) -4px 4px 8px inset,
+    rgb(255 255 255 / 33%) -12px -20px 16px inset;
+    filter: drop-shadow(rgba(0, 0, 0, 0.1) 4px 10px 18px);
 }
 
 .dom-shell>.logo {
@@ -2181,17 +2216,6 @@ a.generic-btn:before {
     animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1);
 }
 
-.background-pattern {
-    background: repeating-linear-gradient(-45deg, #0000003d 0 10px, #00000000 10px 20px, #00000082 20px 30px);
-    left: 0;
-    top: 0;
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    mix-blend-mode: soft-light;
-    opacity: 0.6;
-}
-
 .marquee {
     transform: translate3d(0, 0, 0);
     animation: marqueeAnimation 5s linear infinite;
@@ -2743,4 +2767,22 @@ c-sprite.ghost.devil::after {
     image-rendering: auto !important;
     outline: 2px solid;
     margin-bottom: 8px;
+}
+
+.score-circle {
+    width: 16px;
+    height: 16px;
+    content: "";
+    background: white;
+    border-radius: 100%;
+    border: 2px solid var(--prim-clr-a);
+    opacity: 0.5;
+}
+.score-circle.red {
+    background-color: red;
+    opacity: 1;
+}
+.score-circle.green {
+    background-color: greenyellow;
+    opacity: 1;
 }

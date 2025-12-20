@@ -113,7 +113,9 @@ const Missions = {
     openRewardsMenu: function(){
         const defs = App.definitions;
         App.sendAnalytics('opened_mission_rewards', Missions.currentPts);
-        const foodPool = Object.keys(defs.food).filter(key => defs.food[key].price).map(key => { 
+        const foodPool = Object.keys(defs.food)
+        .filter(key => defs.food[key].price > 0)
+        .map(key => { 
             return {
                 name: key,
                 icon: App.getFoodCSprite(defs.food[key].sprite),
@@ -124,7 +126,8 @@ const Missions = {
                 }
             } 
         });
-        const itemsPool = Object.keys(defs.item).map(key => { 
+        const itemsPool = Object.keys(defs.item)
+        .map(key => { 
             return {
                 name: key,
                 icon: App.getItemCSprite(defs.item[key].sprite),
@@ -135,7 +138,9 @@ const Missions = {
                 }
             } 
         });
-        const accessoriesPool = Object.keys(defs.accessories).map(key => { 
+        const accessoriesPool = Object.keys(defs.accessories)
+        .filter(key => App.definitions.accessories[key].price !== -1)
+        .map(key => { 
             return {
                 name: key,
                 icon: App.getAccessoryCSprite(key),
@@ -146,10 +151,12 @@ const Missions = {
                 }
             } 
         });
-        const exclusivePotionsPool = Object.keys(defs.food).filter(key => {
+        const exclusivePotionsPool = Object.keys(defs.food)
+        .filter(key => {
             const item = defs.food[key];
             return item.type === 'med' && item.unbuyable;
-        }).map(key => { 
+        })
+        .map(key => { 
             return {
                 name: key,
                 icon: App.getFoodCSprite(defs.food[key].sprite),

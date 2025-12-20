@@ -24,6 +24,7 @@ const App = {
         displayShellLogo: true,
         shellShape: 6,
         backgroundColor: '#FFDEAD',
+        backgroundPattern: 'resources/img/ui/bg_pattern_01.png', // todo: disable after xmass
         notifications: false,
         automaticAging: true,
         sleepingHoursOffset: 0,
@@ -35,6 +36,7 @@ const App = {
         genderedPets: false,
         playMusic: true,
         skillsAffectingEvolution: true,
+        season: 'auto',
     },
     constants: {
         ONE_HOUR: 1000 * 60 * 60,
@@ -147,6 +149,17 @@ const App = {
         SPANS: {
             monster: `<div> <img class="icon" src="resources/img/misc/devil_icon.png"></img> <b style="color: red;">monster</b> </div>`,
             angel: `<div> <img class="icon" src="resources/img/misc/angel_icon.png"></img> <b style="color: forestgreen;">angel</b> </div>`
+        },
+        SEASON_COLORS: {
+            source: {
+                shadow0: '#C016B2',
+                shadow1: '#C017B2',
+                base: '#EF1CDE',
+                highlight: '#F248E4',
+            },
+            winter: ['#C6DDFF', '#E8F1FF', '#FFFFFF'],
+            autumn: ['#CE4429', '#ED782F', '#FF9D60'],
+            spring: ['#63A04B', '#7FD060', '#96F271'],
         }
     },
     routes: {
@@ -308,9 +321,10 @@ const App = {
             x: 0, y: 0, z: 999.1,
             composite: "xor",
             static: true,
+            flipSpeed: 200,
             // hidden: true,
             onDraw: (me) => {
-                Object2d.animations.flip(me, 200);
+                Object2d.animations.flip(me, me.flipSpeed);
             }
         })
         App.petDefinition = new PetDefinition({
@@ -422,7 +436,7 @@ const App = {
         setTimeout(() => {
             UI.fadeOut(document.querySelector('.loading-text'));
             App.loadingEnded = true;
-        })
+        }, 50)
 
         // rudder stack
         this.initRudderStack();
@@ -530,11 +544,26 @@ const App = {
             document.body.className = `theme-${this.settings.theme}`;
         }
 
-        // background
-        document.body.style.backgroundColor = this.settings.backgroundColor;
+        // background color
+        document.documentElement.style.setProperty(
+            '--bg-color',
+            this.settings.backgroundColor
+        );
         const metaThemeColor = document.querySelector('meta[name="theme-color"]');
         metaThemeColor?.setAttribute('content', this.settings.backgroundColor);
-        document.querySelector('.loading-text').style.background = this.settings.backgroundColor;
+        // document.body.style.backgroundColor = this.settings.backgroundColor;
+        // document.querySelector('.loading-text').style.background = this.settings.backgroundColor;
+
+        // background pattern
+        const bgPattern = document.querySelector('.bg-pattern');
+        if(bgPattern){
+            if(this.settings.backgroundPattern){
+                UI.show(bgPattern);
+                bgPattern.style.background = `url(${this.settings.backgroundPattern})`
+            } else {
+                UI.hide(bgPattern);
+            }
+        }
 
         // screen / shell size
         this.settings.shellAdditionalSize = clamp(this.settings.shellAdditionalSize, -0.5, 5);
@@ -586,6 +615,12 @@ const App = {
                 App.scene.home.shadowOffset = App.temp.defaultHomeSceneConfig.shadowOffset;
             }
         }
+
+        // season
+        const currentSeason = App.getSeason();
+        const currentSeasonColors = App.getSeasonColor(currentSeason);
+        Object2d.setColorOverrides(currentSeasonColors);
+
         if(App.currentScene){
             App.reloadScene();
         }
@@ -784,11 +819,9 @@ const App = {
                 })) return showAlreadyUsed();
                 break;
             // update specific
-            case "HPPYTNXGVN":
-            case "LAVENDER":
-            case "INVITEANIMALS":
-                App.displayPopup('This gift code is expired');
-                break;
+            case "HPPYXMAS":
+            case "SANTA":
+            case "FLAGS":
                 if(!addEvent(codeEventId, () => {
                     const goldAmount = 200, missionPtsAmount = 50;
                     App.pet.stats.gold += goldAmount;
@@ -904,6 +937,7 @@ const App = {
                                 name: 'yes',
                                 onclick: () => {
                                     App.petDefinition.sprite = commandPayload;
+                                    App.save();
                                     window.location.reload();
                                 }
                             },
@@ -915,6 +949,7 @@ const App = {
                         break;
                     case 'settester':
                         App.settings.isTester = commandPayload === '1';
+                        App.save();
                         App.displayPopup(`Set tester: ${App.settings.isTester}`, 1000, () => window.location.reload());
                         break;
                     case 'activity:reckoning':
@@ -950,7 +985,7 @@ const App = {
         //     ])
         // })) return;
 
-        if(addEvent(`update_22_notice`, () => {
+        if(addEvent(`update_23_notice`, () => {
             App.displayList([
                 {
                     name: 'New update is available!',
@@ -963,7 +998,7 @@ const App = {
                         <img class="update-banner" src="resources/img/ui/update_banner.png"></img>
                         <br>
                         <div>
-                        Check out the <b>Restaurant</b>, <b>Animal Updates</b>, <b>Room Background</b>, <b>Gameplay Settings</b>, Events, and more!
+                        Check out the <b>Seasons</b> feature, <b>Santa Encounter</b>, <b>New Flags Minigame</b>, <b>Rebalances</b> and more!
                         </div>
                     `,
                     type: 'text',
@@ -1382,6 +1417,9 @@ const App = {
         restaurant: new Scene({
             image: 'resources/img/background/house/restaurant_01.png',
             noShadows: true,
+        }),
+        full_grass: new Scene({
+            image: 'resources/img/background/outside/full_grass_01.png',
         })
     },
     setScene(scene, noPositionChange, onLoadArg){
@@ -1627,27 +1665,71 @@ const App = {
 
         const isOutside = App.background.imageSrc?.indexOf('outside/') != -1;
 
+        const season = App.getSeason();
+
         // weather
         App.skyWeather.z = isOutside ? 999.1 : -998;
+
         let weatherEffectChance = random(3, 10, date.getDate())
-        // if(App.isDuringChristmas()) weatherEffectChance += 500;
-        // if(App.isChristmasDay()) weatherEffectChance += 100;
-        // App.setWeather('snow');
-        const seed = h + date.getDate() + App.userId;
+        if(App.isDuringChristmas()) weatherEffectChance += 25;
+        if(App.isChristmasDay()) weatherEffectChance += 100;
+
+        // pRandom setup
         pRandom.save();
+        const seed = h + date.getDate() + App.userId;
         pRandom.seed = seed;
+
+        // weather effect
+        let weatherEffect = 'rain';
+        switch(season){
+            case "spring": break;
+            case "summer": break;
+            case "autumn":
+                weatherEffectChance += 5;
+                weatherEffect = pRandomFromArray(['snow', 'rain', 'rain', 'rain']);
+                break;
+            case "winter": 
+                weatherEffectChance += 15;
+                weatherEffect = 'snow';
+                break;
+        }
+        App.setWeather(weatherEffect);
         App.skyWeather.hidden = !pRandom.getPercent(weatherEffectChance);
+
+        // pRandom reset
         pRandom.load();
         
         // sky
         let sky;
-        if(h >= AFTERNOON_TIME[0] && h < AFTERNOON_TIME[1] && App.skyWeather.hidden) sky = 'afternoon';
+        if(h >= AFTERNOON_TIME[0] && h < AFTERNOON_TIME[1]) sky = 'afternoon';
         else if(h >= EVENING_TIME[0] && h < EVENING_TIME[1]) sky = 'evening';
         else if(h >= NIGHT_TIME[0] || h < NIGHT_TIME[1]) sky = 'night';
         else sky = 'morning';
+
+        // weather / season affecting sky
+        let renderedSky = sky;
+        switch(season){
+            case "winter":
+                // if(sky === 'evening') renderedSky = 'afternoon_cold';
+                break;
+        }
+        if(!App.skyWeather.hidden){
+            const currentWeather = App.skyWeather.name;
+            switch(currentWeather){
+                case "rain":
+                    if(sky === 'afternoon') renderedSky = 'morning';
+                    break;
+                case "snow":
+                    if(sky === 'afternoon') renderedSky = 'morning';
+                    if(sky === 'night') renderedSky = 'night_cold';
+                    if(sky === 'evening') renderedSky = 'evening_cold';
+                    break;
+            }
+        }
+
         App.sky.name = sky;
-        App.sky.setImage(App.preloadedResources[`resources/img/background/sky/${sky}.png`]);
-        App.skyOverlay.setImage(App.preloadedResources[`resources/img/background/sky/${sky}_overlay.png`]);
+        App.sky.setImage(App.preloadedResources[`resources/img/background/sky/${renderedSky}.png`]);
+        App.skyOverlay.setImage(App.preloadedResources[`resources/img/background/sky/${renderedSky}_overlay.png`]);
         setTimeout(() => App.skyOverlay.hidden = !isOutside)
         if(sky == 'afternoon' || sky == 'morning') App.skyOverlay.hidden = true;
     },
@@ -1656,12 +1738,15 @@ const App = {
             case 'rain':
                 App.skyWeather.image = App.preloadedResources["resources/img/background/sky/rain_01.png"];
                 App.skyWeather.composite = "xor";
+                App.skyWeather.flipSpeed = 200;
                 break;
             case 'snow':
                 App.skyWeather.image = App.preloadedResources["resources/img/background/sky/snow_01.png"];
                 App.skyWeather.composite = "normal";
+                App.skyWeather.flipSpeed = 400;
                 break;
         }
+        App.skyWeather.name = type;
     },
     isWeatherEffectActive(){
         return !App.skyWeather.hidden;
@@ -2604,7 +2689,7 @@ const App = {
                 {
                     name: `
                         ${App.getIcon('floppy-disk')} 
-                        <span class="flex flex-dir-col">
+                        <span class="flex flex-dir-col pointer-events-none">
                             <span>Manual Save</span>
                             <small style="font-size: x-small">auto-saves every ${App.constants.AUTO_SAVE_INTERVAL_SECS} secs</small> 
                         </span>
@@ -2930,6 +3015,26 @@ const App = {
                                 }
                             },
                             {
+                                _ignore: true,
+                                _mount: (e) => e.innerHTML = `${getStateIcon(App.settings.season)} Season: <i>${App.settings.season}</i>`,
+                                onclick: (e) => {
+                                    const possibleOptions = [
+                                        'auto',
+                                        'spring',
+                                        'summer',
+                                        'autumn',
+                                        'winter'
+                                    ];
+                                    const currentSettingIndex = possibleOptions.indexOf(App.settings.season);
+                                    App.settings.season = possibleOptions[
+                                        (currentSettingIndex + 1) % possibleOptions.length
+                                    ];
+                                    App.applySettings();
+                                    e._mount();
+                                    return true;
+                                }
+                            },
+                            {
                                 _mount: (e) => e.innerHTML = `${getStateIcon(App.settings.showWantName)} show want name: <i>${App.settings.showWantName ? 'On' : 'Off'}</i>`,
                                 onclick: (item) => {
                                     App.settings.showWantName = !App.settings.showWantName;
@@ -2965,7 +3070,7 @@ const App = {
                     }
                 },
                 {
-                    name: `system settings`,
+                    name: `system settings ${App.getBadge()}`,
                     onclick: () => {
                         App.displayList([
                             {
@@ -3002,7 +3107,7 @@ const App = {
                                 }
                             },
                             {
-                                name: `background color`,
+                                name: `back color`,
                                 onclick: () => {
                                     App.displayList([
                                         {
@@ -3029,6 +3134,19 @@ const App = {
                                             }
                                         }
                                     ])
+                                    return true;
+                                }
+                            },
+                            {
+                                _mount: (btn) => {
+                                    const hasNew = App.definitions.background_pattern.some((entry) => {
+                                        const isUnlocked = entry.unlockKey ? App.getRecord(entry.unlockKey) : true;
+                                        return entry.isNew && isUnlocked;
+                                    });
+                                    btn.innerHTML = `back pattern ${hasNew ? App.getBadge('new!') : ''}`
+                                },
+                                onclick: () => {
+                                    App.handlers.open_background_pattern_list();
                                     return true;
                                 }
                             },
@@ -3078,7 +3196,7 @@ const App = {
                     }
                 },
                 {
-                    name: `Shell Settings`,
+                    name: `Shell Settings ${App.getBadge()}`,
                     onclick: () => {
                         // App.handlers.open_shell_background_list();
                         // return true;
@@ -3153,7 +3271,6 @@ const App = {
                                         const isUnlocked = entry.unlockKey ? App.getRecord(entry.unlockKey) : true;
                                         return entry.isNew && isUnlocked;
                                     });
-                                    console.log({hasNew})
                                     e.innerHTML = `change shell ${hasNew ? App.getBadge('new!') : ''}`
                                 },
                                 onclick: () => {
@@ -3187,6 +3304,27 @@ const App = {
                                                     {name: 'cancel', class: 'back-btn', onclick: () => {}},
                                                 ]);
                                                 return true;
+                                            }
+                                        },
+                                        {
+                                            _ignore: !App.isTester,
+                                            name: 'from clipboard',
+                                            onclick: async () => {
+                                                try {
+                                                    const clipboardItems = await navigator.clipboard.read();
+    
+                                                    const item = clipboardItems[0];
+                                                    const type = item.types[0]; 
+                                                    const blob = await item.getType(type);
+    
+                                                    const reader = new FileReader();
+                                                    reader.onload = (event) => {
+                                                        App.setShellBackground(event.target.result);
+                                                    };
+                                                    reader.readAsDataURL(blob);
+                                                } catch(e) {
+                                                    console.error(e);
+                                                }
                                             }
                                         }
                                     ]);
@@ -3664,13 +3802,17 @@ const App = {
                 }
                 if(salesDay) price = Math.round(price / 2);
 
+                const foodIcon = App.getFoodCSprite(current.sprite);
+
                 list.push({
                     disabled: Boolean(isOutOfStock || isDisabled),
                     current,
                     foodName: food,
                     price,
+                    icon: foodIcon,
+                    shortName: `<div class="icon">${foodIcon}</div> <span class="ellipsis">${food.toUpperCase()}</span>`,
                     name: `
-                        ${App.getFoodCSprite(current.sprite)} 
+                        ${foodIcon} 
                         ${current.cookableOnly ? '★ ' : ''}
                         ${food.toUpperCase()} 
                         (x${ownedAmount > 0 ? ownedAmount : (!current.price ? '∞' : 0)})
@@ -3779,6 +3921,7 @@ const App = {
                 activeIndex, 
                 {accept: acceptLabel}, 
                 (buyMode || sellMode) ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}` : null);
+            
             return sliderInstance;
         },
         open_seed_list: function(buyMode, activeIndex, payloadFn){
@@ -3805,10 +3948,13 @@ const App = {
                 let price = current.price;
                 if(salesDay) price = Math.round(price / 2);
 
+                const plantIcon = Plant.getCSprite(plant, Plant.AGE.grown, 'seed-pack');
+
                 list.push({
                     disabled: isOutOfStock,
+                    shortName: `<div class="icon">${Plant.getCSprite(plant, Plant.AGE.grown)}</div> <span class="ellipsis">${plant.toUpperCase()}</span>`,
                     name: `
-                        ${Plant.getCSprite(plant, Plant.AGE.grown, 'seed-pack')} 
+                        ${plantIcon} 
                         ${plant.toUpperCase()} seeds 
                         (x${App.pet.inventory.seeds[plant] > 0 ? App.pet.inventory.seeds[plant] : (!current.price ? '∞' : 0)}) 
                         ${
@@ -4287,7 +4433,13 @@ const App = {
 
                 list.push({
                     isNew: !!current.isNew,
-                    name: `${iconElement} ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) <b>${buyMode ? `$${price}` : ''}</b> ${current.isNew ? App.getBadge('new!') : ''}`,
+                    shortName: `<div class="icon">${iconElement}</div> <span class="ellipsis">${item.toUpperCase()}</span>`,
+                    name: `
+                        ${iconElement} 
+                        ${item.toUpperCase()} (x${App.pet.inventory.item[item] || 0}) 
+                        <b>${buyMode ? `$${price}` : ''}</b> 
+                        ${current.isNew ? App.getBadge('new!') : ''}
+                    `,
                     onclick: (btn, list) => {
                         if(buyMode){
                             if(!App.pay(price)) return true;
@@ -4346,6 +4498,7 @@ const App = {
             const getCraftableUIDef = (current, type, owned) => ({
                 current,
                 isNew: !!current.isNew,
+                shortName: `<span class="ellipsis">${current.name.toUpperCase()}</span>`,
                 name: `
                     ${
                         current.icon ??
@@ -4470,9 +4623,12 @@ const App = {
 
                 const defaultTypeImage = scene.image || App.scene.home.image;
 
+                const icon = current.icon || current.image;
+
                 list.push({
                     isNew: !!current.isNew,
-                    name: `<img style="min-height: 64px" src="${App.checkResourceOverride(current.image)}"></img> ${room.toUpperCase()} <b>$${price}</b> ${current.isNew ? App.getBadge('new!') : ''}`,
+                    shortName: `<span class="ellipsis">${room.toUpperCase()}</span>`,
+                    name: `<img style="min-height: 64px" src="${App.checkResourceOverride(icon)}"></img> ${room.toUpperCase()} <b>$${price}</b> ${current.isNew ? App.getBadge('new!') : ''}`,
                     onclick: (btn, list) => {
                         if(current.image === defaultTypeImage){
                             App.displayPopup('You already own this room');
@@ -4513,6 +4669,33 @@ const App = {
             })
 
             sliderInstance = App.displaySlider(list, null, {accept: 'Set'});
+            return sliderInstance;
+        },
+        open_background_pattern_list: function(){
+            let sliderInstance;
+            const list = App.definitions.background_pattern
+            .filter(current => !(current.unlockKey && !App.getRecord(current.unlockKey)))
+            .sort((a, b) => b.isNew - a.isNew)
+            .map(current => {
+                return {
+                    name: `
+                        <img style="box-shadow: inset 0 0 0 100vw #0000009e;" src="${current.image}"></img>
+                        ${current.isNew ? App.getBadge('new!') : ''}
+                        <div>
+                            ${current.name}
+                        </div>
+                    `,
+                    onclick: () => {
+                        if(App.settings.backgroundPattern === current.image) App.settings.backgroundPattern = false;
+                        else App.settings.backgroundPattern = current.image;
+                        App.applySettings();
+                        App.save();
+                        return true;
+                    }
+                }
+            })
+
+            sliderInstance = App.displaySlider(list, null, {accept: 'Toggle'});
             return sliderInstance;
         },
         open_accessory_list: function(props = {}){
@@ -4557,10 +4740,13 @@ const App = {
                     return false;
                 }
 
+                const accessoryIcon = App.getAccessoryCSprite(accessoryName);
+
                 list.push({
                     isNew: !!current.isNew,
+                    shortName: `<span class="ellipsis">${accessoryName.toUpperCase()}</span>`,
                     name: `
-                        ${App.getAccessoryCSprite(accessoryName)}
+                        ${accessoryIcon}
                         ${accessoryName.toUpperCase()} 
                         <b>
                         ${
@@ -4652,6 +4838,7 @@ const App = {
 
                 list.push({
                     isNew: !!current.isNew,
+                    shortName: `<span class="ellipsis">${current.name.toUpperCase()}</span>`,
                     name,
                     onclick: (btn, list) => {
                         if(owned) return App.displayPopup(`You already own the this furniture!`);
@@ -4902,6 +5089,7 @@ const App = {
                 ].map(current => {
                     return {
                         ...current,
+                        shortName: `<div class="icon">${current.icon}</div> <span class="ellipsis">${current.name?.toUpperCase()}</span>`,
                         name: `
                             ${current.icon} 
                             ${current.name?.toUpperCase()} 
@@ -6102,7 +6290,8 @@ const App = {
                     accessory.unlockKey ? 
                     App.getRecord(accessory.unlockKey) : 
                     true;
-                return accessory.isNew && isUnlocked && !accessory.isCraftable;
+                const accessShopExclusive = accessory.accessShop;
+                return accessory.isNew && isUnlocked && !accessory.isCraftable && !accessShopExclusive;
             });
             const hasNewItem = Object.keys(App.definitions.item).some(key => {
                 const isUnlocked = 
@@ -6261,6 +6450,19 @@ const App = {
             }
             App.displayList([
                 {
+                    _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.child,
+                    name: `flags ${App.getBadge()}`,
+                    onclick: () => {
+                        const image = `
+                        <div class="flex justify-center">
+                            <img src="resources/img/ui/flags.png"></img>
+                        </div>
+                        `
+                        App.displayPopup(`Tap when both flags are facing down! ${image}`, tutorialDisplayTime, () => Activities.flagsGame())
+                        return false;
+                    }
+                },
+                {
                     name: `crop match`,
                     onclick: () => {
                         App.displayPopup(`Memorize the sequence of crops as they appear!`, tutorialDisplayTime, () => Activities.plantMatchingGame())
@@ -6268,6 +6470,7 @@ const App = {
                     }
                 },
                 {
+                    _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.child,
                     name: `pet grooming`,
                     onclick: () => {
                         App.displayPopup(`Press the wash icon <i class="fa-solid fa-hands-wash"></i> as much as possible before the timer runs out!`, tutorialDisplayTime, () => Activities.dogWashingGame())
@@ -6297,6 +6500,7 @@ const App = {
                     }
                 },
                 {
+                    _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.child,
                     name: 'rod rush',
                     onclick: () => {
                         App.displayPopup(`Stop the pointer at the perfect time!`, tutorialDisplayTime, () => Activities.barTimingGame())
@@ -6634,6 +6838,8 @@ const App = {
         return list;
     },
     displaySlider: function(listItems, activeIndex, options, additionalText){
+        const hasIndexMenu = listItems.some(item => item?.shortName);
+
         let list = document.querySelector('.cloneables .generic-slider-container').cloneNode(true);
 
         if(activeIndex !== 0 && !activeIndex){
@@ -6661,31 +6867,43 @@ const App = {
             list.close();
         }
 
-        changeIndex = diff => {
-            if(!diff) diff = 0;
+        changeIndex = (diff = 0, asAbsoluteIndex) => {
             currentIndex += diff;
             if(currentIndex >= maxIndex) currentIndex = 0;
             else if(currentIndex < 0) currentIndex = maxIndex - 1;
 
+            if(asAbsoluteIndex) currentIndex = diff;
+
             let item = listItems[currentIndex];
-            let button = document.createElement('div');
-                button.className = 'slider-item' + (item.class ? item.class : '');
-                button.innerHTML = item.name;
-                button.setAttribute('data-index', currentIndex);
+            let itemContent = document.createElement('div');
+                itemContent.className = 'slider-item' + (item.class ? item.class : '');
+                itemContent.innerHTML = item.name;
+                itemContent.setAttribute('data-index', currentIndex);
                 acceptBtn.innerHTML = item.acceptLabel || defaultAcceptButtonLabel;
                 acceptBtn.disabled = item.disabled;
                 acceptBtn.onclick = () => {
-                    let result = item.onclick(button, list);
+                    let result = item.onclick(itemContent, list);
                     if(!result){
                         list.close();
                     }
                 };
             
             let animationStart = diff < 0 ?  'slider-item-anim-in-left' : 'slider-item-anim-in-right';
-            button.style.animation = `${diff ? animationStart : ''} 0.1s linear forwards`;
+            itemContent.style.animation = `${diff ? animationStart : ''} 0.1s linear forwards`;
 
             contentElement.innerHTML = '';
-            contentElement.appendChild(button);
+            contentElement.appendChild(itemContent);
+        }
+
+        const displayItemsList = () => {
+            App.displayList(listItems?.map((item, index) => ({
+                _disable: item.disabled,
+                name: item.shortName,
+                class: (index === currentIndex) ? 'active' : '',
+                onclick: () => {
+                    changeIndex(index, true)
+                }
+            })), null, 'Back');
         }
 
         list.querySelector('.slide-left').onclick = () => {
@@ -6698,8 +6916,15 @@ const App = {
         }
 
         if(additionalText){
-            list.querySelector('.additional-text').innerHTML = additionalText;
-        } else list.querySelector('.additional-text').remove();
+            list.querySelector('.top-slot.left').innerHTML = additionalText;
+        } else list.querySelector('.top-slot.left').remove();
+
+        if(hasIndexMenu){
+            const rightSlot = list.querySelector('.top-slot.right');
+            rightSlot.innerHTML = `<div class="pointer-events-none">${App.getIcon('list', true)}</div>`;
+            rightSlot.classList.add('cursor-pointer', 'click-sound');
+            rightSlot.onclick = displayItemsList;
+        } else list.querySelector('.top-slot.right').remove();
 
         if(maxIndex === 1){
             list.querySelector('.slide-left').classList.add('disabled');
@@ -6942,6 +7167,37 @@ const App = {
             App.constants.SLEEP_START + App.settings.sleepingHoursOffset,
             App.constants.SLEEP_END + App.settings.sleepingHoursOffset
         );
+    },
+    getSeason: function(date = moment()){
+        if(App.settings.season !== 'auto'){
+            return App.settings.season;
+        }
+
+        const month = date.month(); // 0 = january, 11 = december
+
+        if (month >= 2 && month <= 4) {
+            return "spring";   // march, april, may
+        } else if (month >= 5 && month <= 7) {
+            return "summer";   // june, july, august
+        } else if (month >= 8 && month <= 10) {
+            return "autumn";   // september, october, november
+        } else {
+            return "winter";   // december, january, february
+        }
+    },
+    getSeasonColor: function(name){
+        const { SEASON_COLORS } = App.constants;
+        const { source } = SEASON_COLORS;
+
+        const currentSeason = SEASON_COLORS[name] || SEASON_COLORS['spring'];
+        const [shadow, base, highlight] = currentSeason;
+
+        return [
+            [source.shadow0, shadow],
+            [source.shadow1, shadow],
+            [source.base, base],
+            [source.highlight, highlight],
+        ]
     },
     isWithinHour: function(current, start, end){
         start = App.clampWithin24HourFormat(start);
@@ -7228,6 +7484,7 @@ const App = {
             'animals',
             'play_time',
             'last_time',
+            'settings',
         ];
 
         let savingData = [];
@@ -7246,7 +7503,7 @@ const App = {
         setItem('user_name', App.userName);
         setItem('ingame_events_history', (App.gameEventsHistory));
         setItem('play_time', App.playTime);
-        setItem('shell_background_v2.1', App.shellBackground);
+        setItem('shell_background_v2.2', App.shellBackground);
         setItem('mods', (App.mods));
         setItem('records', (App.records));
         setItem('room_customization', ({
@@ -7333,7 +7590,7 @@ const App = {
     
         App.playTime = parseInt(await getItem('play_time', 0), 10);
     
-        const shellBackground = await getItem('shell_background_v2.1', 
+        const shellBackground = await getItem('shell_background_v2.2', 
             App.definitions.shell_background.find(shell => shell.isDefault).image ||
             App.definitions.shell_background[1].image);
     
@@ -7381,7 +7638,7 @@ const App = {
             'play_time',
             'last_time',
             'mods',
-            'shell_background_v2.1',
+            'shell_background_v2.2',
         ]
         App.save();
         App.save = () => {};
@@ -7413,7 +7670,7 @@ const App = {
     getSaveCode: async function(providedStorage){
         const storage = providedStorage ?? await App.getDBItems();
         const serializableStorage = Object.assign({}, storage);
-        const unserializableAttributes = ['shell_background_v2.1', 'mods'];
+        const unserializableAttributes = ['shell_background_v2.2', 'mods'];
         unserializableAttributes.forEach(attribute => delete serializableStorage[attribute]);
         const charCode = `save:${btoa(encodeURIComponent(JSON.stringify(serializableStorage)))}:endsave`;
         return charCode;
@@ -7648,7 +7905,7 @@ const App = {
         new Object2d({
             image: App.getPreloadedResource('resources/img/misc/black_overlay_01.png'),
             opacity: 0,
-            x: 0, y: 0, z: 100,
+            x: 0, y: 0, z: 1000,
             onDraw: (me) => {
                 const step = speed * App.deltaTime;
 

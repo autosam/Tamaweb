@@ -36,9 +36,11 @@ class AnimalDefinition extends PetDefinition {
         };
     }
     handleStatsUpdate(){
-        const now = Date.now();
-        const happiness_decrease_rate = 0.000925; // 30 hours
+        const HOURS_UNTIL_LEAVE = 48;
 
+        const now = Date.now();
+
+        const happiness_decrease_rate = 100 / (HOURS_UNTIL_LEAVE * 3600);
         const delta = now - this.lastStatsUpdate;
         this.lastStatsUpdate = now;
 
@@ -47,7 +49,7 @@ class AnimalDefinition extends PetDefinition {
         this.stats.current_happiness -= Math.abs(happinessDecrease);
 
         this.stats.current_happiness = clamp(this.stats.current_happiness, 0, 100);
-    }    
+    }
     getFullCSprite(noMargin){
         const margin = noMargin ? 0 : 10;
         return `<c-sprite width="16" height="16" index="0" src="${this.sprite}" pos-x="0" pos-y="0" style="margin-right: ${margin}px;"></c-sprite>`;

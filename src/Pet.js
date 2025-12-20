@@ -939,6 +939,9 @@ class Pet extends Object2d {
         this.sicknessOverlay.hidden = stats.current_death_tick >= max_death_tick / 2;
 
         // care rating check
+        if(App.temp.sessionCareRatingReduceCooldownTicks == null){
+            App.temp.sessionCareRatingReduceCooldownTicks = 0;
+        }
         const careAffectingStats = [
             'current_health',
             'current_fun',
@@ -950,11 +953,21 @@ class Pet extends Object2d {
             if(
                 previousStats[statName] != 0
                 && this.stats[statName] == 0
+                && !isOfflineProgression
             ) {
-                this.petDefinition.adjustCare(false);
-                stats.current_discipline -= random(2, 10);
+                App.temp.sessionCareRatingReduceCooldownTicks--;
+                if(App.temp.sessionCareRatingReduceCooldownTicks <= 0){
+                    App.temp.sessionCareRatingReduceCooldownTicks = 2;
+                    this.petDefinition.adjustCare(false);
+                    stats.current_discipline -= random(2, 10);
+                }
             }
         })
+        const areAllStatsEmpty = careAffectingStats.every(statName => this.stats[statName] <= 0);
+        if(areAllStatsEmpty){
+            this.stats.current_care = 1;
+            this.petDefinition.adjustCare(false);
+        }
         // increasing
         const careIncreaseThreshold = this.stats.hunger_satisfaction || 85; // this value is based on lowest satisfaction stat
         const eligibleForCareIncrease = careAffectingStats.every(statName => this.stats[statName] > careIncreaseThreshold);
@@ -1276,6 +1289,8 @@ class Pet extends Object2d {
         const report = {};
         // let offline = false;
 
+        App.temp.sessionCareRatingReduceCooldownTicks = 0;
+
         for(let i = 0; i < MAX_OFFLINE_PROGRESSION_SECS; i++){
             this.statsManager(isOffline, hour);
             this.statsManager(isOffline, hour);
@@ -1292,6 +1307,7 @@ class Pet extends Object2d {
             if(this.stats.current_health <= 0 && !report.health) report.health = {...min, stat: this.stats.current_health};
             if(this.stats.current_death_tick <= 0 && !report.death_tick) report.death_tick = {...min, stat: this.stats.current_death_tick};
             if(this.stats.current_discipline <= 0 && !report.discipline) report.discipline = {...min, stat: this.stats.current_discipline};
+            if(this.stats.current_care <= 1 && !report.care) report.care = {...min, stat: this.stats.current_care};
         }
 
         console.log(`Time every stats hit ~0:`, report);

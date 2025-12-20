@@ -4101,7 +4101,122 @@ class Activities {
 
         task_otherPetMoveIn();
     }
+    static async encounterSanta(onEndFn){
+        App.toggleGameplayControls(false);
+
+        App.setScene(App.scene.park);
+
+        const npc = new Pet(
+            new PetDefinition({
+                sprite: 'resources/img/character/santa_01.png',
+            })
+        )
+
+        setTimeout(() => {
+            App.playSound('resources/sounds/santa_bm_01.mp3', true);
+        }, 100);
+
+        const main = new TimelineDirector(App.pet);
+        const santa = new TimelineDirector(npc);
+
+        santa.setPosition({x: '25%'});
+        santa.lookAt(true);
+        main.setPosition({x: '100%'})
+        await main.moveTo({x: '75%', speed: 0.015});
+
+        main.bob({maxCycles: 1, animation: 'cheering'});
+        await santa.bob({maxCycles: 1, animation: 'cheering'});
+
+        await TimelineDirector.wait(1500);
+
+        main.setState('blush');
+        main.think('thought_gift', false, 1500);
+        santa.setState('jumping');
+
+        await TimelineDirector.wait(2000);
+
+        await main.moveTo({x: '70%', speed: 0.01});
+        await santa.moveTo({x: '30%', speed: 0.01});
+
+        await TimelineDirector.wait(500);
+
+        const gift = new Object2d({
+            img: 'resources/img/misc/gift.png',
+            x: '50%', y: '85%', z: App.constants.ACTIVE_PET_Z + 0.1,
+        });
+        new Object2d({
+            img: 'resources/img/misc/foam_single.png',
+            x: '50%',
+            y: '85%',
+            opacity: 1,
+            scale: 1.5,
+            rotation: random(0, 180),
+            z: App.constants.ACTIVE_PET_Z + 2,
+            onDraw: (me) => {
+                Object2d.animations.flip(me);
+                Object2d.animations.pulseScale(me, 0.1, 0.01);
+                me.scale -= 0.0009 * App.deltaTime;
+                me.opacity -= 0.0009 * App.deltaTime;
+                if(me.opacity <= 0) me.removeObject();
+            }
+        })
+
+        await TimelineDirector.wait(500);
+
+        main.setState('cheering_with_icon');
+        santa.setState('cheering');
+
+        santa.actor.say('Merry Christmas!', 3000)
+        await TimelineDirector.wait(3000);
+
+        // accessory gift
+        const EXCLUSIVE_ACCESSORY = 'santa hat';
+        const accessoriesPool = Object.keys(App.definitions.accessories)
+        .filter(key => App.definitions.accessories[key].price !== -1);
+        let randomAccessory = randomFromArray(accessoriesPool);
+        if(!App.pet.inventory.accessory[EXCLUSIVE_ACCESSORY]){
+            randomAccessory = EXCLUSIVE_ACCESSORY;
+        }
+        const isAccessoryNew = !App.pet.inventory.accessory[randomAccessory];
+        App.pet.inventory.accessory[randomAccessory] = true;
+        App.displayPopup(`
+            <small>Gift</small>
+            <div class="pulse">
+                ${App.getAccessoryCSprite(randomAccessory)}
+            </div>
+            <div>${randomAccessory}${isAccessoryNew ? App.getBadge('New!') : ''}</div>
+            <div>
+                <small>Accessory</small>
+            </div>
+        `, 4000, false, true)
+        await TimelineDirector.wait(4500);
+
+        // money gift
+        const prize = random(250, 500);
+        App.pet.stats.gold += prize;
+        santa.actor.say(`+ $${prize}`, 3000);
+
+        await TimelineDirector.wait(5000);
+
+        App.fadeScreen({middleFn: () => {
+            App.toggleGameplayControls(true);
+            main.release();
+            santa.remove();
+            gift.removeObject();
+            onEndFn?.();
+        }})
+    }
     static goToPark(otherPetDef, onEndFn){
+        if(
+            !otherPetDef && !App.temp.encounteredSanta && (
+                (App.isDuringChristmas() && random(0, 100) <= 20) ||
+                (App.isChristmasDay())
+            )
+        ){
+            App.temp.encounteredSanta = true;
+            return Activities.encounterSanta(onEndFn);
+        }
+
         if(!otherPetDef){
             if(random(1, 100) <= 60){
                 otherPetDef = App.getRandomPetDef(App.petDefinition.lifeStage);
@@ -4149,6 +4264,134 @@ class Activities {
 
 
     // games
+    static async flagsGame(){
+        App.closeAllDisplays();
+        App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.sendAnalytics('minigame_flags');
+
+        App.toggleGameplayControls(false, () => {});
+        App.setScene(App.scene.full_grass);
+
+        App.pet.triggerScriptedState('idle', App.INF, null, true);
+        App.pet.stopMove();
+        App.pet.x = '50%';
+        App.pet.y = '70%';
+
+        const screen = UI.empty();
+        document.querySelector('.screen-wrapper').appendChild(screen);
+        screen.innerHTML = `
+        <div class="width-full" style="position: absolute; top: 0; left: 0;">
+            <div class="flex-container" style="justify-content: space-between; padding: 4px">
+                <div class="flex flex-dir-row" id="score"></div>
+            </div>
+        </div>
+        `;
+
+        const parent = new Object2d({});
+        const baseFlagConfig = {
+            img: 'resources/img/misc/flag_01.png',
+            parent,
+            y: '50%',
+            z: App.constants.ACTIVE_PET_Z - 0.1,
+            width: 38,
+            height: 39,
+            onDraw: (me) => me.opacity = me.parent.opacity,
+        }
+        const rightFlag = new Object2d({
+            x: '65%',
+            inverted: false,
+            ...baseFlagConfig
+        })
+        const leftFlag = new Object2d({
+            x: '35%',
+            inverted: true,
+            ...baseFlagConfig
+        })
+
+        const possibleRotations = [0, 45, 90];
+
+        const winFrameRotation = 90;
+        let isWinFrame = false, currentDelayMs = 800, scoreArray = new Array(3).fill(undefined), paused = false, cyclesWithoutWinFrame = 0;
+        let nextPoseUpdate = App.time;
+
+        const updateUI = () => {
+            const scoreElement = screen.querySelector('#score');
+            scoreElement.innerHTML = scoreArray.map(state => `
+                <div class="score-circle ${state !== undefined ? (state ? 'green' : 'red') : ''}"></div>
+            `).join(' ');
+        }
+        updateUI();
+
+        const driverFn = App.registerOnDrawEvent(() => {
+            if(App.mouse.isDown && !paused){
+                const scoreIndex = scoreArray.findIndex(e => e === undefined)
+                parent.opacity = 0.25;
+                App.mouse.isDown = false;
+                nextPoseUpdate = App.time + 2000;
+                if(isWinFrame){
+                    App.pet.setState('cheering');
+                    currentDelayMs = clamp(currentDelayMs - 210, 250, 1000);
+                } else {
+                    App.pet.setState('uncomfortable');
+                }
+                scoreArray[scoreIndex] = isWinFrame ? true : false;
+                updateUI();
+                isWinFrame = false;
+                cyclesWithoutWinFrame = 0;
+                paused = true;
+            }
+
+            if(App.time <= nextPoseUpdate) return;
+            nextPoseUpdate = App.time + currentDelayMs;
+            
+            if(scoreArray.every(e => e !== undefined)){
+                return endFn();
+            }
+            
+            paused = false;
+            parent.opacity = 1;
+            App.pet.setState('idle');
+
+            let rightFlagRotation = randomFromArray(possibleRotations.filter(rot => rot !== rightFlag.rotation)),
+                leftFlagRotation = -randomFromArray(possibleRotations.filter(rot => rot !== -leftFlag.rotation));
+
+            if(cyclesWithoutWinFrame > 5){
+                rightFlagRotation = winFrameRotation;
+                leftFlagRotation = -winFrameRotation;
+            }
+
+            rightFlag.rotation = rightFlagRotation;
+            leftFlag.rotation = leftFlagRotation;
+
+            isWinFrame = [rightFlag, leftFlag].every(flag => Math.abs(flag.rotation) === winFrameRotation);
+
+            if(isWinFrame){
+                App.pet.setState('shocked');
+                App.playSound('resources/sounds/cute.ogg');
+                App.vibrate();
+                cyclesWithoutWinFrame = 0;
+            } else {
+                App.playSound('resources/sounds/ui_click_04.ogg');
+                cyclesWithoutWinFrame++
+            }
+        })
+
+        const endFn = () => {
+            // cleanup
+            screen.remove();
+            App.unregisterOnDrawEvent(driverFn);
+            App.toggleGameplayControls(false);
+            parent.removeObject();
+            App.reloadScene();
+
+            const winScore = scoreArray.filter(e => e === true).length;
+            Activities.task_winMoneyFromArcade({
+                amount: winScore * 20,
+                hasWon: winScore >= 2,
+                happiness: winScore * 3,
+            })
+        }
+    }
     static async dogWashingGame(){
         App.closeAllDisplays();
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
@@ -4204,7 +4447,7 @@ class Activities {
             screen.close();
             animal.removeObject();
             App.pet.y = '100%';
-            const moneyWon = Math.floor(score * 1.7);
+            const moneyWon = Math.floor(score * 2.3);
             const hasWon = score > 18;
             if(hasWon){
                 App.definitions.achievements.perfect_minigame_petgroom_win_x_times.advance();
@@ -4337,7 +4580,7 @@ class Activities {
                     App.definitions.achievements.perfect_minigame_cropmatch_win_x_times.advance();
                 }
 
-                const moneyWon = Math.max((correctChoices - 1) * 25, 0);
+                const moneyWon = Math.max((correctChoices - 1) * 20, 0);
                 Activities.task_winMoneyFromArcade({
                     amount: moneyWon,
                     happiness: moneyWon / 5,
@@ -4598,7 +4841,7 @@ class Activities {
                 }
             } else {
                 App.playSound(`resources/sounds/cute.ogg`, true);
-                moneyWon += random(1, 2);
+                moneyWon += random(1, 3);
             }
 
             updateUI();
@@ -4624,7 +4867,7 @@ class Activities {
             if(playedRounds >= totalRounds){
                 opponentPet.removeObject();
                 App.setScene(App.scene.arcade_game01);
-                const moneyWon = roundsWon * random(20, 30);
+                const moneyWon = roundsWon * 30;
                 if(roundsWon === totalRounds){
                     App.definitions.achievements.perfect_minigame_mimic_win_x_times.advance();
                 }
@@ -4832,7 +5075,7 @@ class Activities {
             const msg = App.displayMessageBubble(`${currencyIcon} x${score}`)
 
             const onEnd = () => {
-                App.toggleGameplayControls();
+                App.toggleGameplayControls(true);
                 sceneParent.removeObject();
                 msg.close();
                 onEndCallback?.();
@@ -4843,7 +5086,8 @@ class Activities {
         }
 
         let jumpCount = 0, groundPositionY = false;
-        App.toggleGameplayControls(false, () => {
+
+        const handleOnJump = () => {
             if(groundPositionY === false) {
                 groundPositionY = App.pet.y;
             }
@@ -4870,13 +5114,19 @@ class Activities {
             if(++jumpCount <= 2){
                 jump();
             }
-        })
+        }
+
+        App.toggleGameplayControls(false, () => {})
 
         const driverFn = () => {
-            activeSpeed += 0.000065 * App.deltaTime;
-            // activeSpeed = 1;
+            if(App.mouse.isDown){
+                App.mouse.isDown = false;
+                handleOnJump();
+            }
+
+            activeSpeed += 0.000045 * App.deltaTime;
             // activeSpeed -= (0.001 * App.deltaTime);
-            activeSpeed = clamp(activeSpeed, 0, 6);
+            activeSpeed = clamp(activeSpeed, 0, 5);
             globalOffset += activeSpeed * 0.025 * App.deltaTime;
             if(!jumpCount) {
                 App.pet.setState(activeSpeed ? 'moving' : 'idle_side');
@@ -4980,29 +5230,33 @@ class Activities {
 
             // treat
             if(spawnTicks % 3 === 0){
-                const treat = new Object2d({
-                    parent: sceneParent,
-                    img: App.constants.FOOD_SPRITESHEET,
-                    spritesheet: {
-                        ...App.constants.FOOD_SPRITESHEET_DIMENSIONS,
-                        cellNumber: App.definitions.food[App.constants.UNDERWORLD_TREAT_CURRENCY].sprite,
-                    },
-                    x: ((App.drawer.bounds.width/1)) + globalSpawnOffset,
-                    y: `${randomFromArray([20, 70])}%`,
-                    z: App.pet.z - 0.1,
-                    onDraw: (me) => {
-                        if(!isNaN(me.y)){
-                            Object2d.animations.bob(me)
-                        }
-                        moverFn(me, 1);
-                        if(me.isColliding(App.pet.getBoundingBox())){
-                            me.removeObject();
-                            progress(true);
-                        }
-                    },
-                })
-                treat.showOutline();
-                // treat.showBoundingBox();
+                const spawnAmount = random(0, 100) <= 45 ? 2 : 1;
+                for(let i = 0; i < spawnAmount; i++){
+                    const treat = new Object2d({
+                        parent: sceneParent,
+                        img: App.constants.FOOD_SPRITESHEET,
+                        spritesheet: {
+                            ...App.constants.FOOD_SPRITESHEET_DIMENSIONS,
+                            cellNumber: App.definitions.food[App.constants.UNDERWORLD_TREAT_CURRENCY].sprite,
+                        },
+                        x: ((App.drawer.bounds.width/1)) + globalSpawnOffset + (i * 16),
+                        y: `${randomFromArray([20, 70])}%`,
+                        z: App.pet.z - 0.1,
+                        bobFloat: Math.random(),
+                        onDraw: (me) => {
+                            if(!isNaN(me.y)){
+                                Object2d.animations.bob(me)
+                            }
+                            moverFn(me, 1);
+                            if(me.isColliding(App.pet.getBoundingBox())){
+                                me.removeObject();
+                                progress(true);
+                            }
+                        },
+                    })
+                    treat.showOutline();
+                    // treat.showBoundingBox();
+                }
             }
         }
         // initial spawning of the first two chunks

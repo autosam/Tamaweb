@@ -42,6 +42,7 @@ App.definitions = (() => {
             'pardis', 
             'sunset', 
             'uni', 
+            'color lavender',
             'color pink',
             'color azure',
             'color gray',
@@ -51,7 +52,6 @@ App.definitions = (() => {
             'color purple',
             'color black',
             'color slateblue',
-            'color lavender',
         ],
         /* MAIN MENU */
         main_menu: [
@@ -133,7 +133,7 @@ App.definitions = (() => {
                 onEnter: () => Activities.goToMarket(),
             },
             {
-                name: `Game Center`,
+                name: `Game Center ${App.getBadge()}`,
                 image: 'resources/img/misc/activity_building_arcade.png',
                 onEnter: () => Activities.goToArcade(),
             },
@@ -873,6 +873,7 @@ App.definitions = (() => {
                 sleep_replenish: 999,
                 price: 120,
                 type: 'med',
+                nonCraftable: true,
             },
             "expression skill potion": {
                 sprite: 1053,
@@ -881,6 +882,7 @@ App.definitions = (() => {
                 type: 'med',
                 unbuyable: true,
                 isNew: false,
+                nonCraftable: true,
             },
             "logic skill potion": {
                 sprite: 1053,
@@ -889,6 +891,7 @@ App.definitions = (() => {
                 type: 'med',
                 unbuyable: true,
                 isNew: false,
+                nonCraftable: true,
             },
             "endurance skill potion": {
                 sprite: 1053,
@@ -897,6 +900,7 @@ App.definitions = (() => {
                 type: 'med',
                 unbuyable: true,
                 isNew: false,
+                nonCraftable: true,
             },
             "potion of neglect": {
                 sprite: 1053,
@@ -908,6 +912,7 @@ App.definitions = (() => {
                 type: 'med',
                 unbuyable: true,
                 isNew: false,
+                nonCraftable: true,
             },
             "potion of well behaving": {
                 sprite: 1053,
@@ -916,6 +921,7 @@ App.definitions = (() => {
                 type: 'med',
                 unbuyable: true,
                 isNew: false,
+                nonCraftable: true,
             },
             "potion of misbehaving": {
                 sprite: 1053,
@@ -924,6 +930,7 @@ App.definitions = (() => {
                 type: 'med',
                 unbuyable: true,
                 isNew: false,
+                nonCraftable: true,
             },
             "potion of fulfillment": {
                 sprite: 1053,
@@ -935,6 +942,7 @@ App.definitions = (() => {
                 type: 'med',
                 unbuyable: true,
                 isNew: false,
+                nonCraftable: true,
             },
             "potion of aging up": {
                 sprite: 1053,
@@ -942,6 +950,7 @@ App.definitions = (() => {
                 type: 'med',
                 unbuyable: true,
                 isNew: false,
+                nonCraftable: true,
                 payload: () => {
                     App.toggleGameplayControls(false);
                     App.pet.triggerScriptedState('cheering', 10000, 0, true);
@@ -965,6 +974,7 @@ App.definitions = (() => {
                 type: 'med',
                 unbuyable: true,
                 isNew: false,
+                nonCraftable: true,
             },
             "life essence": {
                 sprite: 1059,
@@ -972,6 +982,7 @@ App.definitions = (() => {
                 type: 'med',
                 unbuyable: true,
                 isNew: false,
+                nonCraftable: true,
                 payload: () => {
                     const wasGhost = App.petDefinition.stats.is_ghost;
 
@@ -1275,6 +1286,7 @@ App.definitions = (() => {
                 isNew: false,
             },
             "forest": {
+                icon: 'resources/img/background/outside/09_icon.png',
                 image: 'resources/img/background/outside/09.png',
                 price: 450,
             },
@@ -1772,13 +1784,37 @@ App.definitions = (() => {
         /* SHELL BACKGROUNDS */
         shell_background: [
             {
-                image: 'resources/img/ui/shell_background_07.png',
+                image: 'resources/img/ui/shell_background_13.png',
+                isNew: true,
+                isDefault: true,
+            },
+            {
+                image: 'resources/img/ui/shell_background_17.png',
+                isNew: true,
+            },
+            {
+                image: 'resources/img/ui/shell_background_18.png',
+                isNew: true,
+            },
+            {
+                image: 'resources/img/ui/shell_background_20.png',
+                isNew: true,
+            },
+            {
+                image: 'resources/img/ui/shell_background_19.png',
+                isNew: true,
+            },
+            {
+                image: 'resources/img/ui/shell_background_21.png',
+                isNew: true,
+            },
+            {
+                image: 'resources/img/ui/shell_background_16.png',
                 isNew: false,
             },
             {
-                image: 'resources/img/ui/shell_background_13.png',
+                image: 'resources/img/ui/shell_background_07.png',
                 isNew: false,
-                isDefault: true,
             },
             {
                 image: 'resources/img/ui/shell_background_12.png',
@@ -1808,9 +1844,9 @@ App.definitions = (() => {
                 image: 'resources/img/ui/shell_background_11.png',
                 isNew: false,
             },
-            {
+            /* {
                 image: 'resources/img/ui/shell_background_02.png',
-            },
+            }, */
             {
                 image: 'resources/img/ui/shell_background_01.png',
             },
@@ -1833,6 +1869,20 @@ App.definitions = (() => {
                 onlineShopAccessible: true,
                 unlockLikes: 30,
                 unlockKey: 'unlock_cloof_shell_bg',
+            },
+        ],
+
+        /* BACKGROUND PATTERNS */
+        background_pattern: [
+            {
+                name: 'Snowy Stars',
+                image: 'resources/img/ui/bg_pattern_01.png',
+                isNew: true,
+            },
+            {
+                name: 'Shells',
+                image: 'resources/img/ui/bg_pattern_02.png',
+                isNew: true,
             },
         ],
     
@@ -2307,6 +2357,13 @@ App.definitions = (() => {
                 price: 350,
                 isNew: false,
                 accessShop: 'devilsTown',
+            },
+            'santa hat': {
+                image: 'resources/img/accessory/santa_hat_01.png',
+                front: true,
+                price: 350,
+                isNew: true,
+                accessShop: 'none',
             },
         },
     
