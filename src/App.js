@@ -555,11 +555,12 @@ const App = {
         // document.querySelector('.loading-text').style.background = this.settings.backgroundColor;
 
         // background pattern
-        const root = document.querySelector('.root');
+        const bgPattern = document.querySelector('.background-pattern');
         if(this.settings.backgroundPattern){
-            root.style.background = `url(${this.settings.backgroundPattern})`
+            UI.show(bgPattern);
+            bgPattern.style.background = `url(${this.settings.backgroundPattern})`
         } else {
-            root.style.background = '';
+            UI.hide(bgPattern);
         }
 
         // screen / shell size

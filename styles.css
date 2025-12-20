@@ -426,26 +426,33 @@ hr {
     border-top-right-radius: 1000px; */
 }
 
+.background-pattern {
+    pointer-events: none;
+    position: fixed;
+    left: -100%;
+    top: -100;
+    width: 200%;
+    height: 200%;
+    background-size: 256px;
+    will-change: transform;
+    animation: background-pattern-scroll 60s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .background-pattern {
+    animation: none;
+  }
+}
+@keyframes background-pattern-scroll {
+  from { transform: translate(0,0); }
+  to   { transform: translate(256px,256px); }
+}
+
 .root {
+    color-scheme: only light;
     height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-size: 256px;
-    animation: background-scroll 60s linear infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  .root {
-    animation: none;
-  }
-}
-@keyframes background-scroll {
-    from {
-        background-position: 0 0;
-    }
-    to {
-        background-position: 256px 256px;
-    }
 }
 
 .generic-empty-container {
@@ -2207,17 +2214,6 @@ a.generic-btn:before {
     width: 36px;
     animation: tap-reminder-icon 0.3s infinite alternate;
     animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1);
-}
-
-.background-pattern {
-    background: repeating-linear-gradient(-45deg, #0000003d 0 10px, #00000000 10px 20px, #00000082 20px 30px);
-    left: 0;
-    top: 0;
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    mix-blend-mode: soft-light;
-    opacity: 0.6;
 }
 
 .marquee {
