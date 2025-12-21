@@ -126,7 +126,7 @@ self.addEventListener("fetch", (event) => {
 
   if (!event.request.url.startsWith(self.location.origin)) return;
   
-  handleOfflineFirst(event);
+  handleOnlineFirst(event);
 });
 
 const handleOfflineFirst = (event) => {
