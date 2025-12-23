@@ -56,6 +56,8 @@ const ASSETS = [
 ];
 
 self.addEventListener("install", (e) => {
+  self.skipWaiting();
+
   channel.postMessage({ type: "install" });
 
   // opt-out of ServiceWorkerAutoPreload
@@ -90,7 +92,7 @@ self.addEventListener("install", (e) => {
 
         await cacheInBatches(cache, ASSETS);
 
-        await self.skipWaiting();
+        // await self.skipWaiting();
       } catch (err) {
         console.error("[SW] Install FAILED, clearing corrupted cache", err);
         await caches.delete(CACHE_NAME);
