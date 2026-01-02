@@ -1893,7 +1893,11 @@ const App = {
                 return;
             }
 
-            if(App.pet.isDuringScriptedState()) return;
+            if(App.pet.isDuringScriptedState()) {
+                if(!App.pet.isInteractingWith)
+                    App.mouse.isDown = false;
+                return;
+            }
             
             App.pet.handleDirectInteractionStart();
             App.disableGameplayControls = true;
@@ -1905,7 +1909,11 @@ const App = {
             castShadow: true,
             ...props,
             onHover: (me) => {
-                if(registeredInteractionDetector || !App.mouse.isDown) return;
+                if(registeredInteractionDetector 
+                    || !App.mouse.isDown 
+                    || App.currentScene !== App.scene.home
+                    || App.disableGameplayControls
+                ) return;
 
                 registeredInteractionDetector = App.registerOnDrawEvent(interactionHandler);
             }

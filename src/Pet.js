@@ -250,20 +250,48 @@ class Pet extends Object2d {
     handleDirectInteractionStart(){
         const me = this;
         this.isInteractingWith = true;
+        this._interactionInitialY = this.y;
+        this._interactionTarget = {x: 0, y: 0}
         console.log('calling start')
         this.triggerScriptedState('shocked', App.INF, false, true, 
             () => {
                 me.isInteractingWith = false;
             }, 
             () => {
-                this.x = App.mouse.x;
-                this.y = App.mouse.y;
+                const repositionSpeed = 0.005 * App.deltaTime;
+                me._interactionTarget.x = App.mouse.x - (me.spritesheet.cellSize / 2);
+                me._interactionTarget.y = App.mouse.y;
+                this.x = lerp(this.x, me._interactionTarget.x, repositionSpeed);
+                this.y = lerp(this.y, clamp(me._interactionTarget.y, 0, this._interactionInitialY), repositionSpeed);
+                me.inverted = this.x < me._interactionTarget.x;
             }
         )
     }
     handleDirectInteractionEnd(){
         console.log('calling end')
         this.stopScriptedState();
+
+        const me = this;
+
+        // falling
+        let fallSpeed = 0.008;
+        const handleOnEndFall = () => {
+            // me.playCheeringAnimation();
+            me.triggerScriptedState('sitting', 500, false, true);
+        }
+        const fallDriver = () => {
+            me.x = lerp(me.x, me._interactionTarget.x, 0.005 * App.deltaTime)
+            fallSpeed += 0.0008 * App.deltaTime;
+
+            if(me.y < me._interactionInitialY)
+                me.y += fallSpeed * App.deltaTime;
+
+            if(me.y >= me._interactionInitialY){
+                me.y = me._interactionInitialY;
+                me.stopScriptedState();
+            }
+        }
+        this.triggerScriptedState('jumping', 10000, false, true, handleOnEndFall, fallDriver)
     }
     handleWants(){
         if(!this.isMainPet || App.haveAnyDisplays()) return;
