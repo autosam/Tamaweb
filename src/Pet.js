@@ -252,13 +252,12 @@ class Pet extends Object2d {
         this.isInteractingWith = true;
         this._interactionInitialY = this.y;
         this._interactionTarget = {x: 0, y: 0}
-        console.log('calling start')
         this.triggerScriptedState('shocked', App.INF, false, true, 
             () => {
                 me.isInteractingWith = false;
             }, 
             () => {
-                const repositionSpeed = 0.005 * App.deltaTime;
+                const repositionSpeed = 0.008 * App.deltaTime;
                 me._interactionTarget.x = App.mouse.x - (me.spritesheet.cellSize / 2);
                 me._interactionTarget.y = App.mouse.y;
                 this.x = lerp(this.x, me._interactionTarget.x, repositionSpeed);
@@ -268,7 +267,6 @@ class Pet extends Object2d {
         )
     }
     handleDirectInteractionEnd(){
-        console.log('calling end')
         this.stopScriptedState();
 
         const me = this;
@@ -280,7 +278,12 @@ class Pet extends Object2d {
             me.triggerScriptedState('sitting', 500, false, true);
         }
         const fallDriver = () => {
-            me.x = lerp(me.x, me._interactionTarget.x, 0.005 * App.deltaTime)
+            if(me._interactionTarget.x == null){
+                me.stopScriptedState()
+                return;
+            }
+
+            me.x = lerp(me.x, me._interactionTarget.x, 0.008 * App.deltaTime)
             fallSpeed += 0.0008 * App.deltaTime;
 
             if(me.y < me._interactionInitialY)

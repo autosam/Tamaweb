@@ -1,6 +1,6 @@
 const App = {
     PI2: Math.PI * 2, INF: 999999999,
-    deltaTime: 0, lastTime: 0, playTime: 0, hour: 12,
+    deltaTime: 0, lastTime: 0, playTime: 0, hour: 12, accurateDeltaTime: 0,
     mouse: { x: 0, y: 0, isInBounds : false },
     userId: '_', userName: null, sessionId: Math.round(Math.random() * 9999999999),
     ENV: location.port == 5500 ? 'dev' : 'prod', isOnItch: false, isOnElectronClient: false,
@@ -475,13 +475,34 @@ const App = {
             App.mouse.x = x / 2;
             App.mouse.y = y / 2;
         }
+        const mouseDownHandler = () => {
+            App.mouse.isDown = true;
+        }
+        const mouseUpHandler = () => {
+            App.mouse.isDown = false;
+        }
+
         document.addEventListener('mousemove', moveEventHandler);
         document.addEventListener('touchmove', moveEventHandler);
+        document.addEventListener('mousedown', mouseDownHandler);
+        document.addEventListener('mouseup', mouseUpHandler);
+        document.addEventListener('touchstart', mouseDownHandler);
+        document.addEventListener('touchend', mouseUpHandler);
 
-        document.addEventListener('mousedown', () => App.mouse.isDown = true)
-        document.addEventListener('mouseup', () => App.mouse.isDown = false)
-        document.addEventListener('touchstart', () => App.mouse.isDown = true)
-        document.addEventListener('touchend', () => App.mouse.isDown = false)
+        // mouse down ms
+        App.registerOnDrawEvent(() => {
+            if(!App.mouse.isDown) {
+                App.mouse.isDownStartMs = 0;
+                App.mouse.isDownMs = 0;
+                return;
+            }
+
+            if(App.mouse.isDown && !App.mouse.isDownStartMs){
+                App.mouse.isDownStartMs = App.time;
+            }
+
+            App.mouse.isDownMs = App.time - App.mouse.isDownStartMs;
+        })
     },
     registerLoadEvents: function(){
         const initializeRenderer = () => {
@@ -684,18 +705,18 @@ const App = {
         if(fpsElapsedTime > App.fpsInterval){ // everything here capped to targetFps
             // time and playtime
             App.time = time;
-            const accurateDeltaTime = time - App.lastTime;
-            App.playTime += accurateDeltaTime;
+            App.accurateDeltaTime = time - App.lastTime;
+            App.playTime += App.accurateDeltaTime;
             App.lastTime = time;
             App.fpsLastTime = App.fullTime - (fpsElapsedTime % App.fpsInterval);
 
             // simulating offline progression
-            if(accurateDeltaTime > 5000){
-                App.pet?.simulateAwayProgression?.(accurateDeltaTime);
+            if(App.accurateDeltaTime > 5000){
+                App.pet?.simulateAwayProgression?.(App.accurateDeltaTime);
             }
 
             // deltaTime
-            App.deltaTime = clamp(accurateDeltaTime, 0, 100);
+            App.deltaTime = clamp(App.accurateDeltaTime, 0, 100);
 
             // drawing
             App.drawer?.draw();
@@ -1884,6 +1905,14 @@ const App = {
         let registeredInteractionDetector;
 
         const interactionHandler = () => {
+            if(!App.pet.isInteractingWith && App.mouse.isDownMs < 200){
+                return; 
+            }
+
+            if(!App.pet.isInteractingWith){
+                App.vibrate()
+            }
+
             if(!App.mouse.isDown){
                 App.pet.isInteractingWith = false;
                 App.disableGameplayControls = false;
