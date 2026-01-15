@@ -236,10 +236,6 @@ class Pet extends Object2d {
         if(this.stats.is_dead) return this.handleDead();
         if(this.stats.is_egg) return this.handleEgg();
 
-        if(this.isInteractingWith) {
-            this.stateManager();
-        }
-
         this.think();
         this.moveToTarget(this.speedOverride || this.stats.speed);
         this.stateManager();
@@ -250,19 +246,24 @@ class Pet extends Object2d {
     handleDirectInteractionStart(){
         const me = this;
         this.isInteractingWith = true;
-        this._interactionInitialY = this.y;
-        this._interactionTarget = {x: 0, y: 0}
+
+        this.directInteractionInfo = {
+            x: 0,
+            y: 0,
+            initialY: this.y
+        }
+
         this.triggerScriptedState('shocked', App.INF, false, true, 
             () => {
                 me.isInteractingWith = false;
             }, 
             () => {
                 const repositionSpeed = 0.008 * App.deltaTime;
-                me._interactionTarget.x = App.mouse.x - (me.spritesheet.cellSize / 2);
-                me._interactionTarget.y = App.mouse.y;
-                this.x = lerp(this.x, me._interactionTarget.x, repositionSpeed);
-                this.y = lerp(this.y, clamp(me._interactionTarget.y, 0, this._interactionInitialY), repositionSpeed);
-                me.inverted = this.x < me._interactionTarget.x;
+                me.directInteractionInfo.x = App.mouse.x - (me.spritesheet.cellSize / 2);
+                me.directInteractionInfo.y = App.mouse.y;
+                this.x = lerp(this.x, me.directInteractionInfo.x, repositionSpeed);
+                this.y = lerp(this.y, clamp(me.directInteractionInfo.y, 0, this.directInteractionInfo.initialY), repositionSpeed);
+                me.inverted = this.x < me.directInteractionInfo.x;
             }
         )
     }
@@ -274,23 +275,22 @@ class Pet extends Object2d {
         // falling
         let fallSpeed = 0.008;
         const handleOnEndFall = () => {
-            // me.playCheeringAnimation();
             me.triggerScriptedState('sitting', 500, false, true);
         }
         const fallDriver = () => {
-            if(me._interactionTarget.x == null){
+            if(me.directInteractionInfo.x == null){
                 me.stopScriptedState()
                 return;
             }
 
-            me.x = lerp(me.x, me._interactionTarget.x, 0.008 * App.deltaTime)
+            me.x = lerp(me.x, me.directInteractionInfo.x, 0.008 * App.deltaTime)
             fallSpeed += 0.0008 * App.deltaTime;
 
-            if(me.y < me._interactionInitialY)
+            if(me.y < me.directInteractionInfo.initialY)
                 me.y += fallSpeed * App.deltaTime;
 
-            if(me.y >= me._interactionInitialY){
-                me.y = me._interactionInitialY;
+            if(me.y >= me.directInteractionInfo.initialY){
+                me.y = me.directInteractionInfo.initialY;
                 me.stopScriptedState();
             }
         }
