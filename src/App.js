@@ -2615,6 +2615,12 @@ const App = {
                     onclick: () => {
                         App.handlers.clean();
                     }
+                },
+                {
+                    name: `brush teeth ${App.getBadge()}`,
+                    onclick: () => {
+                        Activities.brushTeeth();
+                    }
                 }
             ], null, 'Cleaning')
         },
@@ -3133,7 +3139,7 @@ const App = {
                     }
                 },
                 {
-                    name: `system settings ${App.getBadge()}`,
+                    name: `system settings`,
                     onclick: () => {
                         App.displayList([
                             {
@@ -3259,7 +3265,7 @@ const App = {
                     }
                 },
                 {
-                    name: `Shell Settings ${App.getBadge()}`,
+                    name: `Shell Settings`,
                     onclick: () => {
                         // App.handlers.open_shell_background_list();
                         // return true;
@@ -6514,7 +6520,7 @@ const App = {
             App.displayList([
                 {
                     _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.child,
-                    name: `flags ${App.getBadge()}`,
+                    name: `flags`,
                     onclick: () => {
                         const image = `
                         <div class="flex justify-center">

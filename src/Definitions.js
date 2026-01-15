@@ -133,7 +133,7 @@ App.definitions = (() => {
                 onEnter: () => Activities.goToMarket(),
             },
             {
-                name: `Game Center ${App.getBadge()}`,
+                name: `Game Center`,
                 image: 'resources/img/misc/activity_building_arcade.png',
                 onEnter: () => Activities.goToArcade(),
             },
@@ -1785,28 +1785,28 @@ App.definitions = (() => {
         shell_background: [
             {
                 image: 'resources/img/ui/shell_background_13.png',
-                isNew: true,
+                isNew: false,
                 isDefault: true,
             },
             {
                 image: 'resources/img/ui/shell_background_17.png',
-                isNew: true,
+                isNew: false,
             },
             {
                 image: 'resources/img/ui/shell_background_18.png',
-                isNew: true,
+                isNew: false,
             },
             {
                 image: 'resources/img/ui/shell_background_20.png',
-                isNew: true,
+                isNew: false,
             },
             {
                 image: 'resources/img/ui/shell_background_19.png',
-                isNew: true,
+                isNew: false,
             },
             {
                 image: 'resources/img/ui/shell_background_21.png',
-                isNew: true,
+                isNew: false,
             },
             {
                 image: 'resources/img/ui/shell_background_16.png',
@@ -1877,12 +1877,12 @@ App.definitions = (() => {
             {
                 name: 'Snowy Stars',
                 image: 'resources/img/ui/bg_pattern_01.png',
-                isNew: true,
+                isNew: false,
             },
             {
                 name: 'Shells',
                 image: 'resources/img/ui/bg_pattern_02.png',
-                isNew: true,
+                isNew: false,
             },
         ],
     
@@ -2362,7 +2362,7 @@ App.definitions = (() => {
                 image: 'resources/img/accessory/santa_hat_01.png',
                 front: true,
                 price: 350,
-                isNew: true,
+                isNew: false,
                 accessShop: 'none',
             },
         },

@@ -3412,6 +3412,74 @@ class Activities {
 
         task_visit_doctor();
     }
+    static brushTeeth(){
+        App.closeAllDisplays();
+        App.setScene(App.scene.bathroom);
+
+        let brushSpeed = 0, brushFloat = 0, brushTimes = 0;
+
+        const brushObject = new Object2d({
+            img: 'resources/img/misc/toothbrush_01.png',
+            x: '50%',
+            y: '83%',
+            width: 24, height: 24,
+            z: App.constants.ACTIVE_PET_Z + 1,
+            onLateDraw: (me) => {
+                if(!me._origin){
+                    me._origin = {
+                        x: me.x,
+                        y: me.y + (App.pet.spritesheet.offsetY || 0)
+                    };
+                }
+
+                brushSpeed = clamp(lerp(brushSpeed, 0, App.deltaTime * 0.001), 0, 1.5);
+                brushFloat += brushSpeed * App.deltaTime * 0.01;
+
+                if(brushFloat > App.PI2){
+                    brushFloat = 0;
+                    brushTimes += 1;
+                    new Object2d({
+                        img: 'resources/img/misc/foam_single.png',
+                        x: `${random(45, 55)}%`,
+                        y: me._origin.y,
+                        opacity: 1,
+                        scale: randomFromArray([0.4, 0.5]),
+                        rotation: random(0, 180),
+                        z: App.constants.ACTIVE_PET_Z + 2,
+                        parent: brushObject,
+                        onDraw: (me) => {
+                            Object2d.animations.flip(me);
+                            if(me.opacity <= 0) me.removeObject();
+                        }
+                    })
+                    
+                    if(brushTimes >= 10) {
+                        App.pet.stopScriptedState();
+                    }
+                }
+
+                Object2d.animations.circleAround(me, 2, brushFloat, me._origin.x, me._origin.y);
+            }
+        })
+
+        App.pet.stopMove();
+        App.pet.x = '50%';
+        App.pet.triggerScriptedState('open_mouth', App.INF, 0, true, () => {
+            App.pet.stats.current_cleanliness += 20;
+            App.pet.stats.current_discipline += random(1, 3);
+            App.pet.stats.current_health += random(5, 25);
+            App.toggleGameplayControls(false);
+            brushObject.removeObject();
+            App.pet.playCheeringAnimation(() => {
+                App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
+            });
+        });
+
+        App.toggleGameplayControls(false, () => {
+            brushSpeed += 0.5;
+        })
+    }
     static bathe(){
         App.closeAllDisplays();
         App.setScene(App.scene.bathroom);
