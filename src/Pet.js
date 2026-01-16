@@ -134,6 +134,41 @@ class Pet extends Object2d {
                 Object2d.animations.pulseScale(overlay, 0.01, 0.05);
             }
         })
+
+        this.sleepParticles = new Object2d({
+            parent: this,
+            spawnTimerMs: Math.random(),
+            onDraw: (me) => {
+                if(me.parent.state !== 'sleeping') return;
+                
+                me.spawnTimerMs -= App.deltaTime;
+                if(me.spawnTimerMs > 0) return;
+
+                me.spawnTimerMs =  750;
+
+                const particleSettings = {
+                    speed: 0.02,
+                    direction: random(0, 1) ? 1 : -1
+                }
+
+                new Object2d({
+                    img: 'resources/img/misc/sleep_z_01.png',
+                    x: me.parent.x,
+                    y: me.parent.y - me.parent.spritesheet.cellSize,
+                    rotation: 0,
+                    opacity: 1,
+                    z: me.parent.z,
+                    onDraw: (particle) => {
+                        const changeFloat = particleSettings.speed * App.deltaTime;
+                        particle.y -= changeFloat;
+                        particle.x += (Math.sin(particle.rotation * 0.5 * particleSettings.direction) * 0.5) + particleSettings.speed * particleSettings.direction * App.deltaTime * 0.2;
+                        particle.rotation += changeFloat * particleSettings.direction;
+                        particle.opacity -= 0.0009 * App.deltaTime;
+                        if(particle.opacity <= 0) particle.removeObject()
+                    }
+                })
+            }
+        })
     }
     equipAccessories(){
         const ACCESSORY_CELL_SIZE = 64;
