@@ -2580,6 +2580,43 @@ button.message-bubble:active {
     margin: 0 !important;
 }
 
+.dialog {
+    position: absolute;
+    top: 0;
+    height: 38%;
+    background: white;
+    border-radius: 0 0 4px 4px;
+    filter: drop-shadow(-1px -1px 0px #000060) 
+        drop-shadow(1px 1px 0px #000060) 
+        drop-shadow(0px 2px 0px #000060) 
+        drop-shadow(2px 2px 0px #f86000);
+    color: #000060;
+    pointer-events: none;
+}
+.dialog_icon {
+    position: absolute;
+    bottom: -16px;
+    right: 0px;
+    width: fit-content;
+}
+.dialog_textContainer {
+    padding: 6px 12px;
+}
+.dialog_indicator {
+    /* position: absolute; */
+    bottom: 4px;
+    left: 6px;
+    animation: dialogIndicator ease 0.35s forwards infinite alternate;
+}
+@keyframes dialogIndicator {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
 .flex-grid-2x {
     display: flex;
     flex-wrap: wrap;

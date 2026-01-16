@@ -1,4 +1,61 @@
 class Activities {
+    static async enterDialog(speakerPetDef = App.getRandomPetDef(), text){
+        const WORDS_PER_SCREEN = 10;
+
+        let currentWordPointer = 0;
+        const textWords = text.split(' ');
+        let activeText = '';
+        let currentLetterPointer = 0;
+
+        const screen = UI.empty();
+        document.querySelector('.screen-wrapper').appendChild(screen);
+        screen.innerHTML = `
+            <div class="dialog flex flex-dir-col justify-between width-full">
+                <div class="dialog_icon">
+                    ${speakerPetDef.getFullCSprite(true)}
+                </div>
+                <div class="dialog_textContainer">
+                    <span class="dialog_text"></span>
+                    <span style="display: none" class="dialog_indicator"> … </span>
+                </div>
+            </div>
+        `;
+        const dialogTextElement = screen.querySelector('.dialog_text');
+        const dialogIndicatorElement = screen.querySelector('.dialog_indicator');
+
+        const textAnimationHandler = setInterval(() => {
+            currentLetterPointer += 1;
+            if(currentLetterPointer > activeText.length) {
+                currentLetterPointer = 999;
+                UI.show(dialogIndicatorElement);
+            } else {
+                UI.hide(dialogIndicatorElement);
+            }
+            const nextString = activeText.slice(0, currentLetterPointer);
+            dialogTextElement.textContent = nextString;
+        }, 50);
+        
+        const progressDialog = () => {
+            if(currentLetterPointer < activeText.length){
+                currentLetterPointer = 999;
+                return;
+            }
+            const nextSetOfWords = textWords.slice(currentWordPointer, currentWordPointer + WORDS_PER_SCREEN).join(' ');
+            activeText = nextSetOfWords;
+            currentLetterPointer = 0;
+            if(!nextSetOfWords){
+                screen.remove();
+                clearInterval(textAnimationHandler);
+                App.toggleGameplayControls(true);
+                App.pet.stopScriptedState();
+            }
+            currentWordPointer += WORDS_PER_SCREEN;
+        }
+        progressDialog();
+
+        App.toggleGameplayControls(false, progressDialog)
+        App.pet.triggerScriptedState('idle', App.INF, null, true)
+    }
     static async getRobbed(){
         const hasIndoorAnimal = App.animals.list?.some(animalDef => animalDef.spawnIndoors);
 
