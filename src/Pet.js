@@ -79,7 +79,8 @@ class Pet extends Object2d {
             width: this.petDefinition.spritesheet.cellSize, 
             height: this.petDefinition.spritesheet.cellSize,
             // z: (this.z - 0.1) || 4.9,
-            z: 4.89,
+            z: this.z,
+            localZ: -1,
             hidden: !this.castShadow,
             onDraw: (overlay) => {
                 overlay.hidden = !this.castShadow;
@@ -113,7 +114,8 @@ class Pet extends Object2d {
             x: 0,
             y: 0,
             hidden: true,
-            z: App.constants.ACTIVE_PET_Z + 0.1,
+            z: this.z,
+            localZ: 2,
             onDraw: (overlay) => {
                 Object2d.animations.flip(overlay, 750);
             }
@@ -125,7 +127,8 @@ class Pet extends Object2d {
             x: 0,
             y: 0,
             invisible: true,
-            z: App.constants.ACTIVE_PET_Z + 0.1,
+            z: this.z,
+            localZ: 1,
             // width: this.petDefinition.spritesheet.cellSize, height: this.petDefinition.spritesheet.cellSize,
             onDraw: (overlay) => {
                 overlay.invisible = !overlay.parent?.stats?.is_misbehaving;
@@ -200,7 +203,9 @@ class Pet extends Object2d {
                     : new Object2d({
                         parent: this,
                         img: accessory.image,
-                        z: accessory.front ? (this.z + 0.1) || 5.1 : (this.z - 0.1) || 4.9,
+                        // z: accessory.front ? (this.z + 0.1) || 5.1 : (this.z - 0.1) || 4.9,
+                        z: this.z,
+                        localZ: accessory.front ? 0.1 : -0.1,
                         scale: 1,
                         spritesheet: {
                             cellNumber: 1,
