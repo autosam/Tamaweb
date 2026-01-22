@@ -1938,10 +1938,12 @@ const App = {
             castShadow: true,
             ...props,
             onHover: (me) => {
-                if(registeredInteractionDetector 
+                if(
+                    registeredInteractionDetector 
                     || !App.mouse.isDown 
                     || App.currentScene !== App.scene.home
                     || App.disableGameplayControls
+                    || App.haveAnyDisplays()
                 ) return;
 
                 registeredInteractionDetector = App.registerOnDrawEvent(interactionHandler);
