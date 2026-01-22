@@ -1046,27 +1046,53 @@ class Activities {
         App.pet.x = '50%';
         App.pet.playCheeringAnimation(() => App.toggleGameplayControls(true));
     }
-    static async talkingSequence(otherPetDef = App.getRandomPetDef()) {
+    static async talkingSequence({
+        isPlayerHost = true,
+        otherPetDef = App.getRandomPetDef(),
+        scene = App.currentScene,
+    } = {}) {
+        App.setScene(scene);
         App.closeAllDisplays();
+        App.toggleGameplayControls(false);
+        otherPetDef.increaseFriendship(random(5, 8));
+        let hasEnded = false;
 
         const otherPet = new Pet(otherPetDef, {
             staticShadow: false
         });
         App.pet.staticShadow = false;
 
-        const main = new TimelineDirector(App.pet);
-        const other = new TimelineDirector(otherPet);
+        const host = new TimelineDirector(isPlayerHost ? App.pet : otherPet);
+        const visitor = new TimelineDirector(isPlayerHost ? otherPet : App.pet);
 
-        const onEnd = () => {
-            main.release();
-            other.remove();
-            other.release();
-            App.setScene(App.currentScene);
-            App.pet.playCheeringAnimation();
-            App.toggleGameplayControls(true);
+        let cancelPromiseResolve;
+        const cancelPromise = new Promise(resolve => {
+            cancelPromiseResolve = resolve;
+        });
+
+        const onEnd = async () => {
+            if(hasEnded) return;
+            hasEnded = true;
+
+            App.toggleGameplayControls(false);
+            cancelPromiseResolve();
+            host.release();
+            visitor.release();
+
+            const endDelay = 1000;
+            App.pet.playCheeringAnimation(false, true, endDelay + 1000);
+            otherPet.playCheeringAnimation(false, true, endDelay + 1000);
+            await App.wait(endDelay);
+
+            App.fadeScreen({
+                middleFn: () => {
+                    App.toggleGameplayControls(true);
+                    otherPet.removeObject();
+                    App.setScene(App.scene.home);
+                    App.pet.playCheeringAnimation();
+                }
+            })
         }
-
-        App.toggleGameplayControls(false, onEnd);
 
         const reactions = [
             'shocked', 
@@ -1077,67 +1103,109 @@ class Activities {
             'cheering',
             'cheering',
             'cheering',
-            'cheering',
             'idle_side_uncomfortable',
         ];
-        const thoughtIcons = [
-            'thought_talk',
-            'thought_talk',
-            'thought_talk',
-            'thought_question',
-            'thought_exclaim',
-        ];
 
-        // main.setPosition({ x: '30%' });
-        // main.setState('idle_side');
-        // other.setPosition({ x: '70%' });
-        // other.setState('idle_side');
-        // await TimelineDirector.wait(250);
+        host.setPosition({x: '30%'})
+        host.setState('idle_side');
+        host.lookAt(true);
 
-        main.setPosition({x: '30%'})
-        main.setState('idle_side');
-        main.lookAt(true);
+        visitor.setPosition({x: '120%'});
+        visitor.setState('idle_side');
+        visitor.lookAt(false);
 
-        other.setPosition({x: '120%'});
-        other.setState('idle_side');
-        other.lookAt(false);
+        const showRandomThought = (tdInstance) => {
+            const thoughtCategories = [
+                'friend',
+                'animal',
+                'abstract',
+                'abstract',
+            ];
+            const abstractThoughtIcons = [
+                'thought_talk',
+                'thought_talk',
+                'thought_talk',
+                'thought_question',
+                'thought_question',
+                'thought_exclaim',
+                'thought_exclaim',
+                'thought_scribble',
+                'thought_scribble',
+                'thought_like',
+                'thought_dislike',
+                'thought_paw',
+            ];
 
-        await main.moveTo({x: '50%', speed: 0.03, endState: 'side_idle'})
+            const category = randomFromArray(thoughtCategories);
 
-        await TimelineDirector.wait(1000);
+            let config;
+            switch(category){
+                case "friend":
+                    config = {
+                        icon: App.constants.WANT_TYPES.playdate,
+                        item: randomFromArray(App.petDefinition.friends) || App.getRandomPetDef(),
+                    }
+                    break;
+                case "animal":
+                    config = {
+                        icon: App.constants.WANT_TYPES.playdate,
+                        item: randomFromArray(App.animals.list) || App.getRandomAnimalDef(),
+                    }
+                    break;
+                default:
+                    config = {
+                        icon: randomFromArray(abstractThoughtIcons),
+                        item: false,
+                    }
 
-        main.setState('cheering');
-        await TimelineDirector.wait(500);
-        main.setState('idle_side');
-        await TimelineDirector.wait(500);
+            }
 
-        other.moveTo({x: '70%', speed: 0.05});
-        await TimelineDirector.wait(450);
-        await main.moveTo({x: '30%', speed: 0.08});
-        main.lookAt(true);
-
-        await TimelineDirector.wait(250);
-
-        main.bob({maxCycles: 2, animation: 'cheering', landAnimation: 'idle'});
-        await other.bob({maxCycles: 2, animation: 'cheering', landAnimation: 'idle'});
-
-        for(let i = 0; i < 5; i++){
-            if(!main.actor) break;
-
-            main.think(randomFromArray(thoughtIcons), false, random(1000, 2000));
-            await main.bob({maxCycles: random(2, 8), strength: 0, animation: 'talking', landAnimation: 'idle_side'});
-            await TimelineDirector.wait(random(500, 1500));
-            other.think(randomFromArray(thoughtIcons), false, random(1000, 2000));
-            await other.bob({maxCycles: random(2, 8), strength: 0, animation: 'talking', landAnimation: 'idle_side'});
-            await other.bob({maxCycles: 1, animation: randomFromArray(reactions)});
-            await main.bob({maxCycles: 1, animation: randomFromArray(reactions)});
-            await TimelineDirector.wait(random(250, 1500));
-            main.setState('idle_side');
-            await TimelineDirector.wait(random(250, 1500));
-            other.setState('idle_side');
+            tdInstance.think(config.icon, config.item, random(1000, 2000));
         }
 
-        onEnd();
+        await Promise.race([
+            (async () => {
+                await host.moveTo({x: '50%', speed: 0.03, endState: 'side_idle'})
+
+                await TimelineDirector.wait(1000);
+
+                host.setState('cheering');
+                await TimelineDirector.wait(500);
+                host.setState('idle_side');
+                await TimelineDirector.wait(500);
+
+                visitor.moveTo({x: '70%', speed: 0.05});
+                await TimelineDirector.wait(450);
+                await host.moveTo({x: '30%', speed: 0.08});
+                host.lookAt(true);
+
+                App.toggleGameplayControls(false, onEnd);
+
+                await TimelineDirector.wait(250);
+
+                host.bob({maxCycles: 2, animation: 'cheering', landAnimation: 'idle'});
+                await visitor.bob({maxCycles: 2, animation: 'cheering', landAnimation: 'idle'});
+
+                for(let i = 0; i < 8; i++){
+                    if(!host.actor) break;
+
+                    showRandomThought(host);
+                    await host.bob({maxCycles: random(2, 8), strength: 0, animation: 'talking', landAnimation: 'idle_side'});
+                    await TimelineDirector.wait(random(500, 1000));
+                    showRandomThought(visitor);
+                    await visitor.bob({maxCycles: random(2, 8), strength: 0, animation: 'talking', landAnimation: 'idle_side'});
+                    await visitor.bob({maxCycles: 1, animation: randomFromArray(reactions)});
+                    await host.bob({maxCycles: 1, animation: randomFromArray(reactions)});
+                    await TimelineDirector.wait(random(250, 1000));
+                    host.setState('idle_side');
+                    await TimelineDirector.wait(random(250, 1000));
+                    visitor.setState('idle_side');
+                }
+
+                onEnd();
+            })(),
+            cancelPromise
+        ])
     }
     static async parkSequence(){
         App.setScene(App.scene.park);

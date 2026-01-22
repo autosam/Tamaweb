@@ -5446,7 +5446,7 @@ const App = {
                 }))
 
                 return {
-                    name: icon + name,
+                    name: `${icon} ${name}`,
                     onclick: () => {
                         const isMonsterGhost = friendDef.stats.is_ghost === PetDefinition.GHOST_TYPE.devil;
                         const isAngelGhost = friendDef.stats.is_ghost === PetDefinition.GHOST_TYPE.angel;
@@ -5541,6 +5541,71 @@ const App = {
                                     ])
 
                                     return true;
+                                }
+                            },
+                            {
+                                name: `Hang out ${App.getBadge()}`,
+                                onclick: () => {
+                                    const handleHangout = (scene, isPlayerHost = false) => {
+                                        App.closeAllDisplays();
+
+                                        Activities.talkingSequence({
+                                            scene,
+                                            otherPetDef: friendDef,
+                                            isPlayerHost,
+                                        });
+                                    }
+
+                                    const getFriendsHomeScene = (backgroundOverride) => {
+                                        if(backgroundOverride){
+                                            return new Scene({
+                                                image: backgroundOverride,
+                                            });
+                                        }
+
+                                        if(friendDef.stats.is_player_family){
+                                            return new Scene({
+                                                image: App.scene.parentsHome.image,
+                                            });
+                                        }
+
+                                        pRandom.save();
+                                        pRandom.seed = parseInt(`${PetDefinition.getCharCode(friendDef.sprite)}${App.userId}`) * 320;
+                                        const sceneBackground = pRandomFromArray(
+                                            Object.keys(App.definitions.room_background)
+                                            .map(roomName => 
+                                                App.definitions.room_background[roomName].image
+                                            )
+                                        );
+                                        const scene = new Scene({
+                                            image: sceneBackground,
+                                        })
+                                        pRandom.load();
+                                        return scene;
+                                    }
+
+                                    return App.displayList([
+                                        {
+                                            type: 'text',
+                                            name: 'Where to hang out?',
+                                        },
+                                        {
+                                            name: `friend's home ${App.getBadge()}`,
+                                            onclick: () => handleHangout(getFriendsHomeScene()),
+                                        },
+                                        {
+                                            name: `your home ${App.getBadge()}`,
+                                            onclick: () => handleHangout(App.scene.home, true),
+                                        },
+                                        {
+                                            name: `the mall ${App.getBadge()}`,
+                                            onclick: () => handleHangout(getFriendsHomeScene(App.scene.mallInterior.image), Boolean(random(0, 1))),
+                                        },
+                                        {
+                                            name: `the beach ${App.getBadge()}`,
+                                            onclick: () => handleHangout(getFriendsHomeScene(App.scene.beach.image), Boolean(random(0, 1))),
+                                        },
+                                    ])
                                 }
                             },
                             {
@@ -5809,7 +5874,7 @@ const App = {
                     }
                 },
                 {
-                    name: `friends`,
+                    name: `friends ${App.getBadge()}`,
                     onclick: () => {
                         App.handlers.open_friends_list(null, null, [
                             {
