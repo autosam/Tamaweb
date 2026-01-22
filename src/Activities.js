@@ -1334,7 +1334,7 @@ class Activities {
                         <button class="generic-btn stylized back-btn" id="cancel">
                             <i class="fa fa-home"></i>
                         </button>
-                        <button class="generic-btn stylized" id="apply">
+                        <button class="generic-btn stylized mute" id="apply">
                             <i class="fa fa-door-open"></i>
                         </button>
                     </div>
@@ -3489,7 +3489,7 @@ class Activities {
                     };
                 }
 
-                brushSpeed = clamp(lerp(brushSpeed, 0, App.deltaTime * 0.001), 0, 1.5);
+                brushSpeed = clamp(lerp(brushSpeed, 0, App.deltaTime * 0.0008), 0, 1.7);
                 brushFloat += brushSpeed * App.deltaTime * 0.01;
 
                 if(brushFloat > App.PI2){
@@ -3510,7 +3510,7 @@ class Activities {
                         }
                     })
                     
-                    if(brushTimes >= 10) {
+                    if(brushTimes >= 8) {
                         App.pet.stopScriptedState();
                     }
                 }
@@ -3521,7 +3521,7 @@ class Activities {
 
         App.pet.stopMove();
         App.pet.x = '50%';
-        App.pet.triggerScriptedState('open_mouth', App.INF, 0, true, () => {
+        App.pet.triggerScriptedState('open_mouth', App.INF, 0, true, async () => {
             App.pet.stats.current_cleanliness += 20;
             App.pet.stats.current_discipline += random(1, 3);
             App.pet.stats.current_health += random(5, 25);
@@ -3535,6 +3535,7 @@ class Activities {
 
         App.toggleGameplayControls(false, () => {
             brushSpeed += 0.5;
+            App.playSound(`resources/sounds/ui_click_05.ogg`, true);
         })
     }
     static bathe(){
@@ -3579,7 +3580,7 @@ class Activities {
 
             App.pet.stats.current_cleanliness += 25;
             App.pet.stats.current_discipline += random(1, 3);
-            App.playSound(`resources/sounds/ui_click_03.ogg`, true);
+            App.playSound(`resources/sounds/ui_click_05.ogg`, true);
         });
 
         const bathClippedObject = new Object2d({

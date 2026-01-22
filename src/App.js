@@ -2387,7 +2387,7 @@ const App = {
                 return;
             }
             UI.lastClickedButton = null;
-            App.playSound(`resources/sounds/ui_click_01.ogg`, true);
+            App.playSound(`resources/sounds/ui_click_06.ogg`, true);
             App.vibrate();
             
             if(typeof App.temp.showStoragePersistentBadge === 'undefined'){
@@ -6834,13 +6834,14 @@ const App = {
                     element.disabled = item._disable;
                     element.style = `--child-index:${Math.min(i, 10) + 1}`;
                     element.onclick = () => {
+                        App.playSound(`resources/sounds/ui_click_01.ogg`, true);
                         UI.lastClickedButton = element;
                         let result = item.onclick(element, list);
                         if(!result){
                             list.close();
                         }
                     };
-                    defaultClassName = 'generic-btn stylized';
+                    defaultClassName = 'generic-btn stylized mute';
             }
 
             element.className = defaultClassName + (item.class ? ' ' + item.class : '');
@@ -6978,10 +6979,12 @@ const App = {
         list.querySelector('.slide-left').onclick = () => {
             contentElement.querySelector('.slider-item').style.animation = 'slider-item-anim-out-right 0.1s linear forwards';
             setTimeout(() => changeIndex(-1), 150);
+            App.playSound(`resources/sounds/ui_click_01.ogg`, true);
         }
         list.querySelector('.slide-right').onclick = () => {
             contentElement.querySelector('.slider-item').style.animation = 'slider-item-anim-out-left 0.1s linear forwards';
             setTimeout(() => changeIndex(1), 150);
+            App.playSound(`resources/sounds/ui_click_01.ogg`, true);
         }
 
         if(additionalText){
@@ -7183,12 +7186,18 @@ const App = {
         document.addEventListener('click', (e) => {
 
             // sfx
-            if(clickSoundClassNames.some(n => e.target.classList.contains(n)) || e.target.nodeName.toLowerCase() === 'button' || e.target.parentElement?.nodeName.toLowerCase() === 'button'){
+            if(
+                clickSoundClassNames.some(n => e.target.classList.contains(n)) || 
+                e.target.nodeName.toLowerCase() === 'button' || 
+                e.target.parentElement?.nodeName.toLowerCase() === 'button'
+            ){
                 App.vibrate();
-                if(backSoundClassNames.some(n => e.target.classList.contains(n)) || e.target.textContent.toLowerCase() == 'back')
-                    this.playSound(`resources/sounds/ui_click_02.ogg`, true);
-                else
-                    this.playSound(`resources/sounds/ui_click_01.ogg`, true);
+                if(!e.target.classList.contains('mute') && !e.target.parentElement?.classList.contains('mute')){
+                    if(backSoundClassNames.some(n => e.target.classList.contains(n)) || e.target.textContent.toLowerCase() == 'back')
+                        this.playSound(`resources/sounds/ui_click_02.ogg`, true);
+                    else
+                        this.playSound(`resources/sounds/ui_click_01.ogg`, true);
+                }
             }
 
             // menu animation
