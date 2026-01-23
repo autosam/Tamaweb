@@ -2613,17 +2613,17 @@ const App = {
                     }
                 },
                 {
+                    name: `brush teeth ${App.getBadge()}`,
+                    onclick: () => {
+                        Activities.brushTeeth();
+                    }
+                },
+                {
                     name: 'clean room',
                     onclick: () => {
                         App.handlers.clean();
                     }
                 },
-                {
-                    name: `brush teeth ${App.getBadge()}`,
-                    onclick: () => {
-                        Activities.brushTeeth();
-                    }
-                }
             ], null, 'Cleaning')
         },
         open_credits: function(){
