@@ -1010,20 +1010,28 @@ const App = {
         //     ])
         // })) return;
 
-        if(addEvent(`update_23_notice`, () => {
+        if(addEvent(`update_24_notice`, () => {
             App.displayList([
                 {
-                    name: 'New update is available!',
+                    name: `New update is available!<b> <div><small>${VERSION}</small></div> ${App.getBadge('new!')}`,
                     type: 'text',
                     solid: true,
                     bold: true,
                 },
-                {
+                /* {
                     name: `
                         <img class="update-banner" src="resources/img/ui/update_banner.png"></img>
                         <br>
                         <div>
                         Check out the <b>Seasons</b> feature, <b>Santa Encounter</b>, <b>New Flags Minigame</b>, <b>Rebalances</b> and more!
+                        </div>
+                    `,
+                    type: 'text',
+                }, */
+                {
+                    name: `
+                        <div>
+                        Check out the new <b>Hang out</b> option, <b>picking up</b> your pet, <b>Brushing</b> your pet's teeth and more!
                         </div>
                     `,
                     type: 'text',
@@ -1037,7 +1045,7 @@ const App = {
                     }
                 },
             ])
-        }, false)) return;
+        }, true)) return;
 
         if(addEvent('itch_rating_dialog', () => {
             App.handlers.show_rating_dialog();
