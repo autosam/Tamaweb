@@ -1045,7 +1045,7 @@ const App = {
                     }
                 },
             ])
-        }, true)) return;
+        }, false)) return;
 
         if(addEvent('itch_rating_dialog', () => {
             App.handlers.show_rating_dialog();
