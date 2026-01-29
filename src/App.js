@@ -844,9 +844,9 @@ const App = {
                 })) return showAlreadyUsed();
                 break;
             // update specific
-            case "HPPYXMAS":
-            case "SANTA":
-            case "FLAGS":
+            case "PICKUP":
+            case "HANGOUT":
+            case "TOOTHBRUSH":
                 if(!addEvent(codeEventId, () => {
                     const goldAmount = 200, missionPtsAmount = 50;
                     App.pet.stats.gold += goldAmount;
