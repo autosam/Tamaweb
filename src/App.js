@@ -503,6 +503,15 @@ const App = {
 
             App.mouse.isDownMs = App.time - App.mouse.isDownStartMs;
         })
+
+        // key down
+        document.addEventListener('keydown', (event) => {
+            switch(event.key){
+                case "`":
+                    App.takeScreenshot();
+                    break;
+            }
+        })
     },
     registerLoadEvents: function(){
         const initializeRenderer = () => {
@@ -649,16 +658,8 @@ const App = {
             App.reloadScene();
         }
 
-        // screenshot
-        document.querySelector('.logo').ondblclick = () => {
-            if(App.haveAnyDisplays()) return;
-            const overlay = document.querySelector('.screenshot-overlay');
-            UI.show(overlay);
-            setTimeout(() => UI.hide(overlay), 250);
-            App.playSound('resources/sounds/camera_shutter_01.ogg');
-            const name = 'Tamaweb_' + moment().format('D-M-YY_h-m-s');
-            downloadUpscaledCanvasAsImage(App.drawer.canvas, name, 5)
-        }
+        // screenshot on dbl clicking logo
+        document.querySelector('.logo').ondblclick = () => App.takeScreenshot();
     },
     loadMods: function(mods){
         if(typeof mods !== 'object' || !mods || !mods.length) return;
@@ -7546,6 +7547,15 @@ const App = {
                 })
             }
         };
+    },
+    takeScreenshot: () => {
+        if(App.haveAnyDisplays()) return;
+        const overlay = document.querySelector('.screenshot-overlay');
+        UI.show(overlay);
+        setTimeout(() => UI.hide(overlay), 250);
+        App.playSound('resources/sounds/camera_shutter_01.ogg');
+        const name = 'Tamaweb_' + moment().format('D-M-YY_h-m-s');
+        downloadUpscaledCanvasAsImage(App.drawer.canvas, name, 5)
     },
     handleSequentiallyLoad: async function(loaders){
         const isValid = (data) => Boolean(data?.lastTime && data.pet?.name);
