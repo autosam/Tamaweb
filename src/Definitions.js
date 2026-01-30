@@ -133,7 +133,7 @@ App.definitions = (() => {
                 onEnter: () => Activities.goToMarket(),
             },
             {
-                name: `Game Center ${App.getBadge()}`,
+                name: `Game Center`,
                 image: 'resources/img/misc/activity_building_arcade.png',
                 onEnter: () => Activities.goToArcade(),
             },
@@ -451,6 +451,25 @@ App.definitions = (() => {
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 isNew: false,
             },
+            "dumplings": {
+                sprite: 764,
+                hunger_replenish: 25,
+                fun_replenish: 2,
+                health_replenish: 2,
+                price: 15,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                isNew: true,
+            },
+            "mushroom soup": {
+                sprite: 779,
+                hunger_replenish: 15,
+                fun_replenish: 5,
+                health_replenish: 5,
+                price: 17,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                isNew: true,
+            },
+
             // cookable only
             "sky bread": {
                 sprite: 142,
@@ -834,6 +853,24 @@ App.definitions = (() => {
                 type: 'treat',
                 isNew: false,
                 unbuyable: true,
+            },
+            "strawberry pie": {
+                sprite: 773,
+                hunger_replenish: 10,
+                fun_replenish: 15,
+                health_replenish: 3,
+                price: 10,
+                type: 'treat',
+                isNew: true,
+            },
+            "rainbow cake": {
+                sprite: 453,
+                hunger_replenish: 15,
+                fun_replenish: 15,
+                health_replenish: -2,
+                price: 15,
+                type: 'treat',
+                isNew: true,
             },
     
     
@@ -1785,28 +1822,28 @@ App.definitions = (() => {
         shell_background: [
             {
                 image: 'resources/img/ui/shell_background_13.png',
-                isNew: true,
+                isNew: false,
                 isDefault: true,
             },
             {
                 image: 'resources/img/ui/shell_background_17.png',
-                isNew: true,
+                isNew: false,
             },
             {
                 image: 'resources/img/ui/shell_background_18.png',
-                isNew: true,
+                isNew: false,
             },
             {
                 image: 'resources/img/ui/shell_background_20.png',
-                isNew: true,
+                isNew: false,
             },
             {
                 image: 'resources/img/ui/shell_background_19.png',
-                isNew: true,
+                isNew: false,
             },
             {
                 image: 'resources/img/ui/shell_background_21.png',
-                isNew: true,
+                isNew: false,
             },
             {
                 image: 'resources/img/ui/shell_background_16.png',
@@ -1877,12 +1914,12 @@ App.definitions = (() => {
             {
                 name: 'Snowy Stars',
                 image: 'resources/img/ui/bg_pattern_01.png',
-                isNew: true,
+                isNew: false,
             },
             {
                 name: 'Shells',
                 image: 'resources/img/ui/bg_pattern_02.png',
-                isNew: true,
+                isNew: false,
             },
         ],
     
@@ -2362,7 +2399,7 @@ App.definitions = (() => {
                 image: 'resources/img/accessory/santa_hat_01.png',
                 front: true,
                 price: 350,
-                isNew: true,
+                isNew: false,
                 accessShop: 'none',
             },
         },

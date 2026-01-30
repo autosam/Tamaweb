@@ -1,4 +1,61 @@
 class Activities {
+    static async enterDialog(speakerPetDef = App.getRandomPetDef(), text){
+        const WORDS_PER_SCREEN = 10;
+
+        let currentWordPointer = 0;
+        const textWords = text.split(' ');
+        let activeText = '';
+        let currentLetterPointer = 0;
+
+        const screen = UI.empty();
+        document.querySelector('.screen-wrapper').appendChild(screen);
+        screen.innerHTML = `
+            <div class="dialog flex flex-dir-col justify-between width-full">
+                <div class="dialog_icon">
+                    ${speakerPetDef.getFullCSprite(true)}
+                </div>
+                <div class="dialog_textContainer">
+                    <span class="dialog_text"></span>
+                    <span style="display: none" class="dialog_indicator"> … </span>
+                </div>
+            </div>
+        `;
+        const dialogTextElement = screen.querySelector('.dialog_text');
+        const dialogIndicatorElement = screen.querySelector('.dialog_indicator');
+
+        const textAnimationHandler = setInterval(() => {
+            currentLetterPointer += 1;
+            if(currentLetterPointer > activeText.length) {
+                currentLetterPointer = 999;
+                UI.show(dialogIndicatorElement);
+            } else {
+                UI.hide(dialogIndicatorElement);
+            }
+            const nextString = activeText.slice(0, currentLetterPointer);
+            dialogTextElement.textContent = nextString;
+        }, 50);
+        
+        const progressDialog = () => {
+            if(currentLetterPointer < activeText.length){
+                currentLetterPointer = 999;
+                return;
+            }
+            const nextSetOfWords = textWords.slice(currentWordPointer, currentWordPointer + WORDS_PER_SCREEN).join(' ');
+            activeText = nextSetOfWords;
+            currentLetterPointer = 0;
+            if(!nextSetOfWords){
+                screen.remove();
+                clearInterval(textAnimationHandler);
+                App.toggleGameplayControls(true);
+                App.pet.stopScriptedState();
+            }
+            currentWordPointer += WORDS_PER_SCREEN;
+        }
+        progressDialog();
+
+        App.toggleGameplayControls(false, progressDialog)
+        App.pet.triggerScriptedState('idle', App.INF, null, true)
+    }
     static async getRobbed(){
         const hasIndoorAnimal = App.animals.list?.some(animalDef => animalDef.spawnIndoors);
 
@@ -989,27 +1046,53 @@ class Activities {
         App.pet.x = '50%';
         App.pet.playCheeringAnimation(() => App.toggleGameplayControls(true));
     }
-    static async talkingSequence(otherPetDef = App.getRandomPetDef()) {
+    static async talkingSequence({
+        isPlayerHost = true,
+        otherPetDef = App.getRandomPetDef(),
+        scene = App.currentScene,
+    } = {}) {
+        App.setScene(scene);
         App.closeAllDisplays();
+        App.toggleGameplayControls(false);
+        otherPetDef.increaseFriendship(random(5, 8));
+        let hasEnded = false;
 
         const otherPet = new Pet(otherPetDef, {
             staticShadow: false
         });
         App.pet.staticShadow = false;
 
-        const main = new TimelineDirector(App.pet);
-        const other = new TimelineDirector(otherPet);
+        const host = new TimelineDirector(isPlayerHost ? App.pet : otherPet);
+        const visitor = new TimelineDirector(isPlayerHost ? otherPet : App.pet);
 
-        const onEnd = () => {
-            main.release();
-            other.remove();
-            other.release();
-            App.setScene(App.currentScene);
-            App.pet.playCheeringAnimation();
-            App.toggleGameplayControls(true);
+        let cancelPromiseResolve;
+        const cancelPromise = new Promise(resolve => {
+            cancelPromiseResolve = resolve;
+        });
+
+        const onEnd = async () => {
+            if(hasEnded) return;
+            hasEnded = true;
+
+            App.toggleGameplayControls(false);
+            cancelPromiseResolve();
+            host.release();
+            visitor.release();
+
+            const endDelay = 1000;
+            App.pet.playCheeringAnimation(false, true, endDelay + 1000);
+            otherPet.playCheeringAnimation(false, true, endDelay + 1000);
+            await App.wait(endDelay);
+
+            App.fadeScreen({
+                middleFn: () => {
+                    App.toggleGameplayControls(true);
+                    otherPet.removeObject();
+                    App.setScene(App.scene.home);
+                    App.pet.playCheeringAnimation();
+                }
+            })
         }
-
-        App.toggleGameplayControls(false, onEnd);
 
         const reactions = [
             'shocked', 
@@ -1020,67 +1103,109 @@ class Activities {
             'cheering',
             'cheering',
             'cheering',
-            'cheering',
             'idle_side_uncomfortable',
         ];
-        const thoughtIcons = [
-            'thought_talk',
-            'thought_talk',
-            'thought_talk',
-            'thought_question',
-            'thought_exclaim',
-        ];
 
-        // main.setPosition({ x: '30%' });
-        // main.setState('idle_side');
-        // other.setPosition({ x: '70%' });
-        // other.setState('idle_side');
-        // await TimelineDirector.wait(250);
+        host.setPosition({x: '30%'})
+        host.setState('idle_side');
+        host.lookAt(true);
 
-        main.setPosition({x: '30%'})
-        main.setState('idle_side');
-        main.lookAt(true);
+        visitor.setPosition({x: '120%'});
+        visitor.setState('idle_side');
+        visitor.lookAt(false);
 
-        other.setPosition({x: '120%'});
-        other.setState('idle_side');
-        other.lookAt(false);
+        const showRandomThought = (tdInstance) => {
+            const thoughtCategories = [
+                'friend',
+                'animal',
+                'abstract',
+                'abstract',
+            ];
+            const abstractThoughtIcons = [
+                'thought_talk',
+                'thought_talk',
+                'thought_talk',
+                'thought_question',
+                'thought_question',
+                'thought_exclaim',
+                'thought_exclaim',
+                'thought_scribble',
+                'thought_scribble',
+                'thought_like',
+                'thought_dislike',
+                'thought_paw',
+            ];
 
-        await main.moveTo({x: '50%', speed: 0.03, endState: 'side_idle'})
+            const category = randomFromArray(thoughtCategories);
 
-        await TimelineDirector.wait(1000);
+            let config;
+            switch(category){
+                case "friend":
+                    config = {
+                        icon: App.constants.WANT_TYPES.playdate,
+                        item: randomFromArray(App.petDefinition.friends) || App.getRandomPetDef(),
+                    }
+                    break;
+                case "animal":
+                    config = {
+                        icon: App.constants.WANT_TYPES.playdate,
+                        item: randomFromArray(App.animals.list) || App.getRandomAnimalDef(),
+                    }
+                    break;
+                default:
+                    config = {
+                        icon: randomFromArray(abstractThoughtIcons),
+                        item: false,
+                    }
 
-        main.setState('cheering');
-        await TimelineDirector.wait(500);
-        main.setState('idle_side');
-        await TimelineDirector.wait(500);
+            }
 
-        other.moveTo({x: '70%', speed: 0.05});
-        await TimelineDirector.wait(450);
-        await main.moveTo({x: '30%', speed: 0.08});
-        main.lookAt(true);
-
-        await TimelineDirector.wait(250);
-
-        main.bob({maxCycles: 2, animation: 'cheering', landAnimation: 'idle'});
-        await other.bob({maxCycles: 2, animation: 'cheering', landAnimation: 'idle'});
-
-        for(let i = 0; i < 5; i++){
-            if(!main.actor) break;
-
-            main.think(randomFromArray(thoughtIcons), false, random(1000, 2000));
-            await main.bob({maxCycles: random(2, 8), strength: 0, animation: 'talking', landAnimation: 'idle_side'});
-            await TimelineDirector.wait(random(500, 1500));
-            other.think(randomFromArray(thoughtIcons), false, random(1000, 2000));
-            await other.bob({maxCycles: random(2, 8), strength: 0, animation: 'talking', landAnimation: 'idle_side'});
-            await other.bob({maxCycles: 1, animation: randomFromArray(reactions)});
-            await main.bob({maxCycles: 1, animation: randomFromArray(reactions)});
-            await TimelineDirector.wait(random(250, 1500));
-            main.setState('idle_side');
-            await TimelineDirector.wait(random(250, 1500));
-            other.setState('idle_side');
+            tdInstance.think(config.icon, config.item, random(1000, 2000));
         }
 
-        onEnd();
+        await Promise.race([
+            (async () => {
+                await host.moveTo({x: '50%', speed: 0.03, endState: 'side_idle'})
+
+                await TimelineDirector.wait(1000);
+
+                host.setState('cheering');
+                await TimelineDirector.wait(500);
+                host.setState('idle_side');
+                await TimelineDirector.wait(500);
+
+                visitor.moveTo({x: '70%', speed: 0.05});
+                await TimelineDirector.wait(450);
+                await host.moveTo({x: '30%', speed: 0.08});
+                host.lookAt(true);
+
+                App.toggleGameplayControls(false, onEnd);
+
+                await TimelineDirector.wait(250);
+
+                host.bob({maxCycles: 2, animation: 'cheering', landAnimation: 'idle'});
+                await visitor.bob({maxCycles: 2, animation: 'cheering', landAnimation: 'idle'});
+
+                for(let i = 0; i < 8; i++){
+                    if(!host.actor) break;
+
+                    showRandomThought(host);
+                    await host.bob({maxCycles: random(2, 8), strength: 0, animation: 'talking', landAnimation: 'idle_side'});
+                    await TimelineDirector.wait(random(500, 1000));
+                    showRandomThought(visitor);
+                    await visitor.bob({maxCycles: random(2, 8), strength: 0, animation: 'talking', landAnimation: 'idle_side'});
+                    await visitor.bob({maxCycles: 1, animation: randomFromArray(reactions)});
+                    await host.bob({maxCycles: 1, animation: randomFromArray(reactions)});
+                    await TimelineDirector.wait(random(250, 1000));
+                    host.setState('idle_side');
+                    await TimelineDirector.wait(random(250, 1000));
+                    visitor.setState('idle_side');
+                }
+
+                onEnd();
+            })(),
+            cancelPromise
+        ])
     }
     static async parkSequence(){
         App.setScene(App.scene.park);
@@ -1277,7 +1402,7 @@ class Activities {
                         <button class="generic-btn stylized back-btn" id="cancel">
                             <i class="fa fa-home"></i>
                         </button>
-                        <button class="generic-btn stylized" id="apply">
+                        <button class="generic-btn stylized mute" id="apply">
                             <i class="fa fa-door-open"></i>
                         </button>
                     </div>
@@ -3412,6 +3537,75 @@ class Activities {
 
         task_visit_doctor();
     }
+    static brushTeeth(){
+        App.closeAllDisplays();
+        App.setScene(App.scene.bathroom);
+
+        let brushSpeed = 0, brushFloat = 0, brushTimes = 0;
+
+        const brushObject = new Object2d({
+            img: 'resources/img/misc/toothbrush_01.png',
+            x: '50%',
+            y: '83%',
+            width: 24, height: 24,
+            z: App.constants.ACTIVE_PET_Z + 1,
+            onLateDraw: (me) => {
+                if(!me._origin){
+                    me._origin = {
+                        x: me.x,
+                        y: me.y + (App.pet.spritesheet.offsetY || 0)
+                    };
+                }
+
+                brushSpeed = clamp(lerp(brushSpeed, 0, App.deltaTime * 0.0008), 0, 1.7);
+                brushFloat += brushSpeed * App.deltaTime * 0.01;
+
+                if(brushFloat > App.PI2){
+                    brushFloat = 0;
+                    brushTimes += 1;
+                    new Object2d({
+                        img: 'resources/img/misc/foam_single.png',
+                        x: `${random(45, 55)}%`,
+                        y: me._origin.y,
+                        opacity: 1,
+                        scale: randomFromArray([0.4, 0.5]),
+                        rotation: random(0, 180),
+                        z: App.constants.ACTIVE_PET_Z + 2,
+                        parent: brushObject,
+                        onDraw: (me) => {
+                            Object2d.animations.flip(me);
+                            if(me.opacity <= 0) me.removeObject();
+                        }
+                    })
+                    
+                    if(brushTimes >= 8) {
+                        App.pet.stopScriptedState();
+                    }
+                }
+
+                Object2d.animations.circleAround(me, 2, brushFloat, me._origin.x, me._origin.y);
+            }
+        })
+
+        App.pet.stopMove();
+        App.pet.x = '50%';
+        App.pet.triggerScriptedState('open_mouth', App.INF, 0, true, async () => {
+            App.pet.stats.current_cleanliness += 20;
+            App.pet.stats.current_discipline += random(1, 3);
+            App.pet.stats.current_health += random(5, 25);
+            App.toggleGameplayControls(false);
+            brushObject.removeObject();
+            App.pet.playCheeringAnimation(() => {
+                App.setScene(App.scene.home);
+                App.toggleGameplayControls(true);
+            });
+        });
+
+        App.toggleGameplayControls(false, () => {
+            brushSpeed += 0.5;
+            App.playSound(`resources/sounds/ui_click_05.ogg`, true);
+        })
+    }
     static bathe(){
         App.closeAllDisplays();
         App.setScene(App.scene.bathroom);
@@ -3454,7 +3648,7 @@ class Activities {
 
             App.pet.stats.current_cleanliness += 25;
             App.pet.stats.current_discipline += random(1, 3);
-            App.playSound(`resources/sounds/ui_click_03.ogg`, true);
+            App.playSound(`resources/sounds/ui_click_05.ogg`, true);
         });
 
         const bathClippedObject = new Object2d({

@@ -157,6 +157,11 @@ class PetDefinition {
             start: 1,
             end: 3,
             frameTime: 350 + Math.random() * 250,
+        },
+        open_mouth: {
+            start: 3,
+            end: 4,
+            frameTime: 250,
         }
     }
     stats = {

@@ -79,7 +79,8 @@ class Pet extends Object2d {
             width: this.petDefinition.spritesheet.cellSize, 
             height: this.petDefinition.spritesheet.cellSize,
             // z: (this.z - 0.1) || 4.9,
-            z: 4.89,
+            z: this.z,
+            localZ: -1,
             hidden: !this.castShadow,
             onDraw: (overlay) => {
                 overlay.hidden = !this.castShadow;
@@ -113,7 +114,8 @@ class Pet extends Object2d {
             x: 0,
             y: 0,
             hidden: true,
-            z: App.constants.ACTIVE_PET_Z + 0.1,
+            z: this.z,
+            localZ: 2,
             onDraw: (overlay) => {
                 Object2d.animations.flip(overlay, 750);
             }
@@ -125,13 +127,49 @@ class Pet extends Object2d {
             x: 0,
             y: 0,
             invisible: true,
-            z: App.constants.ACTIVE_PET_Z + 0.1,
+            z: this.z,
+            localZ: 1,
             // width: this.petDefinition.spritesheet.cellSize, height: this.petDefinition.spritesheet.cellSize,
             onDraw: (overlay) => {
                 overlay.invisible = !overlay.parent?.stats?.is_misbehaving;
                 overlay.mimicParent(['inverted', 'upperHalfOffsetY']);
                 overlay.x -= (overlay.parent.spritesheet.offsetY / 2) || 0;
                 Object2d.animations.pulseScale(overlay, 0.01, 0.05);
+            }
+        })
+
+        this.sleepParticles = new Object2d({
+            parent: this,
+            spawnTimerMs: Math.random(),
+            onDraw: (me) => {
+                if(me.parent.state !== 'sleeping') return;
+                
+                me.spawnTimerMs -= App.deltaTime;
+                if(me.spawnTimerMs > 0) return;
+
+                me.spawnTimerMs =  750;
+
+                const particleSettings = {
+                    speed: 0.02,
+                    direction: random(0, 1) ? 1 : -1
+                }
+
+                new Object2d({
+                    img: 'resources/img/misc/sleep_z_01.png',
+                    x: me.parent.x,
+                    y: me.parent.y - me.parent.spritesheet.cellSize,
+                    rotation: 0,
+                    opacity: 1,
+                    z: me.parent.z,
+                    onDraw: (particle) => {
+                        const changeFloat = particleSettings.speed * App.deltaTime;
+                        particle.y -= changeFloat;
+                        particle.x += (Math.sin(particle.rotation * 0.5 * particleSettings.direction) * 0.5) + particleSettings.speed * particleSettings.direction * App.deltaTime * 0.2;
+                        particle.rotation += changeFloat * particleSettings.direction;
+                        particle.opacity -= 0.0009 * App.deltaTime;
+                        if(particle.opacity <= 0) particle.removeObject()
+                    }
+                })
             }
         })
     }
@@ -165,7 +203,9 @@ class Pet extends Object2d {
                     : new Object2d({
                         parent: this,
                         img: accessory.image,
-                        z: accessory.front ? (this.z + 0.1) || 5.1 : (this.z - 0.1) || 4.9,
+                        // z: accessory.front ? (this.z + 0.1) || 5.1 : (this.z - 0.1) || 4.9,
+                        z: this.z,
+                        localZ: accessory.front ? 0.1 : -0.1,
                         scale: 1,
                         spritesheet: {
                             cellNumber: 1,
@@ -242,6 +282,59 @@ class Pet extends Object2d {
         this.handleAnimation();
 
         Object2d.animations.pixelBreath(this);
+    }
+    handleDirectInteractionStart(){
+        const me = this;
+        this.isInteractingWith = true;
+
+        this.directInteractionInfo = {
+            x: 0,
+            y: 0,
+            initialY: this.y
+        }
+
+        this.triggerScriptedState('shocked', App.INF, false, true, 
+            () => {
+                me.isInteractingWith = false;
+            }, 
+            () => {
+                const repositionSpeed = 0.008 * App.deltaTime;
+                me.directInteractionInfo.x = App.mouse.x - (me.spritesheet.cellSize / 2);
+                me.directInteractionInfo.y = App.mouse.y;
+                this.x = lerp(this.x, me.directInteractionInfo.x, repositionSpeed);
+                this.y = lerp(this.y, clamp(me.directInteractionInfo.y, 0, this.directInteractionInfo.initialY), repositionSpeed);
+                me.inverted = this.x < me.directInteractionInfo.x;
+            }
+        )
+    }
+    handleDirectInteractionEnd(){
+        this.stopScriptedState();
+
+        const me = this;
+
+        // falling
+        let fallSpeed = 0.008;
+        const handleOnEndFall = () => {
+            me.triggerScriptedState('sitting', 500, false, true);
+        }
+        const fallDriver = () => {
+            if(me.directInteractionInfo.x == null){
+                me.stopScriptedState()
+                return;
+            }
+
+            me.x = lerp(me.x, me.directInteractionInfo.x, 0.008 * App.deltaTime)
+            fallSpeed += 0.0008 * App.deltaTime;
+
+            if(me.y < me.directInteractionInfo.initialY)
+                me.y += fallSpeed * App.deltaTime;
+
+            if(me.y >= me.directInteractionInfo.initialY){
+                me.y = me.directInteractionInfo.initialY;
+                me.stopScriptedState();
+            }
+        }
+        this.triggerScriptedState('jumping', 10000, false, true, handleOnEndFall, fallDriver)
     }
     handleWants(){
         if(!this.isMainPet || App.haveAnyDisplays()) return;

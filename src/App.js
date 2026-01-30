@@ -1,7 +1,7 @@
 const App = {
     PI2: Math.PI * 2, INF: 999999999,
-    deltaTime: 0, lastTime: 0, playTime: 0, hour: 12,
-    mouse: { x: 0, y: 0 },
+    deltaTime: 0, lastTime: 0, playTime: 0, hour: 12, accurateDeltaTime: 0,
+    mouse: { x: 0, y: 0, isInBounds : false },
     userId: '_', userName: null, sessionId: Math.round(Math.random() * 9999999999),
     ENV: location.port == 5500 ? 'dev' : 'prod', isOnItch: false, isOnElectronClient: false,
     shellBackground: '', deferredInstallPrompt: null,
@@ -465,6 +465,9 @@ const App = {
             const target = evt.type.startsWith("touch") ? evt.targetTouches[0] : evt;
                 x = target.clientX - rect.left;
                 y = target.clientY - rect.top;
+
+            App.mouse.isInBounds = x >= 0 && y >= 0 
+                && x < rect.width && y < rect.height;
         
             x = Math.max(0, Math.min(x, rect.width));
             y = Math.max(0, Math.min(y, rect.height));
@@ -472,13 +475,43 @@ const App = {
             App.mouse.x = x / 2;
             App.mouse.y = y / 2;
         }
+        const mouseDownHandler = () => {
+            App.mouse.isDown = true;
+        }
+        const mouseUpHandler = () => {
+            App.mouse.isDown = false;
+        }
+
         document.addEventListener('mousemove', moveEventHandler);
         document.addEventListener('touchmove', moveEventHandler);
+        document.addEventListener('mousedown', mouseDownHandler);
+        document.addEventListener('mouseup', mouseUpHandler);
+        document.addEventListener('touchstart', mouseDownHandler);
+        document.addEventListener('touchend', mouseUpHandler);
 
-        document.addEventListener('mousedown', () => App.mouse.isDown = true)
-        document.addEventListener('mouseup', () => App.mouse.isDown = false)
-        document.addEventListener('touchstart', () => App.mouse.isDown = true)
-        document.addEventListener('touchend', () => App.mouse.isDown = false)
+        // mouse down ms
+        App.registerOnDrawEvent(() => {
+            if(!App.mouse.isDown) {
+                App.mouse.isDownStartMs = 0;
+                App.mouse.isDownMs = 0;
+                return;
+            }
+
+            if(App.mouse.isDown && !App.mouse.isDownStartMs){
+                App.mouse.isDownStartMs = App.time;
+            }
+
+            App.mouse.isDownMs = App.time - App.mouse.isDownStartMs;
+        })
+
+        // key down
+        document.addEventListener('keydown', (event) => {
+            switch(event.key){
+                case "`":
+                    App.takeScreenshot();
+                    break;
+            }
+        })
     },
     registerLoadEvents: function(){
         const initializeRenderer = () => {
@@ -625,16 +658,8 @@ const App = {
             App.reloadScene();
         }
 
-        // screenshot
-        document.querySelector('.logo').ondblclick = () => {
-            if(App.haveAnyDisplays()) return;
-            const overlay = document.querySelector('.screenshot-overlay');
-            UI.show(overlay);
-            setTimeout(() => UI.hide(overlay), 250);
-            App.playSound('resources/sounds/camera_shutter_01.ogg');
-            const name = 'Tamaweb_' + moment().format('D-M-YY_h-m-s');
-            downloadUpscaledCanvasAsImage(App.drawer.canvas, name, 5)
-        }
+        // screenshot on dbl clicking logo
+        document.querySelector('.logo').ondblclick = () => App.takeScreenshot();
     },
     loadMods: function(mods){
         if(typeof mods !== 'object' || !mods || !mods.length) return;
@@ -681,18 +706,18 @@ const App = {
         if(fpsElapsedTime > App.fpsInterval){ // everything here capped to targetFps
             // time and playtime
             App.time = time;
-            const accurateDeltaTime = time - App.lastTime;
-            App.playTime += accurateDeltaTime;
+            App.accurateDeltaTime = time - App.lastTime;
+            App.playTime += App.accurateDeltaTime;
             App.lastTime = time;
             App.fpsLastTime = App.fullTime - (fpsElapsedTime % App.fpsInterval);
 
             // simulating offline progression
-            if(accurateDeltaTime > 5000){
-                App.pet?.simulateAwayProgression?.(accurateDeltaTime);
+            if(App.accurateDeltaTime > 5000){
+                App.pet?.simulateAwayProgression?.(App.accurateDeltaTime);
             }
 
             // deltaTime
-            App.deltaTime = clamp(accurateDeltaTime, 0, 100);
+            App.deltaTime = clamp(App.accurateDeltaTime, 0, 100);
 
             // drawing
             App.drawer?.draw();
@@ -819,9 +844,9 @@ const App = {
                 })) return showAlreadyUsed();
                 break;
             // update specific
-            case "HPPYXMAS":
-            case "SANTA":
-            case "FLAGS":
+            case "PICKUP":
+            case "HANGOUT":
+            case "TOOTHBRUSH":
                 if(!addEvent(codeEventId, () => {
                     const goldAmount = 200, missionPtsAmount = 50;
                     App.pet.stats.gold += goldAmount;
@@ -985,20 +1010,28 @@ const App = {
         //     ])
         // })) return;
 
-        if(addEvent(`update_23_notice`, () => {
+        if(addEvent(`update_24_notice`, () => {
             App.displayList([
                 {
-                    name: 'New update is available!',
+                    name: `New update is available!<b> <div><small>${VERSION}</small></div> ${App.getBadge('new!')}`,
                     type: 'text',
                     solid: true,
                     bold: true,
                 },
-                {
+                /* {
                     name: `
                         <img class="update-banner" src="resources/img/ui/update_banner.png"></img>
                         <br>
                         <div>
                         Check out the <b>Seasons</b> feature, <b>Santa Encounter</b>, <b>New Flags Minigame</b>, <b>Rebalances</b> and more!
+                        </div>
+                    `,
+                    type: 'text',
+                }, */
+                {
+                    name: `
+                        <div>
+                        Check out the new <b>Hang out</b> option, <b>picking up</b> your pet, <b>Brushing</b> your pet's teeth and more!
                         </div>
                     `,
                     type: 'text',
@@ -1878,11 +1911,52 @@ const App = {
     createActivePet: function(petDef, props = {}){
         if(petDef.sprite) App.handlers.add_active_pet_to_collection(petDef.sprite);
 
+        let registeredInteractionDetector;
+
+        const interactionHandler = () => {
+            if(!App.pet.isInteractingWith && App.mouse.isDownMs < 200){
+                return; 
+            }
+
+            if(!App.pet.isInteractingWith){
+                App.vibrate()
+            }
+
+            if(!App.mouse.isDown){
+                App.pet.isInteractingWith = false;
+                App.disableGameplayControls = false;
+                App.pet.handleDirectInteractionEnd();
+                App.unregisterOnDrawEvent(interactionHandler);
+                registeredInteractionDetector = null;
+                return;
+            }
+
+            if(App.pet.isDuringScriptedState()) {
+                if(!App.pet.isInteractingWith)
+                    App.mouse.isDown = false;
+                return;
+            }
+            
+            App.pet.handleDirectInteractionStart();
+            App.disableGameplayControls = true;
+        }
+
         return new Pet(petDef, {
             z: App.constants.ACTIVE_PET_Z, 
             scale: 1, 
             castShadow: true,
-            ...props
+            ...props,
+            onHover: (me) => {
+                if(
+                    registeredInteractionDetector 
+                    || !App.mouse.isDown 
+                    || App.currentScene !== App.scene.home
+                    || App.disableGameplayControls
+                    || App.haveAnyDisplays()
+                ) return;
+
+                registeredInteractionDetector = App.registerOnDrawEvent(interactionHandler);
+            }
         });
     },
     _queueEventKeys: {},
@@ -2324,7 +2398,7 @@ const App = {
                 return;
             }
             UI.lastClickedButton = null;
-            App.playSound(`resources/sounds/ui_click_01.ogg`, true);
+            App.playSound(`resources/sounds/ui_click_06.ogg`, true);
             App.vibrate();
             
             if(typeof App.temp.showStoragePersistentBadge === 'undefined'){
@@ -2548,11 +2622,17 @@ const App = {
                     }
                 },
                 {
+                    name: `brush teeth ${App.getBadge()}`,
+                    onclick: () => {
+                        Activities.brushTeeth();
+                    }
+                },
+                {
                     name: 'clean room',
                     onclick: () => {
                         App.handlers.clean();
                     }
-                }
+                },
             ], null, 'Cleaning')
         },
         open_credits: function(){
@@ -3070,7 +3150,7 @@ const App = {
                     }
                 },
                 {
-                    name: `system settings ${App.getBadge()}`,
+                    name: `system settings`,
                     onclick: () => {
                         App.displayList([
                             {
@@ -3196,7 +3276,7 @@ const App = {
                     }
                 },
                 {
-                    name: `Shell Settings ${App.getBadge()}`,
+                    name: `Shell Settings`,
                     onclick: () => {
                         // App.handlers.open_shell_background_list();
                         // return true;
@@ -5375,7 +5455,7 @@ const App = {
                 }))
 
                 return {
-                    name: icon + name,
+                    name: `${icon} ${name}`,
                     onclick: () => {
                         const isMonsterGhost = friendDef.stats.is_ghost === PetDefinition.GHOST_TYPE.devil;
                         const isAngelGhost = friendDef.stats.is_ghost === PetDefinition.GHOST_TYPE.angel;
@@ -5470,6 +5550,71 @@ const App = {
                                     ])
 
                                     return true;
+                                }
+                            },
+                            {
+                                name: `Hang out ${App.getBadge()}`,
+                                onclick: () => {
+                                    const handleHangout = (scene, isPlayerHost = false) => {
+                                        App.closeAllDisplays();
+
+                                        Activities.talkingSequence({
+                                            scene,
+                                            otherPetDef: friendDef,
+                                            isPlayerHost,
+                                        });
+                                    }
+
+                                    const getFriendsHomeScene = (backgroundOverride) => {
+                                        if(backgroundOverride){
+                                            return new Scene({
+                                                image: backgroundOverride,
+                                            });
+                                        }
+
+                                        if(friendDef.stats.is_player_family){
+                                            return new Scene({
+                                                image: App.scene.parentsHome.image,
+                                            });
+                                        }
+
+                                        pRandom.save();
+                                        pRandom.seed = parseInt(`${PetDefinition.getCharCode(friendDef.sprite)}${App.userId}`) * 320;
+                                        const sceneBackground = pRandomFromArray(
+                                            Object.keys(App.definitions.room_background)
+                                            .map(roomName => 
+                                                App.definitions.room_background[roomName].image
+                                            )
+                                        );
+                                        const scene = new Scene({
+                                            image: sceneBackground,
+                                        })
+                                        pRandom.load();
+                                        return scene;
+                                    }
+
+                                    return App.displayList([
+                                        {
+                                            type: 'text',
+                                            name: 'Where to hang out?',
+                                        },
+                                        {
+                                            name: `friend's home ${App.getBadge()}`,
+                                            onclick: () => handleHangout(getFriendsHomeScene()),
+                                        },
+                                        {
+                                            name: `your home ${App.getBadge()}`,
+                                            onclick: () => handleHangout(App.scene.home, true),
+                                        },
+                                        {
+                                            name: `the mall ${App.getBadge()}`,
+                                            onclick: () => handleHangout(getFriendsHomeScene(App.scene.mallInterior.image), Boolean(random(0, 1))),
+                                        },
+                                        {
+                                            name: `the beach ${App.getBadge()}`,
+                                            onclick: () => handleHangout(getFriendsHomeScene(App.scene.beach.image), Boolean(random(0, 1))),
+                                        },
+                                    ])
                                 }
                             },
                             {
@@ -5738,7 +5883,7 @@ const App = {
                     }
                 },
                 {
-                    name: `friends`,
+                    name: `friends ${App.getBadge()}`,
                     onclick: () => {
                         App.handlers.open_friends_list(null, null, [
                             {
@@ -6386,23 +6531,39 @@ const App = {
                 App.handlers.open_activity_list(true);
             }
 
+            const hasNewFood = Object.keys(App.definitions.food).some(key => {
+                const definition = App.definitions.food[key];
+                if(definition.type) return;
+                return definition.isNew;
+            });
+            const hasNewTreat = Object.keys(App.definitions.food).some(key => {
+                const definition = App.definitions.food[key];
+                if(definition.type !== 'treat') return;
+                return definition.isNew;
+            });
+            const hasNewMed = Object.keys(App.definitions.food).some(key => {
+                const definition = App.definitions.food[key];
+                if(definition.type !== 'med') return;
+                return definition.isNew;
+            });
+
             App.displayList([
                 {
-                    name: 'purchase food',
+                    name: `purchase food ${hasNewFood ? App.getBadge('new!') : ''}`,
                     onclick: () => {
                         App.handlers.open_food_list({buyMode: true, filterType: 'food'});
                         return true;
                     }
                 },
                 {
-                    name: 'purchase snacks',
+                    name: `purchase snacks ${hasNewTreat ? App.getBadge('new!') : ''}`,
                     onclick: () => {
                         App.handlers.open_food_list({buyMode: true, filterType: 'treat'});
                         return true;
                     }
                 },
                 {
-                    name: 'purchase meds',
+                    name: `purchase meds ${hasNewMed ? App.getBadge('new!') : ''}`,
                     onclick: () => {
                         App.handlers.open_food_list({buyMode: true, filterType: 'med'});
                         return true;
@@ -6451,7 +6612,7 @@ const App = {
             App.displayList([
                 {
                     _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.child,
-                    name: `flags ${App.getBadge()}`,
+                    name: `flags`,
                     onclick: () => {
                         const image = `
                         <div class="flex justify-center">
@@ -6765,13 +6926,14 @@ const App = {
                     element.disabled = item._disable;
                     element.style = `--child-index:${Math.min(i, 10) + 1}`;
                     element.onclick = () => {
+                        App.playSound(`resources/sounds/ui_click_01.ogg`, true);
                         UI.lastClickedButton = element;
                         let result = item.onclick(element, list);
                         if(!result){
                             list.close();
                         }
                     };
-                    defaultClassName = 'generic-btn stylized';
+                    defaultClassName = 'generic-btn stylized mute';
             }
 
             element.className = defaultClassName + (item.class ? ' ' + item.class : '');
@@ -6909,10 +7071,12 @@ const App = {
         list.querySelector('.slide-left').onclick = () => {
             contentElement.querySelector('.slider-item').style.animation = 'slider-item-anim-out-right 0.1s linear forwards';
             setTimeout(() => changeIndex(-1), 150);
+            App.playSound(`resources/sounds/ui_click_01.ogg`, true);
         }
         list.querySelector('.slide-right').onclick = () => {
             contentElement.querySelector('.slider-item').style.animation = 'slider-item-anim-out-left 0.1s linear forwards';
             setTimeout(() => changeIndex(1), 150);
+            App.playSound(`resources/sounds/ui_click_01.ogg`, true);
         }
 
         if(additionalText){
@@ -7114,12 +7278,18 @@ const App = {
         document.addEventListener('click', (e) => {
 
             // sfx
-            if(clickSoundClassNames.some(n => e.target.classList.contains(n)) || e.target.nodeName.toLowerCase() === 'button' || e.target.parentElement?.nodeName.toLowerCase() === 'button'){
+            if(
+                clickSoundClassNames.some(n => e.target.classList.contains(n)) || 
+                e.target.nodeName.toLowerCase() === 'button' || 
+                e.target.parentElement?.nodeName.toLowerCase() === 'button'
+            ){
                 App.vibrate();
-                if(backSoundClassNames.some(n => e.target.classList.contains(n)) || e.target.textContent.toLowerCase() == 'back')
-                    this.playSound(`resources/sounds/ui_click_02.ogg`, true);
-                else
-                    this.playSound(`resources/sounds/ui_click_01.ogg`, true);
+                if(!e.target.classList.contains('mute') && !e.target.parentElement?.classList.contains('mute')){
+                    if(backSoundClassNames.some(n => e.target.classList.contains(n)) || e.target.textContent.toLowerCase() == 'back')
+                        this.playSound(`resources/sounds/ui_click_02.ogg`, true);
+                    else
+                        this.playSound(`resources/sounds/ui_click_01.ogg`, true);
+                }
             }
 
             // menu animation
@@ -7401,6 +7571,15 @@ const App = {
                 })
             }
         };
+    },
+    takeScreenshot: () => {
+        if(App.haveAnyDisplays()) return;
+        const overlay = document.querySelector('.screenshot-overlay');
+        UI.show(overlay);
+        setTimeout(() => UI.hide(overlay), 250);
+        App.playSound('resources/sounds/camera_shutter_01.ogg');
+        const name = 'Tamaweb_' + moment().format('D-M-YY_h-m-s');
+        downloadUpscaledCanvasAsImage(App.drawer.canvas, name, 5)
     },
     handleSequentiallyLoad: async function(loaders){
         const isValid = (data) => Boolean(data?.lastTime && data.pet?.name);
