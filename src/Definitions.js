@@ -451,6 +451,25 @@ App.definitions = (() => {
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 isNew: false,
             },
+            "dumplings": {
+                sprite: 764,
+                hunger_replenish: 25,
+                fun_replenish: 2,
+                health_replenish: 2,
+                price: 15,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                isNew: true,
+            },
+            "mushroom soup": {
+                sprite: 779,
+                hunger_replenish: 15,
+                fun_replenish: 5,
+                health_replenish: 5,
+                price: 17,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                isNew: true,
+            },
+
             // cookable only
             "sky bread": {
                 sprite: 142,
@@ -834,6 +853,24 @@ App.definitions = (() => {
                 type: 'treat',
                 isNew: false,
                 unbuyable: true,
+            },
+            "strawberry pie": {
+                sprite: 773,
+                hunger_replenish: 10,
+                fun_replenish: 15,
+                health_replenish: 3,
+                price: 10,
+                type: 'treat',
+                isNew: true,
+            },
+            "rainbow cake": {
+                sprite: 453,
+                hunger_replenish: 15,
+                fun_replenish: 15,
+                health_replenish: -2,
+                price: 15,
+                type: 'treat',
+                isNew: true,
             },
     
     

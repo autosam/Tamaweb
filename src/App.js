@@ -6531,23 +6531,39 @@ const App = {
                 App.handlers.open_activity_list(true);
             }
 
+            const hasNewFood = Object.keys(App.definitions.food).some(key => {
+                const definition = App.definitions.food[key];
+                if(definition.type) return;
+                return definition.isNew;
+            });
+            const hasNewTreat = Object.keys(App.definitions.food).some(key => {
+                const definition = App.definitions.food[key];
+                if(definition.type !== 'treat') return;
+                return definition.isNew;
+            });
+            const hasNewMed = Object.keys(App.definitions.food).some(key => {
+                const definition = App.definitions.food[key];
+                if(definition.type !== 'med') return;
+                return definition.isNew;
+            });
+
             App.displayList([
                 {
-                    name: 'purchase food',
+                    name: `purchase food ${hasNewFood ? App.getBadge('new!') : ''}`,
                     onclick: () => {
                         App.handlers.open_food_list({buyMode: true, filterType: 'food'});
                         return true;
                     }
                 },
                 {
-                    name: 'purchase snacks',
+                    name: `purchase snacks ${hasNewTreat ? App.getBadge('new!') : ''}`,
                     onclick: () => {
                         App.handlers.open_food_list({buyMode: true, filterType: 'treat'});
                         return true;
                     }
                 },
                 {
-                    name: 'purchase meds',
+                    name: `purchase meds ${hasNewMed ? App.getBadge('new!') : ''}`,
                     onclick: () => {
                         App.handlers.open_food_list({buyMode: true, filterType: 'med'});
                         return true;
