@@ -142,7 +142,8 @@ class Pet extends Object2d {
             parent: this,
             spawnTimerMs: Math.random(),
             onDraw: (me) => {
-                if(me.parent.state !== 'sleeping') return;
+                // if(me.parent.state !== 'sleeping') return;
+                if(!me.parent?.stats?.is_sleeping) return;
                 
                 me.spawnTimerMs -= App.deltaTime;
                 if(me.spawnTimerMs > 0) return;
