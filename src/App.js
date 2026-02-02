@@ -24,7 +24,7 @@ const App = {
         displayShellLogo: true,
         shellShape: 6,
         backgroundColor: '#FFDEAD',
-        backgroundPattern: 'resources/img/ui/bg_pattern_01.png', // todo: disable after xmass
+        backgroundPattern: 'resources/img/ui/bg_pattern_01.png',
         notifications: false,
         automaticAging: true,
         sleepingHoursOffset: 0,
