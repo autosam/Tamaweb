@@ -458,7 +458,7 @@ App.definitions = (() => {
                 health_replenish: 2,
                 price: 15,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
-                isNew: true,
+                isNew: false,
             },
             "mushroom soup": {
                 sprite: 779,
@@ -467,7 +467,7 @@ App.definitions = (() => {
                 health_replenish: 5,
                 price: 17,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
-                isNew: true,
+                isNew: false,
             },
 
             // cookable only
@@ -861,7 +861,7 @@ App.definitions = (() => {
                 health_replenish: 3,
                 price: 10,
                 type: 'treat',
-                isNew: true,
+                isNew: false,
             },
             "rainbow cake": {
                 sprite: 453,
@@ -870,7 +870,7 @@ App.definitions = (() => {
                 health_replenish: -2,
                 price: 15,
                 type: 'treat',
-                isNew: true,
+                isNew: false,
             },
     
     

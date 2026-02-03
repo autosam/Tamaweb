@@ -2622,7 +2622,7 @@ const App = {
                     }
                 },
                 {
-                    name: `brush teeth ${App.getBadge()}`,
+                    name: `brush teeth`,
                     onclick: () => {
                         Activities.brushTeeth();
                     }
@@ -3095,7 +3095,7 @@ const App = {
                                 }
                             },
                             {
-                                _ignore: true,
+                                _ignore: !App.isTester(),
                                 _mount: (e) => e.innerHTML = `${getStateIcon(App.settings.season)} Season: <i>${App.settings.season}</i>`,
                                 onclick: (e) => {
                                     const possibleOptions = [
@@ -5553,7 +5553,7 @@ const App = {
                                 }
                             },
                             {
-                                name: `Hang out ${App.getBadge()}`,
+                                name: `Hang out`,
                                 onclick: () => {
                                     const handleHangout = (scene, isPlayerHost = false) => {
                                         App.closeAllDisplays();
@@ -5599,19 +5599,19 @@ const App = {
                                             name: 'Where to hang out?',
                                         },
                                         {
-                                            name: `friend's home ${App.getBadge()}`,
+                                            name: `friend's home`,
                                             onclick: () => handleHangout(getFriendsHomeScene()),
                                         },
                                         {
-                                            name: `your home ${App.getBadge()}`,
+                                            name: `your home`,
                                             onclick: () => handleHangout(App.scene.home, true),
                                         },
                                         {
-                                            name: `the mall ${App.getBadge()}`,
+                                            name: `the mall`,
                                             onclick: () => handleHangout(getFriendsHomeScene(App.scene.mallInterior.image), Boolean(random(0, 1))),
                                         },
                                         {
-                                            name: `the beach ${App.getBadge()}`,
+                                            name: `the beach`,
                                             onclick: () => handleHangout(getFriendsHomeScene(App.scene.beach.image), Boolean(random(0, 1))),
                                         },
                                     ])
@@ -5883,7 +5883,7 @@ const App = {
                     }
                 },
                 {
-                    name: `friends ${App.getBadge()}`,
+                    name: `friends`,
                     onclick: () => {
                         App.handlers.open_friends_list(null, null, [
                             {
@@ -6610,6 +6610,14 @@ const App = {
                 App.handlers.open_activity_list(true);
             }
             App.displayList([
+                {
+                    _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.teen,
+                    name: `leaves ${App.getBadge()}`,
+                    onclick: () => {
+                        App.displayPopup(`Clear out all the leaves before the timer runs out!`, tutorialDisplayTime, () => Activities.leavesGame())
+                        return false;
+                    }
+                },
                 {
                     _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.child,
                     name: `flags`,

@@ -5478,6 +5478,171 @@ class Activities {
         App.pet.inverted = false;
         App.pet.x = '80%';
     }
+    static async leavesGame(){
+        App.closeAllDisplays();
+        App.setScene(App.scene.full_grass);
+        App.toggleGameplayControls(false, () => {})
+
+        App.pet.stopMove();
+        App.pet.x = 9999;
+
+        const targetLeavesCount = 250;
+        let timeSeconds = 10;
+        const screen = UI.empty();
+        document.querySelector('.screen-wrapper').appendChild(screen);
+        screen.innerHTML = `
+        <div class="width-full pointer-events-none" style="position: absolute; top: 0; left: 0;">
+            <div class="flex-container" style="justify-content: space-between; padding: 4px">
+                <div class="flex-container flex-gap-05 mini-game-ui">
+                    <div id="time">${timeSeconds}</div>
+                </div>
+            </div>
+        </div>
+        `;
+        const timeElement = screen.querySelector('#time');
+        const timerInterval = setInterval(() => {
+            timeSeconds -= 1;
+            timeElement.textContent = clamp(timeSeconds, 0, Infinity);
+        }, 1000)
+
+        let currentLeavesCount = targetLeavesCount;
+
+        const activeForce = {
+            strength: 0,
+            origin: { x: 0, y: 0 },
+            maxDistance: 25
+        }
+
+        const leavesParent = new Object2d({});
+        const spawnLeaf = () => {
+            const leaf = new Object2d({
+                // img: `resources/img/misc/leaf_0${random(1, 4)}.png`,
+                img: `resources/img/misc/leaves_01.png`,
+                spritesheet: {
+                    cellSize: 13,
+                    cellNumber: random(1, 8),
+                    rows: 2,
+                    columns: 4,
+                },
+                x: `${random(5, 95)}%`,
+                y: `${random(5, 95)}%`,
+                rotation: random(0, 180),
+                parent: leavesParent,
+            
+                velocityX: 0,
+                velocityY: 0,
+                drag: 0.91,
+                shouldDespawn: false,
+                opacity: 1,
+                scale: 1 + ((Math.random() - 0.5) * 0.1),
+                
+                onDraw: (me) => {
+                    if(typeof me.x === 'string') return;
+
+                    if (activeForce.strength > 0) {
+                        const manhattanDistX = Math.abs(me.x - activeForce.origin.x);
+                        const manhattanDistY = Math.abs(me.y - activeForce.origin.y);
+                        const manhattanDist = manhattanDistX + manhattanDistY;
+                        
+                        if (manhattanDist < activeForce.maxDistance) {
+                            const dirX = me.x > activeForce.origin.x ? 1 : -1;
+                            const dirY = me.y > activeForce.origin.y ? 1 : -1;
+
+                            const forceScale = 1 - (manhattanDist / activeForce.maxDistance);
+                            const forceMagnitude = activeForce.strength * forceScale * forceScale;
+                            
+                            me.velocityX += dirX * forceMagnitude * (manhattanDistX / manhattanDist);
+                            me.velocityY += dirY * forceMagnitude * (manhattanDistY / manhattanDist);
+                        }
+                    }
+                    
+                    me.x += me.velocityX * App.deltaTime;
+                    me.y += me.velocityY * App.deltaTime;
+
+                    // slow down
+                    me.velocityX *= me.drag;
+                    me.velocityY *= me.drag;
+
+                    me.rotation += (me.velocityX * 100) % 360;
+
+                    if(
+                        me.x <= 0 || me.x >= App.drawer.bounds.width - me.spritesheet.cellSize ||
+                        me.y <= 5 || me.y > App.drawer.bounds.height - me.spritesheet.cellSize
+                    ) {
+                        me.shouldDespawn = true;
+                    }
+
+                    if(me.shouldDespawn){
+                        me.opacity -= 0.05;
+                        if(me.opacity <= 0){
+                            currentLeavesCount -= 1;
+                            me.removeObject();
+                        }
+                    }
+                }
+            })
+            return leaf;
+        }
+
+        const onEnd = () => {
+            App.toggleGameplayControls(false);
+            App.pet.stopScriptedState();
+            screen.remove();
+            setTimeout(() => {
+                App.fadeScreen({
+                    middleFn: () => {
+                        // todo: change the reward calculation from amount to time left
+                        Activities.task_winMoneyFromArcade({
+                            amount: clamp(
+                                    Math.floor((targetLeavesCount - currentLeavesCount) / 5) - (currentLeavesCount ? 20 : 0), 
+                                0, Infinity),
+                            hasWon: currentLeavesCount <= 0
+                        })
+                        leavesParent.removeObject();
+                    }
+                })
+            }, 500);
+        }
+
+        let lastSmokeSpawnTime = 0;
+        const driverFn = () => {
+            if(currentLeavesCount <= 0 || timeSeconds <= 0) onEnd();
+
+            if(!App.mouse.isInBounds || !App.mouse.isDown) return;
+
+            activeForce.strength = 0.05;
+            activeForce.origin = {
+                x: App.mouse.x,
+                y: App.mouse.y
+            }
+            
+            if(App.time > lastSmokeSpawnTime + 30){
+                lastSmokeSpawnTime = App.time;
+                new Object2d({
+                    img: 'resources/img/misc/foam_single.png',
+                    x: activeForce.origin.x - 12, 
+                    y: activeForce.origin.y - 12, 
+                    z: 6, opacity: 1, scale: random(3, 6) * 0.1, 
+                    rotation: random(0, 180),
+                    onDraw: (me) => {
+                        me.rotation += 0.1 * App.deltaTime;
+                        me.opacity -= 0.001 * App.deltaTime;
+                        me.scale -= 0.001 * App.deltaTime;
+                        me.y -= 0.05 * App.deltaTime;
+                        if(me.opacity <= 0.1 || me.scale <= 0.1) me.removeObject();
+                    }
+                })
+            }
+        }
+
+        // Spawn leaves with some initial random velocity for more natural feel
+        for(let i = 0 ; i < currentLeavesCount; i++){
+            const leaf = spawnLeaf();
+            App._leaf =leaf;
+        }
+
+        App.pet.triggerScriptedState('idle', App.INF, false, true, null, driverFn);
+    }
 
     // school
     static async school_ExpressionGame({onEndFn, maxRounds = 3} = {}){
