@@ -3028,6 +3028,130 @@ App.definitions = (() => {
                 description: 'Makes plants grow faster.',
                 type: 'garden',
             },
+        },
+
+        /* TRAITS */
+        traits: {
+            charismatic: {
+                name: 'Charismatic',
+                description: 'Will build up friendships way faster and is more likely to want to visit friends.',
+                opposite: 'introvert',
+            },
+            introvert: {
+                name: 'Introvert',
+                description: 'Has a harder time building up friendships and is not likely it wants to visit friends.',
+                opposite: 'charismatic',
+            },
+            lucky: {
+                name: 'Lucky',
+                description: 'Has a chance to get more rewards from winning games.',
+            },
+            hardWorker: {
+                name: 'Hard Worker',
+                description: 'Earns 30% more from jobs.',
+            },
+            athletic: {
+                name: 'Athletic',
+                description: 'Excels in Endurance classes.',
+            },
+            artistic: {
+                name: 'Artistic',
+                description: 'Excels in Expression classes.',
+            },
+            logical: {
+                name: 'Logical',
+                description: 'Excels in Logic classes.',
+            },
+            computerWhiz: {
+                name: 'Computer Whiz',
+                description: 'Has a chance of making money when using the computer.',
+            },
+            treasurer: {
+                name: 'Treasurer',
+                description: 'Constantly wants to play with its items and gets higher happiness boost from playing with them.',
+            },
+            shopaholic: {
+                name: 'Shopaholic',
+                description: 'Gets a huge happiness boost from buying stuff.',
+            },
+            romantic: {
+                name: 'Romantic',
+                description: 'Has a very high chance of succeeding on dates and can go on dates with anyone even if their friendship is not high.',
+            },
+            slowLearner: {
+                name: 'Slow Learner',
+                description: 'Has harder time learning in class.',
+            },
+            botanist: {
+                name: 'Botanist',
+                description: 'Their plants take a way longer time to die.',
+            },
+            grumpy: {
+                name: 'Grumpy',
+                description: 'Has lower tolerance of having low stats.',
+            },
+            proper: {
+                name: 'Proper',
+                description: 'Never misbehaves.',
+            },
+            naturalChef: {
+                name: 'Natural Chef',
+                description: 'Has a chance of creating more food when cooking.',
+            },
+            germGuardian: {
+                name: 'Germ Guardian',
+                description: 'Gets sick way less often.',
+            },
+            playBurnout: {
+                name: 'Play Burnout',
+                description: 'Fun need drops way faster.',
+                opposite: 'chill',
+            },
+            chill: {
+                name: 'Chill',
+                description: 'Fun need drops slower.',
+                opposite: 'playBurnout',
+            },
+            voraciousHunger: {
+                name: 'Voracious Hunger',
+                description: 'Hunger need drops way faster.',
+                opposite: 'lightEater',
+            },
+            lightEater: {
+                name: 'Light Eater',
+                description: 'Hunger need drops slower.',
+                opposite: 'voraciousHunger',
+            },
+            restless: {
+                name: 'Restless',
+                description: 'Sleep need drops way faster.',
+                opposite: 'deepSleeper',
+            },
+            deepSleeper: {
+                name: 'Deep Sleeper',
+                description: 'Sleep need drops slower.',
+                opposite: 'restless',
+            },
+            tinyTank: {
+                name: 'Tiny Tank',
+                description: 'Bladder need drops way faster.',
+                opposite: 'ironBladder',
+            },
+            ironBladder: {
+                name: 'Iron Bladder',
+                description: 'Bladder need drops slower.',
+                opposite: 'tinyTank',
+            },
+            dustMagnet: {
+                name: 'Dust Magnet',
+                description: 'Cleanliness need drops way faster.',
+                opposite: 'selfCleaning',
+            },
+            selfCleaning: {
+                name: 'Self-Cleaning',
+                description: 'Cleanliness need drops slower.',
+                opposite: 'dustMagnet',
+            },
         }
     }
 })()
