@@ -6489,7 +6489,7 @@ const App = {
                         }
                         return App.displayList([
                             {
-                                name: `main room ${hasNewMainDecor ? App.getBadge('new!') : ''}`,
+                                name: `living room ${hasNewMainDecor ? App.getBadge('new!') : ''}`,
                                 onclick: () => {
                                     return App.displayList([
                                         {
