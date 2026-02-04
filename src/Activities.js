@@ -5486,6 +5486,7 @@ class Activities {
     static async leavesGame(){
         App.closeAllDisplays();
         App.setScene(App.scene.full_grass);
+        App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
         App.toggleGameplayControls(false, () => {}, false)
         App.playSound(`resources/sounds/note_4.mp3`, true);
 
