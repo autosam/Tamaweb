@@ -2620,6 +2620,26 @@ App.definitions = (() => {
                     App.displayPopup(`You've received $200!`);
                 }
             },
+            perfect_minigame_flags_win_x_times: {
+                name: 'Flagbearer',
+                description: 'Win with perfect score in Flags game 10 times!',
+                checkProgress: () => App.getRecord('times_perfected_flags_minigame') >= 10,
+                advance: (amount) => App.addRecord('times_perfected_flags_minigame', amount),
+                getReward: () => {
+                    App.pet.stats.gold += 200;
+                    App.displayPopup(`You've received $200!`);
+                }
+            },
+            perfect_minigame_leaves_win_x_times: {
+                name: 'Leafblower',
+                description: 'Win with perfect score in Leaves game 10 times!',
+                checkProgress: () => App.getRecord('times_perfected_leaves_minigame') >= 10,
+                advance: (amount) => App.addRecord('times_perfected_leaves_minigame', amount),
+                getReward: () => {
+                    App.pet.stats.gold += 200;
+                    App.displayPopup(`You've received $200!`);
+                }
+            },
         },
     
         /* MAIL */

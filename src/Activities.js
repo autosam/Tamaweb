@@ -4579,9 +4579,14 @@ class Activities {
             App.reloadScene();
 
             const winScore = scoreArray.filter(e => e === true).length;
+            const hasWon = winScore >= 2;
+            if(hasWon){
+                App.definitions.achievements.perfect_minigame_flags_win_x_times.advance();
+            }
+
             Activities.task_winMoneyFromArcade({
+                hasWon,
                 amount: winScore * 20,
-                hasWon: winScore >= 2,
                 happiness: winScore * 3,
             })
         }
@@ -5594,11 +5599,15 @@ class Activities {
                 App.fadeScreen({
                     middleFn: () => {
                         // todo: change the reward calculation from amount to time left
+                        const hasWon = currentLeavesCount <= 0;
+                        if(hasWon){
+                            App.definitions.achievements.perfect_minigame_leaves_win_x_times.advance();
+                        }
                         Activities.task_winMoneyFromArcade({
+                            hasWon,
                             amount: clamp(
                                     Math.floor((targetLeavesCount - currentLeavesCount) / 5) - (currentLeavesCount ? 20 : 0), 
                                 0, Infinity),
-                            hasWon: currentLeavesCount <= 0
                         })
                         leavesParent.removeObject();
                     }
