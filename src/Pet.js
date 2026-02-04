@@ -483,21 +483,14 @@ class Pet extends Object2d {
         const motion = Math.sin(this.eggMotionFloat);
 
         if(this.eggMotionFloatSpeed === 0.02){
+            if(this.eggObject.spritesheet.cellNumber !== 2){
+                App.playSound('resources/sounds/task_complete.ogg', true);
+            }
             this.eggObject.spritesheet.cellNumber = 2;
         }
-        // this.eggObject.rotation = Math.round(motion / 22.5) * 22.5;
+
         this.eggObject.x = 40 + (motion * 1.5);
-        
-        // this.eggObject.x += this.eggCurrentDirection * App.deltaTime;
-        // if(this.eggObject.x > 55 - 8 || this.eggObject.x < 45 - 8) this.eggCurrentDirection *= -1;
-
-        // this.eggObject.rotation = lerp(this.eggObject.rotation, 0, 0.01 * App.deltaTime);
-
-        // if(Math.random() < 0.01){
-        //     // this.eggObject.setImg('resources/img/misc/egg_02.png');
-        //     // setTimeout(() => this.eggObject?.setImg('resources/img/misc/egg.png'), 200);
-        //     this.eggObject.rotation = randomFromArray([45, -45])
-        // }
+        this.setLocalZBasedOnSelf(this.eggObject);
 
         if(Date.now() > this.hatchTime){
             this.stats.is_egg = false;
@@ -506,6 +499,22 @@ class Pet extends Object2d {
             this.eggObject?.removeObject();
             this.eggObject = null;
             this.triggerScriptedState('uncomfortable', 5000);
+            this.playCheeringAnimation(false, true);
+            App.playSound('resources/sounds/task_complete_02.ogg', true);
+            new Object2d({
+                ...App.drawer.bounds,
+                x: 0, y: 0, z: App.constants.ACTIVE_PET_Z + 5,
+                solidColor: {
+                    r: 255,
+                    g: 255,
+                    b: 255
+                },
+                opacity: 1.5,
+                onDraw: (me) => {
+                    me.opacity -= 0.002 * App.deltaTime;
+                    if(me.opacity <= 0) me.removeObject();
+                }
+            })
         }
     }
     _switchScene(scene){
