@@ -2389,9 +2389,11 @@ const App = {
         open_main_menu: function(){
             const runControlOverwrite = () => {
                 if(!App.gameplayControlsOverwrite) return;
-                App.playSound(`resources/sounds/ui_click_01.ogg`, true);
+                if(App.gameplayControlsTriggerFeedback)
+                    App.playSound(`resources/sounds/ui_click_01.ogg`, true);
                 App.gameplayControlsOverwrite();
-                App.vibrate();
+                if(App.gameplayControlsTriggerFeedback)
+                    App.vibrate();
             }
             if(App.disableGameplayControls || App.settings.classicMainMenuUI) {
                 runControlOverwrite();
@@ -6779,9 +6781,10 @@ const App = {
             })
         },
     },
-    toggleGameplayControls: function(state, onclick){
+    toggleGameplayControls: function(state, onclick, triggerFeedback = true){
         App.disableGameplayControls = !state;
         App.gameplayControlsOverwrite = onclick;
+        App.gameplayControlsTriggerFeedback = triggerFeedback;
         if(App.disableGameplayControls && !onclick){
             App.drawer.canvas.style.cursor = 'not-allowed';
         } else {
@@ -6797,6 +6800,7 @@ const App = {
         return {
             state: !App.disableGameplayControls,
             onclick: App.gameplayControlsOverwrite,
+            triggerFeedback: App.gameplayControlsTriggerFeedback,
         }
     },
     createProgressbar: function(percent){

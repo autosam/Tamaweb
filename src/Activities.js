@@ -5481,7 +5481,8 @@ class Activities {
     static async leavesGame(){
         App.closeAllDisplays();
         App.setScene(App.scene.full_grass);
-        App.toggleGameplayControls(false, () => {})
+        App.toggleGameplayControls(false, () => {}, false)
+        App.playSound(`resources/sounds/note_4.mp3`, true);
 
         App.pet.stopMove();
         App.pet.x = 9999;
@@ -5516,7 +5517,6 @@ class Activities {
         const leavesParent = new Object2d({});
         const spawnLeaf = () => {
             const leaf = new Object2d({
-                // img: `resources/img/misc/leaf_0${random(1, 4)}.png`,
                 img: `resources/img/misc/leaves_01.png`,
                 spritesheet: {
                     cellSize: 13,
@@ -5588,6 +5588,8 @@ class Activities {
             App.toggleGameplayControls(false);
             App.pet.stopScriptedState();
             screen.remove();
+            clearInterval(timerInterval);
+            setTimeout(() => App.playSound(`resources/sounds/task_complete_02.ogg`, true))
             setTimeout(() => {
                 App.fadeScreen({
                     middleFn: () => {
@@ -5616,8 +5618,9 @@ class Activities {
                 y: App.mouse.y
             }
             
-            if(App.time > lastSmokeSpawnTime + 30){
+            if(App.time > lastSmokeSpawnTime + 100){
                 lastSmokeSpawnTime = App.time;
+                App.playSound(`resources/sounds/swoosh_0${random(1, 2)}.ogg`, true);
                 new Object2d({
                     img: 'resources/img/misc/foam_single.png',
                     x: activeForce.origin.x - 12, 

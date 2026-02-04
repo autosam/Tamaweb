@@ -49,7 +49,9 @@ class Object2d {
 
         const preloaded = App.preloadedResources[img];
         if(preloaded && !this.noPreload){
-            return this.setImage(preloaded);
+            return this.setImage(
+                this.applyColorOverrides(preloaded)
+            );
         }
 
         this.imageSrc = img;
