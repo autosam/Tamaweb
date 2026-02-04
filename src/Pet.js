@@ -698,6 +698,8 @@ class Pet extends Object2d {
         });
     }
     attemptMisbehave(forced){
+        if(this.petDefinition.hasTrait('proper')) return;
+
         const shouldAllow = (App.fullTime - this.stats.last_time_misbehave_attempted) > App.constants.ONE_HOUR * 6;
         if(!shouldAllow && !forced) return;
         this.stats.last_time_misbehave_attempted = App.fullTime;
@@ -871,6 +873,7 @@ class Pet extends Object2d {
 
         let stats = this.stats;
         const previousStats = Object.assign({}, this.stats);
+        const { hasTrait } = this.petDefinition;
 
         let depletion_mult = 1, offlineAndIsNight = false;
         if(isOfflineProgression){
@@ -903,11 +906,28 @@ class Pet extends Object2d {
         if(this.stats.is_at_vacation) depletion_mult = -0.1;
 
         let hunger_depletion_rate = stats.hunger_depletion_rate * depletion_mult;
+        if(hasTrait('lightEater')) hunger_depletion_rate *= 0.5;
+        if(hasTrait('voraciousHunger')) hunger_depletion_rate *= 1.5;
+
         let sleep_depletion_rate = stats.sleep_depletion_rate * depletion_mult;
+        if(hasTrait('deepSleeper')) sleep_depletion_rate *= 0.5;
+        if(hasTrait('restless')) sleep_depletion_rate *= 1.5;
+
         let fun_depletion_rate = stats.fun_depletion_rate * depletion_mult;
+        if(hasTrait('chill')) fun_depletion_rate *= 0.5;
+        if(hasTrait('playBurnout')) fun_depletion_rate *= 1.5;
+
         let bladder_depletion_rate = stats.bladder_depletion_rate * depletion_mult;
+        if(hasTrait('ironBladder')) bladder_depletion_rate *= 0.5;
+        if(hasTrait('tinyTank')) bladder_depletion_rate *= 1.5;
+
         let health_depletion_rate = stats.health_depletion_rate * depletion_mult;
+        if(hasTrait('germGuardian')) health_depletion_rate *= 0.5;
+
         let cleanliness_depletion_rate = stats.cleanliness_depletion_rate * depletion_mult;
+        if(hasTrait('selfCleaning')) cleanliness_depletion_rate *= 0.5;
+        if(hasTrait('dustMagnet')) cleanliness_depletion_rate *= 1.5;
+
         let discipline_depletion_rate = this.stats.is_at_vacation ? 0 : stats.discipline_depletion_rate;
         let max_death_tick = stats.max_death_tick;
         switch(this.petDefinition.lifeStage){
@@ -1025,7 +1045,9 @@ class Pet extends Object2d {
         stats.current_discipline -= discipline_depletion_rate;
         if(stats.current_discipline <= 0){
             stats.current_discipline = 0;
-            stats.is_misbehaving = true;
+            if(!this.petDefinition.hasTrait('proper')){
+                stats.is_misbehaving = true;
+            }
         }
 
         if(stats.current_health <= 0 && 
@@ -1085,19 +1107,30 @@ class Pet extends Object2d {
         }
 
         // moodlets
+        const hasGrumpyTrait = hasTrait('grumpy');
+        
+        let hunger_min_desire = stats.hunger_min_desire;
+        if(hasGrumpyTrait) hunger_min_desire *= 1.5;
+
+        let sleep_min_desire = stats.sleep_min_desire;
+        if(hasGrumpyTrait) sleep_min_desire *= 2;
+
+        let fun_min_desire = stats.fun_min_desire;
+        if(hasGrumpyTrait) fun_min_desire *= 1.8;
+
         this.triggerMoodlet(
             stats.current_hunger,
-            stats.hunger_min_desire, 'hungry',
+            hunger_min_desire, 'hungry',
             stats.hunger_satisfaction, 'full'
         );
         this.triggerMoodlet(
             stats.current_sleep,
-            stats.sleep_min_desire, 'sleepy',
+            sleep_min_desire, 'sleepy',
             stats.sleep_satisfaction, 'rested'
         );
         this.triggerMoodlet(
             stats.current_fun,
-            stats.fun_min_desire, 'bored',
+            fun_min_desire, 'bored',
             stats.fun_satisfaction, 'amused'
         );
         this.triggerMoodlet(

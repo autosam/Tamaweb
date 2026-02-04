@@ -59,6 +59,9 @@ class AnimalDefinition extends PetDefinition {
             App.definitions.gameplay_buffs.increasedWateredDuration;
     }
 
+    hasTrait(){}
+    developTrait(){}
+
     static calculateTimeToZero(decreaseRate) {
         const maxStat = 100;
         const timeToZeroMilliseconds = (maxStat / decreaseRate) * 1000;

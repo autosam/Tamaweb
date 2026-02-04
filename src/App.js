@@ -5532,8 +5532,8 @@ const App = {
                             {
                                 _ignore: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult || friendDef.lifeStage < PetDefinition.LIFE_STAGE.adult || friendDef.stats.is_player_family,
                                 name: `go on date`,
-                                onclick: () => {
-                                    if (friendDef.getFriendship() < 60) {
+                                onclick: () => {                                    
+                                    if (friendDef.getFriendship() < 60 && !App.petDefinition.hasTrait('romantic')) {
                                         return App.displayPopup(`${App.petDefinition.name}'s friendship with ${friendDef.name} is too low <br><br> they don't want to go on a date.`, 5000);
                                     }
 
@@ -6323,6 +6323,8 @@ const App = {
                                         'Remember the order the blocks light up, and recreate it when the light turns on!',
                                         () => Activities.school_ExpressionGame({
                                             onEndFn: (pts) => {
+                                                if(App.petDefinition.hasTrait('artistic')) pts *= 1.5;
+                                                if(App.petDefinition.hasTrait('slowLearner')) pts *= 0.75;
                                                 App.pet.stats.current_expression += pts;
                                             }
                                         })
@@ -6335,6 +6337,8 @@ const App = {
                                     ...getFlipCardsDifficulty(App.pet.stats.current_expression),
                                     skillIcon: 'special:expression',
                                     onEndFn: (pts) => {
+                                        if(App.petDefinition.hasTrait('artistic')) pts *= 1.5;
+                                        if(App.petDefinition.hasTrait('slowLearner')) pts *= 0.75;
                                         App.pet.stats.current_expression += pts;
                                     }
                                 }))
@@ -6356,6 +6360,8 @@ const App = {
                                     maxAttempts: 1,
                                     skillIcon: 'special:logic',
                                     onEndFn: (pts) => {
+                                        if(App.petDefinition.hasTrait('logical')) pts *= 1.5;
+                                        if(App.petDefinition.hasTrait('slowLearner')) pts *= 0.75;
                                         App.pet.stats.current_logic += pts;
                                     }
                                 }))
@@ -6366,6 +6372,8 @@ const App = {
                                     ...getFlipCardsDifficulty(App.pet.stats.current_logic),
                                     skillIcon: 'special:logic',
                                     onEndFn: (pts) => {
+                                        if(App.petDefinition.hasTrait('logical')) pts *= 1.5;
+                                        if(App.petDefinition.hasTrait('slowLearner')) pts *= 0.75;
                                         App.pet.stats.current_logic += pts;
                                     }
                                 }))
@@ -6382,6 +6390,8 @@ const App = {
                                 onclick: () => {
                                     startClassGame('Jump at the perfect time to avoid touching the rope!', () => Activities.school_EnduranceGame({
                                         onEndFn: (pts) => {
+                                            if(App.petDefinition.hasTrait('athletic')) pts *= 1.5;
+                                            if(App.petDefinition.hasTrait('slowLearner')) pts *= 0.75;
                                             App.pet.stats.current_endurance += pts;
                                         }
                                     }))
@@ -6393,6 +6403,8 @@ const App = {
                                     ...getFlipCardsDifficulty(App.pet.stats.current_endurance),
                                     skillIcon: 'special:endurance',
                                     onEndFn: (pts) => {
+                                        if(App.petDefinition.hasTrait('athletic')) pts *= 1.5;
+                                        if(App.petDefinition.hasTrait('slowLearner')) pts *= 0.75;
                                         App.pet.stats.current_endurance += pts;
                                     }
                                 }))
@@ -7950,11 +7962,18 @@ const App = {
         else obj[key] += amount;
     },
     pay: function(amount){
-        if(App.pet.stats.gold < amount){
+        let finalAmount = amount;
+
+        if(App.petDefinition.hasTrait('shopaholic')) App.pet.stats.current_fun += random(25, 45);
+
+        if(App.pet.stats.gold < finalAmount){
             App.displayPopup(`Don't have enough money!`);
             return false;
         }
-        App.pet.stats.gold -= amount;
+
+        if(App.petDefinition.hasTrait('moneySaver')) finalAmount = finalAmount * (random(8, 10) * 0.1);
+
+        App.pet.stats.gold -= finalAmount;
         return true;
     },
     getPreciseTimeFromNow: (time) => {

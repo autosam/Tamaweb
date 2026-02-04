@@ -1849,7 +1849,6 @@ class Activities {
 
         Missions.done(Missions.TYPES.play_item);
 
-
         App.toggleGameplayControls(false);
 
         const interruptFn = () => {
@@ -1871,7 +1870,12 @@ class Activities {
         App.pet.triggerScriptedState('cheering', item.interaction_time || 10000, false, true, () => {  
             App.drawer.removeObject(itemObject);
 
-            App.pet.stats.current_fun += item.fun_replenish || 0;
+            let fun_replenish = item.fun_replenish;
+            if(App.petDefinition.hasTrait('treasurer')){
+                fun_replenish *= 1.5;
+            }
+
+            App.pet.stats.current_fun += fun_replenish || 0;
             App.pet.stats.current_sleep += item.sleep_replenish || 0;
             App.pet.stats.current_expression += item.expression_increase || 0;
             App.pet.stats.current_logic += item.logic_increase || 0;
@@ -1926,7 +1930,9 @@ class Activities {
                 setTimeout(() => App.playSound('resources/sounds/task_fail_01.ogg', true))
             }
         }
-        const petOverall = (App.pet.stats.current_fun + App.pet.stats.current_cleanliness + App.pet.stats.current_health + random(0, 100)) / 4;
+
+        let petOverall = (App.pet.stats.current_fun + App.pet.stats.current_cleanliness + App.pet.stats.current_health + random(0, 100)) / 4;
+        if(App.petDefinition.hasTrait('romantic')) petOverall += random(20, 80);
         const otherEnjoyment = random(30, 85) <= petOverall;
         const petEnjoyment = otherEnjoyment ? !!random(0, 6) : random(0, 1); // just to make it more common for both parties to not like each other
         determineBehavior(App.pet, petEnjoyment);
@@ -3184,7 +3190,8 @@ class Activities {
                                     App.pet.x = '50%';
                                 }
                                 if(!failed){
-                                    const amount = resultFoodName ? random(1, 3) : 1;
+                                    let amount = resultFoodName ? random(1, 3) : 1;
+                                    if(App.petDefinition.hasTrait('naturalChef')) amount *= 2;
                                     App.displayPopup(`${App.petDefinition.name} <br>made x${amount}<br> <b>${randomFoodName}</b>!`, 3000, () => {
                                         end();
                                         App.pet.playCheeringAnimation();
@@ -6282,6 +6289,10 @@ class Activities {
         }, 5500);
     }
     static task_endWork(elapsedTime, moneyMade){
+        if(App.petDefinition.hasTrait('hardWorker')){
+            moneyMade = moneyMade * (1 + random(1, 4) * 0.1);
+        }
+
         let clampedMoneyMade = clamp(moneyMade, 0, 400);
         App.displayPopup(`${App.petDefinition.name} worked for ${elapsedTime} seconds`, 2500, () => {
             if(elapsedTime > 10){
@@ -6441,6 +6452,9 @@ class Activities {
 
         App.toggleGameplayControls(false);
         App.pet.staticShadow = false;
+
+        if(App.petDefinition.hasTrait('lucky'))
+            amount = amount * (1 + random(0, 5) * 0.1);
 
         App.pet.stats.gold += amount;
         App.pet.stats.current_fun += happiness ?? (amount / 5);
