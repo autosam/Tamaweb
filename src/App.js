@@ -160,6 +160,7 @@ const App = {
             winter: ['#C6DDFF', '#E8F1FF', '#FFFFFF'],
             autumn: ['#CE4429', '#ED782F', '#FF9D60'],
             spring: ['#63A04B', '#7FD060', '#96F271'],
+            summer: ['#27AA2F', '#59D12F', '#BAD92F'],
         }
     },
     routes: {
@@ -1465,7 +1466,7 @@ const App = {
         }
         if(scene.foodsX) App.foods.x = scene.foodsX;
         if(scene.foodsY) App.foods.y = scene.foodsY;
-        App.background.setImg(scene.image);
+        App.background.setImg(scene.image, true);
 
         if(scene.onLoad){
             scene.onLoad(onLoadArg);
@@ -3001,7 +3002,7 @@ const App = {
                 },
                 { type: 'separator', _ignore: ignoreFirstDivider },
                 {
-                    name: `gameplay settings`,
+                    name: `gameplay settings ${App.getBadge()}`,
                     onclick: () => {
                         const getStateIcon = (state) => {
                             const className = state ? 'option on' : 'option off';
@@ -3097,8 +3098,7 @@ const App = {
                                 }
                             },
                             {
-                                _ignore: !App.isTester(),
-                                _mount: (e) => e.innerHTML = `${getStateIcon(App.settings.season)} Season: <i>${App.settings.season}</i>`,
+                                _mount: (e) => e.innerHTML = `${getStateIcon(App.settings.season)} Season: <i>${App.settings.season}</i> ${App.getBadge()}`,
                                 onclick: (e) => {
                                     const possibleOptions = [
                                         'auto',

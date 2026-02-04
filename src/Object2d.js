@@ -42,10 +42,10 @@ class Object2d {
 
         this.id = this.drawer.addObject(this);
     }
-    setImg(img){ // this one gets image url
+    setImg(img, forced){ // this one gets image url
         if(!img) return;
 
-        if(this.imageSrc === img) return;
+        if(this.imageSrc === img && !forced) return;
 
         const preloaded = App.preloadedResources[img];
         if(preloaded && !this.noPreload){
