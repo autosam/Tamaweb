@@ -3103,6 +3103,11 @@ App.definitions = (() => {
                 description: 'Their plants take a way longer time to die.',
                 icon: 12,
             },
+            plentyHarvest: {
+                name: 'Plenty Harvest',
+                description: 'Have a chance to get more drops when harvesting plants.',
+                icon: 27,
+            },
             grumpy: {
                 name: 'Grumpy',
                 description: 'Is more reactive to having their needs not met.',

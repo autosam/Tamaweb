@@ -2105,6 +2105,7 @@ class Activities {
 
                                     let amount = random(3, 5);
                                     if(App.isGameplayBuffActive('doubleHarvest')) amount += random(3, 5);
+                                    if(App.petDefinition.hasTrait('plentyHarvest')) amount += random(0, 5);
 
                                     App.addNumToObject(App.pet.inventory.harvests, plant.name, amount);
                                     App.displayConfirm(`
