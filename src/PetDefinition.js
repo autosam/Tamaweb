@@ -749,8 +749,8 @@ class PetDefinition {
         const sprite = this.sprite.split('/').at(-1) || this.sprite;
         return hashCode(sprite);
     }
-    hasTrait(name){
-        return this?.traits?.includes?.(name)
+    hasTrait(key){
+        return this?.traits?.includes?.(key)
     }
     developTrait(traitKey){
         if(!this) return;
@@ -763,14 +763,20 @@ class PetDefinition {
             .filter(trait => trait.opposite)
             .flatMap(trait => trait.opposite);
 
-        let randomTrait;
-        while(true){
-            randomTrait = randomFromArray(traitKeys);
-            if(
-                !this.hasTrait(randomTrait),
-                !incompatibleTraits.includes(randomTrait)
-            ) break;
+        const getRandomTrait = () => {
+            for(let i = 0; i < 9999; i++){
+                const randomTrait = randomFromArray(traitKeys);
+                if(
+                    !this.hasTrait(randomTrait) &&
+                    !incompatibleTraits.includes(randomTrait)
+                ) return randomTrait;
+            }
+            return false;
         }
+
+        const randomTrait = getRandomTrait();
+        if(!randomTrait) return console.warn('Could not generate new trait.');
+
 
         this.traits.push(traitKey || randomTrait);
 

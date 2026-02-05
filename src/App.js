@@ -4313,6 +4313,14 @@ const App = {
                 }
             ])
         },
+        open_traits: () => {
+            const traitKeys = Object.keys(App.definitions.traits);
+
+            return App.displayList(traitKeys.map(key => ({
+                name: `${App.getTraitCSprite(key)} ${App.definitions.traits[key].name}`,
+                onclick: () => {}
+            })))
+        },
         open_profile: function(){
             const petTraitIcons = [
                 {
@@ -4333,6 +4341,8 @@ const App = {
             ]
 
             const playTimeDuration = moment.duration(App.playTime);
+
+            const unknownPersonality = `<span class="opacity-half">?</span>`
 
             const list = UI.genericListContainer();
             const content = UI.empty('flex flex-dir-col flex-1');
@@ -4356,12 +4366,31 @@ const App = {
                     <span>
                         Born ${moment(App.petDefinition.birthday).fromNow()}
                     </span>
-                    <div class="pet-trait-icons-container">
-                    ${petTraitIcons.map(icon => {
-                        return `<div onclick="App.displayPopup('<small>trait:</small> <br> <b>${icon.title}</b> <small>(${icon.condition ? 'active' : 'inactive'})</small>')" title="${icon.title}" class="pet-trait-icon ${!icon.condition ? 'disabled' : ''}">
-                            <img src="${icon.img}"></img>
-                        </div>`
-                    }).join('')}
+                </div>
+                <div class="surface-stylized inner-padding flex flex-gap-05 flex-dir-col">
+                    <small>Traits:</small>
+                    <div class="relative mt-6 width-full">
+                        <div class="stats-label left-0">Experience</div>
+                        <div class="pet-trait-icons-container">
+                            ${petTraitIcons.map(icon => {
+                                return `<div onclick="App.displayPopup('<small>exp trait:</small> <br> <b>${icon.title}</b> <small>(${icon.condition ? 'active' : 'inactive'})</small>')" title="${icon.title}" class="pet-trait-icon ${!icon.condition ? 'disabled' : ''}">
+                                    <img src="${icon.img}"></img>
+                                </div>`
+                            }).join('')}
+                        </div>
+                    </div>
+                    <div class="relative mt-6 width-full">
+                        <div class="stats-label left-0">Personality</div>
+                        <div class="pet-trait-icons-container">
+                            ${!App.petDefinition.traits.length ? unknownPersonality : ''}
+                            ${App.petDefinition.traits.map(key => {
+                                const definition = App.definitions.traits[key];
+                                if(!definition) return unknownPersonality;
+                                return `<div onclick="App.displayPopup('<small>trait:</small> <br> <b>${definition.name}</b><br><small>${definition.description}</small>')" title="${definition.name}" class="pet-trait-icon">
+                                    ${App.getTraitCSprite(key)}
+                                </div>`
+                            }).join('')}
+                        </div>
                     </div>
                 </div>
                 <div class="user-id surface-stylized inner-padding text-transform-none">
@@ -7464,6 +7493,21 @@ const App = {
             class="${className}"
             src="${spritesheet}"
             ${additional}></c-sprite>`;
+    },
+    getTraitCSprite: (traitName, className = 'icon') => {
+        const definition = Object.entries(App.definitions.traits).find(([key, content]) => key === traitName)?.[1];
+        
+        if(!definition) return '';
+
+        return App.getGenericCSprite(
+            definition.icon + 1,
+            'resources/img/misc/traits_01.png',
+            {
+                cellSize: 22,
+                rows: 11
+            },
+            className
+        )
     },
     getPersona: function(name, image){
         return `

@@ -3032,129 +3032,156 @@ App.definitions = (() => {
 
         /* TRAITS */
         traits: {
-            charismatic: { // done
+            charismatic: {
                 name: 'Charismatic',
                 description: 'Will build up friendships way faster and is more likely to want to visit friends.',
                 opposite: ['introvert'],
+                icon: 0,
             },
-            introvert: { // done
+            introvert: {
                 name: 'Introvert',
                 description: 'Has harder time building up friendships and is unlikely they want to visit friends.',
                 opposite: ['charismatic'],
+                icon: 1,
             },
-            lucky: { // done
+            lucky: {
                 name: 'Lucky',
                 description: 'Has a chance to get more rewards from winning mini-games.',
+                icon: 2,
             },
-            hardWorker: { // done
+            hardWorker: {
                 name: 'Hard Worker',
                 description: 'Earns more money from work.',
+                icon: 3,
             },
-            athletic: { // done
+            athletic: {
                 name: 'Athletic',
                 description: 'Excels in Endurance classes.',
+                icon: 4,
             },
-            artistic: { // done
+            artistic: {
                 name: 'Artistic',
                 description: 'Excels in Expression classes.',
+                icon: 5,
             },
-            logical: { // done
+            logical: {
                 name: 'Logical',
                 description: 'Excels in Logic classes.',
+                icon: 6,
             },
             /* computerWhiz: {
                 name: 'Computer Whiz',
                 description: 'Has a chance of making money when using the computer.',
             }, */
-            treasurer: { // done
+            treasurer: {
                 name: 'Treasurer',
                 description: 'Constantly wants to play with their items and gets higher happiness boost from playing with them.',
+                icon: 7,
             },
-            shopaholic: { // done
+            shopaholic: {
                 name: 'Shopaholic',
                 description: 'Gets a huge happiness boost from buying stuff.',
+                icon: 8,
             },
-            moneySaver: { // done
+            moneySaver: {
                 name: 'Money Saver',
                 description: 'Has chance of saving some money when spending it.',
+                icon: 9,
             },
-            romantic: { // done
+            romantic: {
                 name: 'Romantic',
                 description: 'Has a very high chance of succeeding on dates and can go on dates with anyone even if their friendship is not high.',
+                icon: 10,
             },
-            slowLearner: { // done
+            slowLearner: {
                 name: 'Slow Learner',
                 description: 'Has harder time learning in class.',
+                icon: 11,
             },
-            botanist: { // done
+            botanist: {
                 name: 'Botanist',
                 description: 'Their plants take a way longer time to die.',
+                icon: 12,
             },
-            grumpy: { // done
+            grumpy: {
                 name: 'Grumpy',
                 description: 'Is more reactive to having their needs not met.',
+                icon: 13,
             },
-            proper: { // done
+            proper: {
                 name: 'Proper',
                 description: 'Never misbehaves.',
+                icon: 14,
             },
-            naturalChef: { // done
+            naturalChef: {
                 name: 'Natural Chef',
                 description: 'Has a chance of creating more food when cooking.',
+                icon: 15,
             },
-            germGuardian: { // done
+            germGuardian: {
                 name: 'Germ Guardian',
                 description: 'Gets sick way less often.',
+                icon: 16,
             },
-            playBurnout: { // done
+            playBurnout: {
                 name: 'Play Burnout',
                 description: 'Fun need drops way faster.',
                 opposite: ['chill'],
+                icon: 17,
             },
-            chill: { // done
+            chill: {
                 name: 'Chill',
                 description: 'Fun need drops slower.',
                 opposite: ['playBurnout'],
+                icon: 18,
             },
-            voraciousHunger: { // done
+            voraciousHunger: {
                 name: 'Voracious Hunger',
                 description: 'Hunger need drops way faster.',
                 opposite: ['lightEater'],
+                icon: 19,
             },
-            lightEater: { // done
+            lightEater: {
                 name: 'Light Eater',
                 description: 'Hunger need drops slower.',
                 opposite: ['voraciousHunger'],
+                icon: 20,
             },
-            restless: { // done
+            restless: {
                 name: 'Restless',
                 description: 'Sleep need drops way faster.',
                 opposite: ['deepSleeper'],
+                icon: 21,
             },
-            deepSleeper: { // done
+            deepSleeper: {
                 name: 'Deep Sleeper',
                 description: 'Sleep need drops slower.',
                 opposite: ['restless'],
+                icon: 22,
             },
-            tinyTank: { // done
+            tinyTank: {
                 name: 'Tiny Tank',
                 description: 'Bladder need drops way faster.',
                 opposite: ['ironBladder'],
+                icon: 23,
             },
-            ironBladder: { // done
+            ironBladder: {
                 name: 'Iron Bladder',
                 description: 'Bladder need drops slower.',
                 opposite: ['tinyTank'],
+                icon: 24,
             },
-            dustMagnet: { // done
+            dustMagnet: {
                 name: 'Dust Magnet',
                 description: 'Cleanliness need drops way faster.',
                 opposite: ['selfCleaning'],
+                icon: 25,
             },
-            selfCleaning: { // done
+            selfCleaning: {
                 name: 'Self-Cleaning',
                 description: 'Cleanliness need drops slower.',
                 opposite: ['dustMagnet'],
+                icon: 26,
             },
         }
     }
