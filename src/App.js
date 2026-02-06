@@ -5337,11 +5337,15 @@ const App = {
 
                             const dialog = App.displayList([
                                 {
-                                    name: `${hole.name} ${hole.isNew ? App.getBadge('new!') : ''}`,
+                                    name: `
+                                        ${hole.name} ${hole.isNew ? App.getBadge('new!') : ''}
+                                        <i>for about ${moment.duration(hole.duration).humanize()}</i>
+                                    `,
                                     icon: 'lemon',
                                     type: 'info',
                                 },
                                 {
+                                    _ignore: hole.noAlone,
                                     name: 'Alone',
                                     onclick: () => {
                                         confirmFn()

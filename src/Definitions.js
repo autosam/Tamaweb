@@ -2900,6 +2900,17 @@ App.definitions = (() => {
                 }
             },
             {
+                name: 'Have sleepover',
+                duration: App.constants.ONE_HOUR * 4,
+                isNew: true,
+                noAlone: true,
+                onEnd: () => {
+                    App.pet.stats.current_fun += 10;
+                    App.pet.stats.current_hunger += 10;
+                    App.pet.stxats.current_sleep += 20;
+                }
+            },
+            {
                 name: 'Visit library',
                 duration: App.constants.ONE_HOUR * 0.25,
                 withAnother: true,
