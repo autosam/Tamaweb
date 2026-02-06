@@ -1454,6 +1454,9 @@ const App = {
         }),
         full_grass: new Scene({
             image: 'resources/img/background/outside/full_grass_01.png',
+        }),
+        galaxy: new Scene({
+            image: 'resources/img/background/house/galaxy_01.png',
         })
     },
     setScene(scene, noPositionChange, onLoadArg){
@@ -7743,6 +7746,7 @@ const App = {
         return mainData;
     },
     save: function(noIndicator){
+        return;
         if(!App.pet || !App.loadingEnded) return;
 
         const timeElapsedSinceLastSave = App.time - (App.temp.lastSaved ?? 0);

@@ -1,9 +1,76 @@
 class Activities {
+    static async moveOut(){
+        App.setScene(App.scene.galaxy);
+        const parent = new Object2d({});
+        App.toggleGameplayControls(false);
+        
+        const main = new TimelineDirector(App.pet);
+
+        main.setPosition({x: '50%', y: '65%'});
+
+        const dialogs = {
+            great: `
+                Thank you for taking care of me for the past 
+                ${moment(App.petDefinition.birthday).fromNow(true)},
+                I will cherish every memory we have and will not forget about all the moments we shared together <3
+                `
+        }
+
+        // await Activities.enterDialog(
+        //     App.petDefinition, 
+        //     dialogs.great
+        // );
+
+        await TimelineDirector.wait(500);
+
+        const twinkle = new Object2d({
+            parent,
+            img: 'resources/img/misc/twinkle_01.png',
+            x: '50%',
+            y: '50%',
+            opacity: 1,
+            scale: 0,
+            rotation: 0,
+            width: 27, height: 27,
+            z: App.pet.z + 5,
+
+            targetScale: 0.7,
+            changeSpeed: 0.003,
+        })
+
+        twinkle.onDraw = (me) => {
+            me.scale = lerp(me.scale, me.targetScale, me.changeSpeed * App.deltaTime);
+            me.rotation += 0.5 * App.deltaTime;
+        }
+        setTimeout(() => {
+            twinkle.targetScale = 0;
+        }, 800);
+
+        await main.fade({target: 0, speed: 0.003});
+        main.actor.opacity = 0;
+        main.setPosition({x: '150%'});
+
+        await TimelineDirector.wait(2000);
+
+        App.fadeScreen({middleFn: () => {
+            parent.removeObject();
+            App.transferAndGetFreshEgg();
+        }})
+    }
     static async enterDialog(speakerPetDef = App.getRandomPetDef(), text){
-        const WORDS_PER_SCREEN = 10;
+        const currentGameplayControls = App.getGameplayControlsState();
+
+        let resolvePromise;
+        const promise = new Promise((resolve) => {
+            resolvePromise = resolve;
+        })
+
+        const WORDS_PER_SCREEN = 8;
+
+        const cleaned = text.trim().replace(/\s+/g, ' ');
 
         let currentWordPointer = 0;
-        const textWords = text.split(' ');
+        const textWords = cleaned.split(' ');
         let activeText = '';
         let currentLetterPointer = 0;
 
@@ -32,7 +99,7 @@ class Activities {
                 UI.hide(dialogIndicatorElement);
             }
             const nextString = activeText.slice(0, currentLetterPointer);
-            dialogTextElement.textContent = nextString;
+            dialogTextElement.innerHTML = nextString;
         }, 50);
         
         const progressDialog = () => {
@@ -46,15 +113,20 @@ class Activities {
             if(!nextSetOfWords){
                 screen.remove();
                 clearInterval(textAnimationHandler);
-                App.toggleGameplayControls(true);
-                App.pet.stopScriptedState();
+                App.toggleGameplayControls(
+                    currentGameplayControls.state,
+                    currentGameplayControls.onclick,
+                    currentGameplayControls.triggerFeedback
+                );
+                resolvePromise();
             }
             currentWordPointer += WORDS_PER_SCREEN;
         }
         progressDialog();
 
         App.toggleGameplayControls(false, progressDialog)
-        App.pet.triggerScriptedState('idle', App.INF, null, true)
+
+        return promise;
     }
     static async getRobbed(){
         const hasIndoorAnimal = App.animals.list?.some(animalDef => animalDef.spawnIndoors);
@@ -3422,37 +3494,38 @@ class Activities {
 
         App.toggleGameplayControls(false);
 
+        const EGG_TARGET_Y = 72;
+
         const egg = App.pet.eggObject;
-            egg.y = -40;
+        egg.y = -50;
+        egg.opacity = 0;
 
-        let stage = 0;
+        App.playSound('resources/sounds/cute.ogg', true);
+        setTimeout(() => App.playSound('resources/sounds/cute.ogg', true), 200);
 
-        this.ufoObject = new Object2d({
+        new Object2d({
             image: App.preloadedResources['resources/img/misc/ufo_01.png'],
-            y: -120,
+            y: 0,
             x: 0,
+            opacity: 0,
+            targetOpacity: 1,
+            onDraw: (me) => {
+                egg.y = clamp(egg.y + 0.055 * App.deltaTime, -100, EGG_TARGET_Y);
+                if(egg.y > 0) egg.opacity = clamp(egg.opacity + 0.002 * App.deltaTime, 0, 1);
+
+                if(egg.y >= EGG_TARGET_Y && me.targetOpacity !== 0){
+                    App.playSound('resources/sounds/task_complete.ogg', true);
+                    me.targetOpacity = 0;
+                    setTimeout(() => {
+                        App.toggleGameplayControls(true);
+                        if(callback) callback();
+                        me.removeObject();
+                    }, 1000);
+                }
+
+                me.opacity = lerp(me.opacity, me.targetOpacity, 0.004 * App.deltaTime);
+            }
         });
-
-        const drawEvent = () => {
-            egg.y = lerp(egg.y, 72, 0.0008 * App.deltaTime);
-            
-            if(stage == 0){
-                this.ufoObject.y = lerp(this.ufoObject.y, 0, 0.007 * App.deltaTime);
-                if(egg.y >= 65) stage = 1;
-            } else {
-                this.ufoObject.y = lerp(this.ufoObject.y, -120, 0.001 * App.deltaTime);
-                if(this.ufoObject.y <= -110) stage = 2;
-            }
-
-            if(stage == 2){
-                App.toggleGameplayControls(true);
-                if(callback) callback();
-                this.ufoObject.removeObject();
-                App.unregisterOnDrawEvent(drawEvent);
-            }
-        }
-
-        App.registerOnDrawEvent(drawEvent);
     }
     static stayAtParents(end){
         App.sendAnalytics('stay_at_parents');

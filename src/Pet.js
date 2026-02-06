@@ -417,7 +417,7 @@ class Pet extends Object2d {
         }
     }
     handleEgg(){
-        this.x = -600;
+        this.x = -200;
 
         App.toggleGameplayControls(false, () => {
             App.displayPopup('Wait for your egg to hatch');
