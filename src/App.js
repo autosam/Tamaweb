@@ -85,7 +85,7 @@ const App = {
         },
         SLEEP_START: 21,
         SLEEP_END: 8,
-        PARENT_DAYCARE_START: 8,
+        PARENT_DAYCARE_START: 3,
         PARENT_DAYCARE_END: 18,
         MAX_SHELL_SHAPES: 6,
         AFTERNOON_TIME: [12, 17],
