@@ -7746,7 +7746,6 @@ const App = {
         return mainData;
     },
     save: function(noIndicator){
-        return;
         if(!App.pet || !App.loadingEnded) return;
 
         const timeElapsedSinceLastSave = App.time - (App.temp.lastSaved ?? 0);
