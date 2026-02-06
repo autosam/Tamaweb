@@ -780,7 +780,7 @@ class PetDefinition {
 
         this.traits.push(traitKey || randomTrait);
 
-        console.log(this, 'Developed new trait:', randomTrait);
+        console.log(this, 'Developed new trait:', traitKey || randomTrait);
     }
 
     spritesheetDefinitions = {

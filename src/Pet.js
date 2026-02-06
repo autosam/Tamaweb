@@ -589,7 +589,7 @@ class Pet extends Object2d {
             );
             
             const isMilk = foodSpriteCellNumber === App.definitions.food['milk'].sprite;
-            if(reFedAmount >= App.constants.FEEDING_PICKINESS.refeedingTolerance && type !== 'med' && !isMilk) {
+            if(reFedAmount >= App.constants.FEEDING_PICKINESS.refeedingTolerance && type !== 'med' && !isMilk && !this.petDefinition.hasTrait('voraciousHunger')) {
                 this.showThought('thought_vomit');
                 return true;
             }
