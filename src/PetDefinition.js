@@ -752,7 +752,7 @@ class PetDefinition {
     hasTrait(key){
         return this?.traits?.includes?.(key)
     }
-    developTrait(traitKey){
+    developTrait(traitKey, ignoreCountLimitation){
         if(!this) return;
 
         const traitKeys = Object.keys(App.definitions.traits);
@@ -764,6 +764,8 @@ class PetDefinition {
             .flatMap(trait => trait.opposite);
 
         const getRandomTrait = () => {
+            if(!ignoreCountLimitation && this.traits.length >= 5) return false;
+
             for(let i = 0; i < 9999; i++){
                 const randomTrait = randomFromArray(traitKeys);
                 if(
