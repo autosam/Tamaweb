@@ -3422,7 +3422,7 @@ class Activities {
 
         App.toggleGameplayControls(false);
 
-        let egg = App.pet.eggObject;
+        const egg = App.pet.eggObject;
             egg.y = -40;
 
         let stage = 0;
@@ -3433,7 +3433,7 @@ class Activities {
             x: 0,
         });
 
-        let drawEvent = () => {
+        const drawEvent = () => {
             egg.y = lerp(egg.y, 72, 0.0008 * App.deltaTime);
             
             if(stage == 0){

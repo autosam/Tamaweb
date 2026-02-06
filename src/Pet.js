@@ -356,32 +356,7 @@ class Pet extends Object2d {
         this.x = -600;
 
         App.toggleGameplayControls(false, () => {
-            const handleReceiveEgg = () => {
-                const lastPet = App.petDefinition;
-                App.pet.removeObject();
-                App.petDefinition = new PetDefinition({
-                    name: getRandomName(),
-                    sprite: randomFromArray(PET_BABY_CHARACTERS),
-                }).setStats({is_egg: true});
-
-                App.petDefinition.inventory = lastPet.inventory;
-                App.petDefinition.stats.gold = lastPet.stats.gold;
-                App.petDefinition.deceasedPredecessors = [...lastPet.deceasedPredecessors, 
-                    {
-                        birthday: lastPet.birthday,
-                        family: lastPet.family,
-                        sprite: lastPet.sprite,
-                        name: lastPet.name,
-                    }
-                ];
-
-                App.pet = App.createActivePet(App.petDefinition);
-                setTimeout(() => {
-                    Activities.playEggUfoAnimation(() => App.handlers.show_set_pet_name_dialog());
-                }, 100);
-                App.setScene(App.scene.home);
-                App.toggleGameplayControls(true);
-            }
+            const handleReceiveEgg = () => App.transferAndGetFreshEgg();
 
             if(App.pet.stats.is_revived_once){
                 App.displayConfirm(`Do you want to receive a new egg?`, [
