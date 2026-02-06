@@ -2326,7 +2326,7 @@ const App = {
                     onclick: (value) => {
                         if(!value) return false;
 
-                        App.pet.petDefinition.name = value;
+                        App.pet.petDefinition.name = value.slice(0, 32);
                         App.save();
                         App.displayPopup(`Name set to "${App.pet.petDefinition.name}"`)
                     }
