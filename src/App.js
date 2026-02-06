@@ -1877,10 +1877,13 @@ const App = {
 
         // new pet
         const sprite = PetDefinition.getOffspringSprite(parentA, parentB);
-        newPetDefinition = new PetDefinition({
+        const newPetDefinition = new PetDefinition({
             name: getRandomName(),
             sprite,
         }).setStats({is_egg: true, is_ghost: parentB.stats.is_ghost});
+        if(parentA.traits?.length){
+            newPetDefinition.traits = [randomFromArray(parentA.traits)];
+        }
 
         newPetDefinition.friends = [
             parentA,
