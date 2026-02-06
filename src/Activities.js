@@ -16,10 +16,10 @@ class Activities {
                 `
         }
 
-        // await Activities.enterDialog(
-        //     App.petDefinition, 
-        //     dialogs.great
-        // );
+        await Activities.enterDialog(
+            App.petDefinition, 
+            dialogs.great
+        );
 
         await TimelineDirector.wait(500);
 
