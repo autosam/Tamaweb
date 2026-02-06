@@ -4322,7 +4322,7 @@ const App = {
             })))
         },
         open_profile: function(){
-            const petTraitIcons = [
+            const petExpTraitIcons = [
                 {
                     title: 'Potty-trained',
                     img: 'resources/img/misc/poop.png',
@@ -4339,10 +4339,9 @@ const App = {
                     condition: App.pet.stats.is_ghost
                 }
             ]
+            const unknownPersonality = `<span class="opacity-half">?</span>`
 
             const playTimeDuration = moment.duration(App.playTime);
-
-            const unknownPersonality = `<span class="opacity-half">?</span>`
 
             const list = UI.genericListContainer();
             const content = UI.empty('flex flex-dir-col flex-1');
@@ -4372,7 +4371,7 @@ const App = {
                     <div class="relative mt-6 width-full">
                         <div class="stats-label left-0">Experience</div>
                         <div class="pet-trait-icons-container">
-                            ${petTraitIcons.map(icon => {
+                            ${petExpTraitIcons.map(icon => {
                                 return `<div onclick="App.displayPopup('<small>exp trait:</small> <br> <b>${icon.title}</b> <small>(${icon.condition ? 'active' : 'inactive'})</small>')" title="${icon.title}" class="pet-trait-icon ${!icon.condition ? 'disabled' : ''}">
                                     <img src="${icon.img}"></img>
                                 </div>`
