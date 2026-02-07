@@ -1457,6 +1457,48 @@ const App = {
         }),
         galaxy: new Scene({
             image: 'resources/img/background/house/galaxy_01.png',
+            noShadows: true,
+            onLoad: () => {
+                let lastSpawnTime = 0;
+                this.shootingStarsSpawner = new Object2d({
+                    onDraw: () => {
+                        if(App.time < lastSpawnTime + 100) return;
+
+                        lastSpawnTime = App.time;
+
+                        const shootingStar = new Object2d({
+                            parent: this.shootingStarsSpawner,
+                            img: 'resources/img/misc/twinkle_01.png',
+                            scale: 0.2 + (Math.random() * 0.3),
+                            x: `${random(0, 100)}%`,
+                            y: `${random(0, 100)}%`,
+                            opacity: 0.001,
+                            opacityAdderSign: 1,
+                            rotation: 0,
+                            scale: 1,
+                            direction: {
+                                x: randomFromArray([1, -1]),
+                                y: randomFromArray([1, -1])
+                            },
+                            onLateDraw: (me) => {
+                                me.opacity = clamp(me.opacity + (0.001 * me.opacityAdderSign) * App.deltaTime, 0, 1);
+
+                                if(me.opacity >= 1) me.opacityAdderSign = -3;
+                                if(me.opacity <= 0) me.removeObject();
+
+                                me.x += me.direction.x * App.deltaTime * 0.01;
+                                me.y += me.direction.y * App.deltaTime * 0.01;
+
+                                me.scale = lerp(me.scale, 0, 0.0005 * App.deltaTime);
+                            }
+                        })
+                        
+                    }
+                })
+            },
+            onUnload: () => {
+                this.shootingStarsSpawner.removeObject();
+            }
         })
     },
     setScene(scene, noPositionChange, onLoadArg){
@@ -7746,6 +7788,16 @@ const App = {
         return mainData;
     },
     save: function(noIndicator){
+        const IS_SAVING_DISABLED = true;
+
+        if(IS_SAVING_DISABLED){
+            if(!App.temp.savingDisabledLog){
+                App.temp.savingDisabledLog = true;
+                console.log('%cWARNING: SAVING DISABLED.', 'color: red; font-weight: bold; font-size: 30px');
+            }
+            return;
+        }
+
         if(!App.pet || !App.loadingEnded) return;
 
         const timeElapsedSinceLastSave = App.time - (App.temp.lastSaved ?? 0);

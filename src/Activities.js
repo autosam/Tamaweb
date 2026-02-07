@@ -1,12 +1,8 @@
 class Activities {
     static async moveOut(){
         App.setScene(App.scene.galaxy);
-        const parent = new Object2d({});
         App.toggleGameplayControls(false);
-        
-        const main = new TimelineDirector(App.pet);
-
-        main.setPosition({x: '50%', y: '65%'});
+        const parent = new Object2d({});
 
         const dialogs = {
             great: `
@@ -15,6 +11,24 @@ class Activities {
                 I will cherish every memory we have and will not forget about all the moments we shared together <3
                 `
         }
+        
+        const main = new TimelineDirector(App.pet);
+        
+        main.setPosition({x: '50%', y: '80%'});
+
+        main.actor.opacity = 0.0001;
+        await main.fade({target: 1, speed: 0.003});
+        main.actor.opacity = 1;
+
+        await TimelineDirector.wait(500);
+
+        await main.bob({
+            maxCycles: 2, 
+            landAnimation: 'idle'
+        });
+
+        await TimelineDirector.wait(500);
+        main.setState('blush');
 
         await Activities.enterDialog(
             App.petDefinition, 
@@ -22,6 +36,8 @@ class Activities {
         );
 
         await TimelineDirector.wait(500);
+
+        main.bob();
 
         const twinkle = new Object2d({
             parent,
