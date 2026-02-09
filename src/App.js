@@ -2401,7 +2401,7 @@ const App = {
                 }
             ])
         },
-        show_letter: function({headline, text, sender}){
+        show_letter: function({headline, text, sender, onClose}){
             const container = App.displayEmpty('letter');
             container.innerHTML = `
             <div class="flex flex-dir-col">
@@ -2413,7 +2413,12 @@ const App = {
                 <button style="margin: 10px; margin-top: 10px; flex: 1" class="generic-btn stylized back-btn">Ok</button>
             </div>
             `
-            container.querySelector('.back-btn').onclick = container.close;
+            const close = container.close;
+            container.close = () => {}
+            container.querySelector('.back-btn').onclick = () => {
+                close();
+                onClose?.();
+            };
         },
         show_newspaper: function(headline, text){
             if(!headline && !text){

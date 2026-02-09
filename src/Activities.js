@@ -4,15 +4,71 @@ class Activities {
         App.toggleGameplayControls(false);
         const parent = new Object2d({});
 
-        const dialogs = {
-            great: `
-                Thank you for taking care of me for the past 
-                ${moment(App.petDefinition.birthday).fromNow(true)},
-                I will cherish every memory we have and will not forget about all the moments we shared together <3
-                `
+        const daysSinceBirth = moment().diff(App.petDefinition.birthday, 'days');
+
+        const getCareState = () => {
+            if(daysSinceBirth <= 1) return 'abandoned'
+            else if(daysSinceBirth <= 2) return 'leaveEarly'
+            switch(App.pet.stats.current_care){
+                case 1: return 'lowCare';
+                case 3: return 'highCare';
+                default: return 'mediumCare';
+            }
         }
+
+        const getDialogMessage = () => {
+            switch(getCareState()){
+                case 'abandoned': return {
+                    title: 'Abandonment',
+                    // msg: `Already letting me go? I guess some connections just aren't meant to form. Hope you find what you are looking for.`,
+                    msg: `Already letting <i>${App.petDefinition.name}</i> go? Guess some connections just aren't meant to form.<br><br>You weren't really ready for this responsibility, were you?<br><br>Please think twice before getting another pet.`,
+                    sender: 'The Collective',
+                };
+                case 'leaveEarly': return {
+                    title: `Dear ${App.userName}`,
+                    msg: `You and <i>${App.petDefinition.name}</i> barely had any time together!<br>A day wasn't enough to really get to know each other.<br><br>Maybe your paths will cross again when you have more time to spare.`,
+                    sender: 'The Collective',
+                }
+                case 'lowCare': return {
+                    msg: `Even though you didn't take very good care of me, I still fondly look back on our journey. Please take care.`,
+                    sender: App.petDefinition.name,
+                }
+                case 'mediumCare': return {
+                    msg: `It's been ${moment(App.petDefinition.birthday).fromNow(true)} since we met, and while our journey had its ups and downs, I'll remember the good times most. Thank you for being there when it mattered. Take care!`,
+                    sender: App.petDefinition.name,
+                }
+                case 'highCare': return {
+                    msg: `Thank you for taking care of me for the past ${moment(App.petDefinition.birthday).fromNow(true)}, I will cherish every memory we have and will not forget about all the moments we shared together <3`,
+                    sender: App.petDefinition.name,
+                }
+            }
+        }
+
+        const getMood = () => {
+            const state = getCareState();
+            if(state === 'mediumCare' || state === 'highCare') return 'blush';
+            return 'idle_side_uncomfortable';
+        }
+
+        const dialog = getDialogMessage();
+        const isSenderPet = App.petDefinition.name === dialog.sender;
         
-        const main = new TimelineDirector(App.pet);
+        const main = new TimelineDirector(App.pet, {
+            driverFn: (me) => {
+                if(!me.circleMovementVector && typeof me.x !== 'string'){
+                    me.circleMovementVector = {
+                        x: me.x,
+                        y: me.y,
+                        float: 0,
+                    }
+                    return;
+                }
+                me.circleMovementVector.float += 0.001 * App.deltaTime;
+                Object2d.animations.circleAround(me, 5, me.circleMovementVector.float, me.circleMovementVector.x, me.circleMovementVector.y);
+            },
+        });
+
+        const mood = getMood();
         
         main.setPosition({x: '50%', y: '80%'});
 
@@ -22,18 +78,22 @@ class Activities {
 
         await TimelineDirector.wait(500);
 
-        await main.bob({
-            maxCycles: 2, 
-            landAnimation: 'idle'
-        });
+        if(mood === 'blush') {
+            await main.bob({
+                maxCycles: 2, 
+                landAnimation: 'idle'
+            });
+        }
 
         await TimelineDirector.wait(500);
-        main.setState('blush');
+        main.setState(mood);
 
-        await Activities.enterDialog(
-            App.petDefinition, 
-            dialogs.great
-        );
+        if(isSenderPet){
+            await Activities.enterDialog(
+                App.petDefinition, 
+                dialog.msg,
+            );
+        }
 
         await TimelineDirector.wait(500);
 
@@ -70,7 +130,20 @@ class Activities {
 
         App.fadeScreen({middleFn: () => {
             parent.removeObject();
-            App.transferAndGetFreshEgg();
+
+            if(isSenderPet){
+                App.transferAndGetFreshEgg();
+                return;
+            }
+
+            App.handlers.show_letter({
+                headline: dialog.title || '',
+                text: dialog.msg,
+                sender: dialog.sender,
+                onClose: () => {
+                    App.transferAndGetFreshEgg();
+                }
+            })
         }})
     }
     static async enterDialog(speakerPetDef = App.getRandomPetDef(), text){
