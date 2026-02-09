@@ -131,9 +131,14 @@ class Activities {
         App.fadeScreen({middleFn: () => {
             parent.removeObject();
 
-            if(isSenderPet){
+            const end = () => {
                 App.transferAndGetFreshEgg();
-                return;
+                App.save();
+            }
+
+
+            if(isSenderPet){
+                return end();
             }
 
             App.handlers.show_letter({
@@ -141,7 +146,7 @@ class Activities {
                 text: dialog.msg,
                 sender: dialog.sender,
                 onClose: () => {
-                    App.transferAndGetFreshEgg();
+                    end();
                 }
             })
         }})
