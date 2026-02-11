@@ -4502,7 +4502,7 @@ const App = {
                         <div class="stats-label left-0">Experience</div>
                         <div class="pet-trait-icons-container">
                             ${petExpTraitIcons.map(icon => {
-                                return `<div onclick="App.displayPopup('<small>exp trait:</small> <br> <b>${icon.title}</b> <small>(${icon.condition ? 'active' : 'inactive'})</small>')" title="${icon.title}" class="pet-trait-icon ${!icon.condition ? 'disabled' : ''}">
+                                return `<div onclick="App.displayPopup('<small>exp trait:</small> <br> <b>${icon.title}</b> <small>(${icon.condition ? 'active' : 'inactive'})</small>')" title="${icon.title}" class="pet-trait-icon click-sound ${!icon.condition ? 'disabled' : ''}">
                                     <img src="${icon.img}"></img>
                                 </div>`
                             }).join('')}
@@ -4515,7 +4515,7 @@ const App = {
                             ${App.petDefinition.traits.map(key => {
                                 const definition = App.definitions.traits[key];
                                 if(!definition) return unknownPersonality;
-                                return `<div onclick="App.displayPopup('<small>trait:</small> <br> <b>${definition.name}</b><br><small>${definition.description}</small>')" title="${definition.name}" class="pet-trait-icon">
+                                return `<div onclick="App.displayPopup('<small>trait:</small> <br> <b>${definition.name}</b><br><small>${definition.description}</small>')" title="${definition.name}" class="pet-trait-icon click-sound">
                                     ${App.getTraitCSprite(key)}
                                 </div>`
                             }).join('')}
