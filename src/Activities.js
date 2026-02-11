@@ -4024,6 +4024,9 @@ class Activities {
             z: App.constants.ACTIVE_PET_Z - 0.1
         });
 
+        App.pet.setLocalZBasedOnSelf(table);
+        App.pet.setLocalZBasedOnSelf(cake);
+
         otherPets.forEach((pet, i) => {
             pet.stopMove();
             pet.targetX = 20;
@@ -4073,8 +4076,6 @@ class Activities {
                         App.toggleGameplayControls(true);
                         App.pet.playCheeringAnimation();
                     });
-
-                    App.sendAnalytics('age_up', App.petDefinition.lifeStage);
                 });
             });
         });

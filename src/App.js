@@ -335,7 +335,7 @@ const App = {
             .setStats({is_egg: true})
             .loadStats(loadedData.pet)
             .loadAccessories(loadedData.accessories);
-
+        
         // check automatic age up
         if(App.settings.automaticAging){
             while(moment().isAfter( App.petDefinition.getNextAutomaticBirthdayDate() )){
@@ -444,6 +444,12 @@ const App = {
 
         // session start event
         App.sendSessionEvent(true);
+
+        // periodic update
+        setTimeout(() => App.onPeriodicUpdate(), App.constants.ONE_SECOND * 2);
+        setInterval(() => {
+            App.onPeriodicUpdate();
+        }, App.constants.ONE_SECOND * 30);
 
         // saver
         setInterval(() => {
@@ -729,6 +735,16 @@ const App = {
         // App.drawer.pixelate();
         // App.drawUI();
         // document.querySelector('.background-canvas').getContext('2d').drawImage(App.drawer.canvas, 0, 0);
+    },
+    onPeriodicUpdate: () => {
+        if(App.settings.automaticAging){
+            if(moment().isAfter( App.petDefinition.getNextAutomaticBirthdayDate() )){
+                App.queueEvent(() => {
+                    Activities.birthday();
+                    App.sendAnalytics('auto_age_up_live', App.petDefinition.lifeStage);
+                }, 'automatic_birthday_party');
+            }
+        }
     },
     onDraw: () => {},
     preloadImages: function(urls) {
@@ -6020,6 +6036,7 @@ const App = {
                                 name: 'yes',
                                 onclick: () => {
                                     Activities.birthday();
+                                    App.sendAnalytics('age_up', App.petDefinition.lifeStage);
                                 }
                             },
                             {
@@ -7793,7 +7810,7 @@ const App = {
         return mainData;
     },
     save: function(noIndicator){
-        const IS_SAVING_DISABLED = true;
+        const IS_SAVING_DISABLED = false;
 
         if(IS_SAVING_DISABLED){
             if(!App.temp.savingDisabledLog){
