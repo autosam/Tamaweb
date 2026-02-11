@@ -1350,7 +1350,9 @@ const App = {
                 // handle dig spot spawn
                 if(!App.temp.checkedForBackyardDigSpot) {
                     App.temp.checkedForBackyardDigSpot = true;
-                    App.temp.hasActiveDigSpot = App.animals?.list?.length >= random(0, App.constants.MAX_ANIMALS);
+
+                    const chance = (App.animals?.list?.length || 0) + (App.petDefinition.hasTrait('lucky') ? 5 : 0);
+                    App.temp.hasActiveDigSpot = chance >= random(0, App.constants.MAX_ANIMALS);
                 }
 
                 if(App.temp.hasActiveDigSpot){
