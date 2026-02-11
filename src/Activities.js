@@ -1,4 +1,154 @@
 class Activities {
+    static async digGardenTreasure(){
+        document.querySelector('#garden-screen')?.remove(); // bad, change later
+        App.toggleGameplayControls(false);
+        App.setScene(App.scene.garden);
+        App.handleAnimalsSpawn(false);
+        App.temp.digSpotObject.onClick = false;
+        const parent = new Object2d({});
+
+        const isValuable = random(0, 2);
+        const goldAmount = random(7, 20) * 10;
+
+        const spawnSmoke = (x, y, scale = 0.5) => {
+            return Activities.task_explodingParticles({
+                img: 'resources/img/misc/foam_single.png',
+                despawnTime: 100,
+                spawnDelay: 0,
+                x, y,
+                parent,
+                opacity: scale, targetOpacity: scale,
+                scale: 1, targetScale: 0,
+                speed: 0.5,
+            })
+        }
+
+        const main = new TimelineDirector(App.pet);
+        
+        main.setState('idle_side');
+        main.lookAt(false);
+        main.setPosition({x: '50%'});
+        await TimelineDirector.wait(500);
+        await main.moveTo({x: '35%', speed: 0.05});
+
+        for(let i = 0; i < 3; i++){
+            await TimelineDirector.wait(500);
+            await main.bob({animation: 'idle_side_uncomfortable', landAnimation: 'idle_side', maxCycles: 1});
+            spawnSmoke(App.temp.digSpotObject.x, App.temp.digSpotObject.y, 0.2);
+            App.pet.playSound('resources/sounds/ui_click_05.ogg', true);
+            Object2d.actionAnimations.horizontalJiggle(App.temp.digSpotObject);
+        }
+
+        App.temp.digSpotObject.spritesheet.cellNumber = 2;        
+
+        const chestObject = new Object2d({
+            parent,
+            img: 'resources/img/misc/treasure_chest_01.png',
+            x: '40%',
+            y: '78%',
+            opacity: 0,
+            scale: 0.1,
+            rotation: 0,
+            spritesheet: {
+                cellSize: 27,
+                cellNumber: 1,
+                rows: 1,
+                columns: 2,
+            },
+            onLateDraw: (me) => {
+                me.opacity = lerp(me.opacity, 1, 0.01 * App.deltaTime);
+                me.scale = lerp(me.scale, 1, 0.01 * App.deltaTime);
+                me.rotation = lerp(me.rotation, 0, 0.01 * App.deltaTime);
+            }
+        })
+        App.pet.setLocalZBasedOnSelf(chestObject);
+        await TimelineDirector.wait(10);
+        App.pet.playSound('resources/sounds/jump.ogg', true);
+        await main.jumpTo({x: '80%', speed: 0.0015, curve: 0.5, y: main.getPosition('y'), endState: 'shocked_without_sound', animation: 'shocked_without_sound'});
+        App.pet.playSound('resources/sounds/shock.ogg', true);
+        main.actor.stopMove();
+        await TimelineDirector.wait(500); 
+        main.setState('idle_side');
+        await TimelineDirector.wait(500); 
+        await main.moveTo({x: '72%', speed: 0.01});
+        await TimelineDirector.wait(500); 
+
+        for(let i = 0; i < 3; i++){
+            await main.bob({animation: 'idle_side_uncomfortable', landAnimation: 'idle_side', maxCycles: 1});
+            chestObject.rotation = randomFromArray([-10, 10]);
+            Object2d.actionAnimations.horizontalJiggle(chestObject);
+            spawnSmoke(chestObject.x, chestObject.y, 0.2);
+            App.pet.playSound('resources/sounds/ui_click_05.ogg', true);
+            await TimelineDirector.wait(200); 
+        }
+
+        await main.bob({animation: 'idle_side_uncomfortable', landAnimation: 'shocked', maxCycles: 1});
+        chestObject.rotation = randomFromArray([-10, 10]);
+        Object2d.actionAnimations.horizontalJiggle(chestObject);
+        
+        spawnSmoke(chestObject.x, chestObject.y, 0.2);
+        chestObject.scale = 1.3;
+        chestObject.spritesheet.cellNumber = 2;
+        App.pet.playSound('resources/sounds/task_complete.ogg', true);
+
+        Activities.task_explodingParticles({
+            img: isValuable 
+                ? 'resources/img/misc/twinkle_01.png'
+                : 'resources/img/misc/poop.png',
+            despawnTime: 1500,
+            x: chestObject.x,
+            y: chestObject.y,
+            parent,
+        })
+
+        // treasure object
+        const treasureObject = new Object2d({
+            parent,
+            img: isValuable 
+                ? 'resources/img/misc/money_bag_01.png' 
+                : 'resources/img/misc/poop.png',
+            x: '40%',
+            y: '80%',
+            z: App.constants.ACTIVE_PET_Z + 1,
+            opacity: 0,
+            onLateDraw: (me) => {
+                me.y = lerp(me.y, 35, 0.001 * App.deltaTime);
+                me.opacity = lerp(me.opacity, 1, 0.002 * App.deltaTime);
+            }
+        })
+        treasureObject.showOutline('#FFFF00');
+
+        await main.bob({animation: 'shocked', landAnimation: 'shocked', maxCycles: 1});
+        App.pet.playSound('resources/sounds/shock.ogg', true);
+        await TimelineDirector.wait(1000);
+
+        let messageBubble;
+        if(isValuable){
+            main.setState('cheering_with_icon');
+            App.pet.playSound('resources/sounds/task_complete_02.ogg', true);
+            messageBubble = App.displayMessageBubble(`$${goldAmount}`);
+            App.pet.stats.gold += goldAmount;
+        } else {
+            main.setState('uncomfortable');
+            App.pet.playSound('resources/sounds/task_fail_01.ogg', true);
+            App.pet.stats.current_fun -= 50;
+        }
+
+        await TimelineDirector.wait(3000);
+        messageBubble?.close();
+
+        await TimelineDirector.wait(500);
+        App.save();
+
+        App.fadeScreen({
+            middleFn: () => {
+                App.temp.hasActiveDigSpot = false;
+                parent.removeObject();
+                main.release();
+                Activities.goToGarden();
+            }
+        })
+    }
     static async moveOut(){
         App.setScene(App.scene.galaxy);
         App.toggleGameplayControls(false);
@@ -307,7 +457,8 @@ class Activities {
         pet.setPosition({x: '100%'});
         await pet.moveTo({x: '80%', speed: 0.025});
 
-        await pet.jumpTo({x:'85%', y: '80%', speed: 0.002})
+        await pet.jumpTo({x:'83%', y: '80%', speed: 0.002})
+        pet.actor.stopMove();
 
         await waiter.moveTo({x: '30%', speed: 0.025});
         waiter.setState('jumping')
@@ -2412,6 +2563,7 @@ class Activities {
                 </button>
             </div>
         `;
+        screen.id = 'garden-screen';
         screen.querySelector('#garden').onclick = () => {
             const controller = App.getGameplayControlsState()
             if(!controller.state && !controller.onclick) return;
@@ -6528,6 +6680,83 @@ class Activities {
                 if(me.y < -16) me.removeObject();
             }
         }
+    }
+    static task_explodingParticles(baseParams = {}){
+        // params
+        const defaultParams = {
+            parent: undefined,
+            x: '50%',
+            y: '50%',
+            z: App.constants.ACTIVE_PET_Z + 1,
+            spawnDelay: 50,
+            img: 'resources/img/misc/twinkle_01.png',
+            aliveMs: 2000,
+            opacity: 0, targetOpacity: 1,
+            scale: 0, targetScale: 1,
+            colorOverrides: [
+                ['#FFFFFF', '#FFFF00'],
+            ],
+            speed: 0.8,
+            despawnTime: 5000,
+        }
+
+        const PARAMS = {
+            ...defaultParams,
+            ...baseParams
+        }
+
+        const particlesSpawnerObject = new Object2d({
+            // particle related
+            x: PARAMS.x,
+            y: PARAMS.y,
+            z: PARAMS.z,
+            width: 1, height: 1,
+            lastSpawnTime: 0,
+            despawnTime: PARAMS.despawnTime,
+            onLateDraw: (me) => {
+                me.despawnTime -= App.accurateDeltaTime;
+                if(me.despawnTime <= 0) {
+                    return me.removeObject();
+                }
+
+                if(App.time < me.lastSpawnTime + PARAMS.spawnDelay) return;
+                me.lastSpawnTime = App.time;
+                
+                // particle
+                new Object2d({
+                    parent: PARAMS.parent,
+                    x: particlesSpawnerObject.x,
+                    y: particlesSpawnerObject.y,
+                    z: particlesSpawnerObject.z,
+                    direction: normalizeVector({
+                        x: randomFromArray([Math.random(), -Math.random()]),
+                        y: randomFromArray([Math.random(), -Math.random()])
+                    }),
+
+                    // particle related
+                    aliveMs: PARAMS.aliveMs,
+
+                    img: PARAMS.img,
+                    opacity: PARAMS.opacity,
+                    scale: PARAMS.scale,
+                    colorOverrides: PARAMS.colorOverrides,
+                    onDraw: (me) => {
+                        me.aliveMs -= App.accurateDeltaTime;
+                        if(me.aliveMs <= 0){
+                            me.removeObject();
+                        }
+
+                        me.opacity = lerp(me.opacity, PARAMS.targetOpacity, 0.005 * App.deltaTime);
+                        me.scale = lerp(me.scale, PARAMS.targetScale, 0.002 * App.deltaTime);
+
+                        me.x += me.direction.x * App.deltaTime * 0.1 * PARAMS.speed;
+                        me.y += me.direction.y * App.deltaTime * 0.1 * PARAMS.speed;
+                    },
+                })
+            }
+        })
+
+        return particlesSpawnerObject;
     }
     static task_handleLeavingAnimals(){
         App.animals.list?.forEach(a => a?.handleStatsUpdate?.());

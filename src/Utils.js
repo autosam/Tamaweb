@@ -301,6 +301,18 @@ function getRandomName(seed, noSuffix){
     }
     return randomFromArray(firstNames) + (noSuffix ? '' : randomFromArray(suffixes));
 }
+function normalizeVector({ x, y }) {
+    const magnitude = Math.sqrt(x * x + y * y);
+
+    if (magnitude === 0) {
+    return { x: 0, y: 0 };
+    }
+
+    return {
+        x: x / magnitude,
+        y: y / magnitude
+    };
+}
 
 
 const wordBank = {

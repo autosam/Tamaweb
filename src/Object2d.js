@@ -32,6 +32,16 @@ class Object2d {
         // config
         this.config = config;
 
+        if(this.config.onClick){
+            this.onClick = () => {
+                App.mouse.isDown = false;
+                App.preventNextGameplayControl = true;
+                App.playSound('resources/sounds/ui_click_06.ogg', true);
+                App.vibrate();
+                this.config.onClick?.();
+            }
+        }
+
         // initializing
         if(!this.image){
             this.image = new Image();
@@ -69,8 +79,12 @@ class Object2d {
         }
     }
     applyColorOverrides(image) {
-        if (!Object2d.colorOverrides) return image;
-        return recolorImage(image, Object2d.colorOverrides);
+        const allColorOverrides = [
+            ...(Object2d.colorOverrides ?? []),
+            ...(this.colorOverrides ?? [])
+        ]
+        if (!allColorOverrides.length) return image;
+        return recolorImage(image, allColorOverrides);
     }
     removeObject(){
         this.drawer?.removeObject?.(this);
@@ -289,6 +303,31 @@ class Object2d {
                 me._cycleThroughFrames.nextTime = App.time + delay;
             }
         },
+    }
+    static actionAnimations = {
+        horizontalJiggle: (object, {
+            speed = 0.03,
+            strength = 3,
+            cycles = 1,
+        } = {}) => {
+            const originX = object.x;
+
+            let movementFloat = 0, currentCycle = 0;
+            const frameEvent = App.registerOnDrawEvent(() => {
+                movementFloat += speed * App.deltaTime;
+
+                if(movementFloat > Math.PI){
+                    movementFloat = 0;
+                    if(++currentCycle > cycles){
+                        object.x = originX;
+                        App.unregisterOnDrawEvent(frameEvent);
+                        return
+                    }
+                }
+
+                object.x = originX + (Math.sin(movementFloat) * strength);
+            })
+        }
     }
     static checkAabbCollision(a, b){
         return (

@@ -95,6 +95,11 @@ class PetDefinition {
                 interval: 0, // plays once
             },
         },
+        shocked_without_sound: {
+            start: 7,
+            end: 8,
+            frameTime: 250,
+        },
         blush: {
             start: 8,
             end: 9,

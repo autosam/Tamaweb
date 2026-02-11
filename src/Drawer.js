@@ -46,10 +46,13 @@ class Drawer {
             if(object.invisible) return;
 
             // check for currently hovered over object
-            if (App.mouse.isInBounds && object?.onHover) {
+            if (App.mouse.isInBounds && (object?.onHover || object?.onClick)) {
                 const box = object?.getBoundingBox?.();
                 if (box && Object2d.checkAabbCollision({ x: App.mouse.x, y: App.mouse.y, width: 1, height: 1 }, box)) {
-                    object.onHover(object);
+                    object.onHover?.(object);
+                    if(App.mouse.isDown){
+                        object.onClick?.(object);
+                    }
                 }
             }
 

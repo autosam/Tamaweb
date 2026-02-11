@@ -1346,12 +1346,41 @@ const App = {
                 }
 
                 App.handleAnimalsSpawn(true);
+
+                // handle dig spot spawn
+                if(!App.temp.checkedForBackyardDigSpot) {
+                    App.temp.checkedForBackyardDigSpot = true;
+                    App.temp.hasActiveDigSpot = App.animals?.list?.length >= random(0, App.constants.MAX_ANIMALS);
+                }
+
+                if(App.temp.hasActiveDigSpot){
+                    App.temp.digSpotObject = new Object2d({
+                        img: 'resources/img/misc/dig_spot_01.png',
+                        x: '20%',
+                        y: '84%',
+                        z: App.pet.z + 1,
+                        spritesheet: {
+                            cellNumber: 1,
+                            cellSize: 24,
+                            rows: 1,
+                            columns: 2,
+                        },
+                        onClick: () => {
+                            App.toggleGameplayControls(false);
+                            App.fadeScreen({
+                                middleFn: () => Activities.digGardenTreasure()
+                            })
+                        }
+                    })
+                    // App.pet.setLocalZBasedOnSelf(App.temp.digSpotObject);
+                }
             },
             onUnload: () => {
                 App.pet.staticShadow = true;
 
                 App.temp.petBowlObject?.removeObject?.();
                 App.temp.animalTreatObject?.removeObject?.();
+                App.temp.digSpotObject?.removeObject?.();
 
                 App.handleAnimalsSpawn(false);
             }
@@ -2483,6 +2512,10 @@ const App = {
             [...container.querySelectorAll('.news-close')].forEach(btn => btn.onclick = container.close);
         },
         open_main_menu: function(){
+            if(App.preventNextGameplayControl){
+                App.preventNextGameplayControl = false;
+                return;
+            }
             const runControlOverwrite = () => {
                 if(!App.gameplayControlsOverwrite) return;
                 if(App.gameplayControlsTriggerFeedback)
