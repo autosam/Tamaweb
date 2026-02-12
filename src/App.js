@@ -137,12 +137,10 @@ const App = {
         },
         MAX_OFFLINE_PROGRESSION_SECS: 604800, // 3600(secs in 1 hour) * 24(1 day) * 7(7 days) = 604800
         GENDERS: [
+            'genderless',
             'mars',
             'venus',
             'transgender',
-            'genderless',
-            'mercury',
-            'neuter',
             'venus-mars',
         ],
         UNDERWORLD_TREAT_CURRENCY: 'spookandy',

@@ -271,7 +271,7 @@ class PetDefinition {
         has_received_school_invite: false,
 
         // gender
-        gender: randomFromArray(App.constants.GENDERS),
+        gender: randomFromArray(App.constants.GENDERS.slice(0, 3)),
     }
     friends = [];
     family = [];
