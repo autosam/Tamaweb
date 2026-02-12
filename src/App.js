@@ -2051,7 +2051,7 @@ const App = {
             }
         });
     },
-    transferAndGetFreshEgg: () => {
+    transferAndGetFreshEgg: (addToPredecessors = true) => {
         const lastPet = App.petDefinition;
         App.pet.removeObject();
         App.petDefinition = new PetDefinition({
@@ -2061,14 +2061,15 @@ const App = {
 
         App.petDefinition.inventory = lastPet.inventory;
         App.petDefinition.stats.gold = lastPet.stats.gold;
-        App.petDefinition.deceasedPredecessors = [...lastPet.deceasedPredecessors, 
-            {
+        App.petDefinition.deceasedPredecessors = [...lastPet.deceasedPredecessors];
+        if(addToPredecessors){
+            App.petDefinition.deceasedPredecessors.push({
                 birthday: lastPet.birthday,
                 family: lastPet.family,
                 sprite: lastPet.sprite,
                 name: lastPet.name,
-            }
-        ];
+            })
+        }
 
         App.pet = App.createActivePet(App.petDefinition);
         setTimeout(() => {
@@ -6127,7 +6128,7 @@ const App = {
                     }
                 },
                 {
-                    name: `move out ${App.getBadge()}`,
+                    name: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child ? `abandon ${App.getBadge()}` : `move out ${App.getBadge()}`,
                     onclick: () => {
                         const { moveOut } = Activities;
                         App.displayConfirm(`Are you sure you want to send ${App.petDefinition.getAvatar()} back to their home planet? <br><br> They will move out and you'll receive a fresh new egg to raise.`, [
@@ -6138,7 +6139,7 @@ const App = {
                                         {
                                             name: 'yes, move out',
                                             onclick: () => {
-                                                moveOut()
+                                                moveOut(App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child)
                                                 App.sendAnalytics('move_out');
                                             }
                                         },
@@ -7901,8 +7902,7 @@ const App = {
         const IS_SAVING_DISABLED = false;
 
         if(IS_SAVING_DISABLED){
-            if(!App.temp.savingDisabledLog){
-                App.temp.savingDisabledLog = true;
+            if(!App.canProceed('savingDisabledLog', Infinity)){
                 console.log('%cWARNING: SAVING DISABLED.', 'color: red; font-weight: bold; font-size: 30px');
             }
             return;

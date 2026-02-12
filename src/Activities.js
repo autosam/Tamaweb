@@ -149,7 +149,7 @@ class Activities {
             }
         })
     }
-    static async moveOut(){
+    static async moveOut(isChild){
         App.closeAllDisplays();
         App.setScene(App.scene.galaxy);
         App.toggleGameplayControls(false);
@@ -290,7 +290,7 @@ class Activities {
 
             const end = () => {
                 backgroundMusic.stop(0.0001);
-                App.transferAndGetFreshEgg();
+                App.transferAndGetFreshEgg(!isChild);
                 App.save();
             }
 
