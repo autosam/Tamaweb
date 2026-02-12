@@ -43,7 +43,6 @@ class Drawer {
                 zoomFactor = 1 / (1 - this.cameraPosition.z);
             }
             
-            // Translate to center, scale, translate back
             this.context.translate(canvasCenterX, canvasCenterY);
             this.context.scale(zoomFactor, zoomFactor);
             this.context.translate(-canvasCenterX, -canvasCenterY);
