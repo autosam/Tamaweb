@@ -1,4 +1,96 @@
 class Activities {
+    static async enterIsland(){
+        App.toggleGameplayControls(false);
+        App.setScene(App.scene.emptyOutside);
+        const parent = new Object2d({});
+
+        const otherSpawnedPets = []
+
+        const mapObject = new Object2d({
+            img: 'resources/img/background/outside/map_island_01.png',
+            x: '50%',
+            y: '50%',
+            width: 960, height: 960,
+        })
+
+        const getRandomValidPosition = () => {
+            const center = {
+                x: App.drawer.getRelativePositionX(50),
+                y: App.drawer.getRelativePositionY(50),
+            }
+
+            const mapHalfBounds = {
+                x: mapObject.width / 2,
+                y: mapObject.height / 2,
+            }
+
+            return {
+                x: center.x + random(-mapHalfBounds.x, mapHalfBounds.x),
+                y: center.x + random(-mapHalfBounds.y, mapHalfBounds.y),
+            }
+        }
+
+        const wanderDriverFactory = () => {
+            const WANDER_MS = {
+                min: App.constants.ONE_SECOND * 1,
+                max: App.constants.ONE_SECOND * 15
+            }
+
+            let lastWanderMs = 0;
+
+            const wanderDriver = (me) => {
+                if(lastWanderMs + random(WANDER_MS.min, WANDER_MS.max) <= App.time) {
+                    lastWanderMs = App.time;
+                    if(!me.isMoving){
+                        const randomPosition = getRandomValidPosition();
+                        me.targetX = randomPosition.x;
+                        me.targetY = randomPosition.y;
+                    } else {
+                        me.stopMove();
+                    }
+                }
+
+                me.setState(me.isMoving ? 'moving' : 'idle');
+            }
+            return wanderDriver;
+        }
+
+        App.pet.stopMove();
+        App.pet.speedOverride = 0.04;
+
+        const mainWanderDriver = wanderDriverFactory();
+        App.pet.triggerScriptedState('idle', App.INF, false, true, () => {}, (me) => {
+            mainWanderDriver(me);
+
+            const cameraTargetCenter = {
+                x: -me.x + App.drawer.bounds.width/2 - me.spritesheet.cellSize/2,
+                y: -me.y + App.drawer.bounds.height/2
+            }
+            App.drawer.setCameraPosition(
+                cameraTargetCenter.x, 
+                cameraTargetCenter.y, 
+                // 0.002 * App.deltaTime
+            );
+        });
+
+        for(let i = 0; i < 50; i++){
+            const pet = new Pet(App.getRandomPetDef())
+            pet.parent = parent;
+            pet.speedOverride = 0.04;
+            const spawnPosition = getRandomValidPosition();
+            setTimeout(() => {
+                pet.x = spawnPosition.x;
+                pet.y = spawnPosition.y;
+            })
+            const wanderDriver = wanderDriverFactory();
+            pet.triggerScriptedState('idle', App.INF, false, true, false, (me) => {
+                wanderDriver(me);
+                App.pet.setLocalZBasedOnSelf(me);
+            });
+
+            otherSpawnedPets.push(pet);
+        }
+    }
     static async digGardenTreasure(){
         document.querySelector('#garden-screen')?.remove(); // bad, change later
         App.toggleGameplayControls(false);
