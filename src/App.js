@@ -1346,11 +1346,9 @@ const App = {
                 App.handleAnimalsSpawn(true);
 
                 // handle dig spot spawn
-                if(!App.temp.checkedForBackyardDigSpot) {
-                    App.temp.checkedForBackyardDigSpot = true;
-
-                    const chance = (App.animals?.list?.length || 0) + (App.petDefinition.hasTrait('lucky') ? 5 : 0);
-                    App.temp.hasActiveDigSpot = chance >= random(0, App.constants.MAX_ANIMALS);
+                if(!App.temp.hasActiveDigSpot && App.canProceed('backyardDigSpot', App.constants.ONE_MINUTE * 45)) {
+                    const chance = (App.animals?.list?.length || 0) + (App.petDefinition.hasTrait('lucky') ? 4 : 0);
+                    App.temp.hasActiveDigSpot = clamp(chance, 0, 9) >= random(0, 10);
                 }
 
                 if(App.temp.hasActiveDigSpot){
@@ -8352,6 +8350,15 @@ const App = {
     },
     wait: function(ms = 0){
         return new Promise(resolve => setTimeout(resolve, ms))
+    },
+    _canProceedBuffer: {},
+    canProceed: function(key, ms) {
+        const lastTime = this._canProceedBuffer[key] || -Infinity;
+        if(App.time > lastTime + ms){
+            this._canProceedBuffer[key] = App.time;
+            return true;
+        }
+        return false;
     },
     fadeScreen: function({ middleFn, endFn, speed = 0.005 } = {}) {
         let phase = 'fadeIn';
