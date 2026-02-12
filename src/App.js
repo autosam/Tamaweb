@@ -1346,7 +1346,7 @@ const App = {
                 App.handleAnimalsSpawn(true);
 
                 // handle dig spot spawn
-                if(!App.temp.hasActiveDigSpot && App.canProceed('backyardDigSpot', App.constants.ONE_MINUTE * 45)) {
+                if(!App.temp.hasActiveDigSpot && App.canProceed('backyardDigSpot', App.constants.ONE_MINUTE * random(30, 60))) {
                     const chance = (App.animals?.list?.length || 0) + (App.petDefinition.hasTrait('lucky') ? 4 : 0);
                     App.temp.hasActiveDigSpot = clamp(chance, 0, 9) >= random(0, 10);
                 }
