@@ -154,6 +154,12 @@ class Activities {
         App.toggleGameplayControls(false);
         const parent = new Object2d({});
 
+        const backgroundMusic = App.playAdvancedSound({
+            loop: true, 
+            src: 'resources/sounds/move_out_bm_01.mp3',
+            volume: 0.5,
+        });
+
         const daysSinceBirth = moment().diff(App.petDefinition.birthday, 'days');
 
         const getCareState = () => {
@@ -277,6 +283,8 @@ class Activities {
         main.setPosition({x: '150%'});
 
         await TimelineDirector.wait(2000);
+
+        backgroundMusic.stop();
 
         App.fadeScreen({middleFn: () => {
             parent.removeObject();
