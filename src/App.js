@@ -7888,7 +7888,7 @@ const App = {
         return mainData;
     },
     save: function(noIndicator){
-        const IS_SAVING_DISABLED = true;
+        const IS_SAVING_DISABLED = false;
 
         if(IS_SAVING_DISABLED){
             if(!App.temp.savingDisabledLog){
