@@ -7797,12 +7797,13 @@ const App = {
 
         return {
             element: audioElement,
-            stop: () => {
+            stop: (fadeSpeed = 0.0005) => {
                 const fadeOutEvent = App.registerOnDrawEvent(() => {
-                    const volume = audioElement.volume - (0.0005 * App.deltaTime)
+                    const volume = audioElement.volume - (fadeSpeed * App.deltaTime)
                     audioElement.volume = clamp(volume, 0, 1);
                     if(audioElement.volume <= 0){
                         audioElement.pause();
+                        audioElement.remove();
                         App.unregisterOnDrawEvent(fadeOutEvent);
                     }
                 })

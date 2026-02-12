@@ -230,7 +230,7 @@ class Activities {
         main.setPosition({x: '50%', y: '80%'});
 
         main.actor.opacity = 0.0001;
-        await main.fade({target: 1, speed: 0.003});
+        await main.fade({target: 1, speed: 0.001});
         main.actor.opacity = 1;
 
         await TimelineDirector.wait(500);
@@ -289,7 +289,7 @@ class Activities {
             parent.removeObject();
 
             const end = () => {
-                backgroundMusic.stop();
+                backgroundMusic.stop(0.0001);
                 App.transferAndGetFreshEgg();
                 App.save();
             }
