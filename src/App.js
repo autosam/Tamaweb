@@ -7301,6 +7301,14 @@ const App = {
             setTimeout(() => display.remove(), 1000);
         }
 
+        let speechIndex = 0;
+        const speechSoundInterval = setInterval(() => {
+            if(speechIndex++ >= content.length){
+                return clearInterval(speechSoundInterval);
+            }
+            if(icon) App.playSpeechSound(content[speechIndex]);
+        }, 50)
+
         const iconContent = !icon ? '' : `<div class="message-bubble_icon">${icon}</div>`;
 
         display.innerHTML = `<div class="message-bubble">${iconContent}${splitContent}</div>`
@@ -7452,10 +7460,16 @@ const App = {
         })
     },
     initSound: function(){
-        // audio channel
+        // main audio channel
         try {
             this.audioChannel = new AudioChannel({
                 preloadList: SOUNDS
+            });
+        } catch(e) {}
+        // speech audio channel
+        try {
+            this.speechAudioChannel = new AudioChannel({
+                preloadList: SPEECH_SOUNDS
             });
         } catch(e) {}
 
@@ -7774,6 +7788,15 @@ const App = {
             }
         };
     },
+    playSpeechSound: function(letter = 'a'){
+        if(!App.settings.playSound) return;
+
+        const muteLetters = [' ', '.', ',', '-'];
+        if(muteLetters.includes(letter)) return;
+
+        const maxSamples = 6;
+        this.speechAudioChannel?.play(`resources/sounds/speech/${random(1, maxSamples)}.mp3`, true);
+    },
     takeScreenshot: () => {
         if(App.haveAnyDisplays()) return;
         const overlay = document.querySelector('.screenshot-overlay');
@@ -7845,7 +7868,7 @@ const App = {
         return mainData;
     },
     save: function(noIndicator){
-        const IS_SAVING_DISABLED = false;
+        const IS_SAVING_DISABLED = true;
 
         if(IS_SAVING_DISABLED){
             if(!App.temp.savingDisabledLog){

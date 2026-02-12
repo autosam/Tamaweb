@@ -165,6 +165,7 @@ App.definitions = (() => {
                 onEnter: () => App.handlers.go_to_clinic(),
             },
             {
+                isDisabled: () => App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby,
                 name: `Restaurant`,
                 image: 'resources/img/misc/activity_building_restaurant.png',
                 onEnter: () => Activities.goToRestaurant(),

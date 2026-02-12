@@ -343,7 +343,10 @@ class Activities {
                 UI.hide(dialogIndicatorElement);
             }
             const nextString = activeText.slice(0, currentLetterPointer);
-            dialogTextElement.innerHTML = nextString;
+            if(dialogTextElement.innerHTML !== nextString){
+                App.playSpeechSound(nextString.slice(-1));
+                dialogTextElement.innerHTML = nextString;
+            }
         }, 50);
         
         const progressDialog = () => {

@@ -1,3 +1,12 @@
+const SPEECH_SOUNDS = [
+  "resources/sounds/speech/1.mp3",
+  "resources/sounds/speech/2.mp3",
+  "resources/sounds/speech/3.mp3",
+  "resources/sounds/speech/4.mp3",
+  "resources/sounds/speech/5.mp3",
+  "resources/sounds/speech/6.mp3",
+]
+
 const SOUNDS = [
   "resources/sounds/angry.ogg",
   "resources/sounds/birthday_song_01.ogg",
@@ -32,4 +41,5 @@ const SOUNDS = [
   "resources/sounds/note_3.mp3",
   "resources/sounds/note_4.mp3",
   "resources/sounds/santa_bm_01.mp3",
+  ...SPEECH_SOUNDS
 ];

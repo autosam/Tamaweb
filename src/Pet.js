@@ -484,11 +484,16 @@ class Pet extends Object2d {
                     g: 255,
                     b: 255
                 },
-                opacity: 1.5,
+                opacity: 0.5,
                 onDraw: (me) => {
                     me.opacity -= 0.002 * App.deltaTime;
                     if(me.opacity <= 0) me.removeObject();
                 }
+            })
+            Activities.task_explodingParticles({
+                x: '50%',
+                y: '80%',
+                despawnTime: 500,
             })
         }
     }
