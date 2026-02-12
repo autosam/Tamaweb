@@ -1604,6 +1604,8 @@ class Pet extends Object2d {
         const message = App.displayMessageBubble(sentence, this.petDefinition.getFullCSprite());
         setTimeout(() => message?.close(), ms);
     }
+    
+    applyColorOverrides(){ return this.image; }
 
     static scriptedEventDrivers = {
         playing: function(start){

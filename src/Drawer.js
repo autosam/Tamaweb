@@ -22,12 +22,32 @@ class Drawer {
         this.objects = [];
         this.cameraPosition = {
             x: 0,
-            y: 0
+            y: 0,
+            z: 0,
         };
     }
     draw(objects, skipClear) {
         if(!skipClear) this.clear();
         if(!objects) objects = this.objects;
+
+        this.context.save();
+
+        if (this.cameraPosition.z !== 0) {
+            const canvasCenterX = this.canvas.width / 2;
+            const canvasCenterY = this.canvas.height / 2;
+            
+            let zoomFactor;
+            if (this.cameraPosition.z > 0) {
+                zoomFactor = 1 + this.cameraPosition.z;
+            } else {
+                zoomFactor = 1 / (1 - this.cameraPosition.z);
+            }
+            
+            // Translate to center, scale, translate back
+            this.context.translate(canvasCenterX, canvasCenterY);
+            this.context.scale(zoomFactor, zoomFactor);
+            this.context.translate(-canvasCenterX, -canvasCenterY);
+        }
 
         // sorting based on z
         objects = objects.filter(object => object)
@@ -254,7 +274,8 @@ class Drawer {
 
             object.onLateDraw?.(object);
         })
-        
+
+        this.context.restore();
         return this;
     }
     pixelate(){
