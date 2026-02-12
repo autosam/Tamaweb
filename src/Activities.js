@@ -150,6 +150,7 @@ class Activities {
         })
     }
     static async moveOut(){
+        App.closeAllDisplays();
         App.setScene(App.scene.galaxy);
         App.toggleGameplayControls(false);
         const parent = new Object2d({});
@@ -284,12 +285,11 @@ class Activities {
 
         await TimelineDirector.wait(2000);
 
-        backgroundMusic.stop();
-
         App.fadeScreen({middleFn: () => {
             parent.removeObject();
 
             const end = () => {
+                backgroundMusic.stop();
                 App.transferAndGetFreshEgg();
                 App.save();
             }

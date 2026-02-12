@@ -6131,6 +6131,27 @@ const App = {
                     }
                 },
                 {
+                    name: `move out ${App.getBadge()}`,
+                    onclick: () => {
+                        const { moveOut } = Activities;
+                        App.displayConfirm(`Are you sure you want to send ${App.petDefinition.getAvatar()} back to their home planet? <br><br> They will move out and you'll receive a fresh new egg to raise.`, [
+                            {
+                                name: `yes`,
+                                onclick: () => {
+                                    moveOut()
+                                    App.sendAnalytics('move_out');
+                                }
+                            },
+                            {
+                                name: 'no',
+                                class: 'primary solid',
+                                onclick: () => {}
+                            }
+                        ])
+                        return true;
+                    }
+                },
+                {
                     name: `friend codes`,
                     onclick: () => {
                         App.displayList([

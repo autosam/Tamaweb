@@ -2830,3 +2830,20 @@ c-sprite.ghost.devil::after {
 .click-sound * {
     pointer-events: none;
 }
+
+.persona-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: var(--background-c);
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1px solid;
+    padding: 2px;
+}
+.persona-avatar > c-sprite {
+    border-radius: 100%;
+    overflow: hidden;
+    border: 1px solid;
+}

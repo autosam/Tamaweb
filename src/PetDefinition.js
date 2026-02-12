@@ -614,6 +614,10 @@ class PetDefinition {
         return PetDefinition.generateFullCSprite(this.sprite, null, className);
     }
 
+    getAvatar(){
+        return `<div class="persona-avatar">${this.getCSprite(true)} ${this.name}</div>`
+    }
+
     getParents(){
         if(!this.friends.length) return false;
 
