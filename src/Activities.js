@@ -4,7 +4,7 @@ class Activities {
         App.setScene(App.scene.emptyOutside);
         const parent = new Object2d({});
 
-        const otherSpawnedPets = []
+        const spawnedNpcs = []
 
         const mapObject = new Object2d({
             img: 'resources/img/background/outside/map_island_01.png',
@@ -36,31 +36,71 @@ class Activities {
                 max: App.constants.ONE_SECOND * 15
             }
 
-            let lastWanderMs = 0;
+            const bucket = {
+                lastNpcInteractionMs: App.constants.ONE_SECOND * 1,
+                lastWanderMs: 0,
+                waitingMs: 10000,
+            };
+
+            let state = 'idle';
 
             const wanderDriver = (me) => {
-                if(lastWanderMs + random(WANDER_MS.min, WANDER_MS.max) <= App.time) {
-                    lastWanderMs = App.time;
-                    if(!me.isMoving){
-                        const randomPosition = getRandomValidPosition();
-                        me.targetX = randomPosition.x;
-                        me.targetY = randomPosition.y;
-                    } else {
-                        me.stopMove();
-                    }
+                switch(state){
+                    case 'wait': 
+                        bucket.waitingMs -= App.accurateDeltaTime
+                        if(bucket.waitingMs <= 0){
+                            state = 'idle';
+                            bucket.waitingMs = 10000;
+                        }
+                        break;
+                    case 'looking_for_npc_interaction': 
+                        const randomTargetNpc = randomFromArray(spawnedNpcs);
+                        randomTargetNpc.ai.setState('wait');
+                        // randomTargetNpc.showThought();
+                        me.showThought(App.constants.WANT_TYPES.playdate, randomTargetNpc.petDefinition);
+                        me.targetX = randomTargetNpc.x;
+                        me.targetY = randomTargetNpc.y;
+                        state = 'waiting';
+                        break;
+                    case 'wander':
+                        if(!me.isMoving){
+                            const randomPosition = getRandomValidPosition();
+                            me.targetX = randomPosition.x;
+                            me.targetY = randomPosition.y;
+                        } else {
+                            me.stopMove();
+                        }
+                        state = 'idle';
+                        break;
+                    default:
+                        if(bucket.lastNpcInteractionMs + random(App.constants.ONE_SECOND * 10, App.constants.ONE_SECOND * 60) <= App.time){
+                            bucket.lastNpcInteractionMs = App.time;
+                            state = 'looking_for_npc_interaction';
+                            me.stopMove();
+                        }
+
+                        if(bucket.lastWanderMs + random(WANDER_MS.min, WANDER_MS.max) <= App.time) {
+                            bucket.lastWanderMs = App.time;
+                            state = 'wander';
+                        }
                 }
 
                 me.setState(me.isMoving ? 'moving' : 'idle');
             }
-            return wanderDriver;
+
+            return {
+                wanderDriver,
+                setState: (newState) => state = state
+            };
         }
 
         App.pet.stopMove();
         App.pet.speedOverride = 0.04;
 
-        const mainWanderDriver = wanderDriverFactory();
+        const mainAi = wanderDriverFactory();
+        App.pet.ai = mainAi;
         App.pet.triggerScriptedState('idle', App.INF, false, true, () => {}, (me) => {
-            mainWanderDriver(me);
+            mainAi.wanderDriver(me);
 
             const cameraTargetCenter = {
                 x: -me.x + App.drawer.bounds.width/2 - me.spritesheet.cellSize/2,
@@ -73,7 +113,21 @@ class Activities {
             );
         });
 
-        for(let i = 0; i < 50; i++){
+        // decoration spawning
+        for(let i = 0; i < 100; i++){
+            const spawnPosition = getRandomValidPosition(); 
+            new Object2d({
+                parent,
+                img: 'resources/img/misc/tree_01.png',
+                ...spawnPosition,
+                onDraw: (me) => {
+                    App.pet.setLocalZBasedOnSelf(me);
+                }
+            })
+        }
+
+        // npc spawning
+        for(let i = 0; i < 10; i++){
             const pet = new Pet(App.getRandomPetDef())
             pet.parent = parent;
             pet.speedOverride = 0.04;
@@ -82,13 +136,14 @@ class Activities {
                 pet.x = spawnPosition.x;
                 pet.y = spawnPosition.y;
             })
-            const wanderDriver = wanderDriverFactory();
+            const petAi = wanderDriverFactory();
             pet.triggerScriptedState('idle', App.INF, false, true, false, (me) => {
-                wanderDriver(me);
+                petAi.wanderDriver(me);
                 App.pet.setLocalZBasedOnSelf(me);
             });
+            pet.ai = petAi;
 
-            otherSpawnedPets.push(pet);
+            spawnedNpcs.push(pet);
         }
     }
     static async digGardenTreasure(){
