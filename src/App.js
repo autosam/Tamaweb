@@ -6136,13 +6136,25 @@ const App = {
                             {
                                 name: `yes`,
                                 onclick: () => {
-                                    moveOut()
-                                    App.sendAnalytics('move_out');
+                                    App.displayConfirm(`Are you sure?`, [
+                                        {
+                                            name: 'yes, move out',
+                                            onclick: () => {
+                                                moveOut()
+                                                App.sendAnalytics('move_out');
+                                            }
+                                        },
+                                        {
+                                            name: 'no',
+                                            class: 'back-btn',
+                                            onclick: () => {}
+                                        }
+                                    ])
                                 }
                             },
                             {
                                 name: 'no',
-                                class: 'primary solid',
+                                class: 'back-btn',
                                 onclick: () => {}
                             }
                         ])
