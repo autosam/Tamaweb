@@ -8,7 +8,7 @@ class Activities {
         const parent = new Object2d({});
 
         const isValuable = random(0, 2);
-        const goldAmount = random(7, 20) * 10;
+        const goldAmount = random(10, 30) * 10;
 
         const spawnSmoke = (x, y, scale = 0.5) => {
             return Activities.task_explodingParticles({
