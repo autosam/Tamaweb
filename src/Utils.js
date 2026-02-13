@@ -226,9 +226,7 @@ function recolorImage(originalImage, replaceColors) {
     const offCanvas = document.createElement('canvas');
     offCanvas.width = originalImage.width;
     offCanvas.height = originalImage.height;
-    const ctx = offCanvas.getContext('2d', {
-        willReadFrequently: true
-    });
+    const ctx = offCanvas.getContext('2d');
 
     ctx.drawImage(originalImage, 0, 0);
 
