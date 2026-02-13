@@ -168,6 +168,7 @@ const PET_ADULT_CHARACTERS = [
     "resources/img/character/chara_288b.png",
     "resources/img/character/chara_289b.png",
     "resources/img/character/chara_290b.png",
+    "resources/img/character/chara_291b.png",
     "resources/img/character/chara_292b.png",
     "resources/img/character/chara_293b.png",
     "resources/img/character/chara_294b.png",
@@ -255,7 +256,6 @@ const PET_ADULT_CHARACTERS = [
     "resources/img/character/chara_376b.png",
     "resources/img/character/chara_377b.png",
     "resources/img/character/chara_378b.png",
-    "resources/img/character/chara_291b.png",
 ];
 
 const PET_TEEN_CHARACTERS = [
