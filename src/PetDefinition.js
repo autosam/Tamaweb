@@ -94,6 +94,20 @@ class PetDefinition {
                 file: 'shock.ogg',
                 interval: 0, // plays once
             },
+            objects: [
+                {
+                    img: 'resources/img/misc/thought_exclaim.png',
+                    x: 0, y: 0,
+                    onDraw: (me) => {
+                        me.mimicParent(['scale']);
+                        const halfCellSize = me.parent.spritesheet.cellSize / 2;
+                        me.x += halfCellSize - me.image.naturalWidth / 2;
+                        me.y -= halfCellSize + 4 + (me.parent.spritesheet.offsetY || 0);
+                        me.z = me.parent.z + 0.1;
+                    },
+                    interval: 3,
+                }
+            ]
         },
         shocked_without_sound: {
             start: 7,
