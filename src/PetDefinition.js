@@ -105,7 +105,7 @@ class PetDefinition {
                         me.y -= halfCellSize + 4 + (me.parent.spritesheet.offsetY || 0);
                         me.z = me.parent.z + 0.1;
                     },
-                    interval: 3,
+                    interval: 2,
                 }
             ]
         },
