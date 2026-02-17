@@ -1295,16 +1295,17 @@ class Pet extends Object2d {
                 }
             }
 
-            if(set.objects){
-                set.objects.forEach(objectDef => {
-                    if(!objectDef._counter) objectDef._counter = 0;
-                    if(++objectDef._counter == objectDef.interval){
-                        objectDef._counter = 0;
-                        let object = new Object2d(objectDef);
-                        me.animObjectsQueue.push(object);
-                    }
-                })
-            }
+            set.objects?.forEach(objectDef => {
+                if(!objectDef._counter) objectDef._counter = 0;
+                if(++objectDef._counter == objectDef.interval){
+                    objectDef._counter = 0;
+                    const object = new Object2d({
+                        parent: me,
+                        ...objectDef,
+                    });
+                    me.animObjectsQueue.push(object);
+                }
+            })
         }
     }
     wander() {

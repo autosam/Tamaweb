@@ -108,6 +108,50 @@ class PetDefinition {
                 file: 'blush.ogg',
                 interval: 0, // plays once
             },
+            objects: [
+                {
+                    onDraw: (me) => {
+                        if(me.firstSpawn) return;
+                        me.firstSpawn = true;
+                        for(let i = 0; i < 3; i++){
+                            const offsetX = random(0, me.parent.spritesheet.cellSize);
+                            const rotation = ((me.parent.spritesheet.cellSize/2) - offsetX) * -2;
+                            new Object2d({
+                                parent: me.parent,
+                                img: `resources/img/misc/heart_particle_0${random(1, 2)}.png`,
+                                x: 0,
+                                y: 0,
+                                z: me.parent.z + 0.1,
+                                scale: 3,
+                                opacity: 1,
+        
+                                offsetX, offsetY: random(-3, 2),
+                                rotation,
+                                animationFloat: 0, 
+                                animationSpeed: 0.005,
+                                animationStr: clamp(Math.random(), 0.2, 0.5),
+                                onDraw: (heart) => {
+                                    heart.mimicParent(['scale', 'opacity']);
+        
+                                    heart.animationFloat = (heart.animationFloat + (heart.animationSpeed * App.deltaTime)) % Math.PI;
+                                    const animationFloat = Math.sin(heart.animationFloat) * heart.animationStr;
+        
+                                    heart.x += heart.offsetX - heart.image.naturalWidth/2;
+                                    heart.y -= (animationFloat * 4) + heart.offsetY + (heart.parent.spritesheet.offsetY || 0);
+        
+                                    heart.scale = 0.5 + animationFloat;
+        
+                                    heart.opacity -= 0.001 * App.deltaTime;
+                                    if(heart.opacity <= 0) {
+                                        heart.removeObject();
+                                    }
+                                }
+                            })
+                        }
+                    },
+                    interval: 2,
+                }
+            ]
         },
         cheering: {
             start: 2,
