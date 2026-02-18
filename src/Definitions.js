@@ -1927,6 +1927,11 @@ App.definitions = (() => {
                 image: 'resources/img/ui/bg_pattern_03.png',
                 isNew: true,
             },
+            {
+                name: 'Strawberry',
+                image: 'resources/img/ui/bg_pattern_04.png',
+                isNew: true,
+            },
         ],
     
         /* ACCESSORIES */
