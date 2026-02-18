@@ -1025,7 +1025,7 @@ const App = {
         //     ])
         // })) return;
 
-        if(addEvent(`update_24_notice`, () => {
+        if(addEvent(`update_25_notice`, () => {
             App.displayList([
                 {
                     name: `New update is available!<b> <div><small>${VERSION}</small></div> ${App.getBadge('new!')}`,
@@ -1046,7 +1046,7 @@ const App = {
                 {
                     name: `
                         <div>
-                        Check out the new <b>Hang out</b> option, <b>picking up</b> your pet, <b>Brushing</b> your pet's teeth and more!
+                        Check out the new <b>Personality Traits</b>, <b>Dig Treasure Activity</b>, <b>Leaves Mini-game</b>, <b>Move Out Interactions</b> and a lot more!
                         </div>
                     `,
                     type: 'text',
