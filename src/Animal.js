@@ -84,6 +84,8 @@ class Animal extends Pet {
 
         this.z = App.constants.ACTIVE_PET_Z;
         this.animalDefinition = this.petDefinition;
+
+        this.ignoreAnimationSetObjects = true;
     }
     async interactWith(other, interactionConfig = {
         animation: randomFromArray(['cheering', 'shocked', 'blush', 'sitting', 'angry', 'kissing']),

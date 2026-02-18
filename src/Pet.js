@@ -14,9 +14,12 @@ class Pet extends Object2d {
     activeMoodlets = [];
     animObjectsQueue = [];
     accessoryObjects = [];
+    additionalAccessories = [];
+    
+    // flags
     castShadow = true;
     speedOverride = 0;
-    additionalAccessories = [];
+    ignoreAnimationSetObjects = false;
 
     constructor(petDefinition, additionalProps){
         const image = petDefinition.spriteSkin 
@@ -1295,17 +1298,19 @@ class Pet extends Object2d {
                 }
             }
 
-            set.objects?.forEach(objectDef => {
-                if(!objectDef._counter) objectDef._counter = 0;
-                if(++objectDef._counter == objectDef.interval){
-                    objectDef._counter = 0;
-                    const object = new Object2d({
-                        parent: me,
-                        ...objectDef,
-                    });
-                    me.animObjectsQueue.push(object);
-                }
-            })
+            if(!this.ignoreAnimationSetObjects){
+                set.objects?.forEach(objectDef => {
+                    if(!objectDef._counter) objectDef._counter = 0;
+                    if(++objectDef._counter == objectDef.interval){
+                        objectDef._counter = 0;
+                        const object = new Object2d({
+                            parent: me,
+                            ...objectDef,
+                        });
+                        me.animObjectsQueue.push(object);
+                    }
+                })
+            }
         }
     }
     wander() {
