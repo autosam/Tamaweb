@@ -5466,15 +5466,19 @@ class Activities {
         }
 
         const setPredictedDirection = (dir) => {
-            const randomDir = randomFromArray(['left', 'center', 'right']);
+            let randomDir = randomFromArray(['left', 'center', 'right']);
             setTimeout(() => {
-                const opponentState = deriveStateFromDirection(randomDir);
-                opponentPet.setState(opponentState.state)
-                opponentPet.inverted = opponentState.inverted;
-
                 const playerState = deriveStateFromDirection(dir);
                 App.pet.setState(playerState.state)
                 App.pet.inverted = playerState.inverted;
+
+                if(App.petDefinition.hasTrait('lucky') && random(1, 3) === 1) {
+                    randomDir = dir;
+                }
+
+                const opponentState = deriveStateFromDirection(randomDir);
+                opponentPet.setState(opponentState.state)
+                opponentPet.inverted = opponentState.inverted;
 
                 // if(randomDir === dir){
                 //     App.playSound(`resources/sounds/task_complete_02.ogg`, true);
