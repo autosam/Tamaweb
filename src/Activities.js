@@ -5946,7 +5946,7 @@ class Activities {
                         Activities.task_winMoneyFromArcade({
                             hasWon,
                             amount: clamp(
-                                    Math.floor((targetLeavesCount - currentLeavesCount) / 5) - (currentLeavesCount ? 20 : 0), 
+                                    Math.floor(((targetLeavesCount - currentLeavesCount) / 5 )- (currentLeavesCount ? 20 : 0)), 
                                 0, Infinity),
                         })
                         leavesParent.removeObject();
