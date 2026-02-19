@@ -1033,24 +1033,24 @@ const App = {
                     solid: true,
                     bold: true,
                 },
-                /* {
+                {
                     name: `
                         <img class="update-banner" src="resources/img/ui/update_banner.png"></img>
                         <br>
-                        <div>
-                        Check out the <b>Seasons</b> feature, <b>Santa Encounter</b>, <b>New Flags Minigame</b>, <b>Rebalances</b> and more!
-                        </div>
-                    `,
-                    type: 'text',
-                }, */
-                {
-                    name: `
                         <div>
                         Check out the new <b>Personality Traits</b>, <b>Dig Treasure Activity</b>, <b>Leaves Mini-game</b>, <b>Move Out Interactions</b> and a lot more!
                         </div>
                     `,
                     type: 'text',
                 },
+                /* {
+                    name: `
+                        <div>
+                        Check out the new <b>Personality Traits</b>, <b>Dig Treasure Activity</b>, <b>Leaves Mini-game</b>, <b>Move Out Interactions</b> and a lot more!
+                        </div>
+                    `,
+                    type: 'text',
+                }, */
                 {
                     link: App.routes.BLOG,
                     name: 'see whats new',
