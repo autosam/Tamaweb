@@ -24,7 +24,7 @@ const App = {
         displayShellLogo: true,
         shellShape: 6,
         backgroundColor: '#FFDEAD',
-        backgroundPattern: 'resources/img/ui/bg_pattern_01.png', // todo: disable after xmass
+        backgroundPattern: 'resources/img/ui/bg_pattern_01.png',
         notifications: false,
         automaticAging: true,
         sleepingHoursOffset: 0,
@@ -85,7 +85,7 @@ const App = {
         },
         SLEEP_START: 21,
         SLEEP_END: 8,
-        PARENT_DAYCARE_START: 8,
+        PARENT_DAYCARE_START: 3,
         PARENT_DAYCARE_END: 18,
         MAX_SHELL_SHAPES: 6,
         AFTERNOON_TIME: [12, 17],
@@ -137,12 +137,10 @@ const App = {
         },
         MAX_OFFLINE_PROGRESSION_SECS: 604800, // 3600(secs in 1 hour) * 24(1 day) * 7(7 days) = 604800
         GENDERS: [
+            'genderless',
             'mars',
             'venus',
             'transgender',
-            'genderless',
-            'mercury',
-            'neuter',
             'venus-mars',
         ],
         UNDERWORLD_TREAT_CURRENCY: 'spookandy',
@@ -160,6 +158,7 @@ const App = {
             winter: ['#C6DDFF', '#E8F1FF', '#FFFFFF'],
             autumn: ['#CE4429', '#ED782F', '#FF9D60'],
             spring: ['#63A04B', '#7FD060', '#96F271'],
+            summer: ['#27AA2F', '#59D12F', '#BAD92F'],
         }
     },
     routes: {
@@ -334,7 +333,7 @@ const App = {
             .setStats({is_egg: true})
             .loadStats(loadedData.pet)
             .loadAccessories(loadedData.accessories);
-
+        
         // check automatic age up
         if(App.settings.automaticAging){
             while(moment().isAfter( App.petDefinition.getNextAutomaticBirthdayDate() )){
@@ -443,6 +442,12 @@ const App = {
 
         // session start event
         App.sendSessionEvent(true);
+
+        // periodic update
+        setTimeout(() => App.onPeriodicUpdate(), App.constants.ONE_SECOND * 2);
+        setInterval(() => {
+            App.onPeriodicUpdate();
+        }, App.constants.ONE_SECOND * 30);
 
         // saver
         setInterval(() => {
@@ -729,6 +734,16 @@ const App = {
         // App.drawUI();
         // document.querySelector('.background-canvas').getContext('2d').drawImage(App.drawer.canvas, 0, 0);
     },
+    onPeriodicUpdate: () => {
+        if(App.settings.automaticAging){
+            if(moment().isAfter( App.petDefinition.getNextAutomaticBirthdayDate() )){
+                App.queueEvent(() => {
+                    Activities.birthday();
+                    App.sendAnalytics('auto_age_up_live', App.petDefinition.lifeStage);
+                }, 'automatic_birthday_party');
+            }
+        }
+    },
     onDraw: () => {},
     preloadImages: function(urls) {
         const promises = urls.map((url) => {
@@ -844,9 +859,9 @@ const App = {
                 })) return showAlreadyUsed();
                 break;
             // update specific
-            case "PICKUP":
-            case "HANGOUT":
-            case "TOOTHBRUSH":
+            case "PERSONALITIES":
+            case "DIG":
+            case "LEAVES":
                 if(!addEvent(codeEventId, () => {
                     const goldAmount = 200, missionPtsAmount = 50;
                     App.pet.stats.gold += goldAmount;
@@ -856,13 +871,13 @@ const App = {
                 break;
             case "JINIINTHEBOTTLE":
                 if(!addEvent(codeEventId, () => {
-                    const goldAmount = 3000, missionPtsAmount = 500;
+                    const goldAmount = 1000, missionPtsAmount = 100;
                     App.pet.stats.gold += goldAmount;
                     Missions.currentPts += missionPtsAmount;
                     App.displayPopup(`You've redeemed <b>$${goldAmount}</b>, <b>${missionPtsAmount} Mission pts</b>!`, 4000);
                 })) return showAlreadyUsed();
                 break;
-            case "DISCORD5K":
+            case "DISCORD6K":
                 if(!addEvent(codeEventId, () => {
                     const goldAmount = 5000, missionPtsAmount = 500;
                     App.pet.stats.gold += goldAmount;
@@ -1010,7 +1025,7 @@ const App = {
         //     ])
         // })) return;
 
-        if(addEvent(`update_24_notice`, () => {
+        if(addEvent(`update_25_notice`, () => {
             App.displayList([
                 {
                     name: `New update is available!<b> <div><small>${VERSION}</small></div> ${App.getBadge('new!')}`,
@@ -1018,24 +1033,24 @@ const App = {
                     solid: true,
                     bold: true,
                 },
-                /* {
+                {
                     name: `
                         <img class="update-banner" src="resources/img/ui/update_banner.png"></img>
                         <br>
                         <div>
-                        Check out the <b>Seasons</b> feature, <b>Santa Encounter</b>, <b>New Flags Minigame</b>, <b>Rebalances</b> and more!
-                        </div>
-                    `,
-                    type: 'text',
-                }, */
-                {
-                    name: `
-                        <div>
-                        Check out the new <b>Hang out</b> option, <b>picking up</b> your pet, <b>Brushing</b> your pet's teeth and more!
+                        Check out the new <b>Personality Traits</b>, <b>Dig Treasure Activity</b>, <b>Leaves Mini-game</b>, <b>Move Out Interactions</b> and a lot more!
                         </div>
                     `,
                     type: 'text',
                 },
+                /* {
+                    name: `
+                        <div>
+                        Check out the new <b>Personality Traits</b>, <b>Dig Treasure Activity</b>, <b>Leaves Mini-game</b>, <b>Move Out Interactions</b> and a lot more!
+                        </div>
+                    `,
+                    type: 'text',
+                }, */
                 {
                     link: App.routes.BLOG,
                     name: 'see whats new',
@@ -1329,12 +1344,41 @@ const App = {
                 }
 
                 App.handleAnimalsSpawn(true);
+
+                // handle dig spot spawn
+                if(!App.temp.hasActiveDigSpot && App.canProceed('backyardDigSpot', App.constants.ONE_MINUTE * random(30, 60))) {
+                    const chance = (App.animals?.list?.length || 0) + (App.petDefinition.hasTrait('lucky') ? 4 : 0);
+                    App.temp.hasActiveDigSpot = clamp(chance, 0, 9) >= random(0, 10);
+                }
+
+                if(App.temp.hasActiveDigSpot){
+                    App.temp.digSpotObject = new Object2d({
+                        img: 'resources/img/misc/dig_spot_01.png',
+                        x: '20%',
+                        y: '84%',
+                        z: App.pet.z + 1,
+                        spritesheet: {
+                            cellNumber: 1,
+                            cellSize: 24,
+                            rows: 1,
+                            columns: 2,
+                        },
+                        onClick: () => {
+                            App.toggleGameplayControls(false);
+                            App.fadeScreen({
+                                middleFn: () => Activities.digGardenTreasure()
+                            })
+                        }
+                    })
+                    // App.pet.setLocalZBasedOnSelf(App.temp.digSpotObject);
+                }
             },
             onUnload: () => {
                 App.pet.staticShadow = true;
 
                 App.temp.petBowlObject?.removeObject?.();
                 App.temp.animalTreatObject?.removeObject?.();
+                App.temp.digSpotObject?.removeObject?.();
 
                 App.handleAnimalsSpawn(false);
             }
@@ -1453,6 +1497,51 @@ const App = {
         }),
         full_grass: new Scene({
             image: 'resources/img/background/outside/full_grass_01.png',
+        }),
+        galaxy: new Scene({
+            image: 'resources/img/background/house/galaxy_01.png',
+            noShadows: true,
+            onLoad: () => {
+                let lastSpawnTime = 0;
+                this.shootingStarsSpawner = new Object2d({
+                    onDraw: () => {
+                        if(App.time < lastSpawnTime + 100) return;
+
+                        lastSpawnTime = App.time;
+
+                        const shootingStar = new Object2d({
+                            parent: this.shootingStarsSpawner,
+                            img: 'resources/img/misc/twinkle_01.png',
+                            scale: 0.2 + (Math.random() * 0.3),
+                            x: `${random(0, 100)}%`,
+                            y: `${random(0, 100)}%`,
+                            opacity: 0.001,
+                            opacityAdderSign: 1,
+                            rotation: 0,
+                            scale: 1,
+                            direction: {
+                                x: randomFromArray([1, -1]),
+                                y: randomFromArray([1, -1])
+                            },
+                            onLateDraw: (me) => {
+                                me.opacity = clamp(me.opacity + (0.001 * me.opacityAdderSign) * App.deltaTime, 0, 1);
+
+                                if(me.opacity >= 1) me.opacityAdderSign = -3;
+                                if(me.opacity <= 0) me.removeObject();
+
+                                me.x += me.direction.x * App.deltaTime * 0.01;
+                                me.y += me.direction.y * App.deltaTime * 0.01;
+
+                                me.scale = lerp(me.scale, 0, 0.0005 * App.deltaTime);
+                            }
+                        })
+                        
+                    }
+                })
+            },
+            onUnload: () => {
+                this.shootingStarsSpawner.removeObject();
+            }
         })
     },
     setScene(scene, noPositionChange, onLoadArg){
@@ -1465,7 +1554,7 @@ const App = {
         }
         if(scene.foodsX) App.foods.x = scene.foodsX;
         if(scene.foodsY) App.foods.y = scene.foodsY;
-        App.background.setImg(scene.image);
+        App.background.setImg(scene.image, true);
 
         if(scene.onLoad){
             scene.onLoad(onLoadArg);
@@ -1876,10 +1965,13 @@ const App = {
 
         // new pet
         const sprite = PetDefinition.getOffspringSprite(parentA, parentB);
-        newPetDefinition = new PetDefinition({
+        const newPetDefinition = new PetDefinition({
             name: getRandomName(),
             sprite,
         }).setStats({is_egg: true, is_ghost: parentB.stats.is_ghost});
+        if(parentA.traits?.length){
+            newPetDefinition.traits = [randomFromArray(parentA.traits)];
+        }
 
         newPetDefinition.friends = [
             parentA,
@@ -1958,6 +2050,33 @@ const App = {
                 registeredInteractionDetector = App.registerOnDrawEvent(interactionHandler);
             }
         });
+    },
+    transferAndGetFreshEgg: (addToPredecessors = true) => {
+        const lastPet = App.petDefinition;
+        App.pet.removeObject();
+        App.petDefinition = new PetDefinition({
+            name: getRandomName(),
+            sprite: randomFromArray(PET_BABY_CHARACTERS),
+        }).setStats({is_egg: true});
+
+        App.petDefinition.inventory = lastPet.inventory;
+        App.petDefinition.stats.gold = lastPet.stats.gold;
+        App.petDefinition.deceasedPredecessors = [...lastPet.deceasedPredecessors];
+        if(addToPredecessors){
+            App.petDefinition.deceasedPredecessors.push({
+                birthday: lastPet.birthday,
+                family: lastPet.family,
+                sprite: lastPet.sprite,
+                name: lastPet.name,
+            })
+        }
+
+        App.pet = App.createActivePet(App.petDefinition);
+        setTimeout(() => {
+            Activities.playEggUfoAnimation(() => App.handlers.show_set_pet_name_dialog());
+        }, 100);
+        App.setScene(App.scene.home);
+        App.toggleGameplayControls(true);
     },
     _queueEventKeys: {},
     queueEvent: function(payloadFn, eventKey = App.time + Math.random()){
@@ -2293,7 +2412,7 @@ const App = {
                     onclick: (value) => {
                         if(!value) return false;
 
-                        App.pet.petDefinition.name = value;
+                        App.pet.petDefinition.name = value.slice(0, 32);
                         App.save();
                         App.displayPopup(`Name set to "${App.pet.petDefinition.name}"`)
                     }
@@ -2326,7 +2445,7 @@ const App = {
                 }
             ])
         },
-        show_letter: function({headline, text, sender}){
+        show_letter: function({headline, text, sender, onClose}){
             const container = App.displayEmpty('letter');
             container.innerHTML = `
             <div class="flex flex-dir-col">
@@ -2338,7 +2457,12 @@ const App = {
                 <button style="margin: 10px; margin-top: 10px; flex: 1" class="generic-btn stylized back-btn">Ok</button>
             </div>
             `
-            container.querySelector('.back-btn').onclick = container.close;
+            const close = container.close;
+            container.close = () => {}
+            container.querySelector('.back-btn').onclick = () => {
+                close();
+                onClose?.();
+            };
         },
         show_newspaper: function(headline, text){
             if(!headline && !text){
@@ -2387,11 +2511,17 @@ const App = {
             [...container.querySelectorAll('.news-close')].forEach(btn => btn.onclick = container.close);
         },
         open_main_menu: function(){
+            if(App.preventNextGameplayControl){
+                App.preventNextGameplayControl = false;
+                return;
+            }
             const runControlOverwrite = () => {
                 if(!App.gameplayControlsOverwrite) return;
-                App.playSound(`resources/sounds/ui_click_01.ogg`, true);
+                if(App.gameplayControlsTriggerFeedback)
+                    App.playSound(`resources/sounds/ui_click_01.ogg`, true);
                 App.gameplayControlsOverwrite();
-                App.vibrate();
+                if(App.gameplayControlsTriggerFeedback)
+                    App.vibrate();
             }
             if(App.disableGameplayControls || App.settings.classicMainMenuUI) {
                 runControlOverwrite();
@@ -2622,7 +2752,7 @@ const App = {
                     }
                 },
                 {
-                    name: `brush teeth ${App.getBadge()}`,
+                    name: `brush teeth`,
                     onclick: () => {
                         Activities.brushTeeth();
                     }
@@ -2999,7 +3129,7 @@ const App = {
                 },
                 { type: 'separator', _ignore: ignoreFirstDivider },
                 {
-                    name: `gameplay settings`,
+                    name: `gameplay settings ${App.getBadge()}`,
                     onclick: () => {
                         const getStateIcon = (state) => {
                             const className = state ? 'option on' : 'option off';
@@ -3095,8 +3225,7 @@ const App = {
                                 }
                             },
                             {
-                                _ignore: true,
-                                _mount: (e) => e.innerHTML = `${getStateIcon(App.settings.season)} Season: <i>${App.settings.season}</i>`,
+                                _mount: (e) => e.innerHTML = `${getStateIcon(App.settings.season)} Season: <i>${App.settings.season}</i> ${App.getBadge()}`,
                                 onclick: (e) => {
                                     const possibleOptions = [
                                         'auto',
@@ -3150,7 +3279,7 @@ const App = {
                     }
                 },
                 {
-                    name: `system settings`,
+                    name: `system settings ${App.getBadge()}`,
                     onclick: () => {
                         App.displayList([
                             {
@@ -4311,8 +4440,16 @@ const App = {
                 }
             ])
         },
+        open_traits: () => {
+            const traitKeys = Object.keys(App.definitions.traits);
+
+            return App.displayList(traitKeys.map(key => ({
+                name: `${App.getTraitCSprite(key)} ${App.definitions.traits[key].name}`,
+                onclick: () => {}
+            })))
+        },
         open_profile: function(){
-            const petTraitIcons = [
+            const petExpTraitIcons = [
                 {
                     title: 'Potty-trained',
                     img: 'resources/img/misc/poop.png',
@@ -4329,6 +4466,7 @@ const App = {
                     condition: App.pet.stats.is_ghost
                 }
             ]
+            const unknownPersonality = `<span class="opacity-half">?</span>`
 
             const playTimeDuration = moment.duration(App.playTime);
 
@@ -4354,12 +4492,31 @@ const App = {
                     <span>
                         Born ${moment(App.petDefinition.birthday).fromNow()}
                     </span>
-                    <div class="pet-trait-icons-container">
-                    ${petTraitIcons.map(icon => {
-                        return `<div onclick="App.displayPopup('<small>trait:</small> <br> <b>${icon.title}</b> <small>(${icon.condition ? 'active' : 'inactive'})</small>')" title="${icon.title}" class="pet-trait-icon ${!icon.condition ? 'disabled' : ''}">
-                            <img src="${icon.img}"></img>
-                        </div>`
-                    }).join('')}
+                </div>
+                <div class="surface-stylized inner-padding flex flex-gap-05 flex-dir-col">
+                    <small>Traits:</small>
+                    <div class="relative mt-6 width-full">
+                        <div class="stats-label left-0">Experience</div>
+                        <div class="pet-trait-icons-container">
+                            ${petExpTraitIcons.map(icon => {
+                                return `<div onclick="App.displayPopup('<small>exp trait:</small> <br> <b>${icon.title}</b> <small>(${icon.condition ? 'active' : 'inactive'})</small>')" title="${icon.title}" class="pet-trait-icon click-sound ${!icon.condition ? 'disabled' : ''}">
+                                    <img src="${icon.img}"></img>
+                                </div>`
+                            }).join('')}
+                        </div>
+                    </div>
+                    <div class="relative mt-6 width-full">
+                        <div class="stats-label left-0">Personality</div>
+                        <div class="pet-trait-icons-container">
+                            ${!App.petDefinition.traits.length ? unknownPersonality : ''}
+                            ${App.petDefinition.traits.map(key => {
+                                const definition = App.definitions.traits[key];
+                                if(!definition) return unknownPersonality;
+                                return `<div onclick="App.displayPopup('<small>trait:</small> <br> <b>${definition.name}</b><br><small>${definition.description}</small>')" title="${definition.name}" class="pet-trait-icon click-sound">
+                                    ${App.getTraitCSprite(key)}
+                                </div>`
+                            }).join('')}
+                        </div>
                     </div>
                 </div>
                 <div class="user-id surface-stylized inner-padding text-transform-none">
@@ -5304,11 +5461,15 @@ const App = {
 
                             const dialog = App.displayList([
                                 {
-                                    name: `${hole.name} ${hole.isNew ? App.getBadge('new!') : ''}`,
+                                    name: `
+                                        ${hole.name} ${hole.isNew ? App.getBadge('new!') : ''}
+                                        <i>for about ${moment.duration(hole.duration).humanize()}</i>
+                                    `,
                                     icon: 'lemon',
                                     type: 'info',
                                 },
                                 {
+                                    _ignore: hole.noAlone,
                                     name: 'Alone',
                                     onclick: () => {
                                         confirmFn()
@@ -5530,8 +5691,8 @@ const App = {
                             {
                                 _ignore: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.adult || friendDef.lifeStage < PetDefinition.LIFE_STAGE.adult || friendDef.stats.is_player_family,
                                 name: `go on date`,
-                                onclick: () => {
-                                    if (friendDef.getFriendship() < 60) {
+                                onclick: () => {                                    
+                                    if (friendDef.getFriendship() < 60 && !App.petDefinition.hasTrait('romantic')) {
                                         return App.displayPopup(`${App.petDefinition.name}'s friendship with ${friendDef.name} is too low <br><br> they don't want to go on a date.`, 5000);
                                     }
 
@@ -5553,7 +5714,7 @@ const App = {
                                 }
                             },
                             {
-                                name: `Hang out ${App.getBadge()}`,
+                                name: `Hang out`,
                                 onclick: () => {
                                     const handleHangout = (scene, isPlayerHost = false) => {
                                         App.closeAllDisplays();
@@ -5599,19 +5760,19 @@ const App = {
                                             name: 'Where to hang out?',
                                         },
                                         {
-                                            name: `friend's home ${App.getBadge()}`,
+                                            name: `friend's home`,
                                             onclick: () => handleHangout(getFriendsHomeScene()),
                                         },
                                         {
-                                            name: `your home ${App.getBadge()}`,
+                                            name: `your home`,
                                             onclick: () => handleHangout(App.scene.home, true),
                                         },
                                         {
-                                            name: `the mall ${App.getBadge()}`,
+                                            name: `the mall`,
                                             onclick: () => handleHangout(getFriendsHomeScene(App.scene.mallInterior.image), Boolean(random(0, 1))),
                                         },
                                         {
-                                            name: `the beach ${App.getBadge()}`,
+                                            name: `the beach`,
                                             onclick: () => handleHangout(getFriendsHomeScene(App.scene.beach.image), Boolean(random(0, 1))),
                                         },
                                     ])
@@ -5883,7 +6044,7 @@ const App = {
                     }
                 },
                 {
-                    name: `friends ${App.getBadge()}`,
+                    name: `friends`,
                     onclick: () => {
                         App.handlers.open_friends_list(null, null, [
                             {
@@ -5907,6 +6068,7 @@ const App = {
                                 name: 'yes',
                                 onclick: () => {
                                     Activities.birthday();
+                                    App.sendAnalytics('age_up', App.petDefinition.lifeStage);
                                 }
                             },
                             {
@@ -5959,6 +6121,39 @@ const App = {
                             {
                                 name: 'no',
                                 class: 'primary solid',
+                                onclick: () => {}
+                            }
+                        ])
+                        return true;
+                    }
+                },
+                {
+                    name: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child ? `abandon ${App.getBadge()}` : `move out ${App.getBadge()}`,
+                    onclick: () => {
+                        const { moveOut } = Activities;
+                        App.displayConfirm(`Are you sure you want to send ${App.petDefinition.getAvatar()} back to their home planet? <br><br> They will move out and you'll receive a fresh new egg to raise.`, [
+                            {
+                                name: `yes`,
+                                onclick: () => {
+                                    App.displayConfirm(`Are you sure?`, [
+                                        {
+                                            name: 'yes, move out',
+                                            onclick: () => {
+                                                moveOut(App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child)
+                                                App.sendAnalytics('move_out');
+                                            }
+                                        },
+                                        {
+                                            name: 'no',
+                                            class: 'back-btn',
+                                            onclick: () => {}
+                                        }
+                                    ])
+                                }
+                            },
+                            {
+                                name: 'no',
+                                class: 'back-btn',
                                 onclick: () => {}
                             }
                         ])
@@ -6321,6 +6516,8 @@ const App = {
                                         'Remember the order the blocks light up, and recreate it when the light turns on!',
                                         () => Activities.school_ExpressionGame({
                                             onEndFn: (pts) => {
+                                                if(App.petDefinition.hasTrait('artistic')) pts *= 1.5;
+                                                if(App.petDefinition.hasTrait('slowLearner')) pts *= 0.75;
                                                 App.pet.stats.current_expression += pts;
                                             }
                                         })
@@ -6333,6 +6530,8 @@ const App = {
                                     ...getFlipCardsDifficulty(App.pet.stats.current_expression),
                                     skillIcon: 'special:expression',
                                     onEndFn: (pts) => {
+                                        if(App.petDefinition.hasTrait('artistic')) pts *= 1.5;
+                                        if(App.petDefinition.hasTrait('slowLearner')) pts *= 0.75;
                                         App.pet.stats.current_expression += pts;
                                     }
                                 }))
@@ -6354,6 +6553,8 @@ const App = {
                                     maxAttempts: 1,
                                     skillIcon: 'special:logic',
                                     onEndFn: (pts) => {
+                                        if(App.petDefinition.hasTrait('logical')) pts *= 1.5;
+                                        if(App.petDefinition.hasTrait('slowLearner')) pts *= 0.75;
                                         App.pet.stats.current_logic += pts;
                                     }
                                 }))
@@ -6364,6 +6565,8 @@ const App = {
                                     ...getFlipCardsDifficulty(App.pet.stats.current_logic),
                                     skillIcon: 'special:logic',
                                     onEndFn: (pts) => {
+                                        if(App.petDefinition.hasTrait('logical')) pts *= 1.5;
+                                        if(App.petDefinition.hasTrait('slowLearner')) pts *= 0.75;
                                         App.pet.stats.current_logic += pts;
                                     }
                                 }))
@@ -6380,6 +6583,8 @@ const App = {
                                 onclick: () => {
                                     startClassGame('Jump at the perfect time to avoid touching the rope!', () => Activities.school_EnduranceGame({
                                         onEndFn: (pts) => {
+                                            if(App.petDefinition.hasTrait('athletic')) pts *= 1.5;
+                                            if(App.petDefinition.hasTrait('slowLearner')) pts *= 0.75;
                                             App.pet.stats.current_endurance += pts;
                                         }
                                     }))
@@ -6391,6 +6596,8 @@ const App = {
                                     ...getFlipCardsDifficulty(App.pet.stats.current_endurance),
                                     skillIcon: 'special:endurance',
                                     onEndFn: (pts) => {
+                                        if(App.petDefinition.hasTrait('athletic')) pts *= 1.5;
+                                        if(App.petDefinition.hasTrait('slowLearner')) pts *= 0.75;
                                         App.pet.stats.current_endurance += pts;
                                     }
                                 }))
@@ -6487,7 +6694,7 @@ const App = {
                         }
                         return App.displayList([
                             {
-                                name: `main room ${hasNewMainDecor ? App.getBadge('new!') : ''}`,
+                                name: `living room ${hasNewMainDecor ? App.getBadge('new!') : ''}`,
                                 onclick: () => {
                                     return App.displayList([
                                         {
@@ -6610,6 +6817,14 @@ const App = {
                 App.handlers.open_activity_list(true);
             }
             App.displayList([
+                {
+                    _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.teen,
+                    name: `leaves ${App.getBadge()}`,
+                    onclick: () => {
+                        App.displayPopup(`Clear out all the leaves before the timer runs out!`, tutorialDisplayTime, () => Activities.leavesGame())
+                        return false;
+                    }
+                },
                 {
                     _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.child,
                     name: `flags`,
@@ -6771,9 +6986,10 @@ const App = {
             })
         },
     },
-    toggleGameplayControls: function(state, onclick){
+    toggleGameplayControls: function(state, onclick, triggerFeedback = true){
         App.disableGameplayControls = !state;
         App.gameplayControlsOverwrite = onclick;
+        App.gameplayControlsTriggerFeedback = triggerFeedback;
         if(App.disableGameplayControls && !onclick){
             App.drawer.canvas.style.cursor = 'not-allowed';
         } else {
@@ -6789,6 +7005,7 @@ const App = {
         return {
             state: !App.disableGameplayControls,
             onclick: App.gameplayControlsOverwrite,
+            triggerFeedback: App.gameplayControlsTriggerFeedback,
         }
     },
     createProgressbar: function(percent){
@@ -7114,6 +7331,14 @@ const App = {
             setTimeout(() => display.remove(), 1000);
         }
 
+        let speechIndex = 0;
+        const speechSoundInterval = setInterval(() => {
+            if(speechIndex++ >= content.length){
+                return clearInterval(speechSoundInterval);
+            }
+            if(icon) App.playSpeechSound(content[speechIndex]);
+        }, 50)
+
         const iconContent = !icon ? '' : `<div class="message-bubble_icon">${icon}</div>`;
 
         display.innerHTML = `<div class="message-bubble">${iconContent}${splitContent}</div>`
@@ -7265,10 +7490,16 @@ const App = {
         })
     },
     initSound: function(){
-        // audio channel
+        // main audio channel
         try {
             this.audioChannel = new AudioChannel({
                 preloadList: SOUNDS
+            });
+        } catch(e) {}
+        // speech audio channel
+        try {
+            this.speechAudioChannel = new AudioChannel({
+                preloadList: SPEECH_SOUNDS
             });
         } catch(e) {}
 
@@ -7441,6 +7672,21 @@ const App = {
             src="${spritesheet}"
             ${additional}></c-sprite>`;
     },
+    getTraitCSprite: (traitName, className = 'icon') => {
+        const definition = Object.entries(App.definitions.traits).find(([key, content]) => key === traitName)?.[1];
+        
+        if(!definition) return '';
+
+        return App.getGenericCSprite(
+            definition.icon + 1,
+            'resources/img/misc/traits_01.png',
+            {
+                cellSize: 22,
+                rows: 11
+            },
+            className
+        )
+    },
     getPersona: function(name, image){
         return `
             <img style="height: inherit; width: 32px; object-fit: contain; margin-right: 10px" src="${image}"></img>
@@ -7560,17 +7806,27 @@ const App = {
 
         return {
             element: audioElement,
-            stop: () => {
+            stop: (fadeSpeed = 0.0005) => {
                 const fadeOutEvent = App.registerOnDrawEvent(() => {
-                    const volume = audioElement.volume - (0.0005 * App.deltaTime)
+                    const volume = audioElement.volume - (fadeSpeed * App.deltaTime)
                     audioElement.volume = clamp(volume, 0, 1);
                     if(audioElement.volume <= 0){
                         audioElement.pause();
+                        audioElement.remove();
                         App.unregisterOnDrawEvent(fadeOutEvent);
                     }
                 })
             }
         };
+    },
+    playSpeechSound: function(letter = 'a'){
+        if(!App.settings.playSound) return;
+
+        const muteLetters = [' ', '.', ',', '-'];
+        if(muteLetters.includes(letter)) return;
+
+        const maxSamples = 6;
+        this.speechAudioChannel?.play(`resources/sounds/speech/${random(1, maxSamples)}.mp3`, true);
     },
     takeScreenshot: () => {
         if(App.haveAnyDisplays()) return;
@@ -7643,6 +7899,15 @@ const App = {
         return mainData;
     },
     save: function(noIndicator){
+        const IS_SAVING_DISABLED = false;
+
+        if(IS_SAVING_DISABLED){
+            if(!App.canProceed('savingDisabledLog', Infinity)){
+                console.log('%cWARNING: SAVING DISABLED.', 'color: red; font-weight: bold; font-size: 30px');
+            }
+            return;
+        }
+
         if(!App.pet || !App.loadingEnded) return;
 
         const timeElapsedSinceLastSave = App.time - (App.temp.lastSaved ?? 0);
@@ -7938,11 +8203,18 @@ const App = {
         else obj[key] += amount;
     },
     pay: function(amount){
-        if(App.pet.stats.gold < amount){
+        let finalAmount = amount;
+
+        if(App.petDefinition.hasTrait('shopaholic')) App.pet.stats.current_fun += random(25, 45);
+
+        if(App.pet.stats.gold < finalAmount){
             App.displayPopup(`Don't have enough money!`);
             return false;
         }
-        App.pet.stats.gold -= amount;
+
+        if(App.petDefinition.hasTrait('moneySaver')) finalAmount = finalAmount * (random(8, 10) * 0.1);
+
+        App.pet.stats.gold -= finalAmount;
         return true;
     },
     getPreciseTimeFromNow: (time) => {
@@ -8078,6 +8350,15 @@ const App = {
     },
     wait: function(ms = 0){
         return new Promise(resolve => setTimeout(resolve, ms))
+    },
+    _canProceedBuffer: {},
+    canProceed: function(key, ms) {
+        const lastTime = this._canProceedBuffer[key] || -Infinity;
+        if(App.time > lastTime + ms){
+            this._canProceedBuffer[key] = App.time;
+            return true;
+        }
+        return false;
     },
     fadeScreen: function({ middleFn, endFn, speed = 0.005 } = {}) {
         let phase = 'fadeIn';

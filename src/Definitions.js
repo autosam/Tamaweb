@@ -165,6 +165,7 @@ App.definitions = (() => {
                 onEnter: () => App.handlers.go_to_clinic(),
             },
             {
+                isDisabled: () => App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby,
                 name: `Restaurant`,
                 image: 'resources/img/misc/activity_building_restaurant.png',
                 onEnter: () => Activities.goToRestaurant(),
@@ -458,7 +459,7 @@ App.definitions = (() => {
                 health_replenish: 2,
                 price: 15,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
-                isNew: true,
+                isNew: false,
             },
             "mushroom soup": {
                 sprite: 779,
@@ -467,7 +468,7 @@ App.definitions = (() => {
                 health_replenish: 5,
                 price: 17,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
-                isNew: true,
+                isNew: false,
             },
 
             // cookable only
@@ -861,7 +862,7 @@ App.definitions = (() => {
                 health_replenish: 3,
                 price: 10,
                 type: 'treat',
-                isNew: true,
+                isNew: false,
             },
             "rainbow cake": {
                 sprite: 453,
@@ -870,7 +871,7 @@ App.definitions = (() => {
                 health_replenish: -2,
                 price: 15,
                 type: 'treat',
-                isNew: true,
+                isNew: false,
             },
     
     
@@ -1921,6 +1922,16 @@ App.definitions = (() => {
                 image: 'resources/img/ui/bg_pattern_02.png',
                 isNew: false,
             },
+            {
+                name: 'Starry',
+                image: 'resources/img/ui/bg_pattern_03.png',
+                isNew: true,
+            },
+            {
+                name: 'Strawberry',
+                image: 'resources/img/ui/bg_pattern_04.png',
+                isNew: true,
+            },
         ],
     
         /* ACCESSORIES */
@@ -2620,6 +2631,26 @@ App.definitions = (() => {
                     App.displayPopup(`You've received $200!`);
                 }
             },
+            perfect_minigame_flags_win_x_times: {
+                name: 'Flagbearer',
+                description: 'Win with perfect score in Flags game 10 times!',
+                checkProgress: () => App.getRecord('times_perfected_flags_minigame') >= 10,
+                advance: (amount) => App.addRecord('times_perfected_flags_minigame', amount),
+                getReward: () => {
+                    App.pet.stats.gold += 200;
+                    App.displayPopup(`You've received $200!`);
+                }
+            },
+            perfect_minigame_leaves_win_x_times: {
+                name: 'Leafblower',
+                description: 'Win with perfect score in Leaves game 10 times!',
+                checkProgress: () => App.getRecord('times_perfected_leaves_minigame') >= 10,
+                advance: (amount) => App.addRecord('times_perfected_leaves_minigame', amount),
+                getReward: () => {
+                    App.pet.stats.gold += 200;
+                    App.displayPopup(`You've received $200!`);
+                }
+            },
         },
     
         /* MAIL */
@@ -2880,6 +2911,17 @@ App.definitions = (() => {
                 }
             },
             {
+                name: 'Have sleepover',
+                duration: App.constants.ONE_HOUR * 4,
+                isNew: true,
+                noAlone: true,
+                onEnd: () => {
+                    App.pet.stats.current_fun += 10;
+                    App.pet.stats.current_hunger += 10;
+                    App.pet.stxats.current_sleep += 20;
+                }
+            },
+            {
                 name: 'Visit library',
                 duration: App.constants.ONE_HOUR * 0.25,
                 withAnother: true,
@@ -3007,6 +3049,166 @@ App.definitions = (() => {
                 name: '+ Growth',
                 description: 'Makes plants grow faster.',
                 type: 'garden',
+            },
+        },
+
+        /* TRAITS */
+        traits: {
+            charismatic: {
+                name: 'Charismatic',
+                description: 'Will build up friendships way faster and is more likely to want to visit friends.',
+                opposite: ['introvert'],
+                icon: 0,
+            },
+            introvert: {
+                name: 'Introvert',
+                description: 'Has harder time building up friendships and is unlikely they want to visit friends.',
+                opposite: ['charismatic'],
+                icon: 1,
+            },
+            lucky: {
+                name: 'Lucky',
+                description: 'Has a chance to get more rewards from winning mini-games.',
+                icon: 2,
+            },
+            hardWorker: {
+                name: 'Hard Worker',
+                description: 'Earns more money from work.',
+                icon: 3,
+            },
+            athletic: {
+                name: 'Athletic',
+                description: 'Excels in Endurance classes.',
+                icon: 4,
+            },
+            artistic: {
+                name: 'Artistic',
+                description: 'Excels in Expression classes.',
+                icon: 5,
+            },
+            logical: {
+                name: 'Logical',
+                description: 'Excels in Logic classes.',
+                icon: 6,
+            },
+            /* computerWhiz: {
+                name: 'Computer Whiz',
+                description: 'Has a chance of making money when using the computer.',
+            }, */
+            treasurer: {
+                name: 'Treasurer',
+                description: 'Constantly wants to play with their items and gets higher happiness boost from playing with them.',
+                icon: 7,
+            },
+            shopaholic: {
+                name: 'Shopaholic',
+                description: 'Gets a huge happiness boost from buying stuff.',
+                icon: 8,
+            },
+            moneySaver: {
+                name: 'Money Saver',
+                description: 'Has chance of saving some money when spending it.',
+                icon: 9,
+            },
+            romantic: {
+                name: 'Romantic',
+                description: 'Has a very high chance of succeeding on dates and can go on dates with anyone even if their friendship is not high.',
+                icon: 10,
+            },
+            slowLearner: {
+                name: 'Slow Learner',
+                description: 'Has harder time learning in class.',
+                icon: 11,
+            },
+            botanist: {
+                name: 'Botanist',
+                description: 'Their plants take a way longer time to die.',
+                icon: 12,
+            },
+            plentyHarvest: {
+                name: 'Plenty Harvest',
+                description: 'Have a chance to get more drops when harvesting plants.',
+                icon: 27,
+            },
+            grumpy: {
+                name: 'Grumpy',
+                description: 'Is more reactive to having their needs not met.',
+                icon: 13,
+            },
+            proper: {
+                name: 'Proper',
+                description: 'Never misbehaves.',
+                icon: 14,
+            },
+            naturalChef: {
+                name: 'Natural Chef',
+                description: 'Has a chance of creating more food when cooking.',
+                icon: 15,
+            },
+            germGuardian: {
+                name: 'Germ Guardian',
+                description: 'Gets sick way less often.',
+                icon: 16,
+            },
+            playBurnout: {
+                name: 'Play Burnout',
+                description: 'Fun need drops way faster.',
+                opposite: ['chill'],
+                icon: 17,
+            },
+            chill: {
+                name: 'Chill',
+                description: 'Fun need drops slower.',
+                opposite: ['playBurnout'],
+                icon: 18,
+            },
+            voraciousHunger: {
+                name: 'Voracious Hunger',
+                description: 'Hunger need drops way faster.',
+                opposite: ['lightEater'],
+                icon: 19,
+            },
+            lightEater: {
+                name: 'Light Eater',
+                description: 'Hunger need drops slower.',
+                opposite: ['voraciousHunger'],
+                icon: 20,
+            },
+            restless: {
+                name: 'Restless',
+                description: 'Sleep need drops way faster.',
+                opposite: ['deepSleeper'],
+                icon: 21,
+            },
+            deepSleeper: {
+                name: 'Deep Sleeper',
+                description: 'Sleep need drops slower.',
+                opposite: ['restless'],
+                icon: 22,
+            },
+            tinyTank: {
+                name: 'Tiny Tank',
+                description: 'Bladder need drops way faster.',
+                opposite: ['ironBladder'],
+                icon: 23,
+            },
+            ironBladder: {
+                name: 'Iron Bladder',
+                description: 'Bladder need drops slower.',
+                opposite: ['tinyTank'],
+                icon: 24,
+            },
+            dustMagnet: {
+                name: 'Dust Magnet',
+                description: 'Cleanliness need drops way faster.',
+                opposite: ['selfCleaning'],
+                icon: 25,
+            },
+            selfCleaning: {
+                name: 'Self-Cleaning',
+                description: 'Cleanliness need drops slower.',
+                opposite: ['dustMagnet'],
+                icon: 26,
             },
         }
     }

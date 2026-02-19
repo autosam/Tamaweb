@@ -94,6 +94,25 @@ class PetDefinition {
                 file: 'shock.ogg',
                 interval: 0, // plays once
             },
+            objects: [
+                {
+                    img: 'resources/img/misc/thought_exclaim.png',
+                    x: 0, y: 0,
+                    onDraw: (me) => {
+                        me.mimicParent(['scale']);
+                        const halfCellSize = me.parent.spritesheet.cellSize / 2;
+                        me.x += halfCellSize - me.image.naturalWidth / 2;
+                        me.y -= halfCellSize + 4 + (me.parent.spritesheet.offsetY || 0);
+                        me.z = me.parent.z + 0.1;
+                    },
+                    interval: 2,
+                }
+            ]
+        },
+        shocked_without_sound: {
+            start: 7,
+            end: 8,
+            frameTime: 250,
         },
         blush: {
             start: 8,
@@ -103,6 +122,50 @@ class PetDefinition {
                 file: 'blush.ogg',
                 interval: 0, // plays once
             },
+            objects: [
+                {
+                    onDraw: (me) => {
+                        if(me.firstSpawn) return;
+                        me.firstSpawn = true;
+                        for(let i = 0; i < 3; i++){
+                            const offsetX = random(0, me.parent.spritesheet.cellSize);
+                            const rotation = ((me.parent.spritesheet.cellSize/2) - offsetX) * -2;
+                            new Object2d({
+                                parent: me.parent,
+                                img: `resources/img/misc/heart_particle_0${random(1, 2)}.png`,
+                                x: 0,
+                                y: 0,
+                                z: me.parent.z + 0.1,
+                                scale: 3,
+                                opacity: 1,
+        
+                                offsetX, offsetY: random(-3, 2),
+                                rotation,
+                                animationFloat: 0, 
+                                animationSpeed: 0.005,
+                                animationStr: clamp(Math.random(), 0.2, 0.5),
+                                onDraw: (heart) => {
+                                    heart.mimicParent(['scale', 'opacity']);
+        
+                                    heart.animationFloat = (heart.animationFloat + (heart.animationSpeed * App.deltaTime)) % Math.PI;
+                                    const animationFloat = Math.sin(heart.animationFloat) * heart.animationStr;
+        
+                                    heart.x += heart.offsetX - heart.image.naturalWidth/2;
+                                    heart.y -= (animationFloat * 4) + heart.offsetY + (heart.parent.spritesheet.offsetY || 0);
+        
+                                    heart.scale = 0.5 + animationFloat;
+        
+                                    heart.opacity -= 0.001 * App.deltaTime;
+                                    if(heart.opacity <= 0) {
+                                        heart.removeObject();
+                                    }
+                                }
+                            })
+                        }
+                    },
+                    interval: 2,
+                }
+            ]
         },
         cheering: {
             start: 2,
@@ -266,7 +329,7 @@ class PetDefinition {
         has_received_school_invite: false,
 
         // gender
-        gender: randomFromArray(App.constants.GENDERS),
+        gender: randomFromArray(App.constants.GENDERS.slice(0, 3)),
     }
     friends = [];
     family = [];
@@ -285,6 +348,7 @@ class PetDefinition {
         harvests: {}, seeds: {}, misc: {},
     }
     accessories = [];
+    traits = [];
 
     constructor(config) {
         if(config){
@@ -315,6 +379,7 @@ class PetDefinition {
         'accessories',
         'deceasedPredecessors',
         'spriteSkin',
+        'traits',
     ];
     serializeStats(noStringify){
         let s = {};
@@ -444,8 +509,12 @@ class PetDefinition {
     increaseFriendship(value){
         if(!value) value = random(5, 10);
 
-        if(!this.stats.player_friendship) this.stats.player_friendship = value;
-        else this.stats.player_friendship += value;
+        let finalValue = value;
+        if(this.hasTrait('charismatic')) finalValue *= 1.75;
+        if(this.hasTrait('introvert')) finalValue *= 0.4;
+
+        if(!this.stats.player_friendship) this.stats.player_friendship = finalValue;
+        else this.stats.player_friendship += finalValue;
 
         this.stats.player_friendship = clamp(this.stats.player_friendship, 1, 100);
     }
@@ -519,6 +588,10 @@ class PetDefinition {
         this.friends?.forEach(friendDef => {
             if(friendDef.ageUp) friendDef.ageUp(true);
         })
+
+        if(!isNpc){
+            this.developTrait();
+        }
 
         return true;
     }
@@ -599,6 +672,10 @@ class PetDefinition {
         return PetDefinition.generateFullCSprite(this.sprite, null, className);
     }
 
+    getAvatar(){
+        return `<div class="persona-avatar">${this.getCSprite(true)} ${this.name}</div>`
+    }
+
     getParents(){
         if(!this.friends.length) return false;
 
@@ -633,6 +710,15 @@ class PetDefinition {
 
         if(App.pet.hasMoodlet('hungry')){
             possibleCategories.push('hungry', 'hungry', 'hungry');
+        }
+        if(App.petDefinition.hasTrait('charismatic')){
+            possibleCategories.push('playdate', 'playdate', 'playdate');
+        }
+        if(App.petDefinition.hasTrait('introvert')){
+            possibleCategories.splice(possibleCategories.indexOf('playdate'), 1);
+        }
+        if(App.petDefinition.hasTrait('treasurer')){
+            possibleCategories.push('item', 'item', 'item');
         }
 
         const currentCategory = /* 'minigame' ||  */existingCurrentCategory || randomFromArray(possibleCategories);
@@ -683,6 +769,8 @@ class PetDefinition {
 
         current_want.appearTime = App.fullTime;
         current_want.next_refresh_ms = App.fullTime += (1000 * 60 * random(20, 60)); // 30-60 min
+
+        console.log(current_want);
     }
     clearWant(fulfilled){
         const {current_want} = this.stats;
@@ -727,6 +815,41 @@ class PetDefinition {
     getCharHash(){
         const sprite = this.sprite.split('/').at(-1) || this.sprite;
         return hashCode(sprite);
+    }
+    hasTrait(key){
+        return this?.traits?.includes?.(key)
+    }
+    developTrait(traitKey, ignoreCountLimitation){
+        if(!this) return;
+
+        const traitKeys = Object.keys(App.definitions.traits);
+
+        const currentTraitsDefinitions = this.traits.map(trait => App.definitions.traits[trait]);
+
+        const incompatibleTraits = currentTraitsDefinitions
+            .filter(trait => trait.opposite)
+            .flatMap(trait => trait.opposite);
+
+        const getRandomTrait = () => {
+            if(!ignoreCountLimitation && this.traits.length >= 5) return false;
+
+            for(let i = 0; i < 9999; i++){
+                const randomTrait = randomFromArray(traitKeys);
+                if(
+                    !this.hasTrait(randomTrait) &&
+                    !incompatibleTraits.includes(randomTrait)
+                ) return randomTrait;
+            }
+            return false;
+        }
+
+        const randomTrait = getRandomTrait();
+        if(!randomTrait) return console.warn('Could not generate new trait.');
+
+
+        this.traits.push(traitKey || randomTrait);
+
+        console.log(this, 'Developed new trait:', traitKey || randomTrait);
     }
 
     spritesheetDefinitions = {

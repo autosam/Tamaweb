@@ -1150,10 +1150,10 @@ c-sprite {
     gap: 4px;
     padding: 4px;
     border-radius: 20px;
-    margin: 6px -10px 0 -10px;
+    margin: 0px -10px 0 -10px;
     flex-wrap: wrap;
     justify-content: center;
-    background-color: #00000010;
+    background-color: var(--prim-clr-b-shadow);
 }
 .pet-trait-icon {
     width: 22px;
@@ -1163,11 +1163,13 @@ c-sprite {
     align-items: center;
     justify-content: center;
     border: 1px solid;
+    overflow: hidden;
 }
 .pet-trait-icon.disabled {
     position: relative;
     filter: grayscale();
     pointer-events: initial;
+    border-color: gray;
 }
 .pet-trait-icon.disabled:after {
     width: 100%;
@@ -1458,6 +1460,7 @@ input#background-color-picker {
 .m-0 {
     margin: 0 !important;
 }
+.left-0 { left: 0 !important; }
 
 .relative {
     position: relative;
@@ -2653,6 +2656,7 @@ button.message-bubble:active {
         -1px -1px 0px #00014b,
         1px -1px 0px #00014b,
         -1px 1px 0px #00014b;
+    color: var(--prim-clr-c-text);
 }
 
 .tabs {
@@ -2822,4 +2826,25 @@ c-sprite.ghost.devil::after {
 .score-circle.green {
     background-color: greenyellow;
     opacity: 1;
+}
+
+.click-sound * {
+    pointer-events: none;
+}
+
+.persona-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: var(--background-c);
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1px solid;
+    padding: 2px;
+}
+.persona-avatar > c-sprite {
+    border-radius: 100%;
+    overflow: hidden;
+    border: 1px solid;
 }

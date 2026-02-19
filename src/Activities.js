@@ -1,9 +1,328 @@
 class Activities {
+    static async digGardenTreasure(){
+        document.querySelector('#garden-screen')?.remove(); // bad, change later
+        App.toggleGameplayControls(false);
+        App.setScene(App.scene.garden);
+        App.handleAnimalsSpawn(false);
+        App.temp.digSpotObject.onClick = false;
+        const parent = new Object2d({});
+
+        const isValuable = random(0, 2);
+        const goldAmount = random(10, 30) * 10;
+
+        const spawnSmoke = (x, y, scale = 0.5) => {
+            return Activities.task_explodingParticles({
+                img: 'resources/img/misc/foam_single.png',
+                despawnTime: 100,
+                spawnDelay: 0,
+                x, y,
+                parent,
+                opacity: scale, targetOpacity: scale,
+                scale: 1, targetScale: 0,
+                speed: 0.5,
+            })
+        }
+
+        const main = new TimelineDirector(App.pet);
+        
+        main.setState('idle_side');
+        main.lookAt(false);
+        main.setPosition({x: '50%'});
+        await TimelineDirector.wait(500);
+        await main.moveTo({x: '35%', speed: 0.05});
+
+        for(let i = 0; i < 3; i++){
+            await TimelineDirector.wait(500);
+            await main.bob({animation: 'idle_side_uncomfortable', landAnimation: 'idle_side', maxCycles: 1});
+            spawnSmoke(App.temp.digSpotObject.x, App.temp.digSpotObject.y, 0.2);
+            App.pet.playSound('resources/sounds/ui_click_05.ogg', true);
+            Object2d.actionAnimations.horizontalJiggle(App.temp.digSpotObject);
+        }
+
+        App.temp.digSpotObject.spritesheet.cellNumber = 2;        
+
+        const chestObject = new Object2d({
+            parent,
+            img: 'resources/img/misc/treasure_chest_01.png',
+            x: '40%',
+            y: '78%',
+            opacity: 0,
+            scale: 0.1,
+            rotation: 0,
+            spritesheet: {
+                cellSize: 27,
+                cellNumber: 1,
+                rows: 1,
+                columns: 2,
+            },
+            onLateDraw: (me) => {
+                me.opacity = lerp(me.opacity, 1, 0.01 * App.deltaTime);
+                me.scale = lerp(me.scale, 1, 0.01 * App.deltaTime);
+                me.rotation = lerp(me.rotation, 0, 0.01 * App.deltaTime);
+            }
+        })
+        App.pet.setLocalZBasedOnSelf(chestObject);
+        await TimelineDirector.wait(10);
+        App.pet.playSound('resources/sounds/jump.ogg', true);
+        await main.jumpTo({x: '80%', speed: 0.0015, curve: 0.5, y: main.getPosition('y'), endState: 'shocked_without_sound', animation: 'shocked_without_sound'});
+        App.pet.playSound('resources/sounds/shock.ogg', true);
+        main.actor.stopMove();
+        await TimelineDirector.wait(500); 
+        main.setState('idle_side');
+        await TimelineDirector.wait(500); 
+        await main.moveTo({x: '72%', speed: 0.01});
+        await TimelineDirector.wait(500); 
+
+        for(let i = 0; i < 3; i++){
+            await main.bob({animation: 'idle_side_uncomfortable', landAnimation: 'idle_side', maxCycles: 1});
+            chestObject.rotation = randomFromArray([-10, 10]);
+            Object2d.actionAnimations.horizontalJiggle(chestObject);
+            spawnSmoke(chestObject.x, chestObject.y, 0.2);
+            App.pet.playSound('resources/sounds/ui_click_05.ogg', true);
+            await TimelineDirector.wait(200); 
+        }
+
+        await main.bob({animation: 'idle_side_uncomfortable', landAnimation: 'shocked', maxCycles: 1});
+        chestObject.rotation = randomFromArray([-10, 10]);
+        Object2d.actionAnimations.horizontalJiggle(chestObject);
+        
+        spawnSmoke(chestObject.x, chestObject.y, 0.2);
+        chestObject.scale = 1.3;
+        chestObject.spritesheet.cellNumber = 2;
+        App.pet.playSound('resources/sounds/task_complete.ogg', true);
+
+        Activities.task_explodingParticles({
+            img: isValuable 
+                ? 'resources/img/misc/twinkle_01.png'
+                : 'resources/img/misc/poop.png',
+            despawnTime: 1500,
+            x: chestObject.x,
+            y: chestObject.y,
+            parent,
+        })
+
+        // treasure object
+        const treasureObject = new Object2d({
+            parent,
+            img: isValuable 
+                ? 'resources/img/misc/money_bag_01.png' 
+                : 'resources/img/misc/poop.png',
+            x: '40%',
+            y: '80%',
+            z: App.constants.ACTIVE_PET_Z + 1,
+            opacity: 0,
+            onLateDraw: (me) => {
+                me.y = lerp(me.y, 35, 0.001 * App.deltaTime);
+                me.opacity = lerp(me.opacity, 1, 0.002 * App.deltaTime);
+            }
+        })
+        treasureObject.showOutline('#FFFF00');
+
+        await main.bob({animation: 'shocked', landAnimation: 'shocked', maxCycles: 1});
+        App.pet.playSound('resources/sounds/shock.ogg', true);
+        await TimelineDirector.wait(1000);
+
+        let messageBubble;
+        if(isValuable){
+            main.setState('cheering_with_icon');
+            App.pet.playSound('resources/sounds/task_complete_02.ogg', true);
+            messageBubble = App.displayMessageBubble(`$${goldAmount}`);
+            App.pet.stats.gold += goldAmount;
+        } else {
+            main.setState('uncomfortable');
+            App.pet.playSound('resources/sounds/task_fail_01.ogg', true);
+            App.pet.stats.current_fun -= 50;
+        }
+
+        await TimelineDirector.wait(3000);
+        messageBubble?.close();
+
+        await TimelineDirector.wait(500);
+        App.save();
+
+        App.fadeScreen({
+            middleFn: () => {
+                App.temp.hasActiveDigSpot = false;
+                parent.removeObject();
+                main.release();
+                Activities.goToGarden();
+            }
+        })
+    }
+    static async moveOut(isChild){
+        App.closeAllDisplays();
+        App.setScene(App.scene.galaxy);
+        App.toggleGameplayControls(false);
+        const parent = new Object2d({});
+
+        const backgroundMusic = App.playAdvancedSound({
+            loop: true, 
+            src: 'resources/sounds/move_out_bm_01.mp3',
+            volume: 0.5,
+        });
+
+        const daysSinceBirth = moment().diff(App.petDefinition.birthday, 'days');
+
+        const getCareState = () => {
+            if(daysSinceBirth <= 1) return 'abandoned'
+            else if(daysSinceBirth <= 2) return 'leaveEarly'
+            switch(App.pet.stats.current_care){
+                case 1: return 'lowCare';
+                case 3: return 'highCare';
+                default: return 'mediumCare';
+            }
+        }
+
+        const getDialogMessage = () => {
+            switch(getCareState()){
+                case 'abandoned': return {
+                    title: 'Abandonment',
+                    // msg: `Already letting me go? I guess some connections just aren't meant to form. Hope you find what you are looking for.`,
+                    msg: `Already letting <i>${App.petDefinition.name}</i> go? Guess some connections just aren't meant to form.<br><br>You weren't really ready for this responsibility, were you?<br><br>Please think twice before getting another pet.`,
+                    sender: 'The Collective',
+                };
+                case 'leaveEarly': return {
+                    title: `Dear ${App.userName}`,
+                    msg: `You and <i>${App.petDefinition.name}</i> barely had any time together!<br>A day wasn't enough to really get to know each other.<br><br>Maybe your paths will cross again when you have more time to spare.`,
+                    sender: 'The Collective',
+                }
+                case 'lowCare': return {
+                    msg: `Even though you didn't take very good care of me, I still fondly look back on our journey. Please take care.`,
+                    sender: App.petDefinition.name,
+                }
+                case 'mediumCare': return {
+                    msg: `It's been ${moment(App.petDefinition.birthday).fromNow(true)} since we met, and while our journey had its ups and downs, I'll remember the good times most. Thank you for being there when it mattered. Take care!`,
+                    sender: App.petDefinition.name,
+                }
+                case 'highCare': return {
+                    msg: `Thank you for taking care of me for the past ${moment(App.petDefinition.birthday).fromNow(true)}, I will cherish every memory we have and will not forget about all the moments we shared together <3`,
+                    sender: App.petDefinition.name,
+                }
+            }
+        }
+
+        const getMood = () => {
+            const state = getCareState();
+            if(state === 'mediumCare' || state === 'highCare') return 'blush';
+            return 'idle_side_uncomfortable';
+        }
+
+        const dialog = getDialogMessage();
+        const isSenderPet = App.petDefinition.name === dialog.sender;
+        
+        const main = new TimelineDirector(App.pet, {
+            driverFn: (me) => {
+                if(!me.circleMovementVector && typeof me.x !== 'string'){
+                    me.circleMovementVector = {
+                        x: me.x,
+                        y: me.y,
+                        float: 0,
+                    }
+                    return;
+                }
+                me.circleMovementVector.float += 0.001 * App.deltaTime;
+                Object2d.animations.circleAround(me, 5, me.circleMovementVector.float, me.circleMovementVector.x, me.circleMovementVector.y);
+            },
+        });
+
+        const mood = getMood();
+        
+        main.setPosition({x: '50%', y: '80%'});
+
+        main.actor.opacity = 0.0001;
+        await main.fade({target: 1, speed: 0.001});
+        main.actor.opacity = 1;
+
+        await TimelineDirector.wait(500);
+
+        if(mood === 'blush') {
+            await main.bob({
+                maxCycles: 2, 
+                landAnimation: 'idle'
+            });
+        }
+
+        await TimelineDirector.wait(500);
+        main.setState(mood);
+
+        if(isSenderPet){
+            await Activities.enterDialog(
+                App.petDefinition, 
+                dialog.msg,
+            );
+        }
+
+        await TimelineDirector.wait(500);
+
+        main.bob();
+
+        const twinkle = new Object2d({
+            parent,
+            img: 'resources/img/misc/twinkle_01.png',
+            x: '50%',
+            y: '50%',
+            opacity: 1,
+            scale: 0,
+            rotation: 0,
+            width: 27, height: 27,
+            z: App.pet.z + 5,
+
+            targetScale: 0.7,
+            changeSpeed: 0.003,
+        })
+
+        twinkle.onDraw = (me) => {
+            me.scale = lerp(me.scale, me.targetScale, me.changeSpeed * App.deltaTime);
+            me.rotation += 0.5 * App.deltaTime;
+        }
+        setTimeout(() => {
+            twinkle.targetScale = 0;
+        }, 800);
+
+        await main.fade({target: 0, speed: 0.003});
+        main.actor.opacity = 0;
+        main.setPosition({x: '150%'});
+
+        await TimelineDirector.wait(2000);
+
+        App.fadeScreen({middleFn: () => {
+            parent.removeObject();
+
+            const end = () => {
+                backgroundMusic.stop(0.0001);
+                App.transferAndGetFreshEgg(!isChild);
+                App.save();
+            }
+
+
+            if(isSenderPet){
+                return end();
+            }
+
+            App.handlers.show_letter({
+                headline: dialog.title || '',
+                text: dialog.msg,
+                sender: dialog.sender,
+                onClose: () => {
+                    end();
+                }
+            })
+        }})
+    }
     static async enterDialog(speakerPetDef = App.getRandomPetDef(), text){
-        const WORDS_PER_SCREEN = 10;
+        const currentGameplayControls = App.getGameplayControlsState();
+
+        let resolvePromise;
+        const promise = new Promise((resolve) => {
+            resolvePromise = resolve;
+        })
+
+        const WORDS_PER_SCREEN = 8;
+
+        const cleaned = text.trim().replace(/\s+/g, ' ');
 
         let currentWordPointer = 0;
-        const textWords = text.split(' ');
+        const textWords = cleaned.split(' ');
         let activeText = '';
         let currentLetterPointer = 0;
 
@@ -32,7 +351,10 @@ class Activities {
                 UI.hide(dialogIndicatorElement);
             }
             const nextString = activeText.slice(0, currentLetterPointer);
-            dialogTextElement.textContent = nextString;
+            if(dialogTextElement.innerHTML !== nextString){
+                App.playSpeechSound(nextString.slice(-1));
+                dialogTextElement.innerHTML = nextString;
+            }
         }, 50);
         
         const progressDialog = () => {
@@ -46,15 +368,20 @@ class Activities {
             if(!nextSetOfWords){
                 screen.remove();
                 clearInterval(textAnimationHandler);
-                App.toggleGameplayControls(true);
-                App.pet.stopScriptedState();
+                App.toggleGameplayControls(
+                    currentGameplayControls.state,
+                    currentGameplayControls.onclick,
+                    currentGameplayControls.triggerFeedback
+                );
+                resolvePromise();
             }
             currentWordPointer += WORDS_PER_SCREEN;
         }
         progressDialog();
 
         App.toggleGameplayControls(false, progressDialog)
-        App.pet.triggerScriptedState('idle', App.INF, null, true)
+
+        return promise;
     }
     static async getRobbed(){
         const hasIndoorAnimal = App.animals.list?.some(animalDef => animalDef.spawnIndoors);
@@ -141,7 +468,8 @@ class Activities {
         pet.setPosition({x: '100%'});
         await pet.moveTo({x: '80%', speed: 0.025});
 
-        await pet.jumpTo({x:'85%', y: '80%', speed: 0.002})
+        await pet.jumpTo({x:'83%', y: '80%', speed: 0.002})
+        pet.actor.stopMove();
 
         await waiter.moveTo({x: '30%', speed: 0.025});
         waiter.setState('jumping')
@@ -1849,7 +2177,6 @@ class Activities {
 
         Missions.done(Missions.TYPES.play_item);
 
-
         App.toggleGameplayControls(false);
 
         const interruptFn = () => {
@@ -1871,7 +2198,12 @@ class Activities {
         App.pet.triggerScriptedState('cheering', item.interaction_time || 10000, false, true, () => {  
             App.drawer.removeObject(itemObject);
 
-            App.pet.stats.current_fun += item.fun_replenish || 0;
+            let fun_replenish = item.fun_replenish;
+            if(App.petDefinition.hasTrait('treasurer')){
+                fun_replenish *= 1.5;
+            }
+
+            App.pet.stats.current_fun += fun_replenish || 0;
             App.pet.stats.current_sleep += item.sleep_replenish || 0;
             App.pet.stats.current_expression += item.expression_increase || 0;
             App.pet.stats.current_logic += item.logic_increase || 0;
@@ -1926,7 +2258,9 @@ class Activities {
                 setTimeout(() => App.playSound('resources/sounds/task_fail_01.ogg', true))
             }
         }
-        const petOverall = (App.pet.stats.current_fun + App.pet.stats.current_cleanliness + App.pet.stats.current_health + random(0, 100)) / 4;
+
+        let petOverall = (App.pet.stats.current_fun + App.pet.stats.current_cleanliness + App.pet.stats.current_health + random(0, 100)) / 4;
+        if(App.petDefinition.hasTrait('romantic')) petOverall += random(20, 80);
         const otherEnjoyment = random(30, 85) <= petOverall;
         const petEnjoyment = otherEnjoyment ? !!random(0, 6) : random(0, 1); // just to make it more common for both parties to not like each other
         determineBehavior(App.pet, petEnjoyment);
@@ -2099,6 +2433,7 @@ class Activities {
 
                                     let amount = random(3, 5);
                                     if(App.isGameplayBuffActive('doubleHarvest')) amount += random(3, 5);
+                                    if(App.petDefinition.hasTrait('plentyHarvest')) amount += random(0, 5);
 
                                     App.addNumToObject(App.pet.inventory.harvests, plant.name, amount);
                                     App.displayConfirm(`
@@ -2239,6 +2574,7 @@ class Activities {
                 </button>
             </div>
         `;
+        screen.id = 'garden-screen';
         screen.querySelector('#garden').onclick = () => {
             const controller = App.getGameplayControlsState()
             if(!controller.state && !controller.onclick) return;
@@ -3184,7 +3520,8 @@ class Activities {
                                     App.pet.x = '50%';
                                 }
                                 if(!failed){
-                                    const amount = resultFoodName ? random(1, 3) : 1;
+                                    let amount = resultFoodName ? random(1, 3) : 1;
+                                    if(App.petDefinition.hasTrait('naturalChef')) amount *= 2;
                                     App.displayPopup(`${App.petDefinition.name} <br>made x${amount}<br> <b>${randomFoodName}</b>!`, 3000, () => {
                                         end();
                                         App.pet.playCheeringAnimation();
@@ -3414,37 +3751,38 @@ class Activities {
 
         App.toggleGameplayControls(false);
 
-        let egg = App.pet.eggObject;
-            egg.y = -40;
+        const EGG_TARGET_Y = 72;
 
-        let stage = 0;
+        const egg = App.pet.eggObject;
+        egg.y = -50;
+        egg.opacity = 0;
 
-        this.ufoObject = new Object2d({
+        App.playSound('resources/sounds/cute.ogg', true);
+        setTimeout(() => App.playSound('resources/sounds/cute.ogg', true), 200);
+
+        new Object2d({
             image: App.preloadedResources['resources/img/misc/ufo_01.png'],
-            y: -120,
+            y: 0,
             x: 0,
+            opacity: 0,
+            targetOpacity: 1,
+            onDraw: (me) => {
+                egg.y = clamp(egg.y + 0.055 * App.deltaTime, -100, EGG_TARGET_Y);
+                if(egg.y > 0) egg.opacity = clamp(egg.opacity + 0.002 * App.deltaTime, 0, 1);
+
+                if(egg.y >= EGG_TARGET_Y && me.targetOpacity !== 0){
+                    App.playSound('resources/sounds/task_complete.ogg', true);
+                    me.targetOpacity = 0;
+                    setTimeout(() => {
+                        App.toggleGameplayControls(true);
+                        if(callback) callback();
+                        me.removeObject();
+                    }, 1000);
+                }
+
+                me.opacity = lerp(me.opacity, me.targetOpacity, 0.004 * App.deltaTime);
+            }
         });
-
-        let drawEvent = () => {
-            egg.y = lerp(egg.y, 72, 0.0008 * App.deltaTime);
-            
-            if(stage == 0){
-                this.ufoObject.y = lerp(this.ufoObject.y, 0, 0.007 * App.deltaTime);
-                if(egg.y >= 65) stage = 1;
-            } else {
-                this.ufoObject.y = lerp(this.ufoObject.y, -120, 0.001 * App.deltaTime);
-                if(this.ufoObject.y <= -110) stage = 2;
-            }
-
-            if(stage == 2){
-                App.toggleGameplayControls(true);
-                if(callback) callback();
-                this.ufoObject.removeObject();
-                App.unregisterOnDrawEvent(drawEvent);
-            }
-        }
-
-        App.registerOnDrawEvent(drawEvent);
     }
     static stayAtParents(end){
         App.sendAnalytics('stay_at_parents');
@@ -3849,6 +4187,9 @@ class Activities {
             z: App.constants.ACTIVE_PET_Z - 0.1
         });
 
+        App.pet.setLocalZBasedOnSelf(table);
+        App.pet.setLocalZBasedOnSelf(cake);
+
         otherPets.forEach((pet, i) => {
             pet.stopMove();
             pet.targetX = 20;
@@ -3898,8 +4239,6 @@ class Activities {
                         App.toggleGameplayControls(true);
                         App.pet.playCheeringAnimation();
                     });
-
-                    App.sendAnalytics('age_up', App.petDefinition.lifeStage);
                 });
             });
         });
@@ -4579,9 +4918,14 @@ class Activities {
             App.reloadScene();
 
             const winScore = scoreArray.filter(e => e === true).length;
+            const hasWon = winScore >= 2;
+            if(hasWon){
+                App.definitions.achievements.perfect_minigame_flags_win_x_times.advance();
+            }
+
             Activities.task_winMoneyFromArcade({
+                hasWon,
                 amount: winScore * 20,
-                hasWon: winScore >= 2,
                 happiness: winScore * 3,
             })
         }
@@ -5122,15 +5466,19 @@ class Activities {
         }
 
         const setPredictedDirection = (dir) => {
-            const randomDir = randomFromArray(['left', 'center', 'right']);
+            let randomDir = randomFromArray(['left', 'center', 'right']);
             setTimeout(() => {
-                const opponentState = deriveStateFromDirection(randomDir);
-                opponentPet.setState(opponentState.state)
-                opponentPet.inverted = opponentState.inverted;
-
                 const playerState = deriveStateFromDirection(dir);
                 App.pet.setState(playerState.state)
                 App.pet.inverted = playerState.inverted;
+
+                if(App.petDefinition.hasTrait('lucky') && random(1, 3) === 1) {
+                    randomDir = dir;
+                }
+
+                const opponentState = deriveStateFromDirection(randomDir);
+                opponentPet.setState(opponentState.state)
+                opponentPet.inverted = opponentState.inverted;
 
                 // if(randomDir === dir){
                 //     App.playSound(`resources/sounds/task_complete_02.ogg`, true);
@@ -5477,6 +5825,179 @@ class Activities {
         App.pet.triggerScriptedState('idle_side', App.INF, false, true);
         App.pet.inverted = false;
         App.pet.x = '80%';
+    }
+    static async leavesGame(){
+        App.closeAllDisplays();
+        App.setScene(App.scene.full_grass);
+        App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.toggleGameplayControls(false, () => {}, false)
+        App.playSound(`resources/sounds/note_4.mp3`, true);
+
+        App.pet.stopMove();
+        App.pet.x = 9999;
+
+        const targetLeavesCount = 250;
+        let timeSeconds = 10;
+        const screen = UI.empty();
+        document.querySelector('.screen-wrapper').appendChild(screen);
+        screen.innerHTML = `
+        <div class="width-full pointer-events-none" style="position: absolute; top: 0; left: 0;">
+            <div class="flex-container" style="justify-content: space-between; padding: 4px">
+                <div class="flex-container flex-gap-05 mini-game-ui">
+                    <div id="time">${timeSeconds}</div>
+                </div>
+            </div>
+        </div>
+        `;
+        const timeElement = screen.querySelector('#time');
+        const timerInterval = setInterval(() => {
+            timeSeconds -= 1;
+            timeElement.textContent = clamp(timeSeconds, 0, Infinity);
+        }, 1000)
+
+        let currentLeavesCount = targetLeavesCount;
+
+        const activeForce = {
+            strength: 0,
+            origin: { x: 0, y: 0 },
+            maxDistance: 25
+        }
+
+        const leavesParent = new Object2d({});
+        const spawnLeaf = () => {
+            const leaf = new Object2d({
+                img: `resources/img/misc/leaves_01.png`,
+                spritesheet: {
+                    cellSize: 13,
+                    cellNumber: random(1, 8),
+                    rows: 2,
+                    columns: 4,
+                },
+                x: `${random(5, 95)}%`,
+                y: `${random(5, 95)}%`,
+                rotation: random(0, 180),
+                parent: leavesParent,
+            
+                velocityX: 0,
+                velocityY: 0,
+                drag: 0.91,
+                shouldDespawn: false,
+                opacity: 1,
+                scale: 1 + ((Math.random() - 0.5) * 0.1),
+                
+                onDraw: (me) => {
+                    if(typeof me.x === 'string') return;
+
+                    if (activeForce.strength > 0) {
+                        const manhattanDistX = Math.abs(me.x - activeForce.origin.x);
+                        const manhattanDistY = Math.abs(me.y - activeForce.origin.y);
+                        const manhattanDist = manhattanDistX + manhattanDistY;
+                        
+                        if (manhattanDist < activeForce.maxDistance) {
+                            const dirX = me.x > activeForce.origin.x ? 1 : -1;
+                            const dirY = me.y > activeForce.origin.y ? 1 : -1;
+
+                            const forceScale = 1 - (manhattanDist / activeForce.maxDistance);
+                            const forceMagnitude = activeForce.strength * forceScale * forceScale;
+                            
+                            me.velocityX += dirX * forceMagnitude * (manhattanDistX / manhattanDist);
+                            me.velocityY += dirY * forceMagnitude * (manhattanDistY / manhattanDist);
+                        }
+                    }
+                    
+                    me.x += me.velocityX * App.deltaTime;
+                    me.y += me.velocityY * App.deltaTime;
+
+                    // slow down
+                    me.velocityX *= me.drag;
+                    me.velocityY *= me.drag;
+
+                    me.rotation += (me.velocityX * 100) % 360;
+
+                    if(
+                        me.x <= 0 || me.x >= App.drawer.bounds.width - me.spritesheet.cellSize ||
+                        me.y <= 5 || me.y > App.drawer.bounds.height - me.spritesheet.cellSize
+                    ) {
+                        me.shouldDespawn = true;
+                    }
+
+                    if(me.shouldDespawn){
+                        me.opacity -= 0.05;
+                        if(me.opacity <= 0){
+                            currentLeavesCount -= 1;
+                            me.removeObject();
+                        }
+                    }
+                }
+            })
+            return leaf;
+        }
+
+        const onEnd = () => {
+            App.toggleGameplayControls(false);
+            App.pet.stopScriptedState();
+            screen.remove();
+            clearInterval(timerInterval);
+            setTimeout(() => App.playSound(`resources/sounds/task_complete_02.ogg`, true))
+            setTimeout(() => {
+                App.fadeScreen({
+                    middleFn: () => {
+                        // todo: change the reward calculation from amount to time left
+                        const hasWon = currentLeavesCount <= 0;
+                        if(hasWon){
+                            App.definitions.achievements.perfect_minigame_leaves_win_x_times.advance();
+                        }
+                        Activities.task_winMoneyFromArcade({
+                            hasWon,
+                            amount: clamp(
+                                    Math.floor(((targetLeavesCount - currentLeavesCount) / 5 )- (currentLeavesCount ? 20 : 0)), 
+                                0, Infinity),
+                        })
+                        leavesParent.removeObject();
+                    }
+                })
+            }, 500);
+        }
+
+        let lastSmokeSpawnTime = 0;
+        const driverFn = () => {
+            if(currentLeavesCount <= 0 || timeSeconds <= 0) onEnd();
+
+            if(!App.mouse.isInBounds || !App.mouse.isDown) return;
+
+            activeForce.strength = 0.05;
+            activeForce.origin = {
+                x: App.mouse.x,
+                y: App.mouse.y
+            }
+            
+            if(App.time > lastSmokeSpawnTime + 100){
+                lastSmokeSpawnTime = App.time;
+                App.playSound(`resources/sounds/swoosh_0${random(1, 2)}.ogg`, true);
+                new Object2d({
+                    img: 'resources/img/misc/foam_single.png',
+                    x: activeForce.origin.x - 12, 
+                    y: activeForce.origin.y - 12, 
+                    z: 6, opacity: 1, scale: random(3, 6) * 0.1, 
+                    rotation: random(0, 180),
+                    onDraw: (me) => {
+                        me.rotation += 0.1 * App.deltaTime;
+                        me.opacity -= 0.001 * App.deltaTime;
+                        me.scale -= 0.001 * App.deltaTime;
+                        me.y -= 0.05 * App.deltaTime;
+                        if(me.opacity <= 0.1 || me.scale <= 0.1) me.removeObject();
+                    }
+                })
+            }
+        }
+
+        // Spawn leaves with some initial random velocity for more natural feel
+        for(let i = 0 ; i < currentLeavesCount; i++){
+            const leaf = spawnLeaf();
+            App._leaf =leaf;
+        }
+
+        App.pet.triggerScriptedState('idle', App.INF, false, true, null, driverFn);
     }
 
     // school
@@ -6104,6 +6625,10 @@ class Activities {
         }, 5500);
     }
     static task_endWork(elapsedTime, moneyMade){
+        if(App.petDefinition.hasTrait('hardWorker')){
+            moneyMade = moneyMade * (1 + random(1, 4) * 0.1);
+        }
+
         let clampedMoneyMade = clamp(moneyMade, 0, 400);
         App.displayPopup(`${App.petDefinition.name} worked for ${elapsedTime} seconds`, 2500, () => {
             if(elapsedTime > 10){
@@ -6170,6 +6695,83 @@ class Activities {
                 if(me.y < -16) me.removeObject();
             }
         }
+    }
+    static task_explodingParticles(baseParams = {}){
+        // params
+        const defaultParams = {
+            parent: undefined,
+            x: '50%',
+            y: '50%',
+            z: App.constants.ACTIVE_PET_Z + 1,
+            spawnDelay: 50,
+            img: 'resources/img/misc/twinkle_01.png',
+            aliveMs: 2000,
+            opacity: 0, targetOpacity: 1,
+            scale: 0, targetScale: 1,
+            colorOverrides: [
+                ['#FFFFFF', '#FFFF00'],
+            ],
+            speed: 0.8,
+            despawnTime: 5000,
+        }
+
+        const PARAMS = {
+            ...defaultParams,
+            ...baseParams
+        }
+
+        const particlesSpawnerObject = new Object2d({
+            // particle related
+            x: PARAMS.x,
+            y: PARAMS.y,
+            z: PARAMS.z,
+            width: 1, height: 1,
+            lastSpawnTime: 0,
+            despawnTime: PARAMS.despawnTime,
+            onLateDraw: (me) => {
+                me.despawnTime -= App.accurateDeltaTime;
+                if(me.despawnTime <= 0) {
+                    return me.removeObject();
+                }
+
+                if(App.time < me.lastSpawnTime + PARAMS.spawnDelay) return;
+                me.lastSpawnTime = App.time;
+                
+                // particle
+                new Object2d({
+                    parent: PARAMS.parent,
+                    x: particlesSpawnerObject.x,
+                    y: particlesSpawnerObject.y,
+                    z: particlesSpawnerObject.z,
+                    direction: normalizeVector({
+                        x: randomFromArray([Math.random(), -Math.random()]),
+                        y: randomFromArray([Math.random(), -Math.random()])
+                    }),
+
+                    // particle related
+                    aliveMs: PARAMS.aliveMs,
+
+                    img: PARAMS.img,
+                    opacity: PARAMS.opacity,
+                    scale: PARAMS.scale,
+                    colorOverrides: PARAMS.colorOverrides,
+                    onDraw: (me) => {
+                        me.aliveMs -= App.accurateDeltaTime;
+                        if(me.aliveMs <= 0){
+                            me.removeObject();
+                        }
+
+                        me.opacity = lerp(me.opacity, PARAMS.targetOpacity, 0.005 * App.deltaTime);
+                        me.scale = lerp(me.scale, PARAMS.targetScale, 0.002 * App.deltaTime);
+
+                        me.x += me.direction.x * App.deltaTime * 0.1 * PARAMS.speed;
+                        me.y += me.direction.y * App.deltaTime * 0.1 * PARAMS.speed;
+                    },
+                })
+            }
+        })
+
+        return particlesSpawnerObject;
     }
     static task_handleLeavingAnimals(){
         App.animals.list?.forEach(a => a?.handleStatsUpdate?.());
@@ -6263,6 +6865,9 @@ class Activities {
 
         App.toggleGameplayControls(false);
         App.pet.staticShadow = false;
+
+        if(App.petDefinition.hasTrait('lucky'))
+            amount = amount * (1 + random(0, 5) * 0.1);
 
         App.pet.stats.gold += amount;
         App.pet.stats.current_fun += happiness ?? (amount / 5);

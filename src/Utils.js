@@ -233,24 +233,40 @@ function recolorImage(originalImage, replaceColors) {
     const imageData = ctx.getImageData(0, 0, offCanvas.width, offCanvas.height);
     const { data } = imageData;
 
-    const colorMap = {};
+    const colorMap = new Map();
     replaceColors.forEach(([fromHex, toHex]) => {
         const from = hexToRgb(fromHex);
         const to = hexToRgb(toHex);
-        colorMap[`${from.r},${from.g},${from.b}`] = to;
+        const fromKey = (from.r << 16) | (from.g << 8) | from.b;
+        const toKey = (to.r << 16) | (to.g << 8) | to.b;
+        colorMap.set(fromKey, toKey);
     });
 
     for (let i = 0; i < data.length; i += 4) {
-        const key = `${data[i]},${data[i + 1]},${data[i + 2]}`;
-        if (colorMap[key]) {
-            const to = colorMap[key];
-            data[i] = to.r;
-            data[i + 1] = to.g;
-            data[i + 2] = to.b;
+        const pixelKey = (data[i] << 16) | (data[i+1] << 8) | data[i+2];
+        const replacement = colorMap.get(pixelKey);
+        
+        if (replacement !== undefined) {
+            data[i] = (replacement >> 16) & 0xFF;
+            data[i+1] = (replacement >> 8) & 0xFF;
+            data[i+2] = replacement & 0xFF;
         }
     }
 
     ctx.putImageData(imageData, 0, 0);
+
+    /* // return blob, more optimized
+    const blobImage = new Image();
+    offCanvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        blobImage.onload = () => {
+            URL.revokeObjectURL(url);
+        };
+        blobImage.src = url;
+        recolorImage.cache[cacheKey] = blobImage;
+    }, 'image/png');
+    return blobImage; */
+
 
     const newImg = new Image();
     newImg.src = offCanvas.toDataURL();
@@ -300,6 +316,18 @@ function getRandomName(seed, noSuffix){
         return n + s;
     }
     return randomFromArray(firstNames) + (noSuffix ? '' : randomFromArray(suffixes));
+}
+function normalizeVector({ x, y }) {
+    const magnitude = Math.sqrt(x * x + y * y);
+
+    if (magnitude === 0) {
+    return { x: 0, y: 0 };
+    }
+
+    return {
+        x: x / magnitude,
+        y: y / magnitude
+    };
 }
 
 
