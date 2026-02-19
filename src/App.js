@@ -879,7 +879,7 @@ const App = {
                 break;
             case "DISCORD6K":
                 if(!addEvent(codeEventId, () => {
-                    const goldAmount = 3000, missionPtsAmount = 500;
+                    const goldAmount = 5000, missionPtsAmount = 500;
                     App.pet.stats.gold += goldAmount;
                     Missions.currentPts += missionPtsAmount;
                     App.displayPopup(`You've redeemed <b>$${goldAmount}</b>, <b>${missionPtsAmount} Mission pts</b>!`, 4000);

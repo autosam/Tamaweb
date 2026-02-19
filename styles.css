@@ -2656,6 +2656,7 @@ button.message-bubble:active {
         -1px -1px 0px #00014b,
         1px -1px 0px #00014b,
         -1px 1px 0px #00014b;
+    color: var(--prim-clr-c-text);
 }
 
 .tabs {
