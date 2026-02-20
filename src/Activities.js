@@ -4,7 +4,6 @@ class Activities {
         App.toggleGameplayControls(false);
         App.setScene(App.scene.garden);
         App.handleAnimalsSpawn(false);
-        App.temp.digSpotObject.onClick = false;
         const parent = new Object2d({});
 
         const isValuable = random(0, 2);
@@ -2696,6 +2695,22 @@ class Activities {
 
         App.toggleGameplayControls(false, () => {
             return App.displayList([
+                {
+                    _ignore: !App.temp.hasActiveDigSpot,
+                    name: `
+                        <span style="color: #914f15;">
+                            ${App.getIcon('person-digging icon', true)} Dig up treasure
+                        </span>
+                        ${App.getBadge()}
+                    `,
+                    onclick: () => {
+                        App.closeAllDisplays();
+                        App.toggleGameplayControls(false);
+                        App.fadeScreen({
+                            middleFn: () => Activities.digGardenTreasure()
+                        })
+                    }
+                },
                 {
                     _ignore: true,
                     name: 'Garden',
@@ -5837,7 +5852,7 @@ class Activities {
         App.pet.x = 9999;
 
         const targetLeavesCount = 250;
-        let timeSeconds = 10;
+        let timeSeconds = 15;
         const screen = UI.empty();
         document.querySelector('.screen-wrapper').appendChild(screen);
         screen.innerHTML = `

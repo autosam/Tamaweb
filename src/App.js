@@ -1363,12 +1363,6 @@ const App = {
                             rows: 1,
                             columns: 2,
                         },
-                        onClick: () => {
-                            App.toggleGameplayControls(false);
-                            App.fadeScreen({
-                                middleFn: () => Activities.digGardenTreasure()
-                            })
-                        }
                     })
                     // App.pet.setLocalZBasedOnSelf(App.temp.digSpotObject);
                 }
