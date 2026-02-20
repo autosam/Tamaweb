@@ -2918,7 +2918,7 @@ App.definitions = (() => {
                 onEnd: () => {
                     App.pet.stats.current_fun += 10;
                     App.pet.stats.current_hunger += 10;
-                    App.pet.stxats.current_sleep += 20;
+                    App.pet.stats.current_sleep += 20;
                 }
             },
             {
