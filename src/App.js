@@ -597,7 +597,7 @@ const App = {
         if(bgPattern){
             if(this.settings.backgroundPattern){
                 UI.show(bgPattern);
-                bgPattern.style.background = `url(${this.settings.backgroundPattern})`
+                bgPattern.style.background = `url(${App.checkResourceOverride(this.settings.backgroundPattern)})`
             } else {
                 UI.hide(bgPattern);
             }
@@ -4910,7 +4910,7 @@ const App = {
             .map(current => {
                 return {
                     name: `
-                        <img style="box-shadow: inset 0 0 0 100vw #0000009e;" src="${current.image}"></img>
+                        <img style="box-shadow: inset 0 0 0 100vw #0000009e;" src="${App.checkResourceOverride(current.image)}"></img>
                         ${current.isNew ? App.getBadge('new!') : ''}
                         <div>
                             ${current.name}
