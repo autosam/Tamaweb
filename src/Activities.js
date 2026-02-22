@@ -3807,7 +3807,7 @@ class Activities {
             App.setScene(App.scene.home);
             App.pet.playCheeringAnimation();
             App.pet.stats.is_at_parents = false;
-            App.pet.stats.current_discipline += random(0, 5);
+            App.pet.stats.current_discipline += random(0, 2);
             return;
         }
 
@@ -4000,7 +4000,7 @@ class Activities {
             }
 
             App.pet.stats.current_cleanliness += 25;
-            App.pet.stats.current_discipline += random(1, 3);
+            App.pet.stats.current_discipline += random(0, 2);
             App.playSound(`resources/sounds/ui_click_05.ogg`, true);
         });
 
@@ -6851,7 +6851,7 @@ class Activities {
             setTimeout(() => App.pet.playSound('resources/sounds/task_fail_01.ogg', true));
             petMain.setState('uncomfortable');
             petClerk.setState('mild_uncomfortable');
-            App.pet.stats.current_discipline -= random(2, 6);
+            App.pet.stats.current_discipline -= random(0, 1);
         }
         await TimelineDirector.wait(3000);
 
@@ -6909,7 +6909,7 @@ class Activities {
             setTimeout(() => App.pet.playSound('resources/sounds/task_fail_01.ogg', true));
             petMain.setState('uncomfortable');
             petClerk.setState('mild_uncomfortable');
-            App.pet.stats.current_discipline -= random(2, 8);
+            App.pet.stats.current_discipline -= random(0, 2);
         }
         await TimelineDirector.wait(3000);
 

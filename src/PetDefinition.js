@@ -782,7 +782,7 @@ class PetDefinition {
 
         if(fulfilled){
             this.stats.current_fun += random(30, 50);
-            this.stats.current_discipline += random(3, 6);
+            this.stats.current_discipline += random(0, 3);
             this.adjustCare(true);
             Missions.done(Missions.TYPES.fulfill_want);
         } else {
