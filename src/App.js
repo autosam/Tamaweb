@@ -464,26 +464,30 @@ const App = {
     },
     registerInputUpdates: function(){
         const moveEventHandler = (evt) => {
-            const rect = App.drawer.canvas.getBoundingClientRect();
-    
-            let x, y;
-            const target = evt.type.startsWith("touch") ? evt.targetTouches[0] : evt;
-                x = target.clientX - rect.left;
-                y = target.clientY - rect.top;
+            const canvas = App.drawer.canvas;
+            const rect = canvas.getBoundingClientRect();
 
-            App.mouse.isInBounds = x >= 0 && y >= 0 
-                && x < rect.width && y < rect.height;
-        
-            x = Math.max(0, Math.min(x, rect.width));
-            y = Math.max(0, Math.min(y, rect.height));
-        
-            App.mouse.x = x / 2;
-            App.mouse.y = y / 2;
+            const target = evt.type.startsWith("touch")
+                ? evt.targetTouches[0]
+                : evt;
+
+            const x = (target.clientX - rect.left) * (canvas.width / rect.width);
+            const y = (target.clientY - rect.top) * (canvas.height / rect.height);
+
+            App.mouse.isInBounds =
+                x >= 0 &&
+                y >= 0 &&
+                x < canvas.width &&
+                y < canvas.height;
+
+            App.mouse.x = Math.max(0, Math.min(x, canvas.width));
+            App.mouse.y = Math.max(0, Math.min(y, canvas.height));
         }
-        const mouseDownHandler = () => {
+        const mouseDownHandler = (evt) => {
             App.mouse.isDown = true;
+            moveEventHandler(evt);
         }
-        const mouseUpHandler = () => {
+        const mouseUpHandler = (evt) => {
             App.mouse.isDown = false;
         }
 
@@ -1999,24 +2003,34 @@ const App = {
 
         let registeredInteractionDetector;
 
+        const unregisterInteractionDetector = () => {
+            App.unregisterOnDrawEvent(interactionHandler);
+            registeredInteractionDetector = null;
+        }
+
         const interactionHandler = () => {
             if(!App.pet.isInteractingWith && App.mouse.isDownMs < 200){
                 return; 
             }
 
+            // unregister if no longer hovering over and interaction not started
+            if(
+                !App.pet.isInteractingWith && 
+                !App.pet.isHovered
+            ) return unregisterInteractionDetector();
+
             if(!App.pet.isInteractingWith){
                 App.vibrate()
             }
 
+            // end interaction
             if(!App.mouse.isDown){
                 App.pet.isInteractingWith = false;
                 App.disableGameplayControls = false;
                 App.pet.handleDirectInteractionEnd();
-                App.unregisterOnDrawEvent(interactionHandler);
-                registeredInteractionDetector = null;
-                return;
+                return unregisterInteractionDetector();
             }
-
+            
             if(App.pet.isDuringScriptedState()) {
                 if(!App.pet.isInteractingWith)
                     App.mouse.isDown = false;
