@@ -2353,7 +2353,7 @@ class Activities {
                         onclick: () => onPlantClick(currentPlant, currentPlantIndex)
                     }
                 })
-            return App.displayList([...additionalStartOptions, ...allPlantsList]);
+            return App.displayList([...additionalStartOptions, ...allPlantsList], null, 'back');
         }
 
         const displayMainList = () => {
@@ -2370,12 +2370,14 @@ class Activities {
                                 Missions.done(Missions.TYPES.plant_in_garden);
                                 Activities.task_floatingObjects(10, ['resources/img/misc/add_green_01.png']);
                                 App.sendAnalytics('plant', plantName);
+                                mainList.close();
                                 return true;
                             }
                             return false;
                         }
 
                         App.handlers.open_seed_list(false, null, onSelectSeed);
+                        return true;
                     }
                 },
                 {
@@ -2443,6 +2445,7 @@ class Activities {
                                         {
                                             name: 'ok',
                                             onclick: () => {
+                                                App.closeAllDisplays();
                                                 UI.clearLastClicked();
                                                 mainList.close();
                                                 list.close();
