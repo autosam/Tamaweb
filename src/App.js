@@ -7804,8 +7804,8 @@ const App = {
     playAdvancedSound: function(config){
         const audioElement = new Audio();
         Object.keys(config).map(key => audioElement[key] = config[key]);
-        audioElement.play();
         audioElement.muted = !App.settings.playSound || !App.settings.playMusic;
+        audioElement.play();
 
         if(config.loopTime){
             audioElement.addEventListener('timeupdate', () => {
@@ -7824,7 +7824,8 @@ const App = {
                     audioElement.volume = clamp(volume, 0, 1);
                     if(audioElement.volume <= 0){
                         audioElement.pause();
-                        audioElement.remove();
+                        audioElement.src = "";
+                        audioElement.load();
                         App.unregisterOnDrawEvent(fadeOutEvent);
                     }
                 })
