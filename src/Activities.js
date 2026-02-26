@@ -1382,6 +1382,9 @@ class Activities {
         App.closeAllDisplays();
         App.toggleGameplayControls(false);
         otherPetDef.increaseFriendship(random(5, 8));
+        const wantedFriendDef = App.petDefinition.friends[App.pet.stats.current_want.item];
+        App.petDefinition.checkWant(otherPetDef == wantedFriendDef, App.constants.WANT_TYPES.playdate)
+        
         let hasEnded = false;
 
         const otherPet = new Pet(otherPetDef, {

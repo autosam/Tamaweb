@@ -2019,8 +2019,9 @@ const App = {
 
             // unregister if no longer hovering over and interaction not started
             if(
-                !App.pet.isInteractingWith && 
-                !App.pet.isHovered
+                (!App.pet.isInteractingWith && 
+                !App.pet.isHovered) || 
+                (!App.mouse.isDown && !App.pet.isInteractingWith)
             ) return unregisterInteractionDetector();
 
             if(!App.pet.isInteractingWith){
