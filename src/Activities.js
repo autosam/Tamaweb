@@ -445,6 +445,7 @@ class Activities {
     static async goToRestaurant(otherPetDef = App.getRandomPetDef()){
         App.toggleGameplayControls(false);
         App.setScene(App.scene.restaurant);
+        Missions.done(Missions.TYPES.go_to_restaurant);
 
         const tableObject = new Object2d({
             img: 'resources/img/misc/restaurant_table_01.png',
@@ -1170,6 +1171,7 @@ class Activities {
     static async goToHomePlanet(otherPetDef){
         App.setScene(App.scene.homeworld_getaways);
         App.toggleGameplayControls(false)
+        Missions.done(Missions.TYPES.go_to_rabbithole);
 
         const ufoObject = new Object2d({
             image: App.preloadedResources['resources/img/misc/ufo_02.png'],
