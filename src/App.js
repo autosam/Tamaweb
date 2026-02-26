@@ -740,7 +740,11 @@ const App = {
     },
     onPeriodicUpdate: () => {
         if(App.settings.automaticAging){
-            if(moment().isAfter( App.petDefinition.getNextAutomaticBirthdayDate() )){
+            const nextAutomaticBirthday = App.petDefinition.getNextAutomaticBirthdayDate();
+            if(moment().isAfter(nextAutomaticBirthday)){
+                if(!App.canProceed('auto_birthday_event', App.constants.ONE_MINUTE * 30)){
+                    return;
+                }
                 App.queueEvent(() => {
                     Activities.birthday();
                     App.sendAnalytics('auto_age_up_live', App.petDefinition.lifeStage);
