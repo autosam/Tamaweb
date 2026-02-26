@@ -537,6 +537,9 @@ class Activities {
 
             App.pet.stats.current_hunger += hunger_replenish * 1.25;
             App.pet.stats.current_fun += random(15, 30);
+            
+            const wantedFoodItem = App.definitions.food[App.pet.stats.current_want.item];
+            App.petDefinition.checkWant(sprite === wantedFoodItem?.sprite, App.constants.WANT_TYPES.food);
 
             await TimelineDirector.wait(1500);
             foodObject.spritesheet.cellNumber = sprite + 1;
@@ -1384,7 +1387,7 @@ class Activities {
         otherPetDef.increaseFriendship(random(5, 8));
         const wantedFriendDef = App.petDefinition.friends[App.pet.stats.current_want.item];
         App.petDefinition.checkWant(otherPetDef == wantedFriendDef, App.constants.WANT_TYPES.playdate)
-        
+
         let hasEnded = false;
 
         const otherPet = new Pet(otherPetDef, {
