@@ -6268,8 +6268,12 @@ const App = {
             if(!App.temp.seenSocialMediaPosts){
                 App.temp.seenSocialMediaPosts = 0;
             }
-            function showPost(petDefinition, noMood, noNextBtn){
-                if(++App.temp.seenSocialMediaPosts >= 12 && !noNextBtn){
+            function showPost(petDefinition, noMood, isSelfPost){
+                if(!isSelfPost){
+                    App.temp.seenSocialMediaPosts += 1;
+                }
+
+                if(App.temp.seenSocialMediaPosts >= 12 && !isSelfPost){
                     return App.displayPopup('There are no more social media posts, comeback later!');
                 }
 
@@ -6299,7 +6303,7 @@ const App = {
                     close();
                     showRandomPost();
                 };
-                if(noNextBtn){
+                if(isSelfPost){
                     post.querySelector('.post-next').remove();
                 }
 
