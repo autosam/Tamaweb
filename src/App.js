@@ -8364,11 +8364,11 @@ const App = {
     wait: function(ms = 0){
         return new Promise(resolve => setTimeout(resolve, ms))
     },
-    _canProceedBuffer: {},
     canProceed: function(key, ms) {
-        const lastTime = this._canProceedBuffer[key] || -Infinity;
+        if(!App.temp.proceedBuffer) App.temp.proceedBuffer = {};
+        const lastTime = App.temp.proceedBuffer[key] || -Infinity;
         if(App.time > lastTime + ms){
-            this._canProceedBuffer[key] = App.time;
+            App.temp.proceedBuffer[key] = App.time;
             return true;
         }
         return false;
