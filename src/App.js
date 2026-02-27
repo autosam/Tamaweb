@@ -2019,8 +2019,9 @@ const App = {
 
             // unregister if no longer hovering over and interaction not started
             if(
-                !App.pet.isInteractingWith && 
-                !App.pet.isHovered
+                (!App.pet.isInteractingWith && 
+                !App.pet.isHovered) || 
+                (!App.mouse.isDown && !App.pet.isInteractingWith)
             ) return unregisterInteractionDetector();
 
             if(!App.pet.isInteractingWith){
@@ -3141,7 +3142,7 @@ const App = {
                 },
                 { type: 'separator', _ignore: ignoreFirstDivider },
                 {
-                    name: `gameplay settings ${App.getBadge()}`,
+                    name: `gameplay settings`,
                     onclick: () => {
                         const getStateIcon = (state) => {
                             const className = state ? 'option on' : 'option off';
@@ -3237,7 +3238,7 @@ const App = {
                                 }
                             },
                             {
-                                _mount: (e) => e.innerHTML = `${getStateIcon(App.settings.season)} Season: <i>${App.settings.season}</i> ${App.getBadge()}`,
+                                _mount: (e) => e.innerHTML = `${getStateIcon(App.settings.season)} Season: <i>${App.settings.season}</i>`,
                                 onclick: (e) => {
                                     const possibleOptions = [
                                         'auto',
@@ -3291,7 +3292,7 @@ const App = {
                     }
                 },
                 {
-                    name: `system settings ${App.getBadge()}`,
+                    name: `system settings`,
                     onclick: () => {
                         App.displayList([
                             {
@@ -6140,7 +6141,7 @@ const App = {
                     }
                 },
                 {
-                    name: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child ? `abandon ${App.getBadge()}` : `move out ${App.getBadge()}`,
+                    name: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child ? `abandon` : `move out`,
                     onclick: () => {
                         const { moveOut } = Activities;
                         App.displayConfirm(`Are you sure you want to send ${App.petDefinition.getAvatar()} back to their home planet? <br><br> They will move out and you'll receive a fresh new egg to raise.`, [
@@ -6267,8 +6268,12 @@ const App = {
             if(!App.temp.seenSocialMediaPosts){
                 App.temp.seenSocialMediaPosts = 0;
             }
-            function showPost(petDefinition, noMood, noNextBtn){
-                if(++App.temp.seenSocialMediaPosts >= 12 && !noNextBtn){
+            function showPost(petDefinition, noMood, isSelfPost){
+                if(!isSelfPost){
+                    App.temp.seenSocialMediaPosts += 1;
+                }
+
+                if(App.temp.seenSocialMediaPosts >= 12 && !isSelfPost){
                     return App.displayPopup('There are no more social media posts, comeback later!');
                 }
 
@@ -6298,7 +6303,7 @@ const App = {
                     close();
                     showRandomPost();
                 };
-                if(noNextBtn){
+                if(isSelfPost){
                     post.querySelector('.post-next').remove();
                 }
 
@@ -6831,7 +6836,7 @@ const App = {
             App.displayList([
                 {
                     _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.teen,
-                    name: `leaves ${App.getBadge()}`,
+                    name: `leaves`,
                     onclick: () => {
                         App.displayPopup(`Clear out all the leaves before the timer runs out!`, tutorialDisplayTime, () => Activities.leavesGame())
                         return false;
@@ -7804,8 +7809,8 @@ const App = {
     playAdvancedSound: function(config){
         const audioElement = new Audio();
         Object.keys(config).map(key => audioElement[key] = config[key]);
-        audioElement.play();
         audioElement.muted = !App.settings.playSound || !App.settings.playMusic;
+        audioElement.play();
 
         if(config.loopTime){
             audioElement.addEventListener('timeupdate', () => {
@@ -7824,7 +7829,8 @@ const App = {
                     audioElement.volume = clamp(volume, 0, 1);
                     if(audioElement.volume <= 0){
                         audioElement.pause();
-                        audioElement.remove();
+                        audioElement.src = "";
+                        audioElement.load();
                         App.unregisterOnDrawEvent(fadeOutEvent);
                     }
                 })
@@ -8363,11 +8369,11 @@ const App = {
     wait: function(ms = 0){
         return new Promise(resolve => setTimeout(resolve, ms))
     },
-    _canProceedBuffer: {},
     canProceed: function(key, ms) {
-        const lastTime = this._canProceedBuffer[key] || -Infinity;
+        if(!App.temp.proceedBuffer) App.temp.proceedBuffer = {};
+        const lastTime = App.temp.proceedBuffer[key] || -Infinity;
         if(App.time > lastTime + ms){
-            this._canProceedBuffer[key] = App.time;
+            App.temp.proceedBuffer[key] = App.time;
             return true;
         }
         return false;

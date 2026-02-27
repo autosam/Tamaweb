@@ -30,6 +30,8 @@ const Missions = {
         feed_animal: 'feed_animal',
         order_food: 'order_food',
         earn_school_points: 'earn_school_points',
+        go_to_restaurant: 'go_to_restaurant',
+        go_to_rabbithole: 'go_to_rabbithole',
     },
     TYPE_DESCRIPTIONS: {
         food: 'Eat food',
@@ -57,6 +59,8 @@ const Missions = {
         feed_animal: 'Feed your pet animal',
         order_food: 'Order something on Snapmeal',
         earn_school_points: 'Earn points at school',
+        go_to_restaurant: 'Go to the restaurant',
+        go_to_rabbithole: 'Do a Homeworld Getaways activity'
     },
     init: function(data){
         if(data?.current) this.current = data?.current;

@@ -445,6 +445,7 @@ class Activities {
     static async goToRestaurant(otherPetDef = App.getRandomPetDef()){
         App.toggleGameplayControls(false);
         App.setScene(App.scene.restaurant);
+        Missions.done(Missions.TYPES.go_to_restaurant);
 
         const tableObject = new Object2d({
             img: 'resources/img/misc/restaurant_table_01.png',
@@ -537,6 +538,9 @@ class Activities {
 
             App.pet.stats.current_hunger += hunger_replenish * 1.25;
             App.pet.stats.current_fun += random(15, 30);
+            
+            const wantedFoodItem = App.definitions.food[App.pet.stats.current_want.item];
+            App.petDefinition.checkWant(sprite === wantedFoodItem?.sprite, App.constants.WANT_TYPES.food);
 
             await TimelineDirector.wait(1500);
             foodObject.spritesheet.cellNumber = sprite + 1;
@@ -1167,6 +1171,7 @@ class Activities {
     static async goToHomePlanet(otherPetDef){
         App.setScene(App.scene.homeworld_getaways);
         App.toggleGameplayControls(false)
+        Missions.done(Missions.TYPES.go_to_rabbithole);
 
         const ufoObject = new Object2d({
             image: App.preloadedResources['resources/img/misc/ufo_02.png'],
@@ -1382,6 +1387,9 @@ class Activities {
         App.closeAllDisplays();
         App.toggleGameplayControls(false);
         otherPetDef.increaseFriendship(random(5, 8));
+        const wantedFriendDef = App.petDefinition.friends[App.pet.stats.current_want.item];
+        App.petDefinition.checkWant(otherPetDef == wantedFriendDef, App.constants.WANT_TYPES.playdate)
+
         let hasEnded = false;
 
         const otherPet = new Pet(otherPetDef, {
@@ -2704,7 +2712,6 @@ class Activities {
                         <span style="color: #914f15;">
                             ${App.getIcon('person-digging icon', true)} Dig up treasure
                         </span>
-                        ${App.getBadge()}
                     `,
                     onclick: () => {
                         App.closeAllDisplays();
