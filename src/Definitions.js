@@ -1925,12 +1925,12 @@ App.definitions = (() => {
             {
                 name: 'Starry',
                 image: 'resources/img/ui/bg_pattern_03.png',
-                isNew: true,
+                isNew: false,
             },
             {
                 name: 'Strawberry',
                 image: 'resources/img/ui/bg_pattern_04.png',
-                isNew: true,
+                isNew: false,
             },
         ],
     
@@ -2913,7 +2913,7 @@ App.definitions = (() => {
             {
                 name: 'Have sleepover',
                 duration: App.constants.ONE_HOUR * 4,
-                isNew: true,
+                isNew: false,
                 noAlone: true,
                 onEnd: () => {
                     App.pet.stats.current_fun += 10;

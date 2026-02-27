@@ -2712,7 +2712,6 @@ class Activities {
                         <span style="color: #914f15;">
                             ${App.getIcon('person-digging icon', true)} Dig up treasure
                         </span>
-                        ${App.getBadge()}
                     `,
                     onclick: () => {
                         App.closeAllDisplays();

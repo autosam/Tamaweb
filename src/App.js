@@ -3142,7 +3142,7 @@ const App = {
                 },
                 { type: 'separator', _ignore: ignoreFirstDivider },
                 {
-                    name: `gameplay settings ${App.getBadge()}`,
+                    name: `gameplay settings`,
                     onclick: () => {
                         const getStateIcon = (state) => {
                             const className = state ? 'option on' : 'option off';
@@ -3238,7 +3238,7 @@ const App = {
                                 }
                             },
                             {
-                                _mount: (e) => e.innerHTML = `${getStateIcon(App.settings.season)} Season: <i>${App.settings.season}</i> ${App.getBadge()}`,
+                                _mount: (e) => e.innerHTML = `${getStateIcon(App.settings.season)} Season: <i>${App.settings.season}</i>`,
                                 onclick: (e) => {
                                     const possibleOptions = [
                                         'auto',
@@ -3292,7 +3292,7 @@ const App = {
                     }
                 },
                 {
-                    name: `system settings ${App.getBadge()}`,
+                    name: `system settings`,
                     onclick: () => {
                         App.displayList([
                             {
@@ -6141,7 +6141,7 @@ const App = {
                     }
                 },
                 {
-                    name: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child ? `abandon ${App.getBadge()}` : `move out ${App.getBadge()}`,
+                    name: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child ? `abandon` : `move out`,
                     onclick: () => {
                         const { moveOut } = Activities;
                         App.displayConfirm(`Are you sure you want to send ${App.petDefinition.getAvatar()} back to their home planet? <br><br> They will move out and you'll receive a fresh new egg to raise.`, [
@@ -6836,7 +6836,7 @@ const App = {
             App.displayList([
                 {
                     _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.teen,
-                    name: `leaves ${App.getBadge()}`,
+                    name: `leaves`,
                     onclick: () => {
                         App.displayPopup(`Clear out all the leaves before the timer runs out!`, tutorialDisplayTime, () => Activities.leavesGame())
                         return false;
