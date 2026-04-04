@@ -3735,7 +3735,7 @@ const App = {
                                 <div class="relative flex flex-dir-row align-center flex-gap-1">
                                     <div class="stats-label">Money</div>
                                     <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:gold', true)}</b> 
-                                    <b>$${App.pet.stats.gold}</b>
+                                    <b>$${Math.floor(App.pet.stats.gold)}</b>
                                 </div>
                                 <div class="relative flex flex-dir-row align-center flex-gap-1">
                                     <div class="stats-label">Hunger</div>
@@ -4059,11 +4059,7 @@ const App = {
                                 App.pet.stats.gold += price;
                                 App.addNumToObject(App.pet.inventory.food, food, -1);
                             } else { // buying
-                                if(App.pet.stats.gold < price){
-                                    App.displayPopup(`Don't have enough gold!`);
-                                    return true;
-                                }
-                                App.pet.stats.gold -= price;
+                                if(!App.pay(price)) return true;
                                 App.addNumToObject(App.pet.inventory.food, food, 1);
                                 Missions.done(Missions.TYPES.buy_food);
                             }
@@ -4188,11 +4184,7 @@ const App = {
                     onclick: (btn, list) => {
                         // buy mode
                         if(buyMode){
-                            if(App.pet.stats.gold < price){
-                                App.displayPopup(`Don't have enough gold!`);
-                                return true;
-                            }
-                            App.pet.stats.gold -= price;
+                            if(!App.pay(price)) return true;
                             App.addNumToObject(App.pet.inventory.seeds, plant, 1);
                             let nList = App.handlers.open_seed_list(true, sliderInstance?.getCurrentIndex());
                             // Missions.done(Missions.TYPES.buy_food);
@@ -8223,16 +8215,19 @@ const App = {
     pay: function(amount){
         let finalAmount = amount;
 
-        if(App.petDefinition.hasTrait('shopaholic')) App.pet.stats.current_fun += random(25, 45);
-
         if(App.pet.stats.gold < finalAmount){
             App.displayPopup(`Don't have enough money!`);
             return false;
         }
 
-        if(App.petDefinition.hasTrait('moneySaver')) finalAmount = finalAmount * (random(8, 10) * 0.1);
+        if(App.petDefinition.hasTrait('shopaholic')) 
+            App.pet.stats.current_fun += random(25, 45);
+        if(App.petDefinition.hasTrait('moneySaver')) 
+            finalAmount = finalAmount * (random(8, 10) * 0.1);
 
-        App.pet.stats.gold -= finalAmount;
+        if(!isNaN(finalAmount))
+            App.pet.stats.gold = Math.round(App.pet.stats.gold - finalAmount);
+        
         return true;
     },
     getPreciseTimeFromNow: (time) => {
