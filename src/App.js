@@ -4186,8 +4186,7 @@ const App = {
                         if(buyMode){
                             if(!App.pay(price)) return true;
                             App.addNumToObject(App.pet.inventory.seeds, plant, 1);
-                            let nList = App.handlers.open_seed_list(true, sliderInstance?.getCurrentIndex());
-                            // Missions.done(Missions.TYPES.buy_food);
+                            App.handlers.open_seed_list(true, sliderInstance?.getCurrentIndex());
                             return false;
                         }
 
@@ -4687,9 +4686,7 @@ const App = {
                             if(!App.pay(price)) return true;
                             App.temp.purchasedMallItem = true;
                             App.addNumToObject(App.pet.inventory.item, item, 1);
-                            // console.log(list.scrollTop);
-                            let nList = App.handlers.open_item_list(true, sliderInstance?.getCurrentIndex());
-                                // nList.scrollTop = list.scrollTop;
+                            App.handlers.open_item_list(true, sliderInstance?.getCurrentIndex());
                             return false;
                         }
 
@@ -5012,7 +5009,6 @@ const App = {
                             if(!App.pay(price)) return true;
                             App.temp.purchasedMallItem = true;
                             App.pet.inventory.accessory[accessoryName] = true;
-                            //     // nList.scrollTop = list.scrollTop;
                             return reopen(buyMode);
                         }
 
