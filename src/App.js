@@ -850,7 +850,10 @@ const App = {
 
         const getItems = () => [...currentDisplay.querySelectorAll('[data-ui-index]')];
         const handleNoDisplay = () => {
-            App.playSound('resources/sounds/ui_click_04.ogg');
+            if(App.disableGameplayControls && Boolean(App.gameplayControlsOverwrite))
+                App.playSound('resources/sounds/ui_click_01.ogg', true);
+            else 
+                App.playSound('resources/sounds/shell_button_down.ogg');
         }
 
         if(!currentDisplay) return handleNoDisplay();
@@ -6989,13 +6992,11 @@ const App = {
         shell_button: function(buttonNumber){
             document.body.classList.add('button-mode');
 
-            if(App.disableGameplayControls && App.gameplayControlsOverwrite){
+            if(App.disableGameplayControls && Boolean(App.gameplayControlsOverwrite)){
                 if(!App.haveAnyDisplays()){
                     App.gameplayControlsOverwrite();
                     App.vibrate();
                 }
-                console.log('shell button')
-                return;
             }
 
 
