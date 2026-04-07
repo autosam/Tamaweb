@@ -93,9 +93,9 @@
 
         <div class="dom-shell" style="display: none;">
             <img class="logo" src="resources/img/ui/logo_trans_01.png"></img>
-            <button class="shell-btn main" onclick="App.handlers.shell_button(1)" onmousedown="setTimeout(() => App.playSound('resources/sounds/shell_button_down.ogg', true))" onmouseup="setTimeout(() => App.playSound('resources/sounds/shell_button_up.ogg', true))"></button>
-            <button class="shell-btn left" onclick="App.handlers.shell_button(0)" onmousedown="setTimeout(() => App.playSound('resources/sounds/shell_button_down.ogg', true))" onmouseup="setTimeout(() => App.playSound('resources/sounds/shell_button_up.ogg', true))"></button>
-            <button class="shell-btn right" onclick="App.handlers.shell_button(2)" onmousedown="setTimeout(() => App.playSound('resources/sounds/shell_button_down.ogg', true))" onmouseup="setTimeout(() => App.playSound('resources/sounds/shell_button_up.ogg', true))"></button>
+            <button class="shell-btn main mute" onclick="App.handlers.shell_button(1)"></button>
+            <button class="shell-btn left mute" onclick="App.handlers.shell_button(0)"></button>
+            <button class="shell-btn right mute" onclick="App.handlers.shell_button(2)"></button>
         </div>
         <!-- graphics -->
         <div class="graphics-wrapper">
@@ -106,7 +106,7 @@
             <!-- screen wrapper -->
             <div class="screen-wrapper">
                 <!-- canvas -->
-                <canvas style="cursor: pointer;" onclick="App.handlers.open_main_menu()" class="graphics-canvas" width="96" height="96"></canvas>
+                <canvas style="cursor: pointer;" onclick="App.handlers.open_main_menu();" class="graphics-canvas" width="96" height="96"></canvas>
 
                 <!-- tapping reminder -->
                 <div class="full-device-overlay tap-reminder" style="display: none;">
@@ -139,7 +139,7 @@
 
     <!-- cloneables -->
     <div style="display: none;" class="cloneables">
-        <div class="post-container" style="display: none;">
+        <div class="post-container display" style="display: none;">
             <canvas width="96" height="96" class="post-canvas"></canvas>
             <div class="post-text">Post Bottom Text</div>
             <div class="post-header">Post Header</div>

@@ -486,6 +486,7 @@ const App = {
         const mouseDownHandler = (evt) => {
             App.mouse.isDown = true;
             moveEventHandler(evt);
+            document.body.classList.remove('button-mode');
         }
         const mouseUpHandler = (evt) => {
             App.mouse.isDown = false;
@@ -519,7 +520,21 @@ const App = {
                 case "`":
                     App.takeScreenshot();
                     break;
+                case "ArrowLeft":
+                    App.handlers.shell_button(0);
+                    break;
+                case "ArrowDown":
+                    App.handlers.shell_button(1);
+                    break;
+                case "ArrowRight":
+                    App.handlers.shell_button(2);
+                    break;
+                
             }
+            App.mouse.isDown = true;
+        })
+        document.addEventListener('keyup', (event) => {
+            App.mouse.isDown = false;
         })
     },
     registerLoadEvents: function(){
@@ -530,9 +545,6 @@ const App = {
             App.fpsStartTime = App.fpsLastTime;
             App.onFrameUpdate(0);
         }
-        // window.onload = function () {
-        //     initializeRenderer();
-        // }
         document.addEventListener('DOMContentLoaded', function(event) {
             initializeRenderer();
         });
@@ -546,6 +558,21 @@ const App = {
                 App.isStoragePersistent = persistent;
             });
         }
+
+        const observer = new MutationObserver((mutationsList) => {
+            mutationsList.forEach(mutation => {
+            if (mutation.addedNodes && mutation.addedNodes.length > 0) {
+                mutation.addedNodes.forEach(node => {
+                if(node.nodeType === Node.ELEMENT_NODE){
+                    App.indexUIElement(node);
+                }
+                });
+            }})
+        });
+        observer.observe(
+            document.querySelector('.screen-wrapper'), 
+            {childList: true, subtree: false}
+        );
     },
     sendSessionEvent: function(login){
         if(login){
@@ -807,6 +834,74 @@ const App = {
     },
     getRecord: function(name){
         return this.records[name];
+    },
+    indexUIElement: (element) => {
+        if(!element) return;
+
+        if(element?.hasAttribute?.('data-ui-indexed')) return;
+        element?.setAttribute?.('data-ui-indexed', 1);
+
+        const items = [...element?.querySelectorAll?.('button, a')];
+        items?.forEach((item, i) => item?.setAttribute('data-ui-index', i));
+        items[0]?.setAttribute('data-is-ui-active', "true");
+    },
+    handleShellButton: (buttonNumber) => {
+        const currentDisplay = App.getCurrentDisplay();
+
+        const getItems = () => [...currentDisplay.querySelectorAll('[data-ui-index]')];
+        const handleNoDisplay = () => {
+            App.playSound('resources/sounds/ui_click_04.ogg');
+        }
+
+        if(!currentDisplay) return handleNoDisplay();
+
+        const displayActiveItemIndex = parseInt(currentDisplay.dataset.activeItemIndex) || 0; 
+
+        const items = getItems();
+        const activeElement = currentDisplay.querySelector('[data-is-ui-active="true"]') || items[displayActiveItemIndex];
+        if(!activeElement) return handleNoDisplay();
+        const activeIndex = displayActiveItemIndex
+            || items?.findIndex((el) => el === activeElement);
+
+        const isActiveElementDisabled = activeElement.disabled || activeElement?.classList?.contains('disabled');
+
+        const updateActiveElement = (currentIndex = activeIndex, currentItems = items) => {
+            const currentElement = currentItems[currentIndex];
+            currentElement?.setAttribute('data-is-ui-active', "true");
+            currentElement?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'end',
+            })
+            currentDisplay.dataset.activeItemIndex = currentIndex;
+        }
+
+        switch(buttonNumber){
+            case 0:
+                App.playSound('resources/sounds/ui_click_08.ogg', true)
+                activeElement.removeAttribute('data-is-ui-active');
+
+                let newActiveIndex = activeIndex, newActiveElement;
+                for(let i = 0; i < items.length; i++){
+                    newActiveIndex += 1;
+                    if(newActiveIndex >= items.length) newActiveIndex = 0;
+                    newActiveElement = items[newActiveIndex] 
+                        || currentDisplay.querySelector(`[data-ui-index='${newActiveIndex}']`);
+                    if(newActiveElement) break;
+                }
+
+                updateActiveElement(newActiveIndex)
+                break;
+            case 1:
+                if(isActiveElementDisabled){
+                    return App.playSound('resources/sounds/ui_click_04.ogg', true);
+                }
+                activeElement?.click();
+                setTimeout(() => updateActiveElement(undefined, getItems()));
+                break;
+            case 2:
+                currentDisplay?.querySelector('.back-btn')?.click();
+                break;
+        }
     },
     handleInputCode: function(rawCode){
         const {addEvent} = App;
@@ -1619,17 +1714,17 @@ const App = {
         document.querySelector('.screen-wrapper').appendChild(editDisplay)
         editDisplay.close = () => editDisplay.remove();
         editDisplay.innerHTML = `
-            <div class="directional-control__container">
+            <div class="directional-control__container display">
                 <div class="controls-y">
-                    <div class="control" id="up"><i class="fa fa-angle-up"></i></div>
+                    <button class="control" id="up"><i class="fa fa-angle-up"></i></button>
                     <div class="controls-x">
-                        <div class="control" id="left"><i class="fa fa-angle-left"></i></div>
-                        <div class="control" id="right"><i class="fa fa-angle-right"></i></div>
+                        <button class="control" id="left"><i class="fa fa-angle-left"></i></button>
+                        <button class="control" id="right"><i class="fa fa-angle-right"></i></button>
                     </div>
                     <div class="bottom-container">
-                        <div class="control" id="cancel"><i class="fa fa-times"></i></div>
-                        <div class="control" id="down"><i class="fa fa-angle-down"></i></div>
-                        <div class="control" id="apply"><i class="fa fa-check"></i></div>
+                        <button class="control" id="cancel"><i class="fa fa-times"></i></button>
+                        <button class="control" id="down"><i class="fa fa-angle-down"></i></button>
+                        <button class="control" id="apply"><i class="fa fa-check"></i></button>
                     </div>
                 </div>
             </div>
@@ -2564,6 +2659,7 @@ const App = {
                     onclick: () => { }
                 }
             ])
+            return true;
         },
         open_care_menu: function(){
             const getUnclaimedRewardsBadge = () => {
@@ -3720,8 +3816,8 @@ const App = {
             content.innerHTML = `
             <div class="tabs">
                 <div class="tab-titles">
-                    <div for="tab-1" class="tab-title">${App.getIcon('bar-chart', true)}</div>
-                    <div for="tab-2" class="tab-title">${App.getIcon('star', true)}</div>
+                    <button for="tab-1" class="tab-title">${App.getIcon('bar-chart', true)}</button>
+                    <button for="tab-2" class="tab-title">${App.getIcon('star', true)}</button>
                 </div>
                 <div class="tab-contents">
                     <div id="tab-1" class="tab">
@@ -6269,18 +6365,14 @@ const App = {
                 document.querySelector('.post-profile-icon').innerHTML = `${petDefinition.getCSprite()}`;
 
                 let postDrawer = new Drawer(post.querySelector('.post-canvas'), 96, 96);
-                // let postDrawer = new Drawer(postCanvas)
                 let postText = post.querySelector('.post-text');
 
-                let drawer = setInterval(() => {
-                    postDrawer.draw();
-                }, 32);
-                let close = () => {
-                    clearInterval(drawer);
-                    App.toggleGameplayControls(true);
+
+                setTimeout(() => postDrawer.draw());
+                const close = () => {
                     post.remove();
                 }
-                App.toggleGameplayControls(false, close);
+                // App.toggleGameplayControls(false, close);
                 post.querySelector('.post-close').onclick = close;
                 post.querySelector('.post-next').onclick = () => {
                     close();
@@ -6894,19 +6986,22 @@ const App = {
         open_battle_screen: function(){
             Battle.start();
         },
-        shell_button: function(buttonNumber, justOpened){
+        shell_button: function(buttonNumber){
+            document.body.classList.add('button-mode');
+
             if(App.disableGameplayControls && App.gameplayControlsOverwrite){
                 if(!App.haveAnyDisplays()){
                     App.gameplayControlsOverwrite();
                     App.vibrate();
                 }
+                console.log('shell button')
                 return;
             }
 
 
-            if(App.disableGameplayControls) return;
+            // if(App.disableGameplayControls) return;
 
-            let disallow = false;
+            /* let disallow = false;
             [...document.querySelectorAll('.display')].forEach(display => {
                 if(!display.closest('.cloneables')){
                     if(display.classList.contains('popup')) disallow = true;
@@ -6915,78 +7010,21 @@ const App = {
                 }
             });
 
-            if(disallow) return;
+            console.log({disallow})
 
-            if(!justOpened) justOpened = false;
+            if(disallow) return; */
+
+            let justOpened = false;
             if(!App.haveAnyDisplays()) {
-                App.handlers.open_main_menu();
-                justOpened = true;
+                justOpened = App.handlers.open_main_menu();
             }
 
-            App.handlers.initShellButtonDisplay(null, justOpened, buttonNumber);
+            if(!justOpened) App.handleShellButton(buttonNumber);
 
             // App.setScene(App.scene.home);
             // if(App.haveAnyDisplays()) App.closeAllDisplays();
             // else App.handlers.open_main_menu();
             App.vibrate();
-        },
-        initShellButtonDisplay: function(currentDisplay, justOpened, buttonNumber){
-            if(!currentDisplay) currentDisplay = App.getCurrentDisplay();
-            if (currentDisplay) {
-
-                const LIST_CONTAINERS_MAP = {
-                    'generic-slider-container': 'slider',
-                    'generic-grid-container': 'grid',
-                    'generic-list-container': 'list',
-                }
-
-                let foundType = Object.entries(LIST_CONTAINERS_MAP).find( ([className]) => {
-                    return currentDisplay.classList.contains(className);
-                } );
-                const currentDisplayType = foundType?.at(1) || LIST_CONTAINERS_MAP['generic-list-container'];
-                console.log(currentDisplayType)
-
-
-                let activeIndex = currentDisplay.dataset.activeItemIndex || -1;
-
-                const currentDisplayItems = [...currentDisplay.querySelectorAll('button, a')];
-
-                const focusOn = (index) => {
-                    currentDisplayItems.forEach(e => e.dataset.isActiveItem = false);
-                    if (!index) index = 0;
-                    const element = currentDisplayItems?.at(index);
-                    if ((element.nodeName !== 'BUTTON' && element.nodeName !== 'A') || element.disabled) return focusOn(++index);
-                    if (!element) {
-                        return focusOn(0);
-                    }
-                    element?.focus();
-                    element.dataset.isActiveItem = true;
-                    currentDisplay.dataset.activeItemIndex = index;
-                }
-
-                focusOn()
-
-                if (!justOpened) {
-                    UI.shellButtonNavigation = true;
-                    switch (buttonNumber) {
-                        case 0:
-                            focusOn(++activeIndex)
-                            break;
-                        case 1:
-                            currentDisplayItems?.at(activeIndex)?.click()
-                            if (App.getCurrentDisplay() !== currentDisplay) {
-                                // App.handlers.shell_button(-1);
-                                App.handlers.initShellButtonDisplay(App.getCurrentDisplay(), true);
-                                focusOn(0)
-                                console.log(App.getCurrentDisplay(), currentDisplay)
-                            }
-                            break;
-                        case 2:
-                            currentDisplay.querySelector('.back-btn')?.click();
-                            break;
-                    }
-                }
-            }
         },
         sleep: function(){
             App.pet.sleep();

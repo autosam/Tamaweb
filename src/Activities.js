@@ -1715,7 +1715,7 @@ class Activities {
         // ui
         App.toggleGameplayControls(false);
         const editDisplay = document.createElement('div');
-        editDisplay.className = 'absolute-fullscreen flex flex-dir-col menu-animation'
+        editDisplay.className = 'absolute-fullscreen flex flex-dir-col menu-animation display'
         document.querySelector('.screen-wrapper').appendChild(editDisplay)
         editDisplay.close = () => editDisplay.remove();
         editDisplay.innerHTML = `
