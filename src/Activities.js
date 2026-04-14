@@ -6892,7 +6892,7 @@ class Activities {
         App.pet.staticShadow = false;
 
         if(App.petDefinition.hasTrait('lucky'))
-            amount = amount * (1 + random(0, 5) * 0.1);
+            amount = Math.round(amount * (1 + random(0, 5) * 0.1));
 
         App.pet.stats.gold += amount;
         App.pet.stats.current_fun += happiness ?? (amount / 5);
