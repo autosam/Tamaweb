@@ -5673,7 +5673,7 @@ class Activities {
                     () => {
                         velocity -= gravity * App.deltaTime;
                         App.pet.y -= velocity * App.deltaTime;
-                        if(App.pet.y >= groundPositionY){
+                        if(App.pet.y >= groundPositionY || App.pet.y >= defaultGroundPositionY){
                             App.pet.stopScriptedState();
                             App.pet.triggerScriptedState('idle_side', App.INF, false, true)
                         }
