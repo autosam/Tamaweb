@@ -5581,6 +5581,8 @@ class Activities {
         App.closeAllDisplays();
         App.setScene(App.scene.devil_town_exterior)
 
+        const defaultGroundPositionY = App.drawer.bounds.height - (App.petDefinition.spritesheet.cellSize / 2);
+
         const backgroundMusic = App.playAdvancedSound({
             src: 'resources/sounds/trick_or_treat_bm_01.mp3',
             loop: true, 
@@ -5656,7 +5658,7 @@ class Activities {
 
         const handleOnJump = () => {
             if(groundPositionY === false) {
-                groundPositionY = App.pet.y;
+                groundPositionY = isNaN(App.pet.y) ? defaultGroundPositionY : App.pet.y;
             }
             const jump = () => {
                 App.pet.playSound('resources/sounds/jump.ogg', true);
@@ -5689,6 +5691,10 @@ class Activities {
             if(App.mouse.isDown){
                 App.mouse.isDown = false;
                 handleOnJump();
+            }
+
+            if(App.pet.y > defaultGroundPositionY){
+                App.pet.y = defaultGroundPositionY;
             }
 
             activeSpeed += 0.000045 * App.deltaTime;
@@ -5832,19 +5838,19 @@ class Activities {
         spawnEntities(App.drawer.bounds.width * -2);
 
         const movingBackgrounds = new Array(2)
-        .fill(true)
-        .map((_, i) => 
-            new Object2d({
-                parent: sceneParent,
-                img: 'resources/img/misc/devil_walkway_01.png',
-                x: 0,
-                y: 0,
-                z: 0,
-                onDraw: (me) => {
-                    me.x = (globalOffset % App.drawer.bounds.width) + (-i * App.drawer.bounds.width);
-                }
-            })
-        )
+            .fill(true)
+            .map((_, i) => 
+                new Object2d({
+                    parent: sceneParent,
+                    img: 'resources/img/misc/devil_walkway_01.png',
+                    x: 0,
+                    y: 0,
+                    z: 0,
+                    onDraw: (me) => {
+                        me.x = (globalOffset % App.drawer.bounds.width) + (-i * App.drawer.bounds.width);
+                    }
+                })
+            )
 
         App.pet.stopMove();
         App.pet.triggerScriptedState('idle_side', App.INF, false, true);
