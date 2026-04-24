@@ -1225,17 +1225,6 @@ const App = {
         }),
         hospitalInterior: new Scene({
             image: 'resources/img/background/house/clinic_01.png',
-            onLoad: () => {
-                this.drSprite = new Object2d({
-                    image: App.preloadedResources['resources/img/misc/dr_sprite.png'],
-                    x: '80%',
-                    y: '77%',
-                    inverted: true,
-                })
-            },
-            onUnload: () => {
-                this.drSprite?.removeObject();
-            }
         }),
         parentsHome: new Scene({
             image: 'resources/img/background/house/parents_house_01.png',

@@ -3844,19 +3844,38 @@ class Activities {
     static goToClinic(onEndFn){
         App.toggleGameplayControls(false);
         Missions.done(Missions.TYPES.visit_doctor);
-
-        function task_visit_doctor(){
+        
+        const task_visit_doctor = async () => {
             App.setScene(App.scene.hospitalInterior);
-            App.pet.stopMove();
-            App.pet.x = -30;
-            App.pet.targetX = 50;
-            App.pet.triggerScriptedState('moving', 4000, null, true, () => {
-                App.displayPopup(`<b>Dr. Banzo:</b><br>let's see...`, 3500);
-                App.pet.x = '20%';
-                // App.toggleGameplayControls(true);
-                App.pet.inverted = true;
-                App.pet.triggerScriptedState('idle_side', 4100, null, true, () => {
-                    let health = App.pet.stats.current_health;
+
+            const doctorPetDef = new PetDefinition({
+                sprite: 'resources/img/character/doctor_01.png',
+            });
+            
+            const main = new TimelineDirector(App.pet);
+            const other = new TimelineDirector(new Pet(doctorPetDef, {staticShadow: false}));
+
+            main.setPosition({x: '-10%'});
+            other.setPosition({x: '80%'});
+            other.lookAt(true);
+
+            await main.moveTo({x: '20%', speed: 0.01});
+
+            other.bob({maxCycles: 1, animation: 'idle', landAnimation: 'idle'});
+            other.actor.say('Hi!', 1000);
+            await TimelineDirector.wait(1000);
+            other.actor.say("Let's see...", 2000);
+            await TimelineDirector.wait(2000);
+
+            App.fadeScreen({
+                middleFn: async () => {
+                    main.setPosition({x: '30%'});
+                    await main.moveTo({x: '20%', speed: 0.0075});
+                    main.lookAt(true);
+
+                    await TimelineDirector.wait(1000);
+
+                    const health = App.pet.stats.current_health;
     
                     let state = 'very healthy';
                     if(health <= App.pet.stats.max_health * 0.20) state = 'very sick';
@@ -3864,26 +3883,43 @@ class Activities {
                     else if(health <= App.pet.stats.max_health * 0.75) state = 'healthy'
                     
                     const onEnd = () => {
+                        main.release();
+                        other.remove();
+
                         App.setScene(App.scene.home);
                         App.toggleGameplayControls(true);
+                        App.pet.stats.current_endurance += 0.23;
+
                         onEndFn?.();
-                        App.pet.stats.current_endurance += 1;
                     }
 
-                    if(state == 'very sick' || state == 'sick'){
-                        App.pet.triggerScriptedState('shocked', 2000, false, true, () => {
-                            App.displayPopup(`${App.pet.petDefinition.name} is ${state}`, 5000, () => App.pet.x = '50%');
-                            onEnd();
-                        })
-                    } else {
-                        App.pet.triggerScriptedState('cheering_with_icon', 2000, false, true, () => {
-                            App.displayPopup(`${App.pet.petDefinition.name} is ${state}`, 5000, () => App.pet.x = '50%');
-                            onEnd();
-                        })
+                    const isSick = ['very sick', 'sick'].includes(state);
+
+                    other.actor.say(`You are...`, 2000);
+                    await TimelineDirector.wait(2000);
+
+                    main.setState(isSick ? 'shocked' : 'cheering_with_icon');
+                    if(!isSick){
+                        App.playSound('resources/sounds/cheer_success.ogg', true);
                     }
-                });
-    
-            });
+
+                    other.actor.say(`${state}!`, 3000);
+                    await TimelineDirector.wait(3000);
+                    main.setState(isSick ? 'idle_uncomfortable' : 'idle');
+                    await TimelineDirector.wait(1000);
+
+                    if(isSick){
+                        other.actor.say('Buy some medicine from the market...', 3500);
+                        await TimelineDirector.wait(3500); 
+                        other.actor.say('And drink it immediately!', 2000);
+                        await TimelineDirector.wait(3000); 
+                    }
+                    
+                    App.fadeScreen({
+                        middleFn: onEnd
+                    })
+                }
+            })
         }
 
         function task_goto_hospital(){
