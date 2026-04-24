@@ -877,6 +877,12 @@ const App = {
                     App.displayPopup(`You've redeemed <b>$${goldAmount}</b>, <b>${missionPtsAmount} Mission pts</b>!`, 4000);
                 })) return showAlreadyUsed();
                 break;
+            case "THANKYOU":
+                if(!addEvent(codeEventId, () => {
+                    const goldAmount = 300, missionPtsAmount = 100;
+                    App.displayPopup(`You've redeemed <b>$${goldAmount}</b>, <b>${missionPtsAmount} Mission pts</b>!`, 4000);
+                })) return showAlreadyUsed();
+                break;
             case "JINIINTHEBOTTLE":
                 if(!addEvent(codeEventId, () => {
                     const goldAmount = 1000, missionPtsAmount = 100;
