@@ -547,7 +547,7 @@ class PetDefinition {
     }
 
     getNextBirthdayDate(){
-        let m = moment(this.lastBirthday);
+        const m = moment(this.lastBirthday);
         switch(this.lifeStage){
             case PetDefinition.LIFE_STAGE.baby:
                 return m.add(App.constants.MANUAL_AGE_HOURS_BABY, 'hours');
@@ -562,16 +562,38 @@ class PetDefinition {
     }
 
     getNextAutomaticBirthdayDate(){
-        let m = moment(this.birthday);
+        const getLifeStageTotalHours = (lifeStage) => {
+            const autoAgeHours = {
+                [PetDefinition.LIFE_STAGE.baby]: App.constants.AUTO_AGE_HOURS_BABY,
+                [PetDefinition.LIFE_STAGE.child]: App.constants.AUTO_AGE_HOURS_CHILD,
+                [PetDefinition.LIFE_STAGE.teen]: App.constants.AUTO_AGE_HOURS_TEEN,
+                [PetDefinition.LIFE_STAGE.adult]: App.constants.AUTO_AGE_HOURS_ADULT
+            };
+
+            const lifeStages = [
+                PetDefinition.LIFE_STAGE.baby,
+                PetDefinition.LIFE_STAGE.child,
+                PetDefinition.LIFE_STAGE.teen,
+                PetDefinition.LIFE_STAGE.adult,
+            ];
+
+            let total = 0;
+            for(const code of lifeStages){
+                const hours = autoAgeHours[code];
+                if(!hours) break;
+                total += hours;
+                if(code === lifeStage) break;
+            }
+            return total;
+        }
+
+        const m = moment(this.birthday);
         switch(this.lifeStage){
             case PetDefinition.LIFE_STAGE.baby:
-                return m.add(App.constants.AUTO_AGE_HOURS_BABY, 'hours');
             case PetDefinition.LIFE_STAGE.child:
-                return m.add(App.constants.AUTO_AGE_HOURS_CHILD, 'hours');
             case PetDefinition.LIFE_STAGE.teen:
-                return m.add(App.constants.AUTO_AGE_HOURS_TEEN, 'hours');
             case PetDefinition.LIFE_STAGE.adult:
-                return m.add(App.constants.AUTO_AGE_HOURS_ADULT, 'hours');
+                return m.add(getLifeStageTotalHours(this.lifeStage), 'hours');
         }
         return false;
     }

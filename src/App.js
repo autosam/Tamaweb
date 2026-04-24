@@ -877,6 +877,12 @@ const App = {
                     App.displayPopup(`You've redeemed <b>$${goldAmount}</b>, <b>${missionPtsAmount} Mission pts</b>!`, 4000);
                 })) return showAlreadyUsed();
                 break;
+            case "THANKYOU":
+                if(!addEvent(codeEventId, () => {
+                    const goldAmount = 300, missionPtsAmount = 100;
+                    App.displayPopup(`You've redeemed <b>$${goldAmount}</b>, <b>${missionPtsAmount} Mission pts</b>!`, 4000);
+                })) return showAlreadyUsed();
+                break;
             case "JINIINTHEBOTTLE":
                 if(!addEvent(codeEventId, () => {
                     const goldAmount = 1000, missionPtsAmount = 100;
@@ -1225,17 +1231,6 @@ const App = {
         }),
         hospitalInterior: new Scene({
             image: 'resources/img/background/house/clinic_01.png',
-            onLoad: () => {
-                this.drSprite = new Object2d({
-                    image: App.preloadedResources['resources/img/misc/dr_sprite.png'],
-                    x: '80%',
-                    y: '77%',
-                    inverted: true,
-                })
-            },
-            onUnload: () => {
-                this.drSprite?.removeObject();
-            }
         }),
         parentsHome: new Scene({
             image: 'resources/img/background/house/parents_house_01.png',
@@ -3735,7 +3730,7 @@ const App = {
                                 <div class="relative flex flex-dir-row align-center flex-gap-1">
                                     <div class="stats-label">Money</div>
                                     <b class="outlined-icon flex flex-center" style="width: 18px;">${App.getIcon('special:gold', true)}</b> 
-                                    <b>$${App.pet.stats.gold}</b>
+                                    <b>$${Math.floor(App.pet.stats.gold)}</b>
                                 </div>
                                 <div class="relative flex flex-dir-row align-center flex-gap-1">
                                     <div class="stats-label">Hunger</div>
@@ -4059,11 +4054,7 @@ const App = {
                                 App.pet.stats.gold += price;
                                 App.addNumToObject(App.pet.inventory.food, food, -1);
                             } else { // buying
-                                if(App.pet.stats.gold < price){
-                                    App.displayPopup(`Don't have enough gold!`);
-                                    return true;
-                                }
-                                App.pet.stats.gold -= price;
+                                if(!App.pay(price)) return true;
                                 App.addNumToObject(App.pet.inventory.food, food, 1);
                                 Missions.done(Missions.TYPES.buy_food);
                             }
@@ -4188,14 +4179,9 @@ const App = {
                     onclick: (btn, list) => {
                         // buy mode
                         if(buyMode){
-                            if(App.pet.stats.gold < price){
-                                App.displayPopup(`Don't have enough gold!`);
-                                return true;
-                            }
-                            App.pet.stats.gold -= price;
+                            if(!App.pay(price)) return true;
                             App.addNumToObject(App.pet.inventory.seeds, plant, 1);
-                            let nList = App.handlers.open_seed_list(true, sliderInstance?.getCurrentIndex());
-                            // Missions.done(Missions.TYPES.buy_food);
+                            App.handlers.open_seed_list(true, sliderInstance?.getCurrentIndex());
                             return false;
                         }
 
@@ -4695,9 +4681,7 @@ const App = {
                             if(!App.pay(price)) return true;
                             App.temp.purchasedMallItem = true;
                             App.addNumToObject(App.pet.inventory.item, item, 1);
-                            // console.log(list.scrollTop);
-                            let nList = App.handlers.open_item_list(true, sliderInstance?.getCurrentIndex());
-                                // nList.scrollTop = list.scrollTop;
+                            App.handlers.open_item_list(true, sliderInstance?.getCurrentIndex());
                             return false;
                         }
 
@@ -5020,7 +5004,6 @@ const App = {
                             if(!App.pay(price)) return true;
                             App.temp.purchasedMallItem = true;
                             App.pet.inventory.accessory[accessoryName] = true;
-                            //     // nList.scrollTop = list.scrollTop;
                             return reopen(buyMode);
                         }
 
@@ -8223,16 +8206,19 @@ const App = {
     pay: function(amount){
         let finalAmount = amount;
 
-        if(App.petDefinition.hasTrait('shopaholic')) App.pet.stats.current_fun += random(25, 45);
-
         if(App.pet.stats.gold < finalAmount){
             App.displayPopup(`Don't have enough money!`);
             return false;
         }
 
-        if(App.petDefinition.hasTrait('moneySaver')) finalAmount = finalAmount * (random(8, 10) * 0.1);
+        if(App.petDefinition.hasTrait('shopaholic')) 
+            App.pet.stats.current_fun += random(25, 45);
+        if(App.petDefinition.hasTrait('moneySaver')) 
+            finalAmount = finalAmount * (random(8, 10) * 0.1);
 
-        App.pet.stats.gold -= finalAmount;
+        if(!isNaN(finalAmount))
+            App.pet.stats.gold = Math.round(App.pet.stats.gold - finalAmount);
+        
         return true;
     },
     getPreciseTimeFromNow: (time) => {
