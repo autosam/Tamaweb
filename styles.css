@@ -249,6 +249,7 @@
     .directional-control__container .control {
         background: #d1c3ff;
         color: var(--prim-clr-a);
+        position: relative;
     }
     .directional-control__container .control#cancel {
         color: #a30000;
@@ -546,12 +547,28 @@ hr {
     outline-offset: 1px;
 }
 
+.list-item:active:after,
+.list-item:hover:after,
+.list-item:focus-within:after,
+.list-item[data-is-active-item="true"]:after,
+.button-mode .list-item[data-is-ui-active="true"]:after,
 .grid-item:active:after,
 .grid-item:hover:after,
+.grid-item:focus-within:after,
+.grid-item[data-is-active-item="true"]:after,
+.button-mode .grid-item[data-is-ui-active="true"]:after,
 .generic-btn:active:after,
 .generic-btn:hover:after,
+.generic-btn:focus-within:after,
+.generic-btn[data-is-active-item="true"]:after,
+.button-mode .generic-btn[data-is-ui-active="true"]:after,
 .generic-btn.active:after,
-.simon-says-button.active:after
+.simon-says-button.active:after,
+.screen-wrapper button:active:after,
+.screen-wrapper button:hover:after,
+.screen-wrapper button:focus-within:after,
+.screen-wrapper button[data-is-active-item="true"]:after,
+.button-mode .screen-wrapper button[data-is-ui-active="true"]:after
 {
     width: 11px;
     height: 9px;
@@ -2699,6 +2716,7 @@ button.message-bubble:active {
     color: var(--prim-clr-b-border);
     color: color-mix(in srgb, var(--prim-clr-b-text) 40%, transparent);
     cursor: pointer;
+    position: relative;
 }
 .tab-title:hover {
     background-color: color-mix(in srgb, var(--prim-clr-b-text) 10%, transparent)

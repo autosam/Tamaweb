@@ -486,6 +486,7 @@ const App = {
         const mouseDownHandler = (evt) => {
             App.mouse.isDown = true;
             moveEventHandler(evt);
+            document.body.classList.remove('button-mode');
         }
         const mouseUpHandler = (evt) => {
             App.mouse.isDown = false;
@@ -519,7 +520,21 @@ const App = {
                 case "`":
                     App.takeScreenshot();
                     break;
+                case "ArrowLeft":
+                    App.handlers.shell_button(0);
+                    break;
+                case "ArrowDown":
+                    App.handlers.shell_button(1);
+                    break;
+                case "ArrowRight":
+                    App.handlers.shell_button(2);
+                    break;
+                
             }
+            App.mouse.isDown = true;
+        })
+        document.addEventListener('keyup', (event) => {
+            App.mouse.isDown = false;
         })
     },
     registerLoadEvents: function(){
@@ -530,9 +545,6 @@ const App = {
             App.fpsStartTime = App.fpsLastTime;
             App.onFrameUpdate(0);
         }
-        // window.onload = function () {
-        //     initializeRenderer();
-        // }
         document.addEventListener('DOMContentLoaded', function(event) {
             initializeRenderer();
         });
@@ -546,6 +558,21 @@ const App = {
                 App.isStoragePersistent = persistent;
             });
         }
+
+        const observer = new MutationObserver((mutationsList) => {
+            mutationsList.forEach(mutation => {
+            if (mutation.addedNodes && mutation.addedNodes.length > 0) {
+                mutation.addedNodes.forEach(node => {
+                if(node.nodeType === Node.ELEMENT_NODE){
+                    App.indexUIElement(node);
+                }
+                });
+            }})
+        });
+        observer.observe(
+            document.querySelector('.screen-wrapper'), 
+            {childList: true, subtree: false}
+        );
     },
     sendSessionEvent: function(login){
         if(login){
@@ -807,6 +834,85 @@ const App = {
     },
     getRecord: function(name){
         return this.records[name];
+    },
+    indexUIElement: (element) => {
+        if(!element) return;
+
+        const activeIndex = App.temp.fbKeepIndex || 0;
+        
+        // reset fbKeepIndex flag
+        if(App.temp.fbKeepIndex) App.temp.fbKeepIndex = false;
+
+        if(element?.hasAttribute?.('data-ui-indexed')) return;
+        element?.setAttribute?.('data-ui-indexed', 1);
+
+        const items = [...element?.querySelectorAll?.('button, a')];
+        items?.forEach((item, i) => item?.setAttribute('data-ui-index', i));
+        items[activeIndex]?.setAttribute('data-is-ui-active', "true");
+    },
+    handleShellButton: (buttonNumber) => {
+        const currentDisplay = App.getCurrentDisplay();
+
+        const getItems = () => [...currentDisplay.querySelectorAll('[data-ui-index]')];
+        const handleNoDisplay = () => {
+            if(App.disableGameplayControls && Boolean(App.gameplayControlsOverwrite))
+                App.playSound('resources/sounds/ui_click_01.ogg', true);
+            else 
+                App.playSound('resources/sounds/shell_button_down.ogg');
+        }
+
+        if(!currentDisplay) return handleNoDisplay();
+
+        const displayActiveItemIndex = parseInt(currentDisplay.dataset.activeItemIndex) || 0; 
+
+        const items = getItems();
+        const activeElement = currentDisplay.querySelector('[data-is-ui-active="true"]') || items[displayActiveItemIndex];
+        if(!activeElement) return handleNoDisplay();
+        const activeIndex = displayActiveItemIndex
+            || items?.findIndex((el) => el === activeElement);
+
+        const isActiveElementDisabled = activeElement.disabled || activeElement?.classList?.contains('disabled');
+
+        const updateActiveElement = (currentIndex = activeIndex, currentItems = items) => {
+            const currentElement = currentItems[currentIndex];
+            currentElement?.setAttribute('data-is-ui-active', "true");
+            currentElement?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'end',
+            })
+            currentDisplay.dataset.activeItemIndex = currentIndex;
+        }
+
+        switch(buttonNumber){
+            case 0:
+                App.playSound('resources/sounds/ui_click_08.ogg', true)
+                activeElement.removeAttribute('data-is-ui-active');
+
+                let newActiveIndex = activeIndex, newActiveElement;
+                for(let i = 0; i < items.length; i++){
+                    newActiveIndex += 1;
+                    if(newActiveIndex >= items.length) newActiveIndex = 0;
+                    newActiveElement = items[newActiveIndex] 
+                        || currentDisplay.querySelector(`[data-ui-index='${newActiveIndex}']`);
+                    if(newActiveElement) break;
+                }
+
+                updateActiveElement(newActiveIndex)
+                break;
+            case 1:
+                if(isActiveElementDisabled){
+                    return App.playSound('resources/sounds/ui_click_04.ogg', true);
+                }
+                if(activeElement.hasAttribute('data-fb-keep-index')){
+                    App.temp.fbKeepIndex = activeIndex;
+                }
+                activeElement?.click();
+                setTimeout(() => updateActiveElement(undefined, getItems()));
+                break;
+            case 2:
+                currentDisplay?.querySelector('.back-btn')?.click();
+                break;
+        }
     },
     handleInputCode: function(rawCode){
         const {addEvent} = App;
@@ -1619,17 +1725,17 @@ const App = {
         document.querySelector('.screen-wrapper').appendChild(editDisplay)
         editDisplay.close = () => editDisplay.remove();
         editDisplay.innerHTML = `
-            <div class="directional-control__container">
+            <div class="directional-control__container display">
                 <div class="controls-y">
-                    <div class="control" id="up"><i class="fa fa-angle-up"></i></div>
+                    <button class="control" id="up"><i class="fa fa-angle-up"></i></button>
                     <div class="controls-x">
-                        <div class="control" id="left"><i class="fa fa-angle-left"></i></div>
-                        <div class="control" id="right"><i class="fa fa-angle-right"></i></div>
+                        <button class="control" id="left"><i class="fa fa-angle-left"></i></button>
+                        <button class="control" id="right"><i class="fa fa-angle-right"></i></button>
                     </div>
                     <div class="bottom-container">
-                        <div class="control" id="cancel"><i class="fa fa-times"></i></div>
-                        <div class="control" id="down"><i class="fa fa-angle-down"></i></div>
-                        <div class="control" id="apply"><i class="fa fa-check"></i></div>
+                        <button class="control" id="cancel"><i class="fa fa-times"></i></button>
+                        <button class="control" id="down"><i class="fa fa-angle-down"></i></button>
+                        <button class="control" id="apply"><i class="fa fa-check"></i></button>
                     </div>
                 </div>
             </div>
@@ -2559,11 +2665,12 @@ const App = {
             App.displayGrid([
                 ...renderingMainMenu,
                 {
-                    name: App.getIcon('arrow-left', true),
-                    class: 'back-sound',
+                    name: App.getIcon('arrow-left back-sound', true),
+                    class: 'back-sound back-btn',
                     onclick: () => { }
                 }
             ])
+            return true;
         },
         open_care_menu: function(){
             const getUnclaimedRewardsBadge = () => {
@@ -3720,8 +3827,8 @@ const App = {
             content.innerHTML = `
             <div class="tabs">
                 <div class="tab-titles">
-                    <div for="tab-1" class="tab-title">${App.getIcon('bar-chart', true)}</div>
-                    <div for="tab-2" class="tab-title">${App.getIcon('star', true)}</div>
+                    <button for="tab-1" class="tab-title">${App.getIcon('bar-chart', true)}</button>
+                    <button for="tab-2" class="tab-title">${App.getIcon('star', true)}</button>
                 </div>
                 <div class="tab-contents">
                     <div id="tab-1" class="tab">
@@ -4058,7 +4165,6 @@ const App = {
                                 App.addNumToObject(App.pet.inventory.food, food, 1);
                                 Missions.done(Missions.TYPES.buy_food);
                             }
-
                             App.handlers.open_food_list({...props, activeIndex: sliderInstance?.getCurrentIndex()});
                             return false;
                         }
@@ -6269,18 +6375,14 @@ const App = {
                 document.querySelector('.post-profile-icon').innerHTML = `${petDefinition.getCSprite()}`;
 
                 let postDrawer = new Drawer(post.querySelector('.post-canvas'), 96, 96);
-                // let postDrawer = new Drawer(postCanvas)
                 let postText = post.querySelector('.post-text');
 
-                let drawer = setInterval(() => {
-                    postDrawer.draw();
-                }, 32);
-                let close = () => {
-                    clearInterval(drawer);
-                    App.toggleGameplayControls(true);
+
+                setTimeout(() => postDrawer.draw());
+                const close = () => {
                     post.remove();
                 }
-                App.toggleGameplayControls(false, close);
+                // App.toggleGameplayControls(false, close);
                 post.querySelector('.post-close').onclick = close;
                 post.querySelector('.post-next').onclick = () => {
                     close();
@@ -6894,18 +6996,20 @@ const App = {
         open_battle_screen: function(){
             Battle.start();
         },
-        shell_button: function(){
-            if(App.disableGameplayControls && App.gameplayControlsOverwrite){
+        shell_button: function(buttonNumber){
+            document.body.classList.add('button-mode');
+
+            if(App.disableGameplayControls && Boolean(App.gameplayControlsOverwrite)){
                 if(!App.haveAnyDisplays()){
                     App.gameplayControlsOverwrite();
                     App.vibrate();
                 }
-                return;
             }
 
-            if(App.disableGameplayControls) return;
 
-            let disallow = false;
+            // if(App.disableGameplayControls) return;
+
+            /* let disallow = false;
             [...document.querySelectorAll('.display')].forEach(display => {
                 if(!display.closest('.cloneables')){
                     if(display.classList.contains('popup')) disallow = true;
@@ -6914,11 +7018,20 @@ const App = {
                 }
             });
 
-            if(disallow) return;
+            console.log({disallow})
 
-            App.setScene(App.scene.home);
-            if(App.haveAnyDisplays()) App.closeAllDisplays();
-            else App.handlers.open_main_menu();
+            if(disallow) return; */
+
+            let justOpened = false;
+            if(!App.haveAnyDisplays()) {
+                justOpened = App.handlers.open_main_menu();
+            }
+
+            if(!justOpened) App.handleShellButton(buttonNumber);
+
+            // App.setScene(App.scene.home);
+            // if(App.haveAnyDisplays()) App.closeAllDisplays();
+            // else App.handlers.open_main_menu();
             App.vibrate();
         },
         sleep: function(){
@@ -7087,6 +7200,9 @@ const App = {
             }
         })
         tabTitles.at(0).click();
+    },
+    getCurrentDisplay: function(){
+        return [...document.querySelectorAll('.screen-wrapper .display')].at(-1);
     },
     displayList: function(listItems, backFn, backFnTitle){
         const list = UI.genericListContainer(backFn, backFnTitle);
