@@ -838,12 +838,17 @@ const App = {
     indexUIElement: (element) => {
         if(!element) return;
 
+        const activeIndex = App.temp.fbKeepIndex || 0;
+        
+        // reset fbKeepIndex flag
+        if(App.temp.fbKeepIndex) App.temp.fbKeepIndex = false;
+
         if(element?.hasAttribute?.('data-ui-indexed')) return;
         element?.setAttribute?.('data-ui-indexed', 1);
 
         const items = [...element?.querySelectorAll?.('button, a')];
         items?.forEach((item, i) => item?.setAttribute('data-ui-index', i));
-        items[0]?.setAttribute('data-is-ui-active', "true");
+        items[activeIndex]?.setAttribute('data-is-ui-active', "true");
     },
     handleShellButton: (buttonNumber) => {
         const currentDisplay = App.getCurrentDisplay();
@@ -897,6 +902,9 @@ const App = {
             case 1:
                 if(isActiveElementDisabled){
                     return App.playSound('resources/sounds/ui_click_04.ogg', true);
+                }
+                if(activeElement.hasAttribute('data-fb-keep-index')){
+                    App.temp.fbKeepIndex = activeIndex;
                 }
                 activeElement?.click();
                 setTimeout(() => updateActiveElement(undefined, getItems()));
@@ -4157,7 +4165,6 @@ const App = {
                                 App.addNumToObject(App.pet.inventory.food, food, 1);
                                 Missions.done(Missions.TYPES.buy_food);
                             }
-
                             App.handlers.open_food_list({...props, activeIndex: sliderInstance?.getCurrentIndex()});
                             return false;
                         }
