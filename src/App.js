@@ -761,7 +761,12 @@ const App = {
                 image.src = App.checkResourceOverride(url);
     
                 image.onload = () => resolve(image);
-                image.onerror = () => reject(`Image failed to load: ${url}`);
+                // image.onerror = () => reject(`Image failed to load: ${url}`);
+                image.onerror = () => {
+                    const fallbackImage = new Image();
+                    fallbackImage.src = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAFBhaW50Lk5FVCA1LjEuNBLfpoMAAAC2ZVhJZklJKgAIAAAABQAaAQUAAQAAAEoAAAAbAQUAAQAAAFIAAAAoAQMAAQAAAAIAAAAxAQIAEAAAAFoAAABphwQAAQAAAGoAAAAAAAAAYAAAAAEAAABgAAAAAQAAAFBhaW50Lk5FVCA1LjEuNAADAACQBwAEAAAAMDIzMAGgAwABAAAAAQAAAAWgBAABAAAAlAAAAAAAAAACAAEAAgAEAAAAUjk4AAIABwAEAAAAMDEwMAAAAADX5rshveZftAAAABlJREFUGFcFwQEBAAAIwyDsH+yxJhyamEIPNVIGi8LKb3kAAAAASUVORK5CYII=`;
+                    resolve(fallbackImage);
+                }
             });
         });
     
