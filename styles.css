@@ -2606,6 +2606,7 @@ button.message-bubble:active {
 }
 .dialog_textContainer {
     padding: 6px 12px;
+    overflow: hidden;
 }
 .dialog_indicator {
     /* position: absolute; */

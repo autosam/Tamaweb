@@ -3,12 +3,37 @@ class Activities {
         App.toggleGameplayControls(false);
         App.setScene(App.scene.emptyOutside)
 
+        const MAP_SIZE = 1;
+
         App.pet.stopMove();
         App.pet.x = '50%';
         App.pet.y = '50%';
         App.pet.speedOverride = 0.05;
 
+        // grid
         const currentGridPosition = { x: 0, y: 0 };
+        let gridDefinition = []
+        let currentGridDef;
+        /* procedural grid def */
+        for(let x = -MAP_SIZE; x <= MAP_SIZE; x++){
+            gridDefinition[x] = []
+            for(let y = -MAP_SIZE; y <= MAP_SIZE; y++) {
+                gridDefinition[x][y] = {
+                    background: 'resources/img/background/tile/grass_01.png',
+                    pets: [
+                        App.getRandomPetDef(),
+                        // App.getRandomPetDef(),
+                    ],
+                    objects: [
+                        {
+                            image: 'resources/img/furniture/vintage_couch.png',
+                            x: 50,
+                            y: 50
+                        }
+                    ]
+                }
+            }
+        }
 
         // ui
         App.toggleGameplayControls(false);
@@ -45,6 +70,7 @@ class Activities {
         const downBtn = display.querySelector('button#down');
         const rightBtn = display.querySelector('button#right');
         const leftBtn = display.querySelector('button#left');
+        const applyBtn = display.querySelector('button#apply');
         const updatePosition = (direction) => {
             switch(direction){
                 case 'up': currentGridPosition.y += 1; break;
@@ -52,11 +78,23 @@ class Activities {
                 case 'right': currentGridPosition.x -= 1; break;
                 case 'left': currentGridPosition.x += 1; break;
             }
+
+            currentGridPosition.y = clamp(currentGridPosition.y, -MAP_SIZE, MAP_SIZE);
+            currentGridPosition.x = clamp(currentGridPosition.x, -MAP_SIZE, MAP_SIZE);
+
+            currentGridDef = gridDefinition[currentGridPosition.x * -1][currentGridPosition.y * -1];
         }
+        updatePosition();
         upBtn.onclick = () => updatePosition("up");
         downBtn.onclick = () => updatePosition("down");
         rightBtn.onclick = () => updatePosition("right");
         leftBtn.onclick = () => updatePosition("left");
+        applyBtn.onclick = async () => {
+            UI.hide(display);
+            const petDef = currentGridDef.pets[0];
+            await Activities.enterDialog(petDef, `Hello brother my name is ${petDef.name} and I'm pleased to meet you!`);
+            UI.show(display);
+        }
 
         // driver
         App.pet.triggerScriptedState('idle', App.INF, 0, true, false, () => {
@@ -71,32 +109,11 @@ class Activities {
                 0.01 * App.deltaTime
             )
             App.pet.targetX = (-position.x) + (App.drawer.bounds.width / 2) - App.petDefinition.spritesheet.cellSize / 2;
-            App.pet.targetY = (-position.y) + (App.drawer.bounds.height / 2) - App.petDefinition.spritesheet.cellSize / 2 + App.petDefinition.spritesheet.offsetY;
+            App.pet.targetY = (-position.y) + (App.drawer.bounds.height / 2) - App.petDefinition.spritesheet.cellSize / 2 + App.petDefinition.spritesheet.offsetY + 48;
             
             const isMoving = App.pet.x !== App.pet.targetX || App.pet.y !== App.pet.targetY;
             App.pet.setState(isMoving ? 'moving' : 'idle');
         });
-
-        let gridDefinition = []
-        for(let x = -1; x <= 1; x++){
-            gridDefinition[x] = []
-            for(let y = -1; y <= 1; y++) {
-                gridDefinition[x][y] = {
-                    background: 'resources/img/background/tile/grass_01.png',
-                    pets: [
-                        App.getRandomPetDef(),
-                        App.getRandomPetDef(),
-                    ],
-                    objects: [
-                        {
-                            image: 'resources/img/furniture/vintage_couch.png',
-                            x: 50,
-                            y: 50
-                        }
-                    ]
-                }
-            }
-        }
 
         // todo: use timeline director
 
@@ -104,6 +121,8 @@ class Activities {
             const spawnedTiles = []
             for(let x = -1; x <= 1; x++){
                 for(let y = -1; y <= 1; y++) {
+                    const tileId = `${x}_${y}`;
+
                     const cellDefinition = gridDefinition[x][y];
                     const position = {
                         x: x * App.drawer.bounds.width,
@@ -116,17 +135,30 @@ class Activities {
                     spawnedTiles.push(tileBackgroundObject);
 
                     // pets
-                    cellDefinition.pets?.forEach((petDef) => {
-                        const petPosition = {
-                            x: App.drawer.getRelativePositionX(random(20, 80)) - petDef.spritesheet.cellSize / 2 + position.x,
-                            y: App.drawer.getRelativePositionY(random(20, 80)) - petDef.spritesheet.cellSize / 2 + position.y,
-                        }
+                    cellDefinition.pets?.forEach((petDef, i) => {
+                        const basePosition = {...position};
+                        const getRandomPositionInTile = () => ({
+                            x: App.drawer.getRelativePositionX(random(20, 80)) - petDef.spritesheet.cellSize / 2 + basePosition.x,
+                            y: App.drawer.getRelativePositionY(random(60, 80)) - petDef.spritesheet.cellSize / 2 + basePosition.y,
+                        })
+
+                        const id = tileId + i;
                         const pet = new Pet(petDef, { 
-                            ...petPosition, 
+                            ...getRandomPositionInTile(), 
                             breathFloat: Math.random(), // randomize breath pattern
                             parent: tileBackgroundObject, 
+                            staticShadow: true,
+                            _wanderDelay: random(4000, 10000),
                             onDraw: (me) => {
                                 App.pet.setLocalZBasedOnSelf(me);
+                                if(App.canProceed(`grid_pet_move_${id}`, me._wanderDelay)){
+                                    const targetPosition = getRandomPositionInTile();
+                                    me.targetX = targetPosition.x;
+                                    me.targetY = targetPosition.y;
+                                }
+
+                                const isMoving = me.x !== me.targetX || me.y !== me.targetY;
+                                me.setState(isMoving ? 'moving' : 'idle');
                             } 
                         });
                         pet.triggerScriptedState('idle', App.INF, 0, true);
