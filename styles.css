@@ -1245,6 +1245,24 @@ c-sprite {
     top: 50%;
     border-radius: 100px;
 }
+.post-like {
+    position: absolute;
+    left: 2.6px;
+    height: 25px;
+    width: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 50%;
+    border-radius: 100px;
+    background-color: rgb(255, 255, 255);
+    color: gray;
+}
+.post-like.liked {
+    background-color: red;
+    color: white;
+    animation: revealing-anim 0.3s;
+}
 .post-profile-icon {
     position: absolute;
     top: 10px;

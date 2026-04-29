@@ -1544,7 +1544,8 @@ const App = {
             onUnload: () => {
                 this.shootingStarsSpawner.removeObject();
             }
-        })
+        }),
+
     },
     setScene(scene, noPositionChange, onLoadArg){
         App.currentScene?.onUnload?.(scene);
@@ -6291,8 +6292,15 @@ const App = {
                     close();
                     showRandomPost();
                 };
+                const postLikeElement = post.querySelector('.post-like')
+                postLikeElement.onclick = () => {
+                    if(postLikeElement.classList.contains('liked')) return;
+                    postLikeElement.classList.add('liked');
+                    petDefinition.increaseFriendship(random(1, 4) * 0.1);
+                }
                 if(isSelfPost){
                     post.querySelector('.post-next').remove();
+                    postLikeElement.remove();
                 }
 
                 let homeBackground = App.scene.home.image;
