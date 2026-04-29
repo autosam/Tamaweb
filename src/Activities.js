@@ -1697,6 +1697,7 @@ class Activities {
         id,
     } = {}){
         const tempId = App.handlers.getOutsideActivityId(id);
+        let currentActivityIndex = App.temp[tempId] ?? 1;
         
         App.setScene({
             ...scene,
@@ -1712,6 +1713,19 @@ class Activities {
         });
         App.pet.x = '45%';
 
+        const displayActivityList = () => {
+            App.displayList(activities.map((item, index) => ({
+                name: `#${index + 1} ${item.name}`,
+                _disable: currentActivityIndex === index,
+                onclick: () => {
+                    // spawnedGameObjects.forEach(object => object?.removeObject?.())
+                    App.drawer.selectObjects('building').forEach(object => object?.removeObject?.());
+                    currentActivityIndex = index - 1;
+                    updateSelectedActivity(-1);
+                }
+            })))
+        }
+
         // ui
         App.toggleGameplayControls(false);
         const editDisplay = document.createElement('div');
@@ -1722,8 +1736,11 @@ class Activities {
             <div class="flex justify-center height-auto b-radius-10">
                 <span class="directional-control__activity-name">
                     <div class="flex flex-dir-col">
-                        <span id="activity-name">$activity_name$</span>
+                        <span style="max-width: 90%;overflow: hidden;text-overflow: ellipsis;align-self: center;" id="activity-name">$activity_name$</span>
                         <small id="activity-number" class="opacity-09 font-x-small"></small>
+                        <div id="list" style="position: absolute;right: 2px;top: -1px;padding: 2px;" class="cursor-pointer click-sound">
+                            <div class="pointer-events-none">${App.getIcon('list', true)}</div>
+                        </div>
                     </div>
                 </span>
             </div>
@@ -1776,11 +1793,10 @@ class Activities {
             setTimeout(() => App.playSound('resources/sounds/ui_click_03.ogg', true));
         }
         
-        let currentActivityIndex = App.temp[tempId] ?? 1;
         const updateSelectedActivity = (offset = 1) => {
-            if(spawnedGameObjects.length > 3){
-                const toDespwan = spawnedGameObjects.shift();
-                toDespwan?.removeObject?.();
+            while(spawnedGameObjects.length >= 3){
+                const toDespawn = spawnedGameObjects.shift();
+                toDespawn?.removeObject?.();
             }
 
             currentActivityIndex -= offset;
@@ -1808,7 +1824,8 @@ class Activities {
             new Object2d({
                 img: currentActivity.image,
                 x: scenePositionX, y: 0,
-                parent: background
+                parent: background,
+                selector: 'building',
             });
             spawnedGameObjects.push(background);
             
@@ -1827,6 +1844,7 @@ class Activities {
             onEnd();
             activities.find(a => a.isHome)?.onEnter?.();
         };
+        editDisplay.querySelector('#list').onclick = () => displayActivityList();
     }
     static async reckoning(){
         App.setScene(App.scene.reviverDen);
