@@ -1,6 +1,44 @@
 class Activities {
-    static async writeLetter(){
-        const displayLetterWriting = () => {
+    static async goToPostOffice() {
+        App.setScene(App.scene.post_office);
+        App.toggleGameplayControls(false);
+
+        const clippedCounterObject = new Object2d({
+            img: App.scene.post_office.image,
+            x: 0, y: 0, z: App.pet.z - 1,
+            clip: [
+                [42, 51],
+                [44, 70],
+                [95, 70],
+                [95, 51],
+            ]
+        })
+
+        const clerkDefinition = new PetDefinition({
+            sprite: 'resources/img/character/chara_265b.png'
+        });
+
+        const clerk = new TimelineDirector(
+            new Pet(clerkDefinition, {
+                castShadow: false,
+            })
+        );
+        clerk.actor.z = App.pet.z - 1.1;
+        const main = new TimelineDirector(App.pet);
+
+        const onEnd = () => {
+            clippedCounterObject.removeObject();
+            clerk.remove();
+            main.release();
+            App.setScene(App.scene.home);
+        }
+
+        clerk.setPosition({x: '72%', y: '62%'});
+        main.setPosition({x: '0%', y: '95%'});
+
+        const displayLetterWriting = ({
+            onSend, onCancel
+        }) => {
             const generator = new StoryGenerator();
             generator.deserialize(STORIES.a0);
 
@@ -34,15 +72,17 @@ class Activities {
             const buttonsContainer = container.querySelector('#buttons');
             const sendButton = container.querySelector('#send');
             sendButton.onclick = () => {
-                alert(text);
+                container.close();
+                onSend?.();
             }
             container.querySelector('#cancel').onclick = () => {
                 container.close();
+                onCancel?.();
             }
 
             const updateButtons = () => {
                 const lastWord = text.split(' ').at(-1);
-                const words = generator.getRandomNextWords(lastWord, 5);
+                const words = generator.getRandomNextWords(lastWord, 6);
                 buttonsContainer.innerHTML = words.map((word, i) => `
                     <button id="${i}" class="generic-btnn stylizedd">
                         ${word}
@@ -65,11 +105,79 @@ class Activities {
             updateButtons();
         }
 
-        displayLetterWriting({
-            onEndLoading: () => {
-                loadingPrompt.close();
-            }
-        });
+        const task_moveInShock = async () => {
+            // moving in
+            clerk.setState('idle_side')
+            clerk.lookAt(true);
+            await main.moveTo({x: '50%', speed: 0.02});
+
+            await TimelineDirector.wait(500);
+
+            clerk.setState('idle');
+            await TimelineDirector.wait(200);
+            clerk.setState('idle_side');
+            await TimelineDirector.wait(100);
+            await clerk.bob({maxCycles: 1, animation: 'shocked', landAnimation: 'idle'});
+
+            await TimelineDirector.wait(200);
+            
+            clerk.actor.say('welcome to the post office!', 2000);
+            await TimelineDirector.wait(2000);
+
+            clerk.actor.say('what can I do for you?', 2000);
+            await TimelineDirector.wait(2000);
+        }
+
+        const task_sendLetter = async () => {
+            main.bob({maxCycles: 1});
+            clerk.bob({maxCycles: 1});
+
+            await TimelineDirector.wait(1000);
+
+            main.setState('idle_side');
+            main.lookAt(true);
+            
+            const currentPositionX = clerk.getPosition('x');
+            await clerk.moveTo({x: '150%', speed: 0.05});
+            await clerk.moveTo({x: currentPositionX, speed: 0.05});
+            
+            await TimelineDirector.wait(200);
+            clerk.actor.say('all done!', 2000);
+
+            main.setState('cheering_with_icon');
+            App.pet.playSound('resources/sounds/task_complete_02.ogg', true);
+            
+            await TimelineDirector.wait(2500);
+
+            App.fadeScreen({
+                middleFn: onEnd,
+            })
+        }
+
+        await task_moveInShock();
+
+        App.displayList([
+            {
+                name: 'Send letter',
+                onclick: () => {
+                    App.handlers.open_friends_list(
+                        (friendDef) => {
+                            App.closeAllDisplays();
+                            displayLetterWriting({
+                                onSend: () => {
+                                    // friendDef.increaseFriendship();
+                                    task_sendLetter();
+                                },
+                                onCancel: () => {
+                                    onEnd();
+                                }
+                            });
+                        }
+                    )
+                    return true;
+                }
+            },
+        ], onEnd)
     }
     static async digGardenTreasure(){
         document.querySelector('#garden-screen')?.remove(); // bad, change later

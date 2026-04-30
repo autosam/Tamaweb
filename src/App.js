@@ -1545,7 +1545,9 @@ const App = {
                 this.shootingStarsSpawner.removeObject();
             }
         }),
-
+        post_office: new Scene({
+            image: 'resources/img/background/house/post_office_01.png',
+        })
     },
     setScene(scene, noPositionChange, onLoadArg){
         App.currentScene?.onUnload?.(scene);
