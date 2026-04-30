@@ -73,12 +73,21 @@ class Activities {
             const buttonsContainer = container.querySelector('#buttons');
             const sendButton = container.querySelector('#send');
             sendButton.onclick = () => {
-                container.close();
-                onSend?.();
+                App.displayConfirm(...GenericUIDef.binaryConfirm({
+                    onAccept: () => {
+                        container.close();
+                        onSend?.();
+                    }
+                }))
+
             }
             container.querySelector('#cancel').onclick = () => {
-                container.close();
-                onCancel?.();
+                App.displayConfirm(...GenericUIDef.binaryConfirm({
+                    onAccept: () => {
+                        container.close();
+                        onCancel?.();
+                    }
+                }))
             }
 
             const updateButtons = () => {
@@ -155,30 +164,34 @@ class Activities {
             })
         }
 
-        await task_moveInShock();
+        // await task_moveInShock();
 
-        App.displayList([
-            {
-                name: 'Send letter',
-                onclick: () => {
-                    App.handlers.open_friends_list(
-                        (friendDef) => {
-                            App.closeAllDisplays();
-                            displayLetterWriting({
-                                onSend: () => {
-                                    // friendDef.increaseFriendship();
-                                    task_sendLetter();
-                                },
-                                onCancel: () => {
-                                    onEnd();
-                                }
-                            });
-                        }
-                    )
-                    return true;
-                }
-            },
-        ], onEnd)
+        const openMenu = () => {
+            App.displayList([
+                {
+                    name: 'Send letter',
+                    onclick: () => {
+                        App.handlers.open_friends_list(
+                            (friendDef) => {
+                                App.closeAllDisplays();
+                                displayLetterWriting({
+                                    onSend: () => {
+                                        // friendDef.increaseFriendship();
+                                        task_sendLetter();
+                                    },
+                                    onCancel: () => {
+                                        openMenu();
+                                    }
+                                });
+                            }
+                        )
+                        return true;
+                    }
+                },
+            ], onEnd)
+        }
+
+        openMenu();
     }
     static async digGardenTreasure(){
         document.querySelector('#garden-screen')?.remove(); // bad, change later
@@ -1896,7 +1909,7 @@ class Activities {
 
         const displayActivityList = () => {
             App.displayList(activities.map((item, index) => ({
-                name: `#${index + 1} ${item.name}`,
+                name: `#${index + 1} ${item.name} ${item.isNew ? App.getBadge('new!') : ''}`,
                 _disable: currentActivityIndex === index,
                 onclick: () => {
                     // spawnedGameObjects.forEach(object => object?.removeObject?.())
@@ -1937,6 +1950,7 @@ class Activities {
                         </button>
                         <button class="generic-btn stylized mute" id="apply">
                             <i class="fa fa-door-open"></i>
+                            <div id="badge" style="position: absolute;right: -6px;top: -8px;">${App.getBadge('new!')}</div>
                         </button>
                     </div>
                 </div>
@@ -1985,6 +1999,9 @@ class Activities {
             if(currentActivityIndex < 0) currentActivityIndex = activities.length - 1;
             const currentActivity = activities[currentActivityIndex];
 
+            const badgeElement = document.querySelector('#apply #badge');
+            if(currentActivity.isNew) UI.show(badgeElement);
+            else UI.hide(badgeElement);
 
             document.querySelector('#activity-number').innerHTML =  `#${currentActivityIndex + 1}`;
             document.querySelector('#activity-name').innerHTML =  `${currentActivity.name}`;

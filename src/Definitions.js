@@ -182,9 +182,10 @@ App.definitions = (() => {
                 onEnter: () => Activities.goToUnderworldEntrance(),
             },
             {
-                name: `Post Office ${App.getBadge()}`,
+                name: `Post Office`,
                 image: 'resources/img/misc/activity_building_post_office.png',
                 onEnter: () => App.handlers.go_to_post_office(),
+                isNew: true,
             }
         ],
     
