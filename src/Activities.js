@@ -1,4 +1,76 @@
 class Activities {
+    static async writeLetter(){
+        const displayLetterWriting = () => {
+            const generator = new StoryGenerator();
+            generator.deserialize(STORIES.a0);
+
+            const headline = 'Letter to...';
+            let text = '';
+
+            const container = App.displayEmpty('letter');
+            container.innerHTML = `
+            <div class="flex flex-dir-col">
+                <h1>${App.getIcon('envelope')}</h1>
+                <h1 class="hidden">${headline}</h1>
+                <span id="text">
+                    <small class="opacity-half">
+                        <i>Start writing by selecting words ...</i>
+                    </small>
+                </span>
+                <footer></footer>
+                <div class="word-options" id="buttons"></div>
+                <div class="flex flex-dir-col">
+                    <button disabled id="send" class="generic-btn stylized">
+                        Send
+                    </button>
+                    <button id="cancel" class="generic-btn stylized back-btn">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+            `
+
+            const textContainer = container.querySelector('#text');
+            const buttonsContainer = container.querySelector('#buttons');
+            const sendButton = container.querySelector('#send');
+            sendButton.onclick = () => {
+                alert(text);
+            }
+            container.querySelector('#cancel').onclick = () => {
+                container.close();
+            }
+
+            const updateButtons = () => {
+                const lastWord = text.split(' ').at(-1);
+                const words = generator.getRandomNextWords(lastWord, 5);
+                buttonsContainer.innerHTML = words.map((word, i) => `
+                    <button id="${i}" class="generic-btnn stylizedd">
+                        ${word}
+                    </button>
+                `).join('');
+                const buttons = [...buttonsContainer.querySelectorAll('button')];
+                buttons.forEach((button, i) => {
+                    button.onclick = () => {
+                        const nextWord = words[i];
+                        text = `${text} ${nextWord}`;
+                        textContainer.textContent = `${text}.`;
+                        updateButtons();
+                        if(text.split(' ').length > 3){
+                            sendButton.disabled = false;
+                        }
+                    }
+                })
+            }
+
+            updateButtons();
+        }
+
+        displayLetterWriting({
+            onEndLoading: () => {
+                loadingPrompt.close();
+            }
+        });
+    }
     static async digGardenTreasure(){
         document.querySelector('#garden-screen')?.remove(); // bad, change later
         App.toggleGameplayControls(false);

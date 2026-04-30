@@ -29,6 +29,7 @@ const ASSETS = [
   "src/Definitions.js",
   "src/Utils.js",
   "src/Missions.js",
+  "src/StoryGen.js",
   "src/Plant.js",
   "src/Animal.js",
   // libs

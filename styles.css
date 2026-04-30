@@ -2764,6 +2764,30 @@ button.message-bubble:active {
     width: 100%;
     background-color: black;
 }
+.letter .word-options {
+    display: flex;
+    align-items: flex-end;
+    overflow: auto;
+    margin-left: -12px;
+    width: 100%;
+    gap: 4px;
+    padding: 4px 12px;
+    /* position: sticky;
+    bottom: 0;
+    background: linear-gradient(0deg, white, transparent); */
+}
+
+.letter .word-options > button {
+    border: 2px solid;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: white;
+}
+.letter .word-options > button:hover,
+.letter .word-options > button:active {
+    background: #2a0505;
+    color: white;
+}
 
 /* ghost angel and devil csprite */
 c-sprite.ghost {
