@@ -2195,6 +2195,9 @@ const App = {
         go_to_clinic: function(){
             Activities.goToClinic(() => App.handlers.open_activity_list(true))
         },
+        go_to_post_office: function(){
+            Activities.goToPostOffice(() => App.handlers.open_activity_list(true));
+        },
         show_attended_school_limit_message: function(){
             const formattedResetTime = moment(App.constants.SCHOOL.resetTime).format('h:mmA');
             return App.displayPopup(`<b>${App.petDefinition.name}</b> has attended all of their classes today!<br><br>Come back tomorrow after <b>${formattedResetTime}</b>`, 4000);

@@ -214,6 +214,7 @@ const SPRITES = [
 "misc/activity_building_mall.png",
 "misc/activity_building_market.png",
 "misc/activity_building_park.png",
+"misc/activity_building_post_office.png",
 "misc/activity_building_restaurant.png",
 "misc/activity_building_school.png",
 "misc/activity_building_underworld.png",

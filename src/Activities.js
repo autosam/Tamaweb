@@ -1,5 +1,5 @@
 class Activities {
-    static async goToPostOffice() {
+    static async goToPostOffice(onEndCallback) {
         App.setScene(App.scene.post_office);
         App.toggleGameplayControls(false);
 
@@ -31,6 +31,7 @@ class Activities {
             clerk.remove();
             main.release();
             App.setScene(App.scene.home);
+            onEndCallback?.();
         }
 
         clerk.setPosition({x: '72%', y: '62%'});
@@ -84,7 +85,7 @@ class Activities {
                 const lastWord = text.split(' ').at(-1);
                 const words = generator.getRandomNextWords(lastWord, 6);
                 buttonsContainer.innerHTML = words.map((word, i) => `
-                    <button id="${i}" class="generic-btnn stylizedd">
+                    <button id="${i}">
                         ${word}
                     </button>
                 `).join('');

@@ -181,6 +181,11 @@ App.definitions = (() => {
                 image: 'resources/img/misc/activity_building_underworld.png',
                 onEnter: () => Activities.goToUnderworldEntrance(),
             },
+            {
+                name: `Post Office ${App.getBadge()}`,
+                image: 'resources/img/misc/activity_building_post_office.png',
+                onEnter: () => App.handlers.go_to_post_office(),
+            }
         ],
     
         /* FOOD AND SNACKS */
