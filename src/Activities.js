@@ -15,7 +15,8 @@ class Activities {
         })
 
         const clerkDefinition = new PetDefinition({
-            sprite: 'resources/img/character/chara_265b.png'
+            // sprite: 'resources/img/character/chara_265b.png',
+            sprite: 'resources/img/character/mailman_01.png'
         });
 
         const clerk = new TimelineDirector(
@@ -164,7 +165,7 @@ class Activities {
             })
         }
 
-        // await task_moveInShock();
+        await task_moveInShock();
 
         const openMenu = () => {
             App.displayList([
