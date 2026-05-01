@@ -6497,7 +6497,9 @@ const App = {
                                         {
                                             name: 'yes',
                                             onclick: () => {
-                                                let willAcceptFriendRequest = random(0, 1) == 1;
+                                                let willAcceptFriendRequest = random(0, 1) === 1;
+                                                if(App.pet.hasTrait('charismatic')) willAcceptFriendRequest = true;
+                                                if(App.pet.hasTrait('lucky')) willAcceptFriendRequest = Boolean(random(0, 3));
                                                 if(!willAcceptFriendRequest){
                                                     App.displayPopup(`${otherPetDef.name} did <b style="color: #ff6e74">not accept</b> ${App.petDefinition.name}'s friend request`)
                                                     return;

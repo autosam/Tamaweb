@@ -180,6 +180,9 @@ class ChainLetterScorer {
         const lastWord = wordChain[wordChain.length - 1];
         if(this.storyGen.forbiddenEndWords.includes(lastWord)) totalScore -= 30;
 
+        // misc bonuses
+        if(App.pet.hasTrait('charismatic')) totalScore += 5;
+
         return totalScore;
     }
 
@@ -197,8 +200,8 @@ class ChainLetterScorer {
 
         const commonality = this.storyGen.allWords.filter(w => w === word).length;
         if(commonality > 3) return 0;
-        else if(commonality >= 2) return 2;
-        return 5;
+        else if(commonality === 2) return 1;
+        return 3;
     }
 
     static AwfulScore = 0;
