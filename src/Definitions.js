@@ -182,6 +182,7 @@ App.definitions = (() => {
                 onEnter: () => Activities.goToUnderworldEntrance(),
             },
             {
+                isDisabled: () => App.petDefinition.lifeStage === PetDefinition.LIFE_STAGE.baby,
                 name: `Post Office`,
                 image: 'resources/img/misc/activity_building_post_office.png',
                 onEnter: () => App.handlers.go_to_post_office(),
