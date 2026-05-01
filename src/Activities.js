@@ -1,4 +1,43 @@
 class Activities {
+    static async openGenericGift({onEnd, onMiddle}){
+        App.toggleGameplayControls(false);
+
+        const main = new TimelineDirector(App.pet);
+
+        main.setPosition({x: '70%'});
+
+        const giftObject = new Object2d({
+            img: 'resources/img/misc/gift.png',
+            x: '40%', y: '84%', z: App.constants.ACTIVE_PET_Z + 0.1,
+            opacity: 0,
+            onDraw: (me) => {
+                me.opacity = lerp(me.opacity, 1, 0.001 * App.deltaTime);
+            }
+        });
+
+        const particlesSpawner = Activities.task_explodingParticles({
+            x: giftObject.x,
+            y: giftObject.y,
+            parent: giftObject,
+        })
+
+        main.setState('cheering_with_icon');
+        setTimeout(() => App.pet.playSound('resources/sounds/cheer_success.ogg', true), 200);
+        await TimelineDirector.wait(3000);
+
+        App.fadeScreen({
+            middleFn: () => {
+                particlesSpawner.removeObject();
+                giftObject.removeObject();
+                main.release();
+                onMiddle?.();
+            },
+            endFn: () => {
+                App.toggleGameplayControls(true);
+                onEnd?.();
+            },
+        })
+    }
     static async goToPostOffice(onEndCallback) {
         App.setScene(App.scene.post_office);
         App.toggleGameplayControls(false);
@@ -44,6 +83,8 @@ class Activities {
             const generator = new StoryGenerator();
             generator.deserialize(STORIES.a0);
 
+            const scorer = new ChainLetterScorer(generator);
+
             const headline = 'Letter to...';
             let text = '';
 
@@ -61,7 +102,7 @@ class Activities {
                 <div class="word-options" id="buttons"></div>
                 <div class="flex flex-dir-col">
                     <button disabled id="send" class="generic-btn stylized">
-                        Send
+                        Send ${App.getIcon('envelope ml-auto', true)}
                     </button>
                     <button id="cancel" class="generic-btn stylized back-btn">
                         Cancel
@@ -76,8 +117,11 @@ class Activities {
             sendButton.onclick = () => {
                 App.displayConfirm(...GenericUIDef.binaryConfirm({
                     onAccept: () => {
+                        const score = scorer.scoreLetter(text);
+                        const rating = scorer.rate(score);
+
                         container.close();
-                        onSend?.();
+                        onSend?.(text, rating);
                     }
                 }))
 
@@ -174,11 +218,19 @@ class Activities {
                     onclick: () => {
                         App.handlers.open_friends_list(
                             (friendDef) => {
+                                if(friendDef.stats.player_sent_letter){
+                                    return App.displayPopup(`You sent a letter to ${friendDef.getAvatar()} too recently!`);
+                                }
+
                                 App.closeAllDisplays();
                                 displayLetterWriting({
-                                    onSend: () => {
-                                        // friendDef.increaseFriendship();
+                                    onSend: (letterContent, letterRating) => {
                                         task_sendLetter();
+                                        friendDef.stats.player_sent_letter = {
+                                            time: Date.now(),
+                                            rating: letterRating
+                                        }
+                                        App.save();
                                     },
                                     onCancel: () => {
                                         openMenu();
@@ -3112,6 +3164,7 @@ class Activities {
     static getMail({onEndFn = App.handlers.show_newspaper, noSceneSwitch} = {}){
         App.pet.stopMove();
         App.toggleGameplayControls(false);
+        App.pet.playSound('resources/sounds/blush.ogg', true)
         if(!noSceneSwitch) App.setScene(App.scene.garden, false, { noPetBowl: true });
         App.pet.x = '78%';
         App.pet.inverted = false;

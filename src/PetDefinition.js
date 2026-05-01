@@ -438,6 +438,7 @@ class PetDefinition {
                                 player_friendship: friendDef.stats.player_friendship,
                                 is_player_family: friendDef.stats.is_player_family,
                                 is_ghost: friendDef.stats.is_ghost,
+                                player_sent_letter: friendDef.stats.player_sent_letter,
                             }
                         };
                     })
@@ -510,8 +511,10 @@ class PetDefinition {
         if(!value) value = random(5, 10);
 
         let finalValue = value;
-        if(this.hasTrait('charismatic')) finalValue *= 1.75;
-        if(this.hasTrait('introvert')) finalValue *= 0.4;
+        if(value > 0){
+            if(this.hasTrait('charismatic')) finalValue *= 1.75;
+            if(this.hasTrait('introvert')) finalValue *= 0.4;
+        }
 
         if(!this.stats.player_friendship) this.stats.player_friendship = finalValue;
         else this.stats.player_friendship += finalValue;

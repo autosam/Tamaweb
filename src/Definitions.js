@@ -2904,6 +2904,30 @@ App.definitions = (() => {
                 ['Feeling like a cloud. Soft and fluffy. #CloudVibes', 8, "resources/img/background/sky/afternoon.png"]
             ]
         },
+
+        /* LETTER RESPONSES */
+        letterResponses: {
+            awful: [
+                `I tried to read your letter but I couldn't understand it at all. The words were all jumbled up. Have you not written a letter before? Please try again.`,
+                `Hey %name%, that letter was... something. I don't know what. But not good. Maybe next time use better words? Confused.`,
+                `%name%, I stared at your letter for a long time and still have no idea what you were trying to say. Please write better next time.`
+            ],
+            bad: [
+                "Hey %name%, your letter was short so I read it fast. After that I went and ate a king burger. It was very good. Anyway hope you're doing okay.",
+                "Dear %name%, I got your letter but I was distracted because I saw a really cute dog outside my window. I forgot what you wrote. Sorry. Write again maybe?",
+                "%name%, I read your letter but honestly I was thinking about lunch the whole time. I had a good telesushi. Hope your day was okay too."
+            ],
+            medium: [
+                "Hey %name%, thanks for your letter. Today I found a really nice leaf and played with it for an hour. It was a good leaf. Anyway your letter was fine. Hope you're well.",
+                "Dear %name%, I read your letter and then I took a nap. When I woke up I ate a small snack. Nothing exciting happened but nothing bad either. Just a normal day.",
+                "%name%, your letter showed up while I was counting clouds. I got to seventeen before I lost track. Your letter was okay. Not amazing but not bad. Just like my cloud counting."
+            ],
+            good: [
+                '%name%, WOW!!! Your letter was SO good!!! I laughed and laughed and then I read it to my friend!!! You really know how to write!!! More letters like this please!!!',
+                `Hey hey %name%!!! This letter was AMAZING!!! I carried it around all day!!! Best mail I've gotten in forever!!! You're the best letter writer ever!!!`,
+                `Dear %name%, I loved your letter so much!!! I read it five times!!! I put it under my pillow so I can read it again tomorrow!!! Please write back fast!!!`,
+            ]
+        },
     
         /* RABBIT HOLE ACTIVITIES */
         rabbit_hole_activities: [
@@ -3216,6 +3240,73 @@ App.definitions = (() => {
                 opposite: ['dustMagnet'],
                 icon: 26,
             },
+        },
+
+        /* POOLS */
+        pools: {
+            food: () => Object.keys(App.definitions.food)
+                .filter(key => App.definitions.food[key].price > 0)
+                .map(key => { 
+                    return {
+                        name: key,
+                        icon: App.getFoodCSprite(App.definitions.food[key].sprite),
+                        count: [1, 4],
+                        type: 'consumable',
+                        onClaim: (amt) => {
+                            App.addNumToObject(App.pet.inventory.food, key, amt || 1);
+                        }
+                    } 
+                }),
+            items: () => Object.keys(App.definitions.item)
+                .map(key => { 
+                    return {
+                        name: key,
+                        icon: App.getItemCSprite(App.definitions.item[key].sprite),
+                        count: [1, 1],
+                        type: 'item',
+                        onClaim: () => {
+                            App.addNumToObject(App.pet.inventory.item, key, 1);
+                        }
+                    } 
+                }),
+            accessories: () => Object.keys(App.definitions.accessories)
+                .filter(key => App.definitions.accessories[key].price !== -1)
+                .map(key => { 
+                    return {
+                        name: key,
+                        icon: App.getAccessoryCSprite(key),
+                        count: [1, 1],
+                        type: 'accessory',
+                        onClaim: () => {
+                            App.pet.inventory.accessory[key] = true;
+                        }
+                    } 
+                }),
+            exclusivePotions: () => Object.keys(App.definitions.food)
+                .filter(key => {
+                    const item = App.definitions.food[key];
+                    return item.type === 'med' && item.unbuyable;
+                })
+                .map(key => { 
+                    return {
+                        name: key,
+                        icon: App.getFoodCSprite(App.definitions.food[key].sprite),
+                        count: [1, 1],
+                        type: 'consumable',
+                        onClaim: (amt) => {
+                            App.addNumToObject(App.pet.inventory.food, key, amt || 1);
+                        }
+                    } 
+                }),
+            goldDef: (min = 1, max = 25) => ({
+                name: 'gold',
+                icon: '<div class="gold-circle">$</div>',
+                count: [min, max],
+                type: '',
+                onClaim: (amt) => {
+                    App.pet.stats.gold += amt || 50;
+                }
+            })
         }
     }
 })()

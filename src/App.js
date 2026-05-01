@@ -159,7 +159,13 @@ const App = {
             autumn: ['#CE4429', '#ED782F', '#FF9D60'],
             spring: ['#63A04B', '#7FD060', '#96F271'],
             summer: ['#27AA2F', '#59D12F', '#BAD92F'],
-        }
+        },
+        LETTER_SCORE_RATING: {
+            awful: 0,
+            bad: 1,
+            medium: 2,
+            good: 3
+        },
     },
     routes: {
         BLOG: 'https://tamawebgame.github.io/blog/',
@@ -749,6 +755,77 @@ const App = {
                     Activities.birthday();
                     App.sendAnalytics('auto_age_up_live', App.petDefinition.lifeStage);
                 }, 'automatic_birthday_party');
+            }
+        }
+
+        const friendsPendingLetterResponse = App.petDefinition.friends.filter(def => {
+            if(!def.stats.player_sent_letter) return false;
+            const responseTime = moment(def.stats.player_sent_letter.time).add(6, 'hours');
+            if(moment().isAfter(responseTime)) return true;
+        });
+        if(friendsPendingLetterResponse.length){
+            const friendDef = friendsPendingLetterResponse[0];
+            const { rating } = friendDef.stats.player_sent_letter;
+            if(App.canProceed('get_letter_response', App.constants.ONE_MINUTE * 10)){
+                const { LETTER_SCORE_RATING } = App.constants;
+                const ratingMap = {
+                    [LETTER_SCORE_RATING.awful]: 'awful',
+                    [LETTER_SCORE_RATING.bad]: 'bad',
+                    [LETTER_SCORE_RATING.good]: 'good',
+                    [LETTER_SCORE_RATING.medium]: 'medium'
+                };
+                const ratingKey = ratingMap[rating] || 'medium';
+
+                const getLetterResponse = () => randomFromArray(App.definitions.letterResponses[ratingKey]);
+                const getGift = () => {
+                    if(rating === LETTER_SCORE_RATING.good) return [
+                        ...App.definitions.pools.items(),
+                        ...App.definitions.pools.accessories(),
+                        ...App.definitions.pools.exclusivePotions(),
+                    ];
+                    if(rating === LETTER_SCORE_RATING.medium) return [
+                        ...App.definitions.pools.food(),
+                        App.definitions.pools.goldDef(10, 70),
+                    ]
+                    return false;
+                }
+                const getFriendshipGain = () => {
+                    switch(rating){
+                        case LETTER_SCORE_RATING.awful: return -10;
+                        case LETTER_SCORE_RATING.bad: return 0;
+                        case LETTER_SCORE_RATING.good: return random(10, 15);
+                        default: return random(3, 7);
+                    }
+                }
+
+                const giftPool = getGift();
+                const response = `${getLetterResponse().replaceAll('%name%', App.petDefinition.name)} ${giftPool ? `<br><br>I've sent you a gift, hope you like!` : ''}`;
+                const friendshipGain = getFriendshipGain();
+
+                setTimeout(() => {
+                    App.queueEvent(() => {
+                        friendDef.increaseFriendship(friendshipGain);
+                        friendDef.stats.player_sent_letter = false;
+                        Activities.getMail({
+                            onEndFn: () => {
+                                App.handlers.show_letter({
+                                    headline: '', 
+                                    text: response,
+                                    sender: `${friendDef.getAvatar()}`,
+                                    onClose: () => {
+                                        if(!giftPool) return;
+                                        Activities.openGenericGift({
+                                            onMiddle: () => {
+                                                App.pullFromPool(giftPool);
+                                            }
+                                        })
+                                    }
+                                })
+                            },
+                            noSceneSwitch: true
+                        });
+                    })
+                }, random(1000, 2000))
             }
         }
     },
@@ -7757,6 +7834,34 @@ const App = {
                 </small>
             </div>
         `;
+    },
+    pullFromPool: (pool, options = {}) => {
+        const { 
+            isGoldPull = false, 
+            goldPullDef = App.definitions.pools.goldDef(), 
+            isDuringChristmas = App.isDuringChristmas()
+        } = options;
+        
+        const randomPull = isGoldPull && goldPullDef ? goldPullDef : randomFromArray(pool);
+        const [min, max] = randomPull.count;
+        let count = random(min, max) * (isGoldPull ? 5 : 1);
+        if(isDuringChristmas) count *= 2;
+        randomPull.onClaim?.(count);
+        setTimeout(() => App.playSound('resources/sounds/task_complete_02.ogg', true), 450)
+        App.displayPopup(`
+            <div class="pulse">
+                ${randomPull.icon}
+            </div>
+            <b>${randomPull.name}</b>
+            <br>
+            <span>x${count}</span>
+            <br>
+            <span>${randomPull.type}</span>
+            ${
+                isDuringChristmas ?
+                App.getBadge('doubled!') : ''
+            }
+        `, 5000, null, true);
     },
     isCompanionAllowed: function(room){
         if(!room) room = App.currentScene;

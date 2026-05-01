@@ -1463,6 +1463,12 @@ input#background-color-picker {
     margin: 6px;
 }
 
+.ml-auto{
+    margin-left: auto;
+}
+.mr-auto{
+    margin-right: auto;
+}
 .mt-2 {
     margin-top: 4px;
 }

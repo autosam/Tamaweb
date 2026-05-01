@@ -12,7 +12,6 @@ class StoryGenerator {
         this.startingWords = [
             "i",
             "the",
-            "the",
             "why",
             "can",
             "please",
@@ -51,12 +50,12 @@ class StoryGenerator {
 	loadRaw(text){
         this.normalized = this.normalizeStory(text);
 
-        this.allWords = this.normalized.split(" ").filter(word => word);
+        this.allUniqueWords = this.normalized.split(" ").filter(word => word);
         this.map = new Map();
 
         const occuranceMap = new Map();
-        this.allWords.forEach((word, index) => {
-            const nextWord = this.allWords[index + 1];
+        this.allUniqueWords.forEach((word, index) => {
+            const nextWord = this.allUniqueWords[index + 1];
             if (word === "" || nextWord === "") return;
             const currentWordMap = [...(this.map.get(word) || []), nextWord];
             this.map.set(word, currentWordMap);
@@ -85,16 +84,20 @@ class StoryGenerator {
     getNextWords(currentWord){
         return this.map.get(currentWord) || [];
     }
-    getRandomWords(count = 3){
+    getRandomWords(count = 3, pool = this.allUniqueWords){
         const list = [];
         for(let i = 0; i < 512; i++){
-            const randomWord = randomFromArray(this.allWords);
+            const randomWord = randomFromArray(pool);
             if(!list.includes(randomWord)) list.push(randomWord);
             if(list.length >= count) break;
         }
         return list;
     }
     getRandomNextWords(currentWord, count = 3){
+        if(!currentWord){
+            return this.getRandomWords(count * 2, [...this.startingWords, ...this.getRandomWords(10)]);
+        }
+
         const nextWords = this.getNextWords(currentWord);
 
         if(!nextWords.length){
@@ -145,6 +148,61 @@ class StoryGenerator {
 			this.map.set(currentWord, nextWordsJoined ? nextWordsList : []);
 		})
 
-		this.allWords = [...new Set(allWords)];
+		this.allUniqueWords = [...new Set(allWords)];
+        this.allWords = allWords;
 	}
+}
+
+class ChainLetterScorer {
+    constructor(storyGenerator) {
+        this.storyGen = storyGenerator;
+    }
+    
+    scoreLetter(text){
+        const wordChain = text.split(' ');
+
+        let totalScore = 0;
+
+        // least common next word
+        wordChain.forEach((word, i) => {
+            const followingWord = wordChain[i + 1];
+            totalScore += this.getCommonalityScore(followingWord);
+        })
+
+        // unqiue words
+        const unqiueWordsCount = new Set(wordChain).size;
+        totalScore += unqiueWordsCount / 1.5;
+
+        // word count
+        totalScore += wordChain.length - 5;
+
+        // forbidden end word
+        const lastWord = wordChain[wordChain.length - 1];
+        if(this.storyGen.forbiddenEndWords.includes(lastWord)) totalScore -= 30;
+
+        return totalScore;
+    }
+
+    rate(score){
+        const { awful, bad, medium, good } = App.constants.LETTER_SCORE_RATING;
+
+        if(score >= ChainLetterScorer.GoodScore) return good;
+        if(score >= ChainLetterScorer.MediumScore) return medium;
+        if(score >= ChainLetterScorer.BadScore) return bad;
+        if(score <= ChainLetterScorer.AwfulScore) return awful;
+    }
+
+    getCommonalityScore(word){
+        if(!word) return 0;
+
+        const commonality = this.storyGen.allWords.filter(w => w === word).length;
+        if(commonality > 3) return 0;
+        else if(commonality >= 2) return 2;
+        return 5;
+    }
+
+    static AwfulScore = 0;
+    static BadScore = 10;
+    static MediumScore = 20;
+    static GoodScore = 40;
 }
