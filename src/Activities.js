@@ -5037,6 +5037,7 @@ class Activities {
         await TimelineDirector.wait(3000);
 
         // accessory gift
+        // todo: refactor with definitions.pools
         const EXCLUSIVE_ACCESSORY = 'santa hat';
         const accessoriesPool = Object.keys(App.definitions.accessories)
         .filter(key => App.definitions.accessories[key].price !== -1);
