@@ -6108,7 +6108,28 @@ const App = {
                                                         2500, 
                                                         () => {
                                                             App.closeAllDisplays();
-                                                            Activities.receiveOrderedFood();
+                                                            const onEnd = () => {
+                                                                App.displayConfirm(...GenericUIDef.binaryConfirm({
+                                                                    text: 'Do you want to eat a delivered item right now?',
+                                                                    onAccept: () => {
+                                                                        App.displayList(getOrders().map(({current, foodName}) => ({
+                                                                            name: `
+                                                                                <div class="icon">${App.getFoodCSprite(current.sprite)}</div>
+                                                                                <span class="ellipsis">${foodName}</span>
+                                                                            `,
+                                                                            onclick: () => {
+                                                                                App.closeAllDisplays();
+                                                                                App.pet.feed(
+                                                                                    current.sprite, 
+                                                                                    current.hunger_replenish ?? 0, 
+                                                                                    'food', 
+                                                                                true);
+                                                                            }
+                                                                        })), undefined, 'cancel');
+                                                                    },
+                                                                }))
+                                                            }
+                                                            Activities.receiveOrderedFood(onEnd);
                                                         }
                                                     );
                                                 }

@@ -1537,7 +1537,7 @@ class Activities {
         App.toggleGameplayControls(true);
 
     }
-    static async receiveOrderedFood(){
+    static async receiveOrderedFood(onEnd){
         App.setScene(App.scene.home);
         App.toggleGameplayControls(false);
 
@@ -1623,7 +1623,10 @@ class Activities {
         main.release();
         bag.removeObject();
         App.pet.x = '50%';
-        App.pet.playCheeringAnimation(() => App.toggleGameplayControls(true));
+        App.pet.playCheeringAnimation(() => {
+            App.toggleGameplayControls(true);
+            onEnd?.();
+        });
     }
     static async talkingSequence({
         isPlayerHost = true,
