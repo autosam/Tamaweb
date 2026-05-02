@@ -6463,6 +6463,9 @@ const App = {
                     }
                     if(App.pet.hasMoodlet('sick')){
                         postText.innerHTML = 'Not feeling too good... #tummyache';
+                        if(App.pet.stats.has_toothache) {
+                            postText.innerHTML = 'Ate way too much snacks... #toothache';
+                        }
                         character.spritesheet.cellNumber = 4;
                         background.setImg(homeBackground);
                     }

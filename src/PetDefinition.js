@@ -317,6 +317,7 @@ class PetDefinition {
         is_revived_once: false,
         is_ghost: false,
         last_eaten: [],
+        has_toothache: false,
 
         // skill points
         current_expression: 0,
@@ -423,6 +424,7 @@ class PetDefinition {
                     has_received_school_invite: this.stats.has_received_school_invite,
                     gender: this.stats.gender,
                     is_ghost: this.stats.is_ghost,
+                    has_toothache: this.stats.has_toothache,
                 }
                 return;
             }

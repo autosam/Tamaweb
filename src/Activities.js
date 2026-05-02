@@ -4265,8 +4265,10 @@ class Activities {
             App.pet.stats.current_cleanliness += 20;
             App.pet.stats.current_discipline += random(1, 3);
             App.pet.stats.current_health += random(5, 25);
+            App.pet.stats.has_toothache = false;
             App.toggleGameplayControls(false);
             brushObject.removeObject();
+            App.save();
             App.pet.playCheeringAnimation(() => {
                 App.setScene(App.scene.home);
                 App.toggleGameplayControls(true);
