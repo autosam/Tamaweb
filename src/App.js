@@ -928,7 +928,7 @@ const App = {
         if(element?.hasAttribute?.('data-ui-indexed')) return;
         element?.setAttribute?.('data-ui-indexed', 1);
 
-        const items = [...element?.querySelectorAll?.('button, a')];
+        const items = [...element?.querySelectorAll?.('button, a, [data-fb-focusable]')];
         items?.forEach((item, i) => item?.setAttribute('data-ui-index', i));
         items[activeIndex]?.setAttribute('data-is-ui-active', "true");
     },
@@ -4676,7 +4676,7 @@ const App = {
             const list = UI.genericListContainer();
             const content = UI.empty('flex flex-dir-col flex-1');
             content.innerHTML = `
-                <div class="flex-center flex-1 flex flex-gap-05 inner-padding surface-stylized height-auto relative">
+                <div data-fb-focusable class="flex-center flex-1 flex flex-gap-05 inner-padding surface-stylized height-auto relative">
                     ${App.petDefinition.getCSprite(true)}
                     <b>
                         <span>${App.settings.genderedPets ? App.getIcon(App.pet.stats.gender, true) : ''} ${App.petDefinition.name} </span>
@@ -4698,7 +4698,7 @@ const App = {
                 </div>
                 <div class="surface-stylized inner-padding flex flex-gap-05 flex-dir-col">
                     <small>Traits:</small>
-                    <div class="relative mt-6 width-full">
+                    <div data-fb-focusable class="relative mt-6 width-full">
                         <div class="stats-label left-0">Experience</div>
                         <div class="pet-trait-icons-container">
                             ${petExpTraitIcons.map(icon => {
@@ -4708,7 +4708,7 @@ const App = {
                             }).join('')}
                         </div>
                     </div>
-                    <div class="relative mt-6 width-full">
+                    <div data-fb-focusable class="relative mt-6 width-full">
                         <div class="stats-label left-0">Personality</div>
                         <div class="pet-trait-icons-container">
                             ${!App.petDefinition.traits.length ? unknownPersonality : ''}
@@ -4721,14 +4721,14 @@ const App = {
                             }).join('')}
                         </div>
                     </div>
-                    <div class="relative mt-6 width-full">
+                    <div data-fb-focusable class="relative mt-6 width-full">
                         <div class="stats-label left-0">Zodiac sign</div>
                         <div class="pet-trait-icons-container">
                             ${App.getZodiacSign(App.petDefinition.birthday)}
                         </div>
                     </div>
                 </div>
-                <div class="user-id surface-stylized inner-padding text-transform-none">
+                <div data-fb-focusable class="user-id surface-stylized inner-padding text-transform-none">
                     <div class="flex flex-dir-col">
                         <small>play time:</small>
                         <span>${Math.floor(playTimeDuration.asHours())} hours and ${playTimeDuration.minutes()} minutes</span>
