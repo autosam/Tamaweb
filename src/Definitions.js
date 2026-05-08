@@ -1129,7 +1129,7 @@ App.definitions = (() => {
             "smartphone": {
                 sprite: 5,
                 fun_replenish: 30,
-                price: 350,
+                price: 450,
                 interaction_time: 100000,
                 interruptable: true,
                 age: [_ls.teen, _ls.adult, _ls.elder],
