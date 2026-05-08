@@ -1067,7 +1067,7 @@ App.definitions = (() => {
                 price: 50,
                 interaction_time: 8100,
                 age: [_ls.baby, _ls.child],
-                logic_increase: 1,
+                logic_increase: 0.5,
             },
             "grimoire": {
                 sprite: 9,
@@ -1076,7 +1076,7 @@ App.definitions = (() => {
                 interaction_time: 8000,
                 interruptable: false,
                 age: [_ls.teen, _ls.adult, _ls.elder],
-                endurance_increase: 1,
+                endurance_increase: 0.5,
             },
             "bear": {
                 sprite: 10,
@@ -1084,7 +1084,7 @@ App.definitions = (() => {
                 price: 180,
                 interaction_time: 10000,
                 interruptable: true,
-                expression_increase: 1,
+                expression_increase: 0.5,
             },
             "skate": {
                 sprite: 11,
@@ -1095,7 +1095,7 @@ App.definitions = (() => {
                 isNew: false,
                 onEnd: () => App.setScene(App.scene.home),
                 age: [_ls.teen, _ls.adult, _ls.elder],
-                endurance_increase: 1.5,
+                endurance_increase: 1,
             },
             "foxy": {
                 sprite: 1,
@@ -1133,7 +1133,7 @@ App.definitions = (() => {
                 interaction_time: 100000,
                 interruptable: true,
                 age: [_ls.teen, _ls.adult, _ls.elder],
-                logic_increase: 2,
+                logic_increase: 1,
             },
             "magazine": {
                 sprite: 6,
@@ -1150,7 +1150,7 @@ App.definitions = (() => {
                 price: 75,
                 interaction_time: 60000,
                 interruptable: true,
-                expression_increase: 1.5,
+                expression_increase: 1,
             },
             "rubicube": {
                 sprite: 12,
@@ -1159,7 +1159,7 @@ App.definitions = (() => {
                 interaction_time: 30000,
                 interruptable: true,
                 isNew: false,
-                logic_increase: 1.5,
+                logic_increase: 1,
             },
             "fidget spinner": {
                 sprite: 13,
@@ -1197,7 +1197,7 @@ App.definitions = (() => {
                 interaction_time: 15000,
                 interruptable: false,
                 isNew: true,
-                logic_increase: 0.05,
+                logic_increase: 0.1,
             },
         },
     
