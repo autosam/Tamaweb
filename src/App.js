@@ -4605,6 +4605,12 @@ const App = {
                             }).join('')}
                         </div>
                     </div>
+                    <div class="relative mt-6 width-full">
+                        <div class="stats-label left-0">Zodiac sign</div>
+                        <div class="pet-trait-icons-container">
+                            ${App.getZodiacSign(App.petDefinition.birthday)}
+                        </div>
+                    </div>
                 </div>
                 <div class="user-id surface-stylized inner-padding text-transform-none">
                     <div class="flex flex-dir-col">
@@ -7932,6 +7938,16 @@ const App = {
                 <i>${buff.description}</i>
             </div>
         `;
+    },
+    getZodiacSign(date){
+        const ZODIAC_SIGNS = ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓'];
+        const day = moment(date).date();
+        return ZODIAC_SIGNS[(day - 1) % ZODIAC_SIGNS.length];
+
+        /* // todo: use these when bumping fa to v7.2+
+        const ZODIAC_SIGNS = ['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces'];
+        const day = moment(date).date();
+        return ZODIAC_SIGNS[(day - 1) % ZODIAC_SIGNS.length] || 'aries'; */
     },
     playSound: function(path, force){
         if(!App.settings.playSound) return;
