@@ -1193,7 +1193,7 @@ App.definitions = (() => {
             "8ball": {
                 sprite: 16,
                 fun_replenish: 5,
-                price: 500,
+                price: 400,
                 interaction_time: 15000,
                 interruptable: false,
                 isNew: true,
