@@ -992,7 +992,13 @@ const App = {
                 setTimeout(() => updateActiveElement(undefined, getItems()));
                 break;
             case 2:
-                currentDisplay?.querySelector('.back-btn')?.click();
+                if(activeIndex !== 0){
+                    App.playSound('resources/sounds/ui_click_08.ogg', true)
+                    activeElement.removeAttribute('data-is-ui-active');
+                    updateActiveElement(0);
+                } else {
+                    currentDisplay?.querySelector('.back-btn')?.click();
+                }
                 break;
         }
     },
