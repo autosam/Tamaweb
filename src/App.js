@@ -967,7 +967,6 @@ const App = {
 
         switch(buttonNumber){
             case 0:
-                App.playSound('resources/sounds/ui_click_08.ogg', true)
                 activeElement.removeAttribute('data-is-ui-active');
 
                 let newActiveIndex = activeIndex, newActiveElement;
@@ -978,6 +977,9 @@ const App = {
                         || currentDisplay.querySelector(`[data-ui-index='${newActiveIndex}']`);
                     if(newActiveElement) break;
                 }
+
+                if(newActiveIndex !== activeIndex) App.playSound('resources/sounds/ui_click_08.ogg', true);
+                else App.playSound('resources/sounds/ui_click_04.ogg', true);
 
                 updateActiveElement(newActiveIndex)
                 break;
@@ -997,7 +999,9 @@ const App = {
                     activeElement.removeAttribute('data-is-ui-active');
                     updateActiveElement(0);
                 } else {
-                    currentDisplay?.querySelector('.back-btn')?.click();
+                    const backBtn = currentDisplay?.querySelector('.back-btn');
+                    if(backBtn) backBtn.click();
+                    else App.playSound('resources/sounds/ui_click_04.ogg', true);
                 }
                 break;
         }
