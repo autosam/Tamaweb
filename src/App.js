@@ -159,7 +159,13 @@ const App = {
             autumn: ['#CE4429', '#ED782F', '#FF9D60'],
             spring: ['#63A04B', '#7FD060', '#96F271'],
             summer: ['#27AA2F', '#59D12F', '#BAD92F'],
-        }
+        },
+        LETTER_SCORE_RATING: {
+            awful: 0,
+            bad: 1,
+            medium: 2,
+            good: 3
+        },
     },
     routes: {
         BLOG: 'https://tamawebgame.github.io/blog/',
@@ -778,6 +784,77 @@ const App = {
                 }, 'automatic_birthday_party');
             }
         }
+
+        const friendsPendingLetterResponse = App.petDefinition.friends.filter(def => {
+            if(!def.stats.player_sent_letter) return false;
+            const responseTime = moment(def.stats.player_sent_letter.time).add(6, 'hours');
+            if(moment().isAfter(responseTime)) return true;
+        });
+        if(friendsPendingLetterResponse.length){
+            const friendDef = friendsPendingLetterResponse[0];
+            const { rating } = friendDef.stats.player_sent_letter;
+            if(App.canProceed('get_letter_response', App.constants.ONE_MINUTE * 10)){
+                const { LETTER_SCORE_RATING } = App.constants;
+                const ratingMap = {
+                    [LETTER_SCORE_RATING.awful]: 'awful',
+                    [LETTER_SCORE_RATING.bad]: 'bad',
+                    [LETTER_SCORE_RATING.good]: 'good',
+                    [LETTER_SCORE_RATING.medium]: 'medium'
+                };
+                const ratingKey = ratingMap[rating] || 'medium';
+
+                const getLetterResponse = () => randomFromArray(App.definitions.letterResponses[ratingKey]);
+                const getGift = () => {
+                    if(rating === LETTER_SCORE_RATING.good) return [
+                        ...App.definitions.pools.items(),
+                        ...App.definitions.pools.accessories(),
+                        ...App.definitions.pools.exclusivePotions(),
+                    ];
+                    if(rating === LETTER_SCORE_RATING.medium) return [
+                        ...App.definitions.pools.food(),
+                        App.definitions.pools.goldDef(10, 70),
+                    ]
+                    return false;
+                }
+                const getFriendshipGain = () => {
+                    switch(rating){
+                        case LETTER_SCORE_RATING.awful: return -10;
+                        case LETTER_SCORE_RATING.bad: return 0;
+                        case LETTER_SCORE_RATING.good: return random(10, 15);
+                        default: return random(3, 7);
+                    }
+                }
+
+                const giftPool = getGift();
+                const response = `${getLetterResponse().replaceAll('%name%', App.petDefinition.name)} ${giftPool ? `<br><br>I've sent you a gift, hope you like!` : ''}`;
+                const friendshipGain = getFriendshipGain();
+
+                setTimeout(() => {
+                    App.queueEvent(() => {
+                        friendDef.increaseFriendship(friendshipGain);
+                        friendDef.stats.player_sent_letter = false;
+                        Activities.getMail({
+                            onEndFn: () => {
+                                App.handlers.show_letter({
+                                    headline: '', 
+                                    text: response,
+                                    sender: `${friendDef.getAvatar()}`,
+                                    onClose: () => {
+                                        if(!giftPool) return;
+                                        Activities.openGenericGift({
+                                            onMiddle: () => {
+                                                App.pullFromPool(giftPool);
+                                            }
+                                        })
+                                    }
+                                })
+                            },
+                            noSceneSwitch: true
+                        });
+                    })
+                }, random(1000, 2000))
+            }
+        }
     },
     onDraw: () => {},
     preloadImages: function(urls) {
@@ -788,7 +865,12 @@ const App = {
                 image.src = App.checkResourceOverride(url);
     
                 image.onload = () => resolve(image);
-                image.onerror = () => reject(`Image failed to load: ${url}`);
+                // image.onerror = () => reject(`Image failed to load: ${url}`);
+                image.onerror = () => {
+                    const fallbackImage = new Image();
+                    fallbackImage.src = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAFBhaW50Lk5FVCA1LjEuNBLfpoMAAAC2ZVhJZklJKgAIAAAABQAaAQUAAQAAAEoAAAAbAQUAAQAAAFIAAAAoAQMAAQAAAAIAAAAxAQIAEAAAAFoAAABphwQAAQAAAGoAAAAAAAAAYAAAAAEAAABgAAAAAQAAAFBhaW50Lk5FVCA1LjEuNAADAACQBwAEAAAAMDIzMAGgAwABAAAAAQAAAAWgBAABAAAAlAAAAAAAAAACAAEAAgAEAAAAUjk4AAIABwAEAAAAMDEwMAAAAADX5rshveZftAAAABlJREFUGFcFwQEBAAAIwyDsH+yxJhyamEIPNVIGi8LKb3kAAAAASUVORK5CYII=`;
+                    resolve(fallbackImage);
+                }
             });
         });
     
@@ -1645,6 +1727,9 @@ const App = {
             onUnload: () => {
                 this.shootingStarsSpawner.removeObject();
             }
+        }),
+        post_office: new Scene({
+            image: 'resources/img/background/house/post_office_01.png',
         })
     },
     setScene(scene, noPositionChange, onLoadArg){
@@ -2292,6 +2377,9 @@ const App = {
         },
         go_to_clinic: function(){
             Activities.goToClinic(() => App.handlers.open_activity_list(true))
+        },
+        go_to_post_office: function(){
+            Activities.goToPostOffice(() => App.handlers.open_activity_list(true));
         },
         show_attended_school_limit_message: function(){
             const formattedResetTime = moment(App.constants.SCHOOL.resetTime).format('h:mmA');
@@ -4623,6 +4711,12 @@ const App = {
                             }).join('')}
                         </div>
                     </div>
+                    <div class="relative mt-6 width-full">
+                        <div class="stats-label left-0">Zodiac sign</div>
+                        <div class="pet-trait-icons-container">
+                            ${App.getZodiacSign(App.petDefinition.birthday)}
+                        </div>
+                    </div>
                 </div>
                 <div class="user-id surface-stylized inner-padding text-transform-none">
                     <div class="flex flex-dir-col">
@@ -6126,7 +6220,28 @@ const App = {
                                                         2500, 
                                                         () => {
                                                             App.closeAllDisplays();
-                                                            Activities.receiveOrderedFood();
+                                                            const onEnd = () => {
+                                                                App.displayConfirm(...GenericUIDef.binaryConfirm({
+                                                                    text: 'Do you want to eat a delivered item right now?',
+                                                                    onAccept: () => {
+                                                                        App.displayList(getOrders().map(({current, foodName}) => ({
+                                                                            name: `
+                                                                                <div class="icon">${App.getFoodCSprite(current.sprite)}</div>
+                                                                                <span class="ellipsis">${foodName}</span>
+                                                                            `,
+                                                                            onclick: () => {
+                                                                                App.closeAllDisplays();
+                                                                                App.pet.feed(
+                                                                                    current.sprite, 
+                                                                                    current.hunger_replenish ?? 0, 
+                                                                                    'food', 
+                                                                                true);
+                                                                            }
+                                                                        })), undefined, 'cancel');
+                                                                    },
+                                                                }))
+                                                            }
+                                                            Activities.receiveOrderedFood(onEnd);
                                                         }
                                                     );
                                                 }
@@ -6388,8 +6503,15 @@ const App = {
                     close();
                     showRandomPost();
                 };
+                const postLikeElement = post.querySelector('.post-like')
+                postLikeElement.onclick = () => {
+                    if(postLikeElement.classList.contains('liked')) return;
+                    postLikeElement.classList.add('liked');
+                    petDefinition.increaseFriendship(random(1, 4) * 0.1);
+                }
                 if(isSelfPost){
                     post.querySelector('.post-next').remove();
+                    postLikeElement.remove();
                 }
 
                 let homeBackground = App.scene.home.image;
@@ -6449,6 +6571,9 @@ const App = {
                     }
                     if(App.pet.hasMoodlet('sick')){
                         postText.innerHTML = 'Not feeling too good... #tummyache';
+                        if(App.pet.stats.has_toothache) {
+                            postText.innerHTML = 'Ate way too much snacks... #toothache';
+                        }
                         character.spritesheet.cellNumber = 4;
                         background.setImg(homeBackground);
                     }
@@ -6504,7 +6629,9 @@ const App = {
                                         {
                                             name: 'yes',
                                             onclick: () => {
-                                                let willAcceptFriendRequest = random(0, 1) == 1;
+                                                let willAcceptFriendRequest = random(0, 1) === 1;
+                                                if(App.pet.hasTrait('charismatic')) willAcceptFriendRequest = true;
+                                                if(App.pet.hasTrait('lucky')) willAcceptFriendRequest = Boolean(random(0, 3));
                                                 if(!willAcceptFriendRequest){
                                                     App.displayPopup(`${otherPetDef.name} did <b style="color: #ff6e74">not accept</b> ${App.petDefinition.name}'s friend request`)
                                                     return;
@@ -7856,6 +7983,34 @@ const App = {
             </div>
         `;
     },
+    pullFromPool: (pool, options = {}) => {
+        const { 
+            isGoldPull = false, 
+            goldPullDef = App.definitions.pools.goldDef(), 
+            isDuringChristmas = App.isDuringChristmas()
+        } = options;
+        
+        const randomPull = isGoldPull && goldPullDef ? goldPullDef : randomFromArray(pool);
+        const [min, max] = randomPull.count;
+        let count = random(min, max) * (isGoldPull ? 5 : 1);
+        if(isDuringChristmas) count *= 2;
+        randomPull.onClaim?.(count);
+        setTimeout(() => App.playSound('resources/sounds/task_complete_02.ogg', true), 450)
+        App.displayPopup(`
+            <div class="pulse">
+                ${randomPull.icon}
+            </div>
+            <b>${randomPull.name}</b>
+            <br>
+            <span>x${count}</span>
+            <br>
+            <span>${randomPull.type}</span>
+            ${
+                isDuringChristmas ?
+                App.getBadge('doubled!') : ''
+            }
+        `, 5000, null, true);
+    },
     isCompanionAllowed: function(room){
         if(!room) room = App.currentScene;
 
@@ -7899,6 +8054,47 @@ const App = {
                 <i>${buff.description}</i>
             </div>
         `;
+    },
+    getZodiacSign(date){
+        const ZODIAC_SIGNS = ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓'];
+        const day = moment(date).date();
+        return ZODIAC_SIGNS[(day - 1) % ZODIAC_SIGNS.length];
+
+        /* // todo: use these when bumping fa to v7.2+
+        const ZODIAC_SIGNS = ['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces'];
+        const day = moment(date).date();
+        return ZODIAC_SIGNS[(day - 1) % ZODIAC_SIGNS.length] || 'aries'; */
+    },
+    getMagic8BallAnswer: () => {
+        const positiveAnswers = [
+            'It is certain.',
+            'It is decidedly so.',
+            'Without a doubt.',
+            'Yes, definitely.',
+            'You may rely on it.',
+            'As I see it, yes.',
+            'Most likely.',
+            'Outlook good.',
+            'Yes.',
+            'Signs point to yes.',
+        ];
+        const nonCommittalAnswers = [
+            'Reply hazy, try again.',
+            'Ask again later.',
+            'Better not tell you now.',
+            'Cannot predict now.',
+            'Concentrate and ask again.',
+        ];
+        const negativeAnswers = [
+            'Don’t count on it.',
+            'My reply is no.',
+            'My sources say no.',
+            'Outlook not so good.',
+            'Very doubtful.',
+        ];
+        const list = [positiveAnswers, nonCommittalAnswers, negativeAnswers];
+        const target = randomFromArray(list);
+        return randomFromArray(target);
     },
     playSound: function(path, force){
         if(!App.settings.playSound) return;

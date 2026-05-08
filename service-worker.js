@@ -29,13 +29,15 @@ const ASSETS = [
   "src/Definitions.js",
   "src/Utils.js",
   "src/Missions.js",
+  "src/StoryGen.js",
   "src/Plant.js",
   "src/Animal.js",
   // libs
   "src/libs/moment.js",
   "src/libs/idb-keyval.js",
-  // cdn
   "src/libs/profanity-cleaner-0.0.3.js",
+  // cdn
+  "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css",
   // other
   "resources/font/PixelifySans-VariableFont_wght.ttf",
   "resources/font/PixelColeco.otf",

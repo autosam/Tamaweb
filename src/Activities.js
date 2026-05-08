@@ -1,4 +1,251 @@
 class Activities {
+    static async openGenericGift({onEnd, onMiddle}){
+        App.toggleGameplayControls(false);
+
+        const main = new TimelineDirector(App.pet);
+
+        main.setPosition({x: '70%'});
+
+        const giftObject = new Object2d({
+            img: 'resources/img/misc/gift.png',
+            x: '40%', y: '84%', z: App.constants.ACTIVE_PET_Z + 0.1,
+            opacity: 0,
+            onDraw: (me) => {
+                me.opacity = lerp(me.opacity, 1, 0.001 * App.deltaTime);
+            }
+        });
+
+        const particlesSpawner = Activities.task_explodingParticles({
+            x: giftObject.x,
+            y: giftObject.y,
+            parent: giftObject,
+        })
+
+        main.setState('cheering_with_icon');
+        setTimeout(() => App.pet.playSound('resources/sounds/cheer_success.ogg', true), 200);
+        await TimelineDirector.wait(3000);
+
+        App.fadeScreen({
+            middleFn: () => {
+                particlesSpawner.removeObject();
+                giftObject.removeObject();
+                main.release();
+                onMiddle?.();
+            },
+            endFn: () => {
+                App.toggleGameplayControls(true);
+                onEnd?.();
+            },
+        })
+    }
+    static async goToPostOffice(onEndCallback) {
+        App.setScene(App.scene.post_office);
+        App.toggleGameplayControls(false);
+
+        const clippedCounterObject = new Object2d({
+            img: App.scene.post_office.image,
+            x: 0, y: 0, z: App.pet.z - 1,
+            clip: [
+                [42, 51],
+                [44, 70],
+                [95, 70],
+                [95, 51],
+            ]
+        })
+
+        const clerkDefinition = new PetDefinition({
+            // sprite: 'resources/img/character/chara_265b.png',
+            sprite: 'resources/img/character/mailman_01.png'
+        });
+
+        const clerk = new TimelineDirector(
+            new Pet(clerkDefinition, {
+                castShadow: false,
+            })
+        );
+        clerk.actor.z = App.pet.z - 1.1;
+        const main = new TimelineDirector(App.pet);
+
+        const onEnd = () => {
+            clippedCounterObject.removeObject();
+            clerk.remove();
+            main.release();
+            App.setScene(App.scene.home);
+            onEndCallback?.();
+        }
+
+        clerk.setPosition({x: '72%', y: '62%'});
+        main.setPosition({x: '0%', y: '95%'});
+
+        const displayLetterWriting = ({
+            onSend, onCancel
+        }) => {
+            const generator = new StoryGenerator();
+            generator.deserialize(STORIES.a0);
+
+            const scorer = new ChainLetterScorer(generator);
+
+            const headline = 'Letter to...';
+            let text = '';
+
+            const container = App.displayEmpty('letter');
+            container.innerHTML = `
+            <div class="flex flex-dir-col">
+                <h1>${App.getIcon('envelope')}</h1>
+                <h1 class="hidden">${headline}</h1>
+                <span id="text">
+                    <small class="opacity-half">
+                        <i>Start writing by selecting words ...</i>
+                    </small>
+                </span>
+                <footer></footer>
+                <div class="word-options" id="buttons"></div>
+                <div class="flex flex-dir-col">
+                    <button disabled id="send" class="generic-btn stylized">
+                        Send ${App.getIcon('envelope ml-auto', true)}
+                    </button>
+                    <button id="cancel" class="generic-btn stylized back-btn">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+            `
+
+            const textContainer = container.querySelector('#text');
+            const buttonsContainer = container.querySelector('#buttons');
+            const sendButton = container.querySelector('#send');
+            sendButton.onclick = () => {
+                App.displayConfirm(...GenericUIDef.binaryConfirm({
+                    onAccept: () => {
+                        const score = scorer.scoreLetter(text);
+                        const rating = scorer.rate(score);
+
+                        container.close();
+                        onSend?.(text, rating);
+                    }
+                }))
+
+            }
+            container.querySelector('#cancel').onclick = () => {
+                App.displayConfirm(...GenericUIDef.binaryConfirm({
+                    onAccept: () => {
+                        container.close();
+                        onCancel?.();
+                    }
+                }))
+            }
+
+            const updateButtons = () => {
+                const lastWord = text.split(' ').at(-1);
+                const words = generator.getRandomNextWords(lastWord, 6);
+                buttonsContainer.innerHTML = words.map((word, i) => `
+                    <button id="${i}">
+                        ${word}
+                    </button>
+                `).join('');
+                const buttons = [...buttonsContainer.querySelectorAll('button')];
+                buttons.forEach((button, i) => {
+                    button.onclick = () => {
+                        const nextWord = words[i];
+                        text = `${text} ${nextWord}`;
+                        textContainer.textContent = `${text}.`;
+                        updateButtons();
+                        if(text.split(' ').length > 3){
+                            sendButton.disabled = false;
+                        }
+                    }
+                })
+            }
+
+            updateButtons();
+        }
+
+        const task_moveInShock = async () => {
+            // moving in
+            clerk.setState('idle_side')
+            clerk.lookAt(true);
+            await main.moveTo({x: '50%', speed: 0.02});
+
+            await TimelineDirector.wait(500);
+
+            clerk.setState('idle');
+            await TimelineDirector.wait(200);
+            clerk.setState('idle_side');
+            await TimelineDirector.wait(100);
+            await clerk.bob({maxCycles: 1, animation: 'shocked', landAnimation: 'idle'});
+
+            await TimelineDirector.wait(200);
+            
+            clerk.actor.say('welcome to the post office!', 2000);
+            await TimelineDirector.wait(2000);
+
+            clerk.actor.say('what can I do for you?', 2000);
+            await TimelineDirector.wait(2000);
+        }
+
+        const task_sendLetter = async () => {
+            main.bob({maxCycles: 1});
+            clerk.bob({maxCycles: 1});
+
+            await TimelineDirector.wait(1000);
+
+            main.setState('idle_side');
+            main.lookAt(true);
+            
+            const currentPositionX = clerk.getPosition('x');
+            await clerk.moveTo({x: '150%', speed: 0.05});
+            await clerk.moveTo({x: currentPositionX, speed: 0.05});
+            
+            await TimelineDirector.wait(200);
+            clerk.actor.say('all done!', 2000);
+
+            main.setState('cheering_with_icon');
+            App.pet.playSound('resources/sounds/task_complete_02.ogg', true);
+            
+            await TimelineDirector.wait(2500);
+
+            App.fadeScreen({
+                middleFn: onEnd,
+            })
+        }
+
+        await task_moveInShock();
+
+        const openMenu = () => {
+            App.displayList([
+                {
+                    name: 'Send letter',
+                    onclick: () => {
+                        App.handlers.open_friends_list(
+                            (friendDef) => {
+                                if(friendDef.stats.player_sent_letter){
+                                    return App.displayPopup(`You sent a letter to ${friendDef.getAvatar()} too recently!`);
+                                }
+
+                                App.closeAllDisplays();
+                                displayLetterWriting({
+                                    onSend: (letterContent, letterRating) => {
+                                        task_sendLetter();
+                                        friendDef.stats.player_sent_letter = {
+                                            time: Date.now(),
+                                            rating: letterRating
+                                        }
+                                        App.save();
+                                    },
+                                    onCancel: () => {
+                                        openMenu();
+                                    }
+                                });
+                            }
+                        )
+                        return true;
+                    }
+                },
+            ], onEnd)
+        }
+
+        openMenu();
+    }
     static async digGardenTreasure(){
         document.querySelector('#garden-screen')?.remove(); // bad, change later
         App.toggleGameplayControls(false);
@@ -1290,7 +1537,7 @@ class Activities {
         App.toggleGameplayControls(true);
 
     }
-    static async receiveOrderedFood(){
+    static async receiveOrderedFood(onEnd){
         App.setScene(App.scene.home);
         App.toggleGameplayControls(false);
 
@@ -1376,7 +1623,10 @@ class Activities {
         main.release();
         bag.removeObject();
         App.pet.x = '50%';
-        App.pet.playCheeringAnimation(() => App.toggleGameplayControls(true));
+        App.pet.playCheeringAnimation(() => {
+            App.toggleGameplayControls(true);
+            onEnd?.();
+        });
     }
     static async talkingSequence({
         isPlayerHost = true,
@@ -1697,6 +1947,7 @@ class Activities {
         id,
     } = {}){
         const tempId = App.handlers.getOutsideActivityId(id);
+        let currentActivityIndex = App.temp[tempId] ?? 1;
         
         App.setScene({
             ...scene,
@@ -1712,6 +1963,19 @@ class Activities {
         });
         App.pet.x = '45%';
 
+        const displayActivityList = () => {
+            App.displayList(activities.map((item, index) => ({
+                name: `#${index + 1} ${item.name} ${item.isNew ? App.getBadge('new!') : ''}`,
+                _disable: currentActivityIndex === index,
+                onclick: () => {
+                    // spawnedGameObjects.forEach(object => object?.removeObject?.())
+                    App.drawer.selectObjects('building').forEach(object => object?.removeObject?.());
+                    currentActivityIndex = index - 1;
+                    updateSelectedActivity(-1);
+                }
+            })))
+        }
+
         // ui
         App.toggleGameplayControls(false);
         const editDisplay = document.createElement('div');
@@ -1722,8 +1986,11 @@ class Activities {
             <div class="flex justify-center height-auto b-radius-10">
                 <span class="directional-control__activity-name">
                     <div class="flex flex-dir-col">
-                        <span id="activity-name">$activity_name$</span>
+                        <span style="max-width: 90%;overflow: hidden;text-overflow: ellipsis;align-self: center;" id="activity-name">$activity_name$</span>
                         <small id="activity-number" class="opacity-09 font-x-small"></small>
+                        <div id="list" style="position: absolute;right: 2px;top: -1px;padding: 2px;" class="cursor-pointer click-sound">
+                            <div class="pointer-events-none">${App.getIcon('list', true)}</div>
+                        </div>
                     </div>
                 </span>
             </div>
@@ -1739,6 +2006,7 @@ class Activities {
                         </button>
                         <button class="generic-btn stylized mute" id="apply">
                             <i class="fa fa-door-open"></i>
+                            <div id="badge" style="position: absolute;right: -6px;top: -8px;">${App.getBadge('new!')}</div>
                         </button>
                     </div>
                 </div>
@@ -1776,11 +2044,10 @@ class Activities {
             setTimeout(() => App.playSound('resources/sounds/ui_click_03.ogg', true));
         }
         
-        let currentActivityIndex = App.temp[tempId] ?? 1;
         const updateSelectedActivity = (offset = 1) => {
-            if(spawnedGameObjects.length > 3){
-                const toDespwan = spawnedGameObjects.shift();
-                toDespwan?.removeObject?.();
+            while(spawnedGameObjects.length >= 3){
+                const toDespawn = spawnedGameObjects.shift();
+                toDespawn?.removeObject?.();
             }
 
             currentActivityIndex -= offset;
@@ -1788,6 +2055,9 @@ class Activities {
             if(currentActivityIndex < 0) currentActivityIndex = activities.length - 1;
             const currentActivity = activities[currentActivityIndex];
 
+            const badgeElement = document.querySelector('#apply #badge');
+            if(currentActivity.isNew) UI.show(badgeElement);
+            else UI.hide(badgeElement);
 
             document.querySelector('#activity-number').innerHTML =  `#${currentActivityIndex + 1}`;
             document.querySelector('#activity-name').innerHTML =  `${currentActivity.name}`;
@@ -1808,7 +2078,8 @@ class Activities {
             new Object2d({
                 img: currentActivity.image,
                 x: scenePositionX, y: 0,
-                parent: background
+                parent: background,
+                selector: 'building',
             });
             spawnedGameObjects.push(background);
             
@@ -1827,6 +2098,7 @@ class Activities {
             onEnd();
             activities.find(a => a.isHome)?.onEnter?.();
         };
+        editDisplay.querySelector('#list').onclick = () => displayActivityList();
     }
     static async reckoning(){
         App.setScene(App.scene.reviverDen);
@@ -2895,6 +3167,7 @@ class Activities {
     static getMail({onEndFn = App.handlers.show_newspaper, noSceneSwitch} = {}){
         App.pet.stopMove();
         App.toggleGameplayControls(false);
+        App.pet.playSound('resources/sounds/blush.ogg', true)
         if(!noSceneSwitch) App.setScene(App.scene.garden, false, { noPetBowl: true });
         App.pet.x = '78%';
         App.pet.inverted = false;
@@ -3992,8 +4265,10 @@ class Activities {
             App.pet.stats.current_cleanliness += 20;
             App.pet.stats.current_discipline += random(1, 3);
             App.pet.stats.current_health += random(5, 25);
+            App.pet.stats.has_toothache = false;
             App.toggleGameplayControls(false);
             brushObject.removeObject();
+            App.save();
             App.pet.playCheeringAnimation(() => {
                 App.setScene(App.scene.home);
                 App.toggleGameplayControls(true);
@@ -4764,6 +5039,7 @@ class Activities {
         await TimelineDirector.wait(3000);
 
         // accessory gift
+        // todo: refactor with definitions.pools
         const EXCLUSIVE_ACCESSORY = 'santa hat';
         const accessoriesPool = Object.keys(App.definitions.accessories)
         .filter(key => App.definitions.accessories[key].price !== -1);
