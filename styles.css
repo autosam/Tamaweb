@@ -569,7 +569,7 @@ hr {
 .screen-wrapper button:hover:after,
 .screen-wrapper button:focus-within:after,
 .screen-wrapper button[data-is-active-item="true"]:after,
-.button-mode .screen-wrapper button[data-is-ui-active="true"]:after
+.button-mode .screen-wrapper [data-is-ui-active="true"]:after
 {
     width: 11px;
     height: 9px;
@@ -2414,6 +2414,7 @@ a.generic-btn:before {
     color: rgb(33, 33, 33);
 }
 .credit-author a {
+    position: relative;
     color: rgb(0, 4, 255) !important;
 }
 
