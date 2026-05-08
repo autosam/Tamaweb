@@ -7949,6 +7949,37 @@ const App = {
         const day = moment(date).date();
         return ZODIAC_SIGNS[(day - 1) % ZODIAC_SIGNS.length] || 'aries'; */
     },
+    getMagic8BallAnswer: () => {
+        const positiveAnswers = [
+            'It is certain.',
+            'It is decidedly so.',
+            'Without a doubt.',
+            'Yes, definitely.',
+            'You may rely on it.',
+            'As I see it, yes.',
+            'Most likely.',
+            'Outlook good.',
+            'Yes.',
+            'Signs point to yes.',
+        ];
+        const nonCommittalAnswers = [
+            'Reply hazy, try again.',
+            'Ask again later.',
+            'Better not tell you now.',
+            'Cannot predict now.',
+            'Concentrate and ask again.',
+        ];
+        const negativeAnswers = [
+            'Don’t count on it.',
+            'My reply is no.',
+            'My sources say no.',
+            'Outlook not so good.',
+            'Very doubtful.',
+        ];
+        const list = [positiveAnswers, nonCommittalAnswers, negativeAnswers];
+        const target = randomFromArray(list);
+        return randomFromArray(target);
+    },
     playSound: function(path, force){
         if(!App.settings.playSound) return;
 

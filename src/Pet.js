@@ -1906,6 +1906,36 @@ class Pet extends Object2d {
                         case 1: this.itemObject.y = '80%'; break;
                     }
                     break;
+                case "8ball":
+                    if(!this.hasInit){
+                        this.hasInit = true;
+                        this.itemObject.x = '60%';
+                        this.itemObject.y = this.pet.y - (this.pet.petDefinition.spritesheet.offsetY || 0);
+                        this.itemObject.z = this.pet.z + 1;
+                        this.pet.x = '50%';
+                        this.pet.setState('idle');
+                        setTimeout(() => {
+                            App.displayConfirm(`Think of a question, <b>magic 8 ball</b> shall answer...`, [
+                                {
+                                    name: 'ask!',
+                                    onclick: () => {
+                                        this.isActivated = true;
+                                        this.pet.setState('shocked');
+                                        const msg = App.displayMessageBubble(App.getMagic8BallAnswer(), App.getItemCSprite(App.definitions.item['8ball'].sprite))
+                                        setTimeout(() => {
+                                            msg.close();
+                                            this.pet.stopScriptedState();
+                                        }, 5000);
+                                    }
+                                }
+                            ])
+                        }, 2000);
+                    }
+
+                    if(this.isActivated){
+                        this.itemObject.rotation = random(-30, 30);
+                    }
+                    break;
                 default:
                     if(Math.random() < 0.5){
                         const possibleStates = ['cheering', 'eating', 'shocked', 'sitting', 'blush'];

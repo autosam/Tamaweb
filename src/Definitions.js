@@ -1188,7 +1188,16 @@ App.definitions = (() => {
                 interaction_time: 15000,
                 interruptable: true,
                 isNew: false,
-                logic_increase: 0.75,
+                logic_increase: 0.5,
+            },
+            "8ball": {
+                sprite: 16,
+                fun_replenish: 5,
+                price: 500,
+                interaction_time: 15000,
+                interruptable: false,
+                isNew: true,
+                logic_increase: 0.05,
             },
         },
     
