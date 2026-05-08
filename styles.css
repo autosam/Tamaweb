@@ -2802,14 +2802,14 @@ button.message-bubble:active {
     background: linear-gradient(0deg, white, transparent); */
 }
 
-.letter .word-options > button {
+.letter .word-option {
     border: 2px solid;
     padding: 2px 8px;
     border-radius: 10px;
     background: white;
 }
-.letter .word-options > button:hover,
-.letter .word-options > button:active {
+.letter .word-option:hover,
+.letter .word-option:active {
     background: #2a0505;
     color: white;
 }

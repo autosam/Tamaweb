@@ -139,11 +139,11 @@ class Activities {
                 const lastWord = text.split(' ').at(-1);
                 const words = generator.getRandomNextWords(lastWord, 6);
                 buttonsContainer.innerHTML = words.map((word, i) => `
-                    <button id="${i}">
+                    <div class="word-option cursor-pointer click-sound" id="${i}">
                         ${word}
-                    </button>
+                    </div>
                 `).join('');
-                const buttons = [...buttonsContainer.querySelectorAll('button')];
+                const buttons = [...buttonsContainer.querySelectorAll('.word-option')];
                 buttons.forEach((button, i) => {
                     button.onclick = () => {
                         const nextWord = words[i];

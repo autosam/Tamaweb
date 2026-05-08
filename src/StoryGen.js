@@ -181,7 +181,7 @@ class ChainLetterScorer {
         if(this.storyGen.forbiddenEndWords.includes(lastWord)) totalScore -= 30;
 
         // misc bonuses
-        if(App.pet.hasTrait('charismatic')) totalScore += 5;
+        if(App.petDefinition.hasTrait('charismatic')) totalScore += 5;
 
         return totalScore;
     }
