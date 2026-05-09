@@ -4129,7 +4129,7 @@ const App = {
                             const [a, b] = partners;
 
                             return `
-                                <div class="family-tree__partners-container">
+                                <div data-fb-focusable class="family-tree__partners-container">
                                     <div class="family-tree__gen-badge">${i + 1}</div>
 
                                     <div class="family-tree__member-container">
@@ -4148,13 +4148,13 @@ const App = {
                             `;
                         }).join('')
                     }
-                    <div style="margin-left: 76px" class="family-tree__member-container">
+                    <div data-fb-focusable style="margin-left: 76px" class="family-tree__member-container">
                         ${petDefinition.getFullCSprite()}
                         <small>${petDefinition.name}</small>
                     </div>
                 </div>
 
-                <div class="b-radius-10 m surface-stylized height-auto inner-padding">
+                <div data-fb-focusable class="b-radius-10 m surface-stylized height-auto inner-padding">
                     ${infoPanelContent}
                 </div>
             `;
