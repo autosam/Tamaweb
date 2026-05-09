@@ -2475,7 +2475,8 @@ class Activities {
         App.pet.inverted = true;
         App.pet.staticShadow = true;
         App.pet.triggerScriptedState('cheering', item.interaction_time || 10000, false, true, () => {  
-            App.drawer.removeObject(itemObject);
+            App.toggleGameplayControls(true);
+            itemObject?.removeObject();
 
             let fun_replenish = item.fun_replenish;
             if(App.petDefinition.hasTrait('treasurer')){
@@ -2491,8 +2492,6 @@ class Activities {
             App.pet.playCheeringAnimation();
 
             App.reloadScene(); // to reset pet pos
-            
-            App.toggleGameplayControls(true);
 
             item.onEnd?.();
         }, Pet.scriptedEventDrivers.playingWithItem.bind({pet: App.pet, item: item, itemObject}))
