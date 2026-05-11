@@ -148,10 +148,9 @@ window.onunhandledrejection = (event) => {
     if(stack) App.sendErrorLog(`${message} - ${stack}`);
 }
 
-handleServiceWorker();
-App.init();
+// handleServiceWorker();
 
 globalThis.SpriteElement = SpriteElement;
 globalThis.AudioChannel = AudioChannel;
-globalThis.handleServiceWorker = handleServiceWorker;
-globalThis.showError = showError;
+
+App.init();
