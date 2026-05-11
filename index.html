@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0PMN42B2LR"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-0PMN42B2LR');
+    </script>
+    <!-- Sentry -->
+    <!-- <script src='https://js-de.sentry-cdn.com/c23629fb79e43e3e8361e1775451f6c0.min.js' crossorigin="anonymous"></script> -->
+    <!-- RudderStack -->
+    <script type="text/javascript">
+        !function(){"use strict";window.RudderSnippetVersion="3.0.32";var e="rudderanalytics";window[e]||(window[e]=[])
+        ;var rudderanalytics=window[e];if(Array.isArray(rudderanalytics)){
+        if(true===rudderanalytics.snippetExecuted&&window.console&&console.error){
+        console.error("RudderStack JavaScript SDK snippet included more than once.")}else{rudderanalytics.snippetExecuted=true,
+        window.rudderAnalyticsBuildType="legacy";var sdkBaseUrl="https://cdn.rudderlabs.com/v3";var sdkName="rsa.min.js"
+        ;var scriptLoadingMode="async"
+        ;var r=["setDefaultInstanceKey","load","ready","page","track","identify","alias","group","reset","setAnonymousId","startSession","endSession","consent"]
+        ;for(var n=0;n<r.length;n++){var t=r[n];rudderanalytics[t]=function(r){return function(){var n
+        ;Array.isArray(window[e])?rudderanalytics.push([r].concat(Array.prototype.slice.call(arguments))):null===(n=window[e][r])||void 0===n||n.apply(window[e],arguments)
+        }}(t)}try{
+        new Function('class Test{field=()=>{};test({prop=[]}={}){return prop?(prop?.property??[...prop]):import("");}}'),
+        window.rudderAnalyticsBuildType="modern"}catch(o){}var d=document.head||document.getElementsByTagName("head")[0]
+        ;var i=document.body||document.getElementsByTagName("body")[0];window.rudderAnalyticsAddScript=function(e,r,n){
+        var t=document.createElement("script");t.src=e,t.setAttribute("data-loader","RS_JS_SDK"),r&&n&&t.setAttribute(r,n),
+        "async"===scriptLoadingMode?t.async=true:"defer"===scriptLoadingMode&&(t.defer=true),
+        d?d.insertBefore(t,d.firstChild):i.insertBefore(t,i.firstChild)},window.rudderAnalyticsMount=function(){!function(){
+        if("undefined"==typeof globalThis){var e;var r=function getGlobal(){
+        return"undefined"!=typeof self?self:"undefined"!=typeof window?window:null}();r&&Object.defineProperty(r,"globalThis",{
+        value:r,configurable:true})}
+        }(),window.rudderAnalyticsAddScript("".concat(sdkBaseUrl,"/").concat(window.rudderAnalyticsBuildType,"/").concat(sdkName),"data-rsa-write-key","2suQ2opn34RCpjg3z3L3aW4Nhzp")
+        },
+        "undefined"==typeof Promise||"undefined"==typeof globalThis?window.rudderAnalyticsAddScript("https://polyfill-fastly.io/v3/polyfill.min.js?version=3.111.0&features=Symbol%2CPromise&callback=rudderAnalyticsMount"):window.rudderAnalyticsMount()
+        ;var loadOptions={};rudderanalytics.load("2suQ2opn34RCpjg3z3L3aW4Nhzp","https://gmailautotdbwd.dataplane.rudderstack.com",loadOptions)}}}();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tamaweb</title>
+    <meta name="description" content="A virtual pet game inspired by modern Tamagotchis where you get to raise your own pets!">
+    <meta name="google-site-verification" content="dAerKFKSFvPgRL2A-O23ToYFXoNvqHutmDyC2QhvkHM" />
+    <link rel="apple-touch-icon" sizes="57x57" href="./assets/apple-icon-57x57-Csoh1K6g.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="./assets/apple-icon-60x60-CtcQAcrH.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="./assets/apple-icon-72x72-CvPOpCBw.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="./assets/apple-icon-76x76-CPqCgO-c.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="./assets/apple-icon-114x114-BnqEC6tr.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="./assets/apple-icon-120x120-Btt-UjHI.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="./assets/apple-icon-144x144-Dgx259T5.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="./assets/apple-icon-152x152-D7m8OyDP.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="./assets/apple-icon-180x180-B9XQ9n_g.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="./assets/android-icon-192x192-BHdR76xW.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="./assets/favicon-32x32-CT_gZjlV.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="./assets/favicon-96x96-NXqmjbgr.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./assets/favicon-16x16-DnqL39l1.png">
+    <link rel="manifest" href="./assets/manifest-BkiQ1jwb.webmanifest">
+    <meta name="msapplication-TileColor" content="#000000">
+    <meta name="msapplication-TileImage" content="./assets/apple-icon-144x144-Dgx259T5.png">
+    <meta name="theme-color" content="#000000">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script type="module" crossorigin src="./assets/index-ped1SrmV.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-BcO3RWCI.css">
+<link rel="manifest" href="./manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
+<body class="theme-default">
+    <div class="background"></div>
+    <!-- main -->
+    <div class="root">
+        <!-- canvas -->
+        <canvas class="background-canvas" width="96" height="96"></canvas>
+        <!-- bg overlay -->
+        <div class="bg-pattern"></div>
+        <!-- dom shell -->
+
+        <!-- loading text -->
+        <div class="loading-text">
+            <img class="loading-logo blink" src="./assets/logo_trans_01-nkZQDtAg.png"></img>
+            <b id="loading-error" style="font-size: small;"></b>
+            <i class="fa-solid fa-circle-notch fa-spin loading-spinner"></i>
+        </div>
+
+        <!-- error -->
+         <div class="error-container" style="display: none;">
+            <i class="fa-solid fa-warning"></i>
+            <span id="error-message"></span>
+            <div onclick="document.querySelector('.error-container').style.display = 'none'" class="close flex-center cursor-pointer">
+                <i class="fa-solid fa-times"></i>
+            </div>
+         </div>
+
+        <div class="dom-shell" style="display: none;">
+            <img class="logo" src="./assets/logo_trans_01-nkZQDtAg.png"></img>
+            <button class="shell-btn main mute" onclick="App.handlers.shell_button(1)"></button>
+            <button class="shell-btn left mute" onclick="App.handlers.shell_button(0)"></button>
+            <button class="shell-btn right mute" onclick="App.handlers.shell_button(2)"></button>
+        </div>
+        <!-- graphics -->
+        <div class="graphics-wrapper">
+            <!-- save indicator -->
+            <div style="display: none;" class="save-indicator">
+                <i class="fa-solid fa-save fa-spin_"></i>
+            </div>
+            <!-- screen wrapper -->
+            <div class="screen-wrapper">
+                <!-- canvas -->
+                <canvas style="cursor: pointer;" onclick="App.handlers.open_main_menu();" class="graphics-canvas" width="96" height="96"></canvas>
+
+                <!-- tapping reminder -->
+                <div class="full-device-overlay tap-reminder" style="display: none;">
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAXCAMAAAAIul6NAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJUExURQAAAP///wAAAHPGg3EAAAADdFJOU///ANfKDUEAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABHSURBVChTlc5bFgAQCATQmv0vWjOV+GM4nEseBlgEikXT1GNvENkLE+Iqc5+yD6QKyQ2WHtA3G2KAIbhUIXbewKvnvN6pAAvhXAFMJT5BgQAAAABJRU5ErkJggg=="></img>
+                </div>
+
+                <!-- screenshot overlay -->
+                <div class="full-device-overlay screenshot-overlay" style="display: none;">
+                    <img class="width-full" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAFBhaW50Lk5FVCA1LjEuMvu8A7YAAAC2ZVhJZklJKgAIAAAABQAaAQUAAQAAAEoAAAAbAQUAAQAAAFIAAAAoAQMAAQAAAAIAAAAxAQIAEAAAAFoAAABphwQAAQAAAGoAAAAAAAAAYAAAAAEAAABgAAAAAQAAAFBhaW50Lk5FVCA1LjEuMgADAACQBwAEAAAAMDIzMAGgAwABAAAAAQAAAAWgBAABAAAAlAAAAAAAAAACAAEAAgAEAAAAUjk4AAIABwAEAAAAMDEwMAAAAADp1fY4ytpsegAAAaVJREFUeF7t3UFugzAQQFGnh2PVA/VgXXG6buOxWwY08C31vx0ossh8mS5C0ldr7asJ8xFP6FkGgL1mt6B93z/jOcK2bd/x3BUrv59hB6xysa3oWirWqDK7li7A7AWqFWc87AA9a+kAs3vmWRVr3Kn7Ixy3x7vV38hqsrNM7QCHf152ZocBsgtplJndYQDdywAwA8AMADMAzAAwA8AMADMAzAAwA8AMADMAzAAwA8AMADMAzAAwA8AMADMAzAAwA8AMADMAzAAwA8AMAOsCxIdJ47HOizOMx9Mv6ek53oJgBoAZAGYAmAFgBoAZAGYAmAFgBoAZAGYAmAFgBoAZADZ8HvD+OzfxwwNd89dMux0Qf2QoHuu8OMN47C0IZgCYAWAGgBkAZgCYAWAGgBkAZgCYAWAGgBkAZgCYAWAGgBkAZgCYAWAGgBkAZgCYAWAGgBkAZgCYAWAGgB0GiA+TKi8zu8MALbmQetmZpf+fMCE+S3/Vyu8rtQMoFYOrWONOSwf4D7oAVVtev4szHnZAfAGp4loq1qgyu5bhS3p61rAD9CwDwH4A+7pkAmuEDOEAAAAASUVORK5CYII="></img>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- downloading -->
+    <div style="display: none;" id="download-container" class="side-container">
+        <div class="side-icon">
+            <i class="fa-solid fa-arrow-down"></i>
+        </div>
+        <span> Downloading update... </span>
+    </div>
+
+    <!-- download complete -->
+    <div style="display: none;" id="download-complete-container" class="side-container">
+        <div class="side-icon">
+            <i class="fa-solid fa-check"></i>
+        </div>
+        <span> Download complete! <a href="">Refresh</a> </span>
+    </div>
+
+    <!-- cloneables -->
+    <div style="display: none;" class="cloneables">
+        <div class="post-container display" style="display: none;">
+            <canvas width="96" height="96" class="post-canvas"></canvas>
+            <div class="post-text">Post Bottom Text</div>
+            <div class="post-header">Post Header</div>
+            <div class="post-profile-icon"></div>
+            <button class="post-close back-btn"><i class="fa-solid fa-times"></i></button>
+            <button class="post-next"><i class="fa-solid fa-angle-right"></i></button>
+            <button class="post-like"><i class="fa-solid fa-heart"></i></button>
+        </div>
+
+        <div class="generic-list-container display menu-animation"></div>
+
+        <div class="generic-slider-container display">
+            <div class="main-container">
+                <button class="slide-action mute generic-btn stylized slide-left flex-center"> <i class="fa-solid fa-angle-left"></i> </button>
+                <div class="content surface-stylized"></div>
+                <button class="slide-action mute generic-btn stylized slide-right flex-center"> <i class="fa-solid fa-angle-right"></i> </button>
+                
+                <!-- remove later -->
+                <div style="display: none;" class="additional-text surface-stylized"></div> 
+                
+                <div class="top-slot left surface-stylized"></div>
+                <div class="top-slot right surface-stylized"></div>
+            </div>
+            <div class="actions-container">
+                <button id="cancel-btn" class="generic-btn stylized back-btn">CANCEL</button>
+                <button data-fb-keep-index id="accept-btn" class="generic-btn stylized">ACCEPT</button>
+            </div>
+        </div>
+
+        <div class="generic-list-container generic-grid-container display menu-animation"></div>
+
+        <div class="generic-empty-container display menu-animation"></div>
+
+        <div class="generic-empty-container display webcam-container">
+            <video class="webcam-video"></video>
+            <button style="display: none;" id="webcam-button"></button>
+            <button id="webcam-change-button">
+                <i class="fa-solid fa-camera-rotate"></i>
+            </button>
+            <canvas style="display: none;" id="webcam-canvas"></canvas>
+        </div>
+
+        <div class="progressbar">
+            <div class="progressbar-background">
+                <div class="progressbar-rod">
+    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- install prompt (unused) -->
+    <div class="install-prompt" style="display: none;">
+        <img class="app-icon" src="data:image/png;base64,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"></img>
+        <button id="install-pwa-app">Add to home screen</button>
+    </div>
+
+    <!-- data & resources -->
+    <script src="resources/data/SpriteDefinitions.js"></script>
+    <script src="resources/data/CharacterDefinitions.js"></script>
+    <script src="resources/data/SoundDefinitions.js"></script>
+    <script src="resources/data/GrowthChart.js"></script>
+
+    <!-- libs -->
+    <script src="src/libs/profanity-cleaner-0.0.3.js"></script>
+    <script src="src/libs/moment.js"></script>
+    <script src="src/libs/idb-keyval.js"></script>
+    
+    <!-- scripts -->
+    <!-- <script src="src/Utils.js"></script> -->
+    <!-- <script src="src/Version.js"></script>
+    <script src="src/UiHelper.js"></script>
+    <script src="src/Drawer.js"></script>
+    <script src="src/Object2d.js"></script>
+    <script src="src/Scene.js"></script>
+    <script src="src/Activities.js"></script>
+    <script src="src/PetDefinition.js"></script>
+    <script src="src/Pet.js"></script>
+    <script src="src/Animal.js"></script>
+    <script src="src/Plant.js"></script>
+    <script src="src/App.js"></script>
+    <script src="src/Definitions.js"></script>
+    <script src="src/Missions.js"></script>
+    <script defer src="src/StoryGen.js"></script>
+    <script src="src/Main.js"></script> -->
+</body>
+</html>

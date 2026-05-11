@@ -1,0 +1,17 @@
+resources/font/Broken Console Bold.ttf
+resources/font/SilomBol.ttf
+resources/font/Super Mario Bros. 2.ttf
+resources/font/type_writer.ttf
+resources/font/Daydream.ttf
+.pm/
+character - Copy/
+Tamaweb.zip
+node_modules
+resources/img/accessory/accessory_blueprint_256.pdn
+resources/img/misc/thought_bubble_01.pdn
+resources/img/background/house/sandbox_01.pdn
+resources/img/background/house/online_hub_01.pdn
+scripts/output.js
+resources/img/item/plants.pdn
+*.pdn
+*.flp

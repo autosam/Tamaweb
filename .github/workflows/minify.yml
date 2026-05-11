@@ -1,0 +1,39 @@
+# This workflow is triggered by a push to the `main` branch
+# which it checks out, minimises the appropriate html/css/js
+# in-place, and pushes the changes to the `gh-pages` branch
+
+name: minify
+run-name: Minify JS/CSS/HTML [gh-pages branch]
+
+# Run on pushes to `main` branch
+on: 
+  workflow_dispatch:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  checkout-minify-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      # Install NodeJS and CLI tools
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+      - run: npm install -g terser
+      - run: npm install -g csso-cli
+      - run: npm install -g html-minifier
+
+      # Perform minification, overwriting original files
+      - run: for i in ./src/*.js; do terser $i --compress -o $i; done
+      - run: csso ./styles.css -o ./styles.css
+      - run: html-minifier --collapse-boolean-attributes --collapse-whitespace --minify-css --minify-js --minify-urls --remove-attribute-quotes --remove-comments --remove-empty-attributes --remove-optional-tags --remove-redundant-attributes --remove-script-type-attributes --remove-style-link-type-attributes --remove-tag-whitespace --use-short-doctype -o index.html index.html
+
+      # (Force) push changes to `gh-pages` branch
+      - run: |
+          git config user.name autosam
+          git config user.email autosam.sm@gmail.com
+          git commit -am 'Automated minify of ${{ github.sha }}'
+          git push --force -u origin main:gh-pages
