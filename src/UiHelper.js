@@ -178,3 +178,5 @@ const GenericUIDef = {
         ]]
     }
 }
+
+globalThis.UI = UI;

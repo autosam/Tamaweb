@@ -209,3 +209,7 @@ class ChainLetterScorer {
     static MediumScore = 20;
     static GoodScore = 40;
 }
+
+globalThis.STORIES = STORIES;
+globalThis.StoryGenerator = StoryGenerator;
+globalThis.ChainLetterScorer = ChainLetterScorer;

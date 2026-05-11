@@ -3,3 +3,5 @@ class Scene {
         Object.assign(this, data);
     }
 }
+
+globalThis.Scene = Scene;

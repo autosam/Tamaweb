@@ -1946,3 +1946,5 @@ class Pet extends Object2d {
         }
     }
 }
+
+globalThis.Pet = Pet;

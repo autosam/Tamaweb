@@ -988,3 +988,5 @@ class PetDefinition {
         devil: 2,
     }
 }
+
+globalThis.PetDefinition = PetDefinition;

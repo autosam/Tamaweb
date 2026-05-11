@@ -1,4 +1,4 @@
-App.definitions = (() => {
+globalThis.App.definitions = (() => {
     const _ls = PetDefinition.LIFE_STAGE;
     return  {
         /* ICONS */

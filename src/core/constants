@@ -1,0 +1,129 @@
+export const constants = {
+    ONE_HOUR: 1000 * 60 * 60,
+    ONE_MINUTE: 1000 * 60,
+    ONE_SECOND: 1000,
+    AUTO_SAVE_INTERVAL_SECS: 6,
+    FOOD_SPRITESHEET: 'resources/img/item/foods_on.png',
+    FOOD_SPRITESHEET_DIMENSIONS: {
+        cellNumber: 1,
+        cellSize: 24,
+        rows: 33,
+        columns: 33,
+    },
+    ITEM_SPRITESHEET: 'resources/img/item/items.png',
+    ITEM_SPRITESHEET_DIMENSIONS: {
+        cellNumber: 1,
+        cellSize: 22,
+        rows: 10,
+        columns: 10,
+    },
+    PLANT_SPRITESHEET: 'resources/img/item/plants.png',
+    PLANT_SPRITESHEET_DIMENSIONS: {
+        cellNumber: 1,
+        cellSize: 24,
+        rows: 28,
+        columns: 28,
+    },
+    MISC_SPRITESHEET: 'resources/img/item/misc.png',
+    MISC_SPRITESHEET_DIMENSIONS: {
+        cellNumber: 1,
+        cellSize: 24,
+        rows: 33,
+        columns: 33,
+    },
+    MAX_ANIMALS: 16,
+    MAX_PLANTS: 8,
+    MIN_REVIVE_GOLDS: 250,
+    MAX_REVIVE_GOLDS: 1000,
+    SKILL_EVOLUTION_EFFECTIVENESS: {
+        bounds: 30,
+        ratings: {
+            endurance: 1,
+            logic: 2,
+            expression: 3
+        }
+    },
+    SLEEP_START: 21,
+    SLEEP_END: 8,
+    PARENT_DAYCARE_START: 3,
+    PARENT_DAYCARE_END: 18,
+    MAX_SHELL_SHAPES: 6,
+    AFTERNOON_TIME: [12, 17],
+    EVENING_TIME: [17, 20],
+    NIGHT_TIME: [20, 6],
+    CHRISTMAS_TIME: {
+        start: '12-14',
+        end: '12-31',
+        absDay: '12-25',
+    },
+    MANUAL_AGE_HOURS_BABY: 1,
+    MANUAL_AGE_HOURS_CHILD: 9,
+    MANUAL_AGE_HOURS_TEEN: 12,
+    MANUAL_AGE_HOURS_ADULT: 72,
+    AUTO_AGE_HOURS_BABY: 24,
+    AUTO_AGE_HOURS_CHILD: 36,
+    AUTO_AGE_HOURS_TEEN: 48,
+    AUTO_AGE_HOURS_ADULT: 336, // 14 days
+    WANT_TYPES: {
+        food: 'food',
+        playdate: 'playdate',
+        item: 'item',
+        minigame: 'minigame',
+        fulfilled: 'fulfilled',
+    },
+    CHAR_UNLOCK_PREFIX: 'ch_unl',
+    FEEDING_PICKINESS: {
+        refeedingTolerance: 10,
+        bufferSize: 16,
+    },
+    ONLINE_FOOD_ORDER_MARKUP: 2,
+    // z-index
+    ACTIVE_PET_Z: 5,
+    NPC_PET_Z: 4.6,
+    MAX_PLACED_FURNITURE: 6,
+    POOP_POSITIONS: [
+        {x: '75%', y: '78%', z: 4.59},
+        {x: '85%', y: '84%', z: 4.592},
+        {x: '25%', y: '80%', z: 4.593},
+        {x: '15%', y: '82%', z: 4.594},
+    ],
+    ACTIVE_ITEM_Z: 4.595,
+    CHRISTMAS_TREE_Z: 4.58,
+    BACKGROUND_Z: -10,
+    INPUT_BASE_64: '0xffbx64',
+    SCHOOL: {
+        maxClassesPerDay: 10,
+        resetTime: { hour: 7, minute: 0, second: 0 }
+    },
+    MAX_OFFLINE_PROGRESSION_SECS: 604800, // 3600(secs in 1 hour) * 24(1 day) * 7(7 days) = 604800
+    GENDERS: [
+        'genderless',
+        'mars',
+        'venus',
+        'transgender',
+        'venus-mars',
+    ],
+    UNDERWORLD_TREAT_CURRENCY: 'spookandy',
+    SPANS: {
+        monster: `<div> <img class="icon" src="resources/img/misc/devil_icon.png"></img> <b style="color: red;">monster</b> </div>`,
+        angel: `<div> <img class="icon" src="resources/img/misc/angel_icon.png"></img> <b style="color: forestgreen;">angel</b> </div>`
+    },
+    SEASON_COLORS: {
+        source: {
+            shadow0: '#C016B2',
+            shadow1: '#C017B2',
+            base: '#EF1CDE',
+            highlight: '#F248E4',
+        },
+        winter: ['#C6DDFF', '#E8F1FF', '#FFFFFF'],
+        autumn: ['#CE4429', '#ED782F', '#FF9D60'],
+        spring: ['#63A04B', '#7FD060', '#96F271'],
+        summer: ['#27AA2F', '#59D12F', '#BAD92F'],
+    },
+    LETTER_SCORE_RATING: {
+        awful: 0,
+        bad: 1,
+        medium: 2,
+        good: 3
+    },
+}

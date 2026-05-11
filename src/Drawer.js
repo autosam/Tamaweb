@@ -340,3 +340,5 @@ class Drawer {
         return this.objects.filter((object) => object?.selector === selector);
     }
 }
+
+globalThis.Drawer = Drawer;

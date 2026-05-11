@@ -74,8 +74,6 @@ class AnimalDefinition extends PetDefinition {
     }
 }
 
-
-
 class Animal extends Pet {
     constructor(definition, additionalProps){
         super(definition, additionalProps);
@@ -223,3 +221,6 @@ class Animal extends Pet {
     handleWants(){}
     sleep(){}
 }
+
+globalThis.AnimalDefinition = AnimalDefinition;
+globalThis.Animal = Animal;

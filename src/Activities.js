@@ -7457,3 +7457,6 @@ class TimelineDirector {
     
     static wait = (...args) => App.wait(...args);
 }
+
+globalThis.TimelineDirector = TimelineDirector;
+globalThis.Activities = Activities;

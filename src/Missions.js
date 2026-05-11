@@ -323,3 +323,5 @@ const Missions = {
         return list;
     }
 }
+
+globalThis.Missions = Missions;

@@ -338,3 +338,5 @@ class Object2d {
         );
     }
 }
+
+globalThis.Object2d = Object2d;

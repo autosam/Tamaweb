@@ -389,3 +389,28 @@ const generateRandomSentence = (isQuestion = Math.random() > 0.5) => {
     if(isQuestion) return `${randomFromArray(questionStarters)} ${randomFromArray(slot3)}`;
     return `${randomFromArray(slot1)} ${randomFromArray(slot2)} ${randomFromArray(slot3)}`
 }
+
+
+globalThis.pRandom = pRandom;
+globalThis.lerp = lerp;
+globalThis.random = random;
+globalThis.clamp = clamp;
+globalThis.move = move;
+globalThis.randomFromArray = randomFromArray;
+globalThis.pRandomFromArray = pRandomFromArray;
+globalThis.ellipsis = ellipsis;
+globalThis.sanitize = sanitize;
+globalThis.setCookie = setCookie;
+globalThis.getCookie = getCookie;
+globalThis.shuffleArray = shuffleArray;
+globalThis.containsHtmlTags = containsHtmlTags;
+globalThis.downloadUpscaledCanvasAsImage = downloadUpscaledCanvasAsImage;
+globalThis.downscaleImage = downscaleImage;
+globalThis.hexToRgb = hexToRgb;
+globalThis.recolorImage = recolorImage;
+globalThis.downloadTextFile = downloadTextFile;
+globalThis.hashCode = hashCode;
+globalThis.generateTimestamp = generateTimestamp;
+globalThis.getRandomName = getRandomName;
+globalThis.normalizeVector = normalizeVector;
+globalThis.generateRandomSentence = generateRandomSentence;

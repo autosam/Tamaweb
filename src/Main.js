@@ -150,3 +150,8 @@ window.onunhandledrejection = (event) => {
 
 handleServiceWorker();
 App.init();
+
+globalThis.SpriteElement = SpriteElement;
+globalThis.AudioChannel = AudioChannel;
+globalThis.handleServiceWorker = handleServiceWorker;
+globalThis.showError = showError;

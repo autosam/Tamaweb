@@ -170,3 +170,5 @@ class Plant {
         wet: 'resources/img/misc/garden_patch_01_wet.png',
     }
 }
+
+globalThis.Plant = Plant;
