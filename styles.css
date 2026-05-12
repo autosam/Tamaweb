@@ -2590,7 +2590,7 @@ button.message-bubble:hover {
 button.message-bubble:active {
     background: #a41142;
 }
-.message-bubble:after {
+.message-bubble:before {
 	content: '';
 	position: absolute;
 	bottom: 0;
