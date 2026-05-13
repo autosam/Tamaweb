@@ -2667,6 +2667,16 @@ App.definitions = (() => {
                     App.displayPopup(`You've received $200!`);
                 }
             },
+            perfect_minigame_guessnum_win_x_times: {
+                name: 'Great Guesser',
+                description: 'Win in the Guess The Number game 10 times!',
+                checkProgress: () => App.getRecord('times_won_guess_the_number_minigame') >= 10,
+                advance: (amount) => App.addRecord('times_won_guess_the_number_minigame', amount),
+                getReward: () => {
+                    App.pet.stats.gold += 200;
+                    App.displayPopup(`You've received $200!`);
+                }
+            },
         },
     
         /* MAIL */

@@ -5155,6 +5155,9 @@ class Activities {
         const numberLabelText = `The number was <b>${selectedTargetNumber}</b>!`
 
         const onEnd = (hasWon) => {
+            if(hasWon){
+                App.definitions.achievements.perfect_minigame_guessnum_win_x_times.advance();
+            }
             Activities.task_winMoneyFromArcade({
                 hasWon,
                 amount: hasWon ? 50 : 0,
