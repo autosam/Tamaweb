@@ -3472,12 +3472,6 @@ class Activities {
             }
         
             const createEntryButton = (icon, name, item, onClick) => {
-                /* let badge = ''
-                if(!App.getRecord(item.unlockKey)){
-                    if(App.temp.online?.hasUploadedPetDef?.interactions >= item.unlockLikes){
-                        badge = App.getBadge('★');
-                    }
-                } else badge = App.getBadge('<i class="fa-solid fa-check"></i>', 'gray'); */
                 return {
                     name: `<img class="icon" src="${icon}"></img> ${name} ${item.isNew ? App.getBadge('new!') : ''}`,
                     onclick: onClick,
