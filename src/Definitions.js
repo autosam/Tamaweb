@@ -477,6 +477,28 @@ App.definitions = (() => {
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 isNew: false,
             },
+            "oyster seafood": {
+                sprite: 728,
+                hunger_replenish: 20,
+                health_replenish: 10,
+                price: 40,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                isNew: true,
+            },
+            "butter steak": {
+                sprite: 689,
+                hunger_replenish: 25,
+                price: 35,
+                age: [_ls.teen, _ls.adult, _ls.elder],
+                isNew: true,
+            },
+            "stuffed pumpkin": {
+                sprite: 299,
+                hunger_replenish: 17,
+                price: 20,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                isNew: true,
+            },
 
             // cookable only
             "sky bread": {

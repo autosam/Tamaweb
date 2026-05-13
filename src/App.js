@@ -8160,7 +8160,7 @@ const App = {
         this.speechAudioChannel?.play(`resources/sounds/speech/${random(1, maxSamples)}.mp3`, true);
     },
     takeScreenshot: () => {
-        if(App.haveAnyDisplays()) return;
+        if(!App.isTester() && App.haveAnyDisplays()) return;
         const overlay = document.querySelector('.screenshot-overlay');
         UI.show(overlay);
         setTimeout(() => UI.hide(overlay), 250);
