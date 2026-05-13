@@ -2166,6 +2166,12 @@ a.generic-btn:before {
 .shell-shape-6 {
     border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
 }
+.shell-shape-7 {
+    border-radius: 140px 140px 100px 40px;
+    .shell-btn.left, .shell-btn.main, .shell-btn.right {
+        bottom: 9% !important;
+    }
+}
 
 /* classic main menu */
 .classic-main-menu__container {
