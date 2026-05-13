@@ -960,7 +960,7 @@ const App = {
             currentElement?.setAttribute('data-is-ui-active', "true");
             currentElement?.scrollIntoView({
                 behavior: 'smooth',
-                block: 'center',
+                block: 'end',
             })
             currentDisplay.dataset.activeItemIndex = currentIndex;
         }
