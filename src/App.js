@@ -1065,9 +1065,9 @@ const App = {
                 })) return showAlreadyUsed();
                 break;
             // update specific
-            case "PERSONALITIES":
-            case "DIG":
-            case "LEAVES":
+            case "LETTERS":
+            case "MAGIC8BALL":
+            case "TOOTHACHE":
                 if(!addEvent(codeEventId, () => {
                     const goldAmount = 200, missionPtsAmount = 50;
                     App.pet.stats.gold += goldAmount;
