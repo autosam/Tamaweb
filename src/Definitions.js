@@ -903,6 +903,27 @@ App.definitions = (() => {
                 age: [_ls.baby],
                 nonCraftable: true,
             },
+            "sleep replacement": {
+                sprite: 1062,
+                hunger_replenish: -25,
+                fun_replenish: -20,
+                sleep_replenish: 999,
+                price: 120,
+                type: 'med',
+                nonCraftable: true,
+            },
+            "appetite stim": {
+                sprite: 1065,
+                hunger_replenish: -50,
+                health_replenish: -10,
+                price: 200,
+                type: 'med',
+                isNew: true,
+                nonCraftable: true,
+                payload: () => {
+                    App.petDefinition.stats.last_eaten = [];
+                }
+            },
             "medicine": {
                 sprite: 1050,
                 hunger_replenish: 0,
@@ -910,15 +931,6 @@ App.definitions = (() => {
                 health_replenish: 999,
                 price: 20,
                 type: 'med',
-            },
-            "sleep replacement": {
-                sprite: 1050,
-                hunger_replenish: -25,
-                fun_replenish: -20,
-                sleep_replenish: 999,
-                price: 120,
-                type: 'med',
-                nonCraftable: true,
             },
             "expression skill potion": {
                 sprite: 1053,
