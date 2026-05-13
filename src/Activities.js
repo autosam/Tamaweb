@@ -867,7 +867,7 @@ class Activities {
             document.querySelector('.screen-wrapper').appendChild(screen);
             screen.innerHTML = `
                 <div class="flex flex-dir-col justify-between height-100p width-full" style="position: absolute; top: 0; left: 0;">
-                    <div class="inner-padding height-100p flex flex-dir-col justify-between menu-animation">
+                    <div class="display inner-padding height-100p flex flex-dir-col justify-between menu-animation">
                         <div class="message-bubble m-0 text-center">
                             <small>
                             <b>${otherPetDef.name}</b>

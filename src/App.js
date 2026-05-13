@@ -7347,7 +7347,9 @@ const App = {
         tabTitles.at(0).click();
     },
     getCurrentDisplay: function(){
-        return [...document.querySelectorAll('.screen-wrapper .display')].at(-1);
+        const sortedDisplays = [...document.querySelectorAll('.screen-wrapper .display')]
+            .sort((a, b) => Number(a.style.zIndex) - Number(b.style.zIndex));
+        return sortedDisplays.at(-1);
     },
     displayList: function(listItems, backFn, backFnTitle){
         const list = UI.genericListContainer(backFn, backFnTitle);
