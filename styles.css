@@ -1345,6 +1345,7 @@ input#background-color-picker {
 
 .screen-wrapper {
     height: 192px;
+    overflow: hidden;
 }
 
 .screen-wrapper img {
@@ -1479,9 +1480,11 @@ input#background-color-picker {
 
 .inner-padding {
     padding: 10px 20px;
+    box-sizing: border-box;
 }
 .inner-padding-sm {
     padding: 4px 8px;
+    box-sizing: border-box;
 }
 
 .m {

@@ -960,7 +960,7 @@ const App = {
             currentElement?.setAttribute('data-is-ui-active', "true");
             currentElement?.scrollIntoView({
                 behavior: 'smooth',
-                block: 'end',
+                block: 'center',
             })
             currentDisplay.dataset.activeItemIndex = currentIndex;
         }
@@ -7588,7 +7588,7 @@ const App = {
                 .map((letter, index) => `<span style="animation-delay: ${index * 0.05}s">${letter}</span>`)
                 .join('');
         }
-        const display = App.displayEmpty('bg-transparent pointer-events-none');
+        const display = App.displayEmpty('bg-transparent pointer-events-none overflow-hidden');
         display.close = () => {
             UI.fadeOut(display.querySelector('.message-bubble'));
             setTimeout(() => display.remove(), 1000);
