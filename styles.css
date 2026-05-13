@@ -918,6 +918,10 @@ button {
     width: 100%;
 }
 
+.line-through {
+    text-decoration: line-through;
+}
+
 .flex-center {
     display: flex;
     flex-direction: column;
@@ -943,6 +947,10 @@ button {
 
 .flex-wrap {
     flex-wrap: wrap;
+}
+
+.flex-grow {
+    flex-grow: 1;
 }
 
 .align-center {

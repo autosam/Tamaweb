@@ -5133,6 +5133,98 @@ class Activities {
 
 
     // games
+    static guessTheNumberGame(){
+        App.closeAllDisplays();
+        App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.sendAnalytics('minigame_guessTheNumber');
+
+        App.toggleGameplayControls(false);
+        App.setScene(App.scene.arcade_game01);
+
+        App.pet.triggerScriptedState('idle', App.INF, null, true);
+        App.pet.stopMove();
+        App.pet.x = '50%';
+        App.pet.y = '90%';
+
+        const selectedTargetNumber = random(1, 9);
+        const maxChoices = 3;
+        let remainingChoices = maxChoices;
+        const chosenNumbers = [];
+        const messageBubbleShownMs = App.constants.ONE_SECOND * 2;
+
+        const numberLabelText = `The number was <b>${selectedTargetNumber}</b>!`
+
+        const onEnd = (hasWon) => {
+            Activities.task_winMoneyFromArcade({
+                hasWon,
+                amount: hasWon ? 50 : 0,
+            })
+        }
+
+        const checkProgress = (chosenNumber) => {
+            remainingChoices--;
+            if(chosenNumber === selectedTargetNumber){
+                App.fadeScreen({
+                    middleFn: () => {
+                        App.pet.playCheeringAnimation(() => {
+                            App.displayPopup(`You've won!<br><br>${numberLabelText}`, 3000, () => onEnd(true));
+                        });
+                    }
+                })
+                return;
+            }
+            if(remainingChoices <= 0){
+                App.fadeScreen({
+                    middleFn: () => {
+                        App.pet.playUncomfortableAnimation(() => {
+                            App.displayPopup(`You've lost!<br><br>${numberLabelText}`, 3000, () => onEnd(false));
+                        })
+                    }
+                })
+                return;
+            }
+
+            if(chosenNumber > selectedTargetNumber){
+                App.pet.say('Lower!', messageBubbleShownMs);
+            } else App.pet.say('Higher!', messageBubbleShownMs);
+            setTimeout(() => {
+                displayNumbers();
+            }, messageBubbleShownMs)
+        }
+
+        const displayNumbers = () => {
+            const screen = UI.empty();
+            document.querySelector('.screen-wrapper').appendChild(screen);
+            screen.innerHTML = `
+            <div class="absolute-fullscreen flex display">
+                <div class="absolute-fullscreen inner-padding-sm mini-game-ui">
+                    ${remainingChoices}/${maxChoices}
+                </div>
+                
+                <div class="flex-container flex-between" style="padding: 4px">
+                    <div class="flex flex-dir-row flex-wrap justify-between align-end flex-gap-05" style="width: 75%;">
+                        ${new Array(9).fill(1).map((_, index) => {
+                            const number = index + 1;
+                            return `<button choice ${chosenNumbers.includes(number) ? 'disabled' : ''} class="generic-btn stylized flex-grow">${number}</button>`
+                        }).join('\n')}
+                    </div>
+                </div>
+            </div>
+            `;
+            const buttons = [...screen.querySelectorAll('button[choice]')];
+            buttons.forEach((button, index) => {
+                button.onclick = () => {
+                    screen.remove();
+                    const chosenNumber = index + 1;
+                    chosenNumbers.push(chosenNumber);
+                    checkProgress(chosenNumber);
+                }
+            })
+            return screen;
+        }
+
+        displayNumbers();
+    }
     static async flagsGame(){
         App.closeAllDisplays();
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
@@ -7198,6 +7290,10 @@ class Activities {
             hasWon, 
             npc = 'resources/img/character/chara_175b.png'
         } = {}){
+        App.reloadScene();
+        App.toggleGameplayControls(false);
+        App.pet.staticShadow = false;
+
         const moneyBag = new Object2d({
             img: 'resources/img/misc/money_bag_01.png',
             x: '50%', y: '0%', width: 24, height: 24,
@@ -7205,9 +7301,6 @@ class Activities {
             targetY: 67,
             onDraw: (me) => me.moveToTarget(0.025),
         })
-
-        App.toggleGameplayControls(false);
-        App.pet.staticShadow = false;
 
         if(App.petDefinition.hasTrait('lucky'))
             amount = Math.round(amount * (1 + random(0, 5) * 0.1));

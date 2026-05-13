@@ -7057,6 +7057,14 @@ const App = {
             }
             App.displayList([
                 {
+                    _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.child,
+                    name: `guess the number ${App.getBadge()}`,
+                    onclick: () => {
+                        App.displayPopup(`Try guessing the correct number!`, tutorialDisplayTime, () => Activities.guessTheNumberGame())
+                        return false;
+                    }
+                },
+                {
                     _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.teen,
                     name: `leaves`,
                     onclick: () => {
