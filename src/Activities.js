@@ -139,11 +139,11 @@ class Activities {
                 const lastWord = text.split(' ').at(-1);
                 const words = generator.getRandomNextWords(lastWord, 6);
                 buttonsContainer.innerHTML = words.map((word, i) => `
-                    <button id="${i}">
+                    <div class="word-option cursor-pointer click-sound" id="${i}">
                         ${word}
-                    </button>
+                    </div>
                 `).join('');
-                const buttons = [...buttonsContainer.querySelectorAll('button')];
+                const buttons = [...buttonsContainer.querySelectorAll('.word-option')];
                 buttons.forEach((button, i) => {
                     button.onclick = () => {
                         const nextWord = words[i];
@@ -867,7 +867,7 @@ class Activities {
             document.querySelector('.screen-wrapper').appendChild(screen);
             screen.innerHTML = `
                 <div class="flex flex-dir-col justify-between height-100p width-full" style="position: absolute; top: 0; left: 0;">
-                    <div class="inner-padding height-100p flex flex-dir-col justify-between menu-animation">
+                    <div class="display inner-padding height-100p flex flex-dir-col justify-between menu-animation">
                         <div class="message-bubble m-0 text-center">
                             <small>
                             <b>${otherPetDef.name}</b>
@@ -1979,7 +1979,7 @@ class Activities {
         // ui
         App.toggleGameplayControls(false);
         const editDisplay = document.createElement('div');
-        editDisplay.className = 'absolute-fullscreen flex flex-dir-col menu-animation'
+        editDisplay.className = 'absolute-fullscreen flex flex-dir-col menu-animation display'
         document.querySelector('.screen-wrapper').appendChild(editDisplay)
         editDisplay.close = () => editDisplay.remove();
         editDisplay.innerHTML = `
@@ -3472,12 +3472,6 @@ class Activities {
             }
         
             const createEntryButton = (icon, name, item, onClick) => {
-                /* let badge = ''
-                if(!App.getRecord(item.unlockKey)){
-                    if(App.temp.online?.hasUploadedPetDef?.interactions >= item.unlockLikes){
-                        badge = App.getBadge('★');
-                    }
-                } else badge = App.getBadge('<i class="fa-solid fa-check"></i>', 'gray'); */
                 return {
                     name: `<img class="icon" src="${icon}"></img> ${name} ${item.isNew ? App.getBadge('new!') : ''}`,
                     onclick: onClick,
@@ -5133,6 +5127,101 @@ class Activities {
 
 
     // games
+    static guessTheNumberGame(){
+        App.closeAllDisplays();
+        App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.sendAnalytics('minigame_guessTheNumber');
+
+        App.toggleGameplayControls(false);
+        App.setScene(App.scene.arcade_game01);
+
+        App.pet.triggerScriptedState('idle', App.INF, null, true);
+        App.pet.stopMove();
+        App.pet.x = '50%';
+        App.pet.y = '90%';
+
+        const selectedTargetNumber = random(1, 9);
+        const maxChoices = 3;
+        let remainingChoices = maxChoices;
+        const chosenNumbers = [];
+        const messageBubbleShownMs = App.constants.ONE_SECOND * 2;
+
+        const numberLabelText = `The number was <b>${selectedTargetNumber}</b>!`
+
+        const onEnd = (hasWon) => {
+            if(hasWon){
+                App.definitions.achievements.perfect_minigame_guessnum_win_x_times.advance();
+            }
+            Activities.task_winMoneyFromArcade({
+                hasWon,
+                amount: hasWon ? 50 : 0,
+            })
+        }
+
+        const checkProgress = (chosenNumber) => {
+            remainingChoices--;
+            if(chosenNumber === selectedTargetNumber){
+                App.fadeScreen({
+                    middleFn: () => {
+                        App.pet.playCheeringAnimation(() => {
+                            App.displayPopup(`You've won!<br><br>${numberLabelText}`, 3000, () => onEnd(true));
+                        });
+                    }
+                })
+                return;
+            }
+            if(remainingChoices <= 0){
+                App.fadeScreen({
+                    middleFn: () => {
+                        App.pet.playUncomfortableAnimation(() => {
+                            App.displayPopup(`You've lost!<br><br>${numberLabelText}`, 3000, () => onEnd(false));
+                        })
+                    }
+                })
+                return;
+            }
+
+            if(chosenNumber > selectedTargetNumber){
+                App.pet.say('Lower!', messageBubbleShownMs);
+            } else App.pet.say('Higher!', messageBubbleShownMs);
+            setTimeout(() => {
+                displayNumbers();
+            }, messageBubbleShownMs)
+        }
+
+        const displayNumbers = () => {
+            const screen = UI.empty();
+            document.querySelector('.screen-wrapper').appendChild(screen);
+            screen.innerHTML = `
+            <div class="absolute-fullscreen flex display">
+                <div class="absolute-fullscreen inner-padding-sm mini-game-ui">
+                    ${remainingChoices}/${maxChoices}
+                </div>
+                
+                <div class="flex-container flex-between" style="padding: 4px">
+                    <div class="flex flex-dir-row flex-wrap justify-between align-end flex-gap-05" style="width: 75%;">
+                        ${new Array(9).fill(1).map((_, index) => {
+                            const number = index + 1;
+                            return `<button choice ${chosenNumbers.includes(number) ? 'disabled' : ''} class="generic-btn stylized flex-grow">${number}</button>`
+                        }).join('\n')}
+                    </div>
+                </div>
+            </div>
+            `;
+            const buttons = [...screen.querySelectorAll('button[choice]')];
+            buttons.forEach((button, index) => {
+                button.onclick = () => {
+                    screen.remove();
+                    const chosenNumber = index + 1;
+                    chosenNumbers.push(chosenNumber);
+                    checkProgress(chosenNumber);
+                }
+            })
+            return screen;
+        }
+
+        displayNumbers();
+    }
     static async flagsGame(){
         App.closeAllDisplays();
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
@@ -5493,14 +5582,14 @@ class Activities {
     }
     static barTimingGame(){
         App.closeAllDisplays();
-        App.toggleGameplayControls(false);
+        App.toggleGameplayControls(false, () => {}, false);
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
         App.sendAnalytics('minigame_bar_timing');
         App.setScene(App.scene.arcade_game01);
 
-        let screen = App.displayEmpty();
+        const screen = App.displayEmpty();
         screen.innerHTML = `
-        <div class="flex-container flex-row-down height-100p" style="background: url(${App.scene.arcade_game01.image});background-size: contain;image-rendering: pixelated;">
+        <div class="pointer-events-none display flex-container flex-row-down height-100p" style="background: url(${App.scene.arcade_game01.image});background-size: contain;image-rendering: pixelated;">
             <div class="timing-bar-container">
                 <div class="timing-bar-rod"></div>
                 <div class="timing-bar-rod"></div>
@@ -5509,7 +5598,6 @@ class Activities {
             </div>
         </div>
         `;
-
         const cursor = screen.querySelector('.timing-bar-cursor');
         
         let moneyWon = 0, round = 0, roundsWin = 0;
@@ -5532,49 +5620,51 @@ class Activities {
                 App.playSound(`resources/sounds/ui_click_04.ogg`, true);
             }
             cursor.style.left = `${cursorCurrentPos}%`;
-        }
 
-        screen.onclick = () => {
-            if(cursorSpeed == 0) return;
+            if(App.mouse.isDown) {
+                App.mouse.isDown = false;
+                if(cursorSpeed === 0) return;
 
-            cursorSpeed = 0;
-            cursor.style.opacity = 0.3;
+                cursorSpeed = 0;
+                cursor.style.opacity = 0.3;
 
-            if(cursorCurrentPos >= 90) {
-                App.playSound(`resources/sounds/ui_click_03.ogg`, true);
-                App.vibrate(80);
-                // success
-                moneyWon += 20;
-                roundsWin++;
-            } else if(cursorCurrentPos >= 70) {
-                App.playSound(`resources/sounds/ui_click_01.ogg`, true);
-                moneyWon += 3;
-            } else {
-                App.playSound(`resources/sounds/ui_click_01.ogg`, true);
-                moneyWon -= 5;
-                moneyWon = clamp(moneyWon, 0, 999);
-            }
+                if(cursorCurrentPos >= 90) {
+                    cursorCurrentPos -= 2; // fix looped click sound
+                    App.playSound(`resources/sounds/ui_click_03.ogg`, true);
+                    App.vibrate(80);
+                    // success
+                    moneyWon += 20;
+                    roundsWin++;
+                } else if(cursorCurrentPos >= 70) {
+                    App.playSound(`resources/sounds/ui_click_01.ogg`, true);
+                    moneyWon += 3;
+                } else {
+                    App.playSound(`resources/sounds/ui_click_01.ogg`, true);
+                    moneyWon -= 5;
+                    moneyWon = clamp(moneyWon, 0, 999);
+                }
 
-            round++;
+                round++;
 
-            if(round === 3){
-                setTimeout(() => {
-                    screen.close();
-                    App.onDraw = null;
-                    if(roundsWin === 3){
-                        App.definitions.achievements.perfect_minigame_rodrush_win_x_times.advance();
-                    }
-                    Activities.task_winMoneyFromArcade({
-                        amount: moneyWon,
-                        happiness: roundsWin * 10,
-                        hasWon: roundsWin >= 2
-                    })
-                }, 500);
-            } else {
-                setTimeout(() => {
-                    reset(0.15);
-                    cursorSpeed = round === 1 ? 0.27 : 0.37;
-                }, 500);
+                if(round === 3){
+                    setTimeout(() => {
+                        screen.close();
+                        App.onDraw = null;
+                        if(roundsWin === 3){
+                            App.definitions.achievements.perfect_minigame_rodrush_win_x_times.advance();
+                        }
+                        Activities.task_winMoneyFromArcade({
+                            amount: moneyWon,
+                            happiness: roundsWin * 10,
+                            hasWon: roundsWin >= 2
+                        })
+                    }, 500);
+                } else {
+                    setTimeout(() => {
+                        reset(0.15);
+                        cursorSpeed = round === 1 ? 0.27 : 0.37;
+                    }, 500);
+                }
             }
         }
     }
@@ -7197,6 +7287,10 @@ class Activities {
             hasWon, 
             npc = 'resources/img/character/chara_175b.png'
         } = {}){
+        App.reloadScene();
+        App.toggleGameplayControls(false);
+        App.pet.staticShadow = false;
+
         const moneyBag = new Object2d({
             img: 'resources/img/misc/money_bag_01.png',
             x: '50%', y: '0%', width: 24, height: 24,
@@ -7205,11 +7299,10 @@ class Activities {
             onDraw: (me) => me.moveToTarget(0.025),
         })
 
-        App.toggleGameplayControls(false);
-        App.pet.staticShadow = false;
-
         if(App.petDefinition.hasTrait('lucky'))
             amount = Math.round(amount * (1 + random(0, 5) * 0.1));
+
+        amount = Math.floor(amount);
 
         App.pet.stats.gold += amount;
         App.pet.stats.current_fun += happiness ?? (amount / 5);

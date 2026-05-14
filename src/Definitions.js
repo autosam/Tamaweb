@@ -477,6 +477,28 @@ App.definitions = (() => {
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 isNew: false,
             },
+            "oyster seafood": {
+                sprite: 728,
+                hunger_replenish: 20,
+                health_replenish: 10,
+                price: 40,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                isNew: true,
+            },
+            "butter steak": {
+                sprite: 689,
+                hunger_replenish: 25,
+                price: 35,
+                age: [_ls.teen, _ls.adult, _ls.elder],
+                isNew: true,
+            },
+            "stuffed pumpkin": {
+                sprite: 299,
+                hunger_replenish: 17,
+                price: 20,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                isNew: true,
+            },
 
             // cookable only
             "sky bread": {
@@ -903,6 +925,27 @@ App.definitions = (() => {
                 age: [_ls.baby],
                 nonCraftable: true,
             },
+            "sleep replacement": {
+                sprite: 1062,
+                hunger_replenish: -25,
+                fun_replenish: -20,
+                sleep_replenish: 999,
+                price: 120,
+                type: 'med',
+                nonCraftable: true,
+            },
+            "appetite stim": {
+                sprite: 1065,
+                hunger_replenish: -50,
+                health_replenish: -10,
+                price: 200,
+                type: 'med',
+                isNew: true,
+                nonCraftable: true,
+                payload: () => {
+                    App.petDefinition.stats.last_eaten = [];
+                }
+            },
             "medicine": {
                 sprite: 1050,
                 hunger_replenish: 0,
@@ -910,15 +953,6 @@ App.definitions = (() => {
                 health_replenish: 999,
                 price: 20,
                 type: 'med',
-            },
-            "sleep replacement": {
-                sprite: 1050,
-                hunger_replenish: -25,
-                fun_replenish: -20,
-                sleep_replenish: 999,
-                price: 120,
-                type: 'med',
-                nonCraftable: true,
             },
             "expression skill potion": {
                 sprite: 1053,
@@ -2662,6 +2696,16 @@ App.definitions = (() => {
                 description: 'Win with perfect score in Leaves game 10 times!',
                 checkProgress: () => App.getRecord('times_perfected_leaves_minigame') >= 10,
                 advance: (amount) => App.addRecord('times_perfected_leaves_minigame', amount),
+                getReward: () => {
+                    App.pet.stats.gold += 200;
+                    App.displayPopup(`You've received $200!`);
+                }
+            },
+            perfect_minigame_guessnum_win_x_times: {
+                name: 'Great Guesser',
+                description: 'Win in the Guess The Number game 10 times!',
+                checkProgress: () => App.getRecord('times_won_guess_the_number_minigame') >= 10,
+                advance: (amount) => App.addRecord('times_won_guess_the_number_minigame', amount),
                 getReward: () => {
                     App.pet.stats.gold += 200;
                     App.displayPopup(`You've received $200!`);
