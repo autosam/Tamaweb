@@ -215,6 +215,7 @@
     @media screen and (min-width: 480px) {
         ::-webkit-scrollbar {
             width: 7px;
+            height: 7px;
             background-color: transparent;
         }
         ::-webkit-scrollbar-track {
@@ -249,6 +250,7 @@
     .directional-control__container .control {
         background: #d1c3ff;
         color: var(--prim-clr-a);
+        position: relative;
     }
     .directional-control__container .control#cancel {
         color: #a30000;
@@ -546,12 +548,28 @@ hr {
     outline-offset: 1px;
 }
 
+.list-item:active:after,
+.list-item:hover:after,
+.list-item:focus-within:after,
+.list-item[data-is-active-item="true"]:after,
+.button-mode .list-item[data-is-ui-active="true"]:after,
 .grid-item:active:after,
 .grid-item:hover:after,
+.grid-item:focus-within:after,
+.grid-item[data-is-active-item="true"]:after,
+.button-mode .grid-item[data-is-ui-active="true"]:after,
 .generic-btn:active:after,
 .generic-btn:hover:after,
+.generic-btn:focus-within:after,
+.generic-btn[data-is-active-item="true"]:after,
+.button-mode .generic-btn[data-is-ui-active="true"]:after,
 .generic-btn.active:after,
-.simon-says-button.active:after
+.simon-says-button.active:after,
+.screen-wrapper button:active:after,
+.screen-wrapper button:hover:after,
+.screen-wrapper button:focus-within:after,
+.screen-wrapper button[data-is-active-item="true"]:after,
+.button-mode .screen-wrapper [data-is-ui-active="true"]:after
 {
     width: 11px;
     height: 9px;
@@ -900,6 +918,10 @@ button {
     width: 100%;
 }
 
+.line-through {
+    text-decoration: line-through;
+}
+
 .flex-center {
     display: flex;
     flex-direction: column;
@@ -925,6 +947,10 @@ button {
 
 .flex-wrap {
     flex-wrap: wrap;
+}
+
+.flex-grow {
+    flex-grow: 1;
 }
 
 .align-center {
@@ -1245,6 +1271,24 @@ c-sprite {
     top: 50%;
     border-radius: 100px;
 }
+.post-like {
+    position: absolute;
+    left: 2.6px;
+    height: 25px;
+    width: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 50%;
+    border-radius: 100px;
+    background-color: rgb(255, 255, 255);
+    color: gray;
+}
+.post-like.liked {
+    background-color: red;
+    color: white;
+    animation: revealing-anim 0.3s;
+}
 .post-profile-icon {
     position: absolute;
     top: 10px;
@@ -1301,6 +1345,7 @@ input#background-color-picker {
 
 .screen-wrapper {
     height: 192px;
+    overflow: hidden;
 }
 
 .screen-wrapper img {
@@ -1435,15 +1480,23 @@ input#background-color-picker {
 
 .inner-padding {
     padding: 10px 20px;
+    box-sizing: border-box;
 }
 .inner-padding-sm {
     padding: 4px 8px;
+    box-sizing: border-box;
 }
 
 .m {
     margin: 6px;
 }
 
+.ml-auto{
+    margin-left: auto;
+}
+.mr-auto{
+    margin-right: auto;
+}
 .mt-2 {
     margin-top: 4px;
 }
@@ -2116,6 +2169,12 @@ a.generic-btn:before {
 .shell-shape-6 {
     border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
 }
+.shell-shape-7 {
+    border-radius: 140px 140px 100px 40px;
+    .shell-btn.left, .shell-btn.main, .shell-btn.right {
+        bottom: 9% !important;
+    }
+}
 
 /* classic main menu */
 .classic-main-menu__container {
@@ -2372,6 +2431,7 @@ a.generic-btn:before {
     color: rgb(33, 33, 33);
 }
 .credit-author a {
+    position: relative;
     color: rgb(0, 4, 255) !important;
 }
 
@@ -2547,7 +2607,7 @@ button.message-bubble:hover {
 button.message-bubble:active {
     background: #a41142;
 }
-.message-bubble:after {
+.message-bubble:before {
 	content: '';
 	position: absolute;
 	bottom: 0;
@@ -2699,6 +2759,7 @@ button.message-bubble:active {
     color: var(--prim-clr-b-border);
     color: color-mix(in srgb, var(--prim-clr-b-text) 40%, transparent);
     cursor: pointer;
+    position: relative;
 }
 .tab-title:hover {
     background-color: color-mix(in srgb, var(--prim-clr-b-text) 10%, transparent)
@@ -2746,13 +2807,37 @@ button.message-bubble:active {
     width: 100%;
     background-color: black;
 }
+.letter .word-options {
+    display: flex;
+    align-items: flex-end;
+    overflow: auto;
+    margin-left: -12px;
+    width: 100%;
+    gap: 4px;
+    padding: 4px 12px;
+    /* position: sticky;
+    bottom: 0;
+    background: linear-gradient(0deg, white, transparent); */
+}
+
+.letter .word-option {
+    border: 2px solid;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: white;
+}
+.letter .word-option:hover,
+.letter .word-option:active {
+    background: #2a0505;
+    color: white;
+}
 
 /* ghost angel and devil csprite */
 c-sprite.ghost {
     position: relative;
     overflow: visible;
     opacity: 0.75;
-    filter: saturate(0.5)
+    filter: saturate(0.5);
 }
 c-sprite.ghost.devil {
     box-shadow: 2px 2px 0 red;
@@ -2760,29 +2845,22 @@ c-sprite.ghost.devil {
 c-sprite.ghost.angel {
     box-shadow: 2px 2px 0 forestgreen;
 }
-c-sprite.ghost.angel::after {
-    background: url('resources/img/misc/angel_halo_icon.png');
+c-sprite.ghost::after {
     content: '';
     width: 100%;
     height: 100%;
     left: 0;
     top: -4px;
     position: absolute;
-    background-size: contain;
     image-rendering: pixelated;
-    background-repeat: no-repeat;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+}
+c-sprite.ghost.angel::after {
+    background: url('resources/img/misc/angel_halo_icon.png');
 }
 c-sprite.ghost.devil::after {
     background: url('resources/img/misc/devil_horn_icon.png');
-    content: '';
-    width: 100%;
-    height: 100%;
-    left: 0;
-    top: -4px;
-    position: absolute;
-    background-size: contain;
-    image-rendering: pixelated;
-    background-repeat: no-repeat;
 }
 
 .option {

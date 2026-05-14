@@ -156,3 +156,25 @@ const UI = {
         element.style.display = '';
     },
 }
+
+const GenericUIDef = {
+    binaryConfirm: ({
+        onAccept = () => {}, 
+        onDecline = () => {}, 
+        acceptLabel = 'Yes', 
+        declineLabel = 'No', 
+        text = 'Are you sure?',
+    } = {}) => {
+        return [text, [
+            {
+                name: acceptLabel,
+                onclick: onAccept,
+            },
+            {
+                name: declineLabel,
+                onclick: onDecline,
+                class: 'back-btn'
+            }
+        ]]
+    }
+}

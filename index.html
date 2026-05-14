@@ -62,8 +62,7 @@
     <meta name="theme-color" content="#000000">
     <link rel="stylesheet" href="themes.css">
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css" integrity="sha512-d0olNN35C6VLiulAobxYHZiXJmq+vl+BGIgAxQtD5+kqudro/xNMvv2yIHAciGHpExsIbKX3iLg+0B6d0k4+ZA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css" integrity="sha512-pZlKGs7nEqF4zoG0egeK167l6yovsuL8ap30d07kA5AJUq+WysFlQ02DLXAmN3n0+H3JVz5ni8SJZnrOaYXWBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body class="theme-default">
     <div class="background"></div>
@@ -93,9 +92,9 @@
 
         <div class="dom-shell" style="display: none;">
             <img class="logo" src="resources/img/ui/logo_trans_01.png"></img>
-            <button class="shell-btn main" onclick="App.handlers.shell_button()" onmousedown="setTimeout(() => App.playSound('resources/sounds/shell_button_down.ogg', true))" onmouseup="setTimeout(() => App.playSound('resources/sounds/shell_button_up.ogg', true))"></button>
-            <button class="shell-btn left" onclick="App.handlers.shell_button()" onmousedown="setTimeout(() => App.playSound('resources/sounds/shell_button_down.ogg', true))" onmouseup="setTimeout(() => App.playSound('resources/sounds/shell_button_up.ogg', true))"></button>
-            <button class="shell-btn right" onclick="App.handlers.shell_button()" onmousedown="setTimeout(() => App.playSound('resources/sounds/shell_button_down.ogg', true))" onmouseup="setTimeout(() => App.playSound('resources/sounds/shell_button_up.ogg', true))"></button>
+            <button class="shell-btn main mute" onclick="App.handlers.shell_button(1)"></button>
+            <button class="shell-btn left mute" onclick="App.handlers.shell_button(0)"></button>
+            <button class="shell-btn right mute" onclick="App.handlers.shell_button(2)"></button>
         </div>
         <!-- graphics -->
         <div class="graphics-wrapper">
@@ -106,7 +105,7 @@
             <!-- screen wrapper -->
             <div class="screen-wrapper">
                 <!-- canvas -->
-                <canvas style="cursor: pointer;" onclick="App.handlers.open_main_menu()" class="graphics-canvas" width="96" height="96"></canvas>
+                <canvas style="cursor: pointer;" onclick="App.handlers.open_main_menu();" class="graphics-canvas" width="96" height="96"></canvas>
 
                 <!-- tapping reminder -->
                 <div class="full-device-overlay tap-reminder" style="display: none;">
@@ -139,13 +138,14 @@
 
     <!-- cloneables -->
     <div style="display: none;" class="cloneables">
-        <div class="post-container" style="display: none;">
+        <div class="post-container display" style="display: none;">
             <canvas width="96" height="96" class="post-canvas"></canvas>
             <div class="post-text">Post Bottom Text</div>
             <div class="post-header">Post Header</div>
             <div class="post-profile-icon"></div>
-            <button class="post-close"><i class="fa-solid fa-times"></i></button>
+            <button class="post-close back-btn"><i class="fa-solid fa-times"></i></button>
             <button class="post-next"><i class="fa-solid fa-angle-right"></i></button>
+            <button class="post-like"><i class="fa-solid fa-heart"></i></button>
         </div>
 
         <div class="generic-list-container display menu-animation"></div>
@@ -164,7 +164,7 @@
             </div>
             <div class="actions-container">
                 <button id="cancel-btn" class="generic-btn stylized back-btn">CANCEL</button>
-                <button id="accept-btn" class="generic-btn stylized">ACCEPT</button>
+                <button data-fb-keep-index id="accept-btn" class="generic-btn stylized">ACCEPT</button>
             </div>
         </div>
 
@@ -222,6 +222,7 @@
     <script src="src/App.js"></script>
     <script src="src/Definitions.js"></script>
     <script src="src/Missions.js"></script>
+    <script defer src="src/StoryGen.js"></script>
     <script src="src/Main.js"></script>
 </body>
 </html>
