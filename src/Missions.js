@@ -115,93 +115,12 @@ const Missions = {
         console.log(this.current);
     },
     openRewardsMenu: function(){
-        const defs = App.definitions;
         App.sendAnalytics('opened_mission_rewards', Missions.currentPts);
-        const foodPool = Object.keys(defs.food)
-        .filter(key => defs.food[key].price > 0)
-        .map(key => { 
-            return {
-                name: key,
-                icon: App.getFoodCSprite(defs.food[key].sprite),
-                count: [1, 4],
-                type: 'consumable',
-                onClaim: (amt) => {
-                    App.addNumToObject(App.pet.inventory.food, key, amt || 1);
-                }
-            } 
-        });
-        const itemsPool = Object.keys(defs.item)
-        .map(key => { 
-            return {
-                name: key,
-                icon: App.getItemCSprite(defs.item[key].sprite),
-                count: [1, 1],
-                type: 'item',
-                onClaim: () => {
-                    App.addNumToObject(App.pet.inventory.item, key, 1);
-                }
-            } 
-        });
-        const accessoriesPool = Object.keys(defs.accessories)
-        .filter(key => App.definitions.accessories[key].price !== -1)
-        .map(key => { 
-            return {
-                name: key,
-                icon: App.getAccessoryCSprite(key),
-                count: [1, 1],
-                type: 'accessory',
-                onClaim: () => {
-                    App.pet.inventory.accessory[key] = true;
-                }
-            } 
-        });
-        const exclusivePotionsPool = Object.keys(defs.food)
-        .filter(key => {
-            const item = defs.food[key];
-            return item.type === 'med' && item.unbuyable;
-        })
-        .map(key => { 
-            return {
-                name: key,
-                icon: App.getFoodCSprite(defs.food[key].sprite),
-                count: [1, 1],
-                type: 'consumable',
-                onClaim: (amt) => {
-                    App.addNumToObject(App.pet.inventory.food, key, amt || 1);
-                }
-            } 
-        });
-        const goldPullDef = {
-            name: 'gold',
-            icon: '<div class="gold-circle">$</div>',
-            count: [1, 25],
-            type: '',
-            onClaim: (amt) => {
-                App.pet.stats.gold += amt || 50;
-            }
-        }
-        const pullFromPool = (pool, isGoldPull) => {
-            const randomPull = isGoldPull ? goldPullDef : randomFromArray(pool);
-            const [min, max] = randomPull.count;
-            let count = random(min, max) * (isGoldPull ? 5 : 1);
-            if(App.isDuringChristmas()) count *= 2;
-            randomPull.onClaim?.(count);
-            setTimeout(() => App.playSound('resources/sounds/task_complete_02.ogg', true), 450)
-            App.displayPopup(`
-                <div class="pulse">
-                    ${randomPull.icon}
-                </div>
-                <b>${randomPull.name}</b>
-                <br>
-                <span>x${count}</span>
-                <br>
-                <span>${randomPull.type}</span>
-                ${
-                    App.isDuringChristmas() ?
-                    App.getBadge('doubled!') : ''
-                }
-            `, 5000, null, true);
-        }
+        
+        const foodPool = App.definitions.pools.food();
+        const itemsPool = App.definitions.pools.items();
+        const accessoriesPool = App.definitions.pools.accessories();
+        const exclusivePotionsPool = App.definitions.pools.exclusivePotions();
 
         const chests = [
             {
@@ -224,7 +143,7 @@ const Missions = {
                         ...itemsPool,
                         ...accessoriesPool,
                     ]
-                    pullFromPool(pool, random(0, 1));
+                    App.pullFromPool(pool, { isGoldPull: random(0, 1) });
                 }
             },
             {
@@ -243,7 +162,7 @@ const Missions = {
                         ...itemsPool,
                         ...accessoriesPool,
                     ]
-                    pullFromPool(pool, false);
+                    App.pullFromPool(pool);
                 }
             },
             {
@@ -268,7 +187,7 @@ const Missions = {
                     const pool = [
                         ...exclusivePotionsPool
                     ]
-                    pullFromPool(pool, random(0, 3));
+                    App.pullFromPool(pool, { isGoldPull: random(0, 3) });
                 }
             },
         ]

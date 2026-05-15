@@ -87,7 +87,7 @@ const App = {
         SLEEP_END: 8,
         PARENT_DAYCARE_START: 3,
         PARENT_DAYCARE_END: 18,
-        MAX_SHELL_SHAPES: 6,
+        MAX_SHELL_SHAPES: 7,
         AFTERNOON_TIME: [12, 17],
         EVENING_TIME: [17, 20],
         NIGHT_TIME: [20, 6],
@@ -159,7 +159,13 @@ const App = {
             autumn: ['#CE4429', '#ED782F', '#FF9D60'],
             spring: ['#63A04B', '#7FD060', '#96F271'],
             summer: ['#27AA2F', '#59D12F', '#BAD92F'],
-        }
+        },
+        LETTER_SCORE_RATING: {
+            awful: 0,
+            bad: 1,
+            medium: 2,
+            good: 3
+        },
     },
     routes: {
         BLOG: 'https://tamawebgame.github.io/blog/',
@@ -486,6 +492,7 @@ const App = {
         const mouseDownHandler = (evt) => {
             App.mouse.isDown = true;
             moveEventHandler(evt);
+            document.body.classList.remove('button-mode');
         }
         const mouseUpHandler = (evt) => {
             App.mouse.isDown = false;
@@ -519,7 +526,21 @@ const App = {
                 case "`":
                     App.takeScreenshot();
                     break;
+                case "ArrowLeft":
+                    App.handlers.shell_button(0);
+                    break;
+                case "ArrowDown":
+                    App.handlers.shell_button(1);
+                    break;
+                case "ArrowRight":
+                    App.handlers.shell_button(2);
+                    break;
+                
             }
+            App.mouse.isDown = true;
+        })
+        document.addEventListener('keyup', (event) => {
+            App.mouse.isDown = false;
         })
     },
     registerLoadEvents: function(){
@@ -530,9 +551,6 @@ const App = {
             App.fpsStartTime = App.fpsLastTime;
             App.onFrameUpdate(0);
         }
-        // window.onload = function () {
-        //     initializeRenderer();
-        // }
         document.addEventListener('DOMContentLoaded', function(event) {
             initializeRenderer();
         });
@@ -546,6 +564,21 @@ const App = {
                 App.isStoragePersistent = persistent;
             });
         }
+
+        const observer = new MutationObserver((mutationsList) => {
+            mutationsList.forEach(mutation => {
+            if (mutation.addedNodes && mutation.addedNodes.length > 0) {
+                mutation.addedNodes.forEach(node => {
+                if(node.nodeType === Node.ELEMENT_NODE){
+                    App.indexUIElement(node);
+                }
+                });
+            }})
+        });
+        observer.observe(
+            document.querySelector('.screen-wrapper'), 
+            {childList: true, subtree: false}
+        );
     },
     sendSessionEvent: function(login){
         if(login){
@@ -751,6 +784,77 @@ const App = {
                 }, 'automatic_birthday_party');
             }
         }
+
+        const friendsPendingLetterResponse = App.petDefinition.friends.filter(def => {
+            if(!def.stats.player_sent_letter) return false;
+            const responseTime = moment(def.stats.player_sent_letter.time).add(6, 'hours');
+            if(moment().isAfter(responseTime)) return true;
+        });
+        if(friendsPendingLetterResponse.length){
+            const friendDef = friendsPendingLetterResponse[0];
+            const { rating } = friendDef.stats.player_sent_letter;
+            if(App.canProceed('get_letter_response', App.constants.ONE_MINUTE * 10)){
+                const { LETTER_SCORE_RATING } = App.constants;
+                const ratingMap = {
+                    [LETTER_SCORE_RATING.awful]: 'awful',
+                    [LETTER_SCORE_RATING.bad]: 'bad',
+                    [LETTER_SCORE_RATING.good]: 'good',
+                    [LETTER_SCORE_RATING.medium]: 'medium'
+                };
+                const ratingKey = ratingMap[rating] || 'medium';
+
+                const getLetterResponse = () => randomFromArray(App.definitions.letterResponses[ratingKey]);
+                const getGift = () => {
+                    if(rating === LETTER_SCORE_RATING.good) return [
+                        ...App.definitions.pools.items(),
+                        ...App.definitions.pools.accessories(),
+                        ...App.definitions.pools.exclusivePotions(),
+                    ];
+                    if(rating === LETTER_SCORE_RATING.medium) return [
+                        ...App.definitions.pools.food(),
+                        App.definitions.pools.goldDef(10, 70),
+                    ]
+                    return false;
+                }
+                const getFriendshipGain = () => {
+                    switch(rating){
+                        case LETTER_SCORE_RATING.awful: return -10;
+                        case LETTER_SCORE_RATING.bad: return 0;
+                        case LETTER_SCORE_RATING.good: return random(10, 15);
+                        default: return random(3, 7);
+                    }
+                }
+
+                const giftPool = getGift();
+                const response = `${getLetterResponse().replaceAll('%name%', App.petDefinition.name)} ${giftPool ? `<br><br>I've sent you a gift, hope you like!` : ''}`;
+                const friendshipGain = getFriendshipGain();
+
+                setTimeout(() => {
+                    App.queueEvent(() => {
+                        friendDef.increaseFriendship(friendshipGain);
+                        friendDef.stats.player_sent_letter = false;
+                        Activities.getMail({
+                            onEndFn: () => {
+                                App.handlers.show_letter({
+                                    headline: '', 
+                                    text: response,
+                                    sender: `${friendDef.getAvatar()}`,
+                                    onClose: () => {
+                                        if(!giftPool) return;
+                                        Activities.openGenericGift({
+                                            onMiddle: () => {
+                                                App.pullFromPool(giftPool);
+                                            }
+                                        })
+                                    }
+                                })
+                            },
+                            noSceneSwitch: true
+                        });
+                    })
+                }, random(1000, 2000))
+            }
+        }
     },
     onDraw: () => {},
     preloadImages: function(urls) {
@@ -813,6 +917,95 @@ const App = {
     getRecord: function(name){
         return this.records[name];
     },
+    indexUIElement: (element) => {
+        if(!element) return;
+
+        const activeIndex = App.temp.fbKeepIndex || 0;
+        
+        // reset fbKeepIndex flag
+        if(App.temp.fbKeepIndex) App.temp.fbKeepIndex = false;
+
+        if(element?.hasAttribute?.('data-ui-indexed')) return;
+        element?.setAttribute?.('data-ui-indexed', 1);
+
+        const items = [...element?.querySelectorAll?.('button, a, [data-fb-focusable]')];
+        items?.forEach((item, i) => item?.setAttribute('data-ui-index', i));
+        items[activeIndex]?.setAttribute('data-is-ui-active', "true");
+    },
+    handleShellButton: (buttonNumber) => {
+        const currentDisplay = App.getCurrentDisplay();
+
+        const getItems = () => [...currentDisplay.querySelectorAll('[data-ui-index]')];
+        const handleNoDisplay = () => {
+            if(App.disableGameplayControls && Boolean(App.gameplayControlsOverwrite))
+                App.playSound('resources/sounds/ui_click_01.ogg', true);
+            else 
+                App.playSound('resources/sounds/shell_button_down.ogg');
+        }
+
+        if(!currentDisplay) return handleNoDisplay();
+
+        const displayActiveItemIndex = parseInt(currentDisplay.dataset.activeItemIndex) || 0; 
+
+        const items = getItems();
+        const activeElement = currentDisplay.querySelector('[data-is-ui-active="true"]') || items[displayActiveItemIndex];
+        if(!activeElement) return handleNoDisplay();
+        const activeIndex = displayActiveItemIndex
+            || items?.findIndex((el) => el === activeElement);
+
+        const isActiveElementDisabled = activeElement.disabled || activeElement?.classList?.contains('disabled');
+
+        const updateActiveElement = (currentIndex = activeIndex, currentItems = items) => {
+            const currentElement = currentItems[currentIndex];
+            currentElement?.setAttribute('data-is-ui-active', "true");
+            currentElement?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'end',
+            })
+            currentDisplay.dataset.activeItemIndex = currentIndex;
+        }
+
+        switch(buttonNumber){
+            case 0:
+                activeElement.removeAttribute('data-is-ui-active');
+
+                let newActiveIndex = activeIndex, newActiveElement;
+                for(let i = 0; i < items.length; i++){
+                    newActiveIndex += 1;
+                    if(newActiveIndex >= items.length) newActiveIndex = 0;
+                    newActiveElement = items[newActiveIndex] 
+                        || currentDisplay.querySelector(`[data-ui-index='${newActiveIndex}']`);
+                    if(newActiveElement) break;
+                }
+
+                if(newActiveIndex !== activeIndex) App.playSound('resources/sounds/ui_click_08.ogg', true);
+                else App.playSound('resources/sounds/ui_click_04.ogg', true);
+
+                updateActiveElement(newActiveIndex)
+                break;
+            case 1:
+                if(isActiveElementDisabled){
+                    return App.playSound('resources/sounds/ui_click_04.ogg', true);
+                }
+                if(activeElement.hasAttribute('data-fb-keep-index')){
+                    App.temp.fbKeepIndex = activeIndex;
+                }
+                activeElement?.click();
+                setTimeout(() => updateActiveElement(undefined, getItems()));
+                break;
+            case 2:
+                if(activeIndex !== 0){
+                    App.playSound('resources/sounds/ui_click_08.ogg', true)
+                    activeElement.removeAttribute('data-is-ui-active');
+                    updateActiveElement(0);
+                } else {
+                    const backBtn = currentDisplay?.querySelector('.back-btn');
+                    if(backBtn) backBtn.click();
+                    else App.playSound('resources/sounds/ui_click_04.ogg', true);
+                }
+                break;
+        }
+    },
     handleInputCode: function(rawCode){
         const {addEvent} = App;
 
@@ -872,9 +1065,9 @@ const App = {
                 })) return showAlreadyUsed();
                 break;
             // update specific
-            case "PERSONALITIES":
-            case "DIG":
-            case "LEAVES":
+            case "LETTERS":
+            case "MAGIC8BALL":
+            case "TOOTHACHE":
                 if(!addEvent(codeEventId, () => {
                     const goldAmount = 200, missionPtsAmount = 50;
                     App.pet.stats.gold += goldAmount;
@@ -896,9 +1089,9 @@ const App = {
                     App.displayPopup(`You've redeemed <b>$${goldAmount}</b>, <b>${missionPtsAmount} Mission pts</b>!`, 4000);
                 })) return showAlreadyUsed();
                 break;
-            case "DISCORD6K":
+            case "DISCORD7K":
                 if(!addEvent(codeEventId, () => {
-                    const goldAmount = 5000, missionPtsAmount = 500;
+                    const goldAmount = 3000, missionPtsAmount = 500;
                     App.pet.stats.gold += goldAmount;
                     Missions.currentPts += missionPtsAmount;
                     App.displayPopup(`You've redeemed <b>$${goldAmount}</b>, <b>${missionPtsAmount} Mission pts</b>!`, 4000);
@@ -1044,7 +1237,7 @@ const App = {
         //     ])
         // })) return;
 
-        if(addEvent(`update_25_notice`, () => {
+        if(addEvent(`update_26_notice`, () => {
             App.displayList([
                 {
                     name: `New update is available!<b> <div><small>${VERSION}</small></div> ${App.getBadge('new!')}`,
@@ -1057,7 +1250,7 @@ const App = {
                         <img class="update-banner" src="resources/img/ui/update_banner.png"></img>
                         <br>
                         <div>
-                        Check out the new <b>Personality Traits</b>, <b>Dig Treasure Activity</b>, <b>Leaves Mini-game</b>, <b>Move Out Interactions</b> and a lot more!
+                        Check out the new <b>Post Office location</b>, <b>Functional Buttons</b>, <b>Guess The Number mini-game</b>, <b>Toothaches</b> and a lot more!
                         </div>
                     `,
                     type: 'text',
@@ -1544,6 +1737,9 @@ const App = {
             onUnload: () => {
                 this.shootingStarsSpawner.removeObject();
             }
+        }),
+        post_office: new Scene({
+            image: 'resources/img/background/house/post_office_01.png',
         })
     },
     setScene(scene, noPositionChange, onLoadArg){
@@ -1624,17 +1820,17 @@ const App = {
         document.querySelector('.screen-wrapper').appendChild(editDisplay)
         editDisplay.close = () => editDisplay.remove();
         editDisplay.innerHTML = `
-            <div class="directional-control__container">
+            <div class="directional-control__container display">
                 <div class="controls-y">
-                    <div class="control" id="up"><i class="fa fa-angle-up"></i></div>
+                    <button class="control" id="up"><i class="fa fa-angle-up"></i></button>
                     <div class="controls-x">
-                        <div class="control" id="left"><i class="fa fa-angle-left"></i></div>
-                        <div class="control" id="right"><i class="fa fa-angle-right"></i></div>
+                        <button class="control" id="left"><i class="fa fa-angle-left"></i></button>
+                        <button class="control" id="right"><i class="fa fa-angle-right"></i></button>
                     </div>
                     <div class="bottom-container">
-                        <div class="control" id="cancel"><i class="fa fa-times"></i></div>
-                        <div class="control" id="down"><i class="fa fa-angle-down"></i></div>
-                        <div class="control" id="apply"><i class="fa fa-check"></i></div>
+                        <button class="control" id="cancel"><i class="fa fa-times"></i></button>
+                        <button class="control" id="down"><i class="fa fa-angle-down"></i></button>
+                        <button class="control" id="apply"><i class="fa fa-check"></i></button>
                     </div>
                 </div>
             </div>
@@ -2192,6 +2388,9 @@ const App = {
         go_to_clinic: function(){
             Activities.goToClinic(() => App.handlers.open_activity_list(true))
         },
+        go_to_post_office: function(){
+            Activities.goToPostOffice(() => App.handlers.open_activity_list(true));
+        },
         show_attended_school_limit_message: function(){
             const formattedResetTime = moment(App.constants.SCHOOL.resetTime).format('h:mmA');
             return App.displayPopup(`<b>${App.petDefinition.name}</b> has attended all of their classes today!<br><br>Come back tomorrow after <b>${formattedResetTime}</b>`, 4000);
@@ -2564,11 +2763,12 @@ const App = {
             App.displayGrid([
                 ...renderingMainMenu,
                 {
-                    name: App.getIcon('arrow-left', true),
-                    class: 'back-sound',
+                    name: App.getIcon('arrow-left back-sound', true),
+                    class: 'back-sound back-btn',
                     onclick: () => { }
                 }
             ])
+            return true;
         },
         open_care_menu: function(){
             const getUnclaimedRewardsBadge = () => {
@@ -3725,8 +3925,8 @@ const App = {
             content.innerHTML = `
             <div class="tabs">
                 <div class="tab-titles">
-                    <div for="tab-1" class="tab-title">${App.getIcon('bar-chart', true)}</div>
-                    <div for="tab-2" class="tab-title">${App.getIcon('star', true)}</div>
+                    <button for="tab-1" class="tab-title">${App.getIcon('bar-chart', true)}</button>
+                    <button for="tab-2" class="tab-title">${App.getIcon('star', true)}</button>
                 </div>
                 <div class="tab-contents">
                     <div id="tab-1" class="tab">
@@ -3929,7 +4129,7 @@ const App = {
                             const [a, b] = partners;
 
                             return `
-                                <div class="family-tree__partners-container">
+                                <div data-fb-focusable class="family-tree__partners-container">
                                     <div class="family-tree__gen-badge">${i + 1}</div>
 
                                     <div class="family-tree__member-container">
@@ -3948,13 +4148,13 @@ const App = {
                             `;
                         }).join('')
                     }
-                    <div style="margin-left: 76px" class="family-tree__member-container">
+                    <div data-fb-focusable style="margin-left: 76px" class="family-tree__member-container">
                         ${petDefinition.getFullCSprite()}
                         <small>${petDefinition.name}</small>
                     </div>
                 </div>
 
-                <div class="b-radius-10 m surface-stylized height-auto inner-padding">
+                <div data-fb-focusable class="b-radius-10 m surface-stylized height-auto inner-padding">
                     ${infoPanelContent}
                 </div>
             `;
@@ -4063,7 +4263,6 @@ const App = {
                                 App.addNumToObject(App.pet.inventory.food, food, 1);
                                 Missions.done(Missions.TYPES.buy_food);
                             }
-
                             App.handlers.open_food_list({...props, activeIndex: sliderInstance?.getCurrentIndex()});
                             return false;
                         }
@@ -4477,7 +4676,7 @@ const App = {
             const list = UI.genericListContainer();
             const content = UI.empty('flex flex-dir-col flex-1');
             content.innerHTML = `
-                <div class="flex-center flex-1 flex flex-gap-05 inner-padding surface-stylized height-auto relative">
+                <div data-fb-focusable class="flex-center flex-1 flex flex-gap-05 inner-padding surface-stylized height-auto relative">
                     ${App.petDefinition.getCSprite(true)}
                     <b>
                         <span>${App.settings.genderedPets ? App.getIcon(App.pet.stats.gender, true) : ''} ${App.petDefinition.name} </span>
@@ -4499,7 +4698,7 @@ const App = {
                 </div>
                 <div class="surface-stylized inner-padding flex flex-gap-05 flex-dir-col">
                     <small>Traits:</small>
-                    <div class="relative mt-6 width-full">
+                    <div data-fb-focusable class="relative mt-6 width-full">
                         <div class="stats-label left-0">Experience</div>
                         <div class="pet-trait-icons-container">
                             ${petExpTraitIcons.map(icon => {
@@ -4509,7 +4708,7 @@ const App = {
                             }).join('')}
                         </div>
                     </div>
-                    <div class="relative mt-6 width-full">
+                    <div data-fb-focusable class="relative mt-6 width-full">
                         <div class="stats-label left-0">Personality</div>
                         <div class="pet-trait-icons-container">
                             ${!App.petDefinition.traits.length ? unknownPersonality : ''}
@@ -4522,8 +4721,14 @@ const App = {
                             }).join('')}
                         </div>
                     </div>
+                    <div data-fb-focusable class="relative mt-6 width-full">
+                        <div class="stats-label left-0">Zodiac sign</div>
+                        <div class="pet-trait-icons-container">
+                            ${App.getZodiacSign(App.petDefinition.birthday)}
+                        </div>
+                    </div>
                 </div>
-                <div class="user-id surface-stylized inner-padding text-transform-none">
+                <div data-fb-focusable class="user-id surface-stylized inner-padding text-transform-none">
                     <div class="flex flex-dir-col">
                         <small>play time:</small>
                         <span>${Math.floor(playTimeDuration.asHours())} hours and ${playTimeDuration.minutes()} minutes</span>
@@ -6025,7 +6230,28 @@ const App = {
                                                         2500, 
                                                         () => {
                                                             App.closeAllDisplays();
-                                                            Activities.receiveOrderedFood();
+                                                            const onEnd = () => {
+                                                                App.displayConfirm(...GenericUIDef.binaryConfirm({
+                                                                    text: 'Do you want to eat a delivered item right now?',
+                                                                    onAccept: () => {
+                                                                        App.displayList(getOrders().map(({current, foodName}) => ({
+                                                                            name: `
+                                                                                <div class="icon">${App.getFoodCSprite(current.sprite)}</div>
+                                                                                <span class="ellipsis">${foodName}</span>
+                                                                            `,
+                                                                            onclick: () => {
+                                                                                App.closeAllDisplays();
+                                                                                App.pet.feed(
+                                                                                    current.sprite, 
+                                                                                    current.hunger_replenish ?? 0, 
+                                                                                    'food', 
+                                                                                true);
+                                                                            }
+                                                                        })), undefined, 'cancel');
+                                                                    },
+                                                                }))
+                                                            }
+                                                            Activities.receiveOrderedFood(onEnd);
                                                         }
                                                     );
                                                 }
@@ -6274,25 +6500,28 @@ const App = {
                 document.querySelector('.post-profile-icon').innerHTML = `${petDefinition.getCSprite()}`;
 
                 let postDrawer = new Drawer(post.querySelector('.post-canvas'), 96, 96);
-                // let postDrawer = new Drawer(postCanvas)
                 let postText = post.querySelector('.post-text');
 
-                let drawer = setInterval(() => {
-                    postDrawer.draw();
-                }, 32);
-                let close = () => {
-                    clearInterval(drawer);
-                    App.toggleGameplayControls(true);
+
+                setTimeout(() => postDrawer.draw());
+                const close = () => {
                     post.remove();
                 }
-                App.toggleGameplayControls(false, close);
+                // App.toggleGameplayControls(false, close);
                 post.querySelector('.post-close').onclick = close;
                 post.querySelector('.post-next').onclick = () => {
                     close();
                     showRandomPost();
                 };
+                const postLikeElement = post.querySelector('.post-like')
+                postLikeElement.onclick = () => {
+                    if(postLikeElement.classList.contains('liked')) return;
+                    postLikeElement.classList.add('liked');
+                    petDefinition.increaseFriendship(random(1, 4) * 0.1);
+                }
                 if(isSelfPost){
                     post.querySelector('.post-next').remove();
+                    postLikeElement.remove();
                 }
 
                 let homeBackground = App.scene.home.image;
@@ -6352,6 +6581,9 @@ const App = {
                     }
                     if(App.pet.hasMoodlet('sick')){
                         postText.innerHTML = 'Not feeling too good... #tummyache';
+                        if(App.pet.stats.has_toothache) {
+                            postText.innerHTML = 'Ate way too much snacks... #toothache';
+                        }
                         character.spritesheet.cellNumber = 4;
                         background.setImg(homeBackground);
                     }
@@ -6407,7 +6639,9 @@ const App = {
                                         {
                                             name: 'yes',
                                             onclick: () => {
-                                                let willAcceptFriendRequest = random(0, 1) == 1;
+                                                let willAcceptFriendRequest = random(0, 1) === 1;
+                                                if(App.petDefinition.hasTrait('charismatic')) willAcceptFriendRequest = true;
+                                                if(App.petDefinition.hasTrait('lucky')) willAcceptFriendRequest = Boolean(random(0, 3));
                                                 if(!willAcceptFriendRequest){
                                                     App.displayPopup(`${otherPetDef.name} did <b style="color: #ff6e74">not accept</b> ${App.petDefinition.name}'s friend request`)
                                                     return;
@@ -6823,6 +7057,14 @@ const App = {
             }
             App.displayList([
                 {
+                    _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.child,
+                    name: `guess the number ${App.getBadge()}`,
+                    onclick: () => {
+                        App.displayPopup(`Try guessing the correct number!`, tutorialDisplayTime, () => Activities.guessTheNumberGame())
+                        return false;
+                    }
+                },
+                {
                     _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.teen,
                     name: `leaves`,
                     onclick: () => {
@@ -6899,18 +7141,20 @@ const App = {
         open_battle_screen: function(){
             Battle.start();
         },
-        shell_button: function(){
-            if(App.disableGameplayControls && App.gameplayControlsOverwrite){
+        shell_button: function(buttonNumber){
+            document.body.classList.add('button-mode');
+
+            if(App.disableGameplayControls && Boolean(App.gameplayControlsOverwrite)){
                 if(!App.haveAnyDisplays()){
                     App.gameplayControlsOverwrite();
                     App.vibrate();
                 }
-                return;
             }
 
-            if(App.disableGameplayControls) return;
 
-            let disallow = false;
+            // if(App.disableGameplayControls) return;
+
+            /* let disallow = false;
             [...document.querySelectorAll('.display')].forEach(display => {
                 if(!display.closest('.cloneables')){
                     if(display.classList.contains('popup')) disallow = true;
@@ -6919,11 +7163,20 @@ const App = {
                 }
             });
 
-            if(disallow) return;
+            console.log({disallow})
 
-            App.setScene(App.scene.home);
-            if(App.haveAnyDisplays()) App.closeAllDisplays();
-            else App.handlers.open_main_menu();
+            if(disallow) return; */
+
+            let justOpened = false;
+            if(!App.haveAnyDisplays()) {
+                justOpened = App.handlers.open_main_menu();
+            }
+
+            if(!justOpened) App.handleShellButton(buttonNumber);
+
+            // App.setScene(App.scene.home);
+            // if(App.haveAnyDisplays()) App.closeAllDisplays();
+            // else App.handlers.open_main_menu();
             App.vibrate();
         },
         sleep: function(){
@@ -7092,6 +7345,11 @@ const App = {
             }
         })
         tabTitles.at(0).click();
+    },
+    getCurrentDisplay: function(){
+        const sortedDisplays = [...document.querySelectorAll('.screen-wrapper .display')]
+            .sort((a, b) => Number(a.style.zIndex) - Number(b.style.zIndex));
+        return sortedDisplays.at(-1);
     },
     displayList: function(listItems, backFn, backFnTitle){
         const list = UI.genericListContainer(backFn, backFnTitle);
@@ -7330,7 +7588,7 @@ const App = {
                 .map((letter, index) => `<span style="animation-delay: ${index * 0.05}s">${letter}</span>`)
                 .join('');
         }
-        const display = App.displayEmpty('bg-transparent pointer-events-none');
+        const display = App.displayEmpty('bg-transparent pointer-events-none overflow-hidden');
         display.close = () => {
             UI.fadeOut(display.querySelector('.message-bubble'));
             setTimeout(() => display.remove(), 1000);
@@ -7745,6 +8003,34 @@ const App = {
             </div>
         `;
     },
+    pullFromPool: (pool, options = {}) => {
+        const { 
+            isGoldPull = false, 
+            goldPullDef = App.definitions.pools.goldDef(), 
+            isDuringChristmas = App.isDuringChristmas()
+        } = options;
+        
+        const randomPull = isGoldPull && goldPullDef ? goldPullDef : randomFromArray(pool);
+        const [min, max] = randomPull.count;
+        let count = random(min, max) * (isGoldPull ? 5 : 1);
+        if(isDuringChristmas) count *= 2;
+        randomPull.onClaim?.(count);
+        setTimeout(() => App.playSound('resources/sounds/task_complete_02.ogg', true), 450)
+        App.displayPopup(`
+            <div class="pulse">
+                ${randomPull.icon}
+            </div>
+            <b>${randomPull.name}</b>
+            <br>
+            <span>x${count}</span>
+            <br>
+            <span>${randomPull.type}</span>
+            ${
+                isDuringChristmas ?
+                App.getBadge('doubled!') : ''
+            }
+        `, 5000, null, true);
+    },
     isCompanionAllowed: function(room){
         if(!room) room = App.currentScene;
 
@@ -7788,6 +8074,47 @@ const App = {
                 <i>${buff.description}</i>
             </div>
         `;
+    },
+    getZodiacSign(date){
+        const ZODIAC_SIGNS = ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓'];
+        const day = moment(date).date();
+        return ZODIAC_SIGNS[(day - 1) % ZODIAC_SIGNS.length];
+
+        /* // todo: use these when bumping fa to v7.2+
+        const ZODIAC_SIGNS = ['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces'];
+        const day = moment(date).date();
+        return ZODIAC_SIGNS[(day - 1) % ZODIAC_SIGNS.length] || 'aries'; */
+    },
+    getMagic8BallAnswer: () => {
+        const positiveAnswers = [
+            'It is certain.',
+            'It is decidedly so.',
+            'Without a doubt.',
+            'Yes, definitely.',
+            'You may rely on it.',
+            'As I see it, yes.',
+            'Most likely.',
+            'Outlook good.',
+            'Yes.',
+            'Signs point to yes.',
+        ];
+        const nonCommittalAnswers = [
+            'Reply hazy, try again.',
+            'Ask again later.',
+            'Better not tell you now.',
+            'Cannot predict now.',
+            'Concentrate and ask again.',
+        ];
+        const negativeAnswers = [
+            'Don’t count on it.',
+            'My reply is no.',
+            'My sources say no.',
+            'Outlook not so good.',
+            'Very doubtful.',
+        ];
+        const list = [positiveAnswers, nonCommittalAnswers, negativeAnswers];
+        const target = randomFromArray(list);
+        return randomFromArray(target);
     },
     playSound: function(path, force){
         if(!App.settings.playSound) return;
@@ -7835,7 +8162,7 @@ const App = {
         this.speechAudioChannel?.play(`resources/sounds/speech/${random(1, maxSamples)}.mp3`, true);
     },
     takeScreenshot: () => {
-        if(App.haveAnyDisplays()) return;
+        if(!App.isTester() && App.haveAnyDisplays()) return;
         const overlay = document.querySelector('.screenshot-overlay');
         UI.show(overlay);
         setTimeout(() => UI.hide(overlay), 250);

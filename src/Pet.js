@@ -176,6 +176,22 @@ class Pet extends Object2d {
                 })
             }
         })
+
+        this.toothacheOverlay = new Object2d({
+            parent: this,
+            img: 'resources/img/misc/toothache_01.png',
+            x: 0,
+            y: 0,
+            invisible: true,
+            z: this.z,
+            localZ: 1,
+            onDraw: (overlay) => {
+                overlay.invisible = !overlay.parent?.stats?.has_toothache;
+                overlay.mimicParent(['inverted', 'upperHalfOffsetY']);
+                overlay.x -= (overlay.parent.spritesheet.offsetY / 2) || 0;
+                Object2d.animations.pulseScale(overlay, 0.01, 0.05);
+            }
+        })
     }
     equipAccessories(){
         const ACCESSORY_CELL_SIZE = 64;
@@ -562,7 +578,15 @@ class Pet extends Object2d {
                 this.stats.is_misbehaving &&
                 (this.stats.current_hunger > this.stats.max_hunger / 2)
             ){
-                if(random(0, 100) >= 10) return true;
+                if(random(0, 100) >= 10) {
+                    this.showThought('thought_scribble');
+                    return true;
+                }
+            }
+
+            if(this.stats.has_toothache){
+                this.showThought('thought_toothbrush');
+                return true;
             }
 
             // checking for over feeding the same item
@@ -594,6 +618,15 @@ class Pet extends Object2d {
             foodSpriteCellNumber, 
             ...this.petDefinition.stats.last_eaten
         ].slice(0, App.constants.FEEDING_PICKINESS.bufferSize);
+
+        // give toothache if have eaten only snacks
+        const allFoodEntires = Object.entries(App.definitions.food).map(e => e[1]);
+        const treatsCount = this.petDefinition.stats.last_eaten.filter(
+            spriteNumber => allFoodEntires.find(
+                food => food.sprite === spriteNumber
+            ).type === 'treat'
+        ).length;
+        this.petDefinition.stats.has_toothache = treatsCount >= random(7, 8);
 
         Missions.done(Missions.TYPES.food);
 
@@ -1116,11 +1149,16 @@ class Pet extends Object2d {
             fun_min_desire, 'bored',
             stats.fun_satisfaction, 'amused'
         );
-        this.triggerMoodlet(
-            stats.current_health,
-            stats.max_health * 0.25, 'sick',
-            stats.max_health * 0.8, 'healthy'
-        );
+        if(stats.has_toothache) {
+            this.addMoodlet('sick');
+        } else {
+            this.removeMoodlet('sick');
+            this.triggerMoodlet(
+                stats.current_health,
+                stats.max_health * 0.25, 'sick',
+                stats.max_health * 0.8, 'healthy'
+            );
+        }
     }
     triggerMoodlet(current, min, minName, max, maxName){
         if(current < min){
@@ -1866,6 +1904,36 @@ class Pet extends Object2d {
                     switch(this.stateIndex % 2){
                         case 0: this.itemObject.y = '85%'; break;
                         case 1: this.itemObject.y = '80%'; break;
+                    }
+                    break;
+                case "8ball":
+                    if(!this.hasInit){
+                        this.hasInit = true;
+                        this.itemObject.x = '60%';
+                        this.itemObject.y = this.pet.y - (this.pet.petDefinition.spritesheet.offsetY || 0);
+                        this.itemObject.z = this.pet.z + 1;
+                        this.pet.x = '50%';
+                        this.pet.setState('idle');
+                        setTimeout(() => {
+                            App.displayConfirm(`Think of a question, <b>magic 8 ball</b> shall answer...`, [
+                                {
+                                    name: 'ask!',
+                                    onclick: () => {
+                                        this.isActivated = true;
+                                        this.pet.setState('shocked');
+                                        const msg = App.displayMessageBubble(App.getMagic8BallAnswer(), App.getItemCSprite(App.definitions.item['8ball'].sprite))
+                                        setTimeout(() => {
+                                            msg.close();
+                                            this.pet.stopScriptedState();
+                                        }, 5000);
+                                    }
+                                }
+                            ])
+                        }, 2000);
+                    }
+
+                    if(this.isActivated){
+                        this.itemObject.rotation = random(-30, 30);
                     }
                     break;
                 default:
