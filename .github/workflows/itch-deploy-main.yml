@@ -39,13 +39,12 @@ jobs:
         run: |
           zip -r itch-upload.zip . \
             -x "*.git*" \
+            -x "*.vscode/*" \
             -x "*README.md" \
             -x "*scripts/*" \
-            -x "*.vscode/*" \
-            -x "*.blog/*" \
-            -x "*.creator/*" \
-            -x "*.growth-chart/*" \
-            -x "*.DS_Store"
+            -x "*blog/*" \
+            -x "*creator/*" \
+            -x "*growth-chart/*"
   
       - name: Upload ZIP as downloadable artifact
         uses: actions/upload-artifact@v4
@@ -62,4 +61,4 @@ jobs:
         env:
           BUTLER_API_KEY: ${{ secrets.ITCH_BUTLER_API_KEY }}
         run: |
-          butler push itch-upload.zip samandev/tamaweb-staging:html5 --userversion ${{ steps.get_version.outputs.version }}
+          butler push itch-upload.zip samandev/tamaweb:html5 --userversion ${{ steps.get_version.outputs.version }}
