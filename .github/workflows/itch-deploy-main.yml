@@ -1,0 +1,38 @@
+name: Deploy to Itch.io
+
+# Trigger on push to gh-pages branch
+on:
+  workflow_dispatch: 
+  push:
+    branches:
+      - gh-pages
+
+jobs:
+  deploy-to-itch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create filtered ZIP archive
+        run: |
+          zip -r itch-upload.zip . \
+            -x "*.git*" \
+            -x "*README.md" \
+            -x "*scripts/*" \
+            -x "*.vscode/*" \
+            -x "*.blog/*" \
+            -x "*.creator/*" \
+            -x "*.growth-chart/*" \
+            -x "*.DS_Store"
+
+      - name: Install Butler
+        uses: jdno/setup-butler@v1
+
+      - name: Upload to Itch.io via Butler
+        env:
+          BUTLER_API_KEY: ${{ secrets.ITCH_BUTLER_API_KEY }}
+        run: |
+          # Replace 'YOUR_USERNAME' and 'YOUR_GAME_NAME' with your actual Itch.io project details
+          butler push itch-upload.zip samandev/3344413:html5 --userversion ${{ github.run_number }}
