@@ -17,6 +17,24 @@ jobs:
         env:
           FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
+      - name: Extract version from Version.js
+        id: get_version
+        run: |
+          # Find the Version.js file
+          VERSION_FILE=$(find . -name "Version.js" -type f | head -n 1)
+          
+          if [ -z "$VERSION_FILE" ]; then
+            exit 1
+          fi
+          
+          VERSION=$(grep -E "VERSION\s*=\s*'[0-9.]+'" "$VERSION_FILE" | sed -E "s/.*'([0-9.]+)'.*/\1/")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          
+          if [ -z "$VERSION" ]; then
+            echo "Could not extract version"
+            exit 1
+          fi
+
       - name: Create filtered ZIP archive
         run: |
           zip -r itch-upload.zip . \
@@ -29,6 +47,14 @@ jobs:
             -x "*.growth-chart/*" \
             -x "*.DS_Store"
   
+      - name: Upload ZIP as downloadable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: itch-upload
+          path: itch-upload.zip
+          retention-days: 30
+          if-no-files-found: error
+
       - name: Setup butler
         uses: remarkablegames/setup-butler@v3
 
@@ -36,4 +62,4 @@ jobs:
         env:
           BUTLER_API_KEY: ${{ secrets.ITCH_BUTLER_API_KEY }}
         run: |
-          butler push itch-upload.zip samandev/tamaweb-staging:html5 --userversion ${{ github.run_number }}
+          butler push itch-upload.zip samandev/tamaweb-staging:html5 --userversion ${{ steps.get_version.outputs.version }}
