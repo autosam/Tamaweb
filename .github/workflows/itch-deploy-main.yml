@@ -1,6 +1,5 @@
 name: itch-deploy-main
 
-# Trigger on push to gh-pages branch
 on:
   workflow_dispatch: 
   push:
@@ -14,8 +13,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: Extract version from Version.js
         id: get_version
@@ -27,7 +24,7 @@ jobs:
             exit 1
           fi
           
-          VERSION=$(grep -E "VERSION\s*=\s*'[0-9.]+'" "$VERSION_FILE" | sed -E "s/.*'([0-9.]+)'.*/\1/")
+          VERSION=$(grep -E "VERSION\s*=\s*['\"][0-9.]+['\"]" "$VERSION_FILE" | sed -E "s/.*['\"]([0-9.]+)['\"].*/\1/")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           
           if [ -z "$VERSION" ]; then
