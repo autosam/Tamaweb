@@ -178,7 +178,7 @@ const App = {
 
         // check for platforms
         if(location.host.indexOf('itch') !== -1) App.isOnItch = true;
-        if(navigator?.userAgent == 'electron-client') App.isOnElectronClient = true;
+        if(navigator?.userAgent?.includes('Electron')) App.isOnElectronClient = true;
 
         // init
         this.initSound();
