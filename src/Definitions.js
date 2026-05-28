@@ -2712,6 +2712,16 @@ App.definitions = (() => {
                     App.displayPopup(`You've received $200!`);
                 }
             },
+            perfect_minigame_foodknowledge_win_x_times: {
+                name: 'Cuisine Enthusiast',
+                description: 'Win in the Food knowledge game 20 times!',
+                checkProgress: () => App.getRecord('times_won_food_knowledge_minigame') >= 20,
+                advance: (amount) => App.addRecord('times_won_food_knowledge_minigame', amount),
+                getReward: () => {
+                    App.pet.stats.gold += 200;
+                    App.displayPopup(`You've received $200!`);
+                }
+            },
         },
     
         /* MAIL */

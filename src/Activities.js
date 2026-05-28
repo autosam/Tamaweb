@@ -5981,6 +5981,7 @@ class Activities {
     static async trickOrTreatGame(onEndCallback){
         App.closeAllDisplays();
         App.setScene(App.scene.devil_town_exterior)
+        App.sendAnalytics('minigame_trick_or_treat');
 
         const defaultGroundPositionY = App.drawer.bounds.height - (App.petDefinition.spritesheet.cellSize / 2);
 
@@ -6264,6 +6265,7 @@ class Activities {
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
         App.toggleGameplayControls(false, () => {}, false)
         App.playSound(`resources/sounds/note_4.mp3`, true);
+        App.sendAnalytics('minigame_leaves')
 
         App.pet.stopMove();
         App.pet.x = 9999;
@@ -6435,6 +6437,7 @@ class Activities {
         App.closeAllDisplays();
         App.setScene(App.scene.full_grass);
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.sendAnalytics('minigame_food_knowledge')
 
         const main = new TimelineDirector(App.pet);
         main.setPosition({
@@ -6500,6 +6503,9 @@ class Activities {
                 middleFn: () => {
                     foodObject.removeObject();
                     main.release();
+                    if(isCorrect){
+                        App.definitions.achievements.perfect_minigame_foodknowledge_win_x_times.advance();
+                    }
                     Activities.task_winMoneyFromArcade({
                         amount: isCorrect ? 50 : 0,
                         hasWon: isCorrect
