@@ -126,13 +126,11 @@ App.definitions = (() => {
                 name: "Mall",
                 image: 'resources/img/misc/activity_building_mall.png',
                 onEnter: () => Activities.goToMall(),
-                isNew: true,
             },
             {
                 name: "Market",
                 image: 'resources/img/misc/activity_building_market.png',
                 onEnter: () => Activities.goToMarket(),
-                isNew: true,
             },
             {
                 name: `Game Center`,
@@ -189,7 +187,7 @@ App.definitions = (() => {
                 name: `Post Office`,
                 image: 'resources/img/misc/activity_building_post_office.png',
                 onEnter: () => App.handlers.go_to_post_office(),
-                isNew: true,
+                isNew: false,
             }
         ],
     
@@ -486,21 +484,21 @@ App.definitions = (() => {
                 health_replenish: 10,
                 price: 40,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
-                isNew: true,
+                isNew: false,
             },
             "butter steak": {
                 sprite: 689,
                 hunger_replenish: 25,
                 price: 35,
                 age: [_ls.teen, _ls.adult, _ls.elder],
-                isNew: true,
+                isNew: false,
             },
             "stuffed pumpkin": {
                 sprite: 299,
                 hunger_replenish: 17,
                 price: 20,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
-                isNew: true,
+                isNew: false,
             },
 
             // cookable only
@@ -943,7 +941,7 @@ App.definitions = (() => {
                 health_replenish: -10,
                 price: 200,
                 type: 'med',
-                isNew: true,
+                isNew: false,
                 nonCraftable: true,
                 payload: () => {
                     App.petDefinition.stats.last_eaten = [];
@@ -1233,7 +1231,7 @@ App.definitions = (() => {
                 price: 400,
                 interaction_time: 15000,
                 interruptable: false,
-                isNew: true,
+                isNew: false,
                 logic_increase: 0.1,
             },
         },

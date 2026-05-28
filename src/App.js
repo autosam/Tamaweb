@@ -7059,7 +7059,15 @@ const App = {
             App.displayList([
                 {
                     _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.child,
-                    name: `guess the number ${App.getBadge()}`,
+                    name: `food knowledge ${App.getBadge()}`,
+                    onclick: () => {
+                        App.displayPopup(`Guess the food's name from its silhouette!`, tutorialDisplayTime, () => Activities.foodKnowledgeGame())
+                        return false;
+                    }
+                },
+                {
+                    _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.child,
+                    name: `guess the number`,
                     onclick: () => {
                         App.displayPopup(`Try guessing the correct number!`, tutorialDisplayTime, () => Activities.guessTheNumberGame())
                         return false;

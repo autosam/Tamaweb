@@ -6448,7 +6448,7 @@ class Activities {
             return shuffled.slice(0, amount);
         }
 
-        const foodOptions = getRandomFood(3);
+        const foodOptions = getRandomFood(4);
         const targetFoodItem = randomFromArray(foodOptions);
 
         const foodObject = new Object2d({
@@ -6501,7 +6501,7 @@ class Activities {
                     foodObject.removeObject();
                     main.release();
                     Activities.task_winMoneyFromArcade({
-                        amount: isCorrect ? 60 : 0,
+                        amount: isCorrect ? 50 : 0,
                         hasWon: isCorrect
                     })
                 }
