@@ -3304,9 +3304,11 @@ App.definitions = (() => {
             food: () => Object.keys(App.definitions.food)
                 .filter(key => App.definitions.food[key].price > 0)
                 .map(key => { 
+                    const definition = App.definitions.food[key];
                     return {
+                        definition,
                         name: key,
-                        icon: App.getFoodCSprite(App.definitions.food[key].sprite),
+                        icon: App.getFoodCSprite(definition.sprite),
                         count: [1, 4],
                         type: 'consumable',
                         onClaim: (amt) => {

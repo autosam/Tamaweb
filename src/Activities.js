@@ -6431,6 +6431,98 @@ class Activities {
 
         App.pet.triggerScriptedState('idle', App.INF, false, true, null, driverFn);
     }
+    static async foodKnowledgeGame(){
+        App.closeAllDisplays();
+        App.setScene(App.scene.full_grass);
+        App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+
+        const main = new TimelineDirector(App.pet);
+        main.setPosition({
+            x: '50%',
+        })
+
+        const getRandomFood = (amount = 1) => {
+            const allFoodItems = App.definitions.pools.food();
+            const meals = allFoodItems.filter(item => item.definition.type !== 'med');
+            const shuffled = shuffleArray(meals);
+            return shuffled.slice(0, amount);
+        }
+
+        const foodOptions = getRandomFood(3);
+        const targetFoodItem = randomFromArray(foodOptions);
+
+        const foodObject = new Object2d({
+            image: App.preloadedResources[App.constants.FOOD_SPRITESHEET],
+            spritesheet: {
+                ...App.constants.FOOD_SPRITESHEET_DIMENSIONS,
+                cellNumber: targetFoodItem.definition.sprite,
+            },
+            scale: 2,
+            x: '50%',
+            y: '40%',
+            z: App.pet.z + 10,
+            noPreload: true,
+            filter: `brightness(0)`,
+
+            movementFloat: 0,
+            movementStr: 4,
+            targetBrightness: 0,
+            currentBrightness: 0,
+            onLateDraw: (me) => {
+                if(!me.originalPosition){
+                    me.originalPosition = {x: me.x, y: me.y};
+                }
+
+                me.movementFloat += 0.0035 * App.deltaTime;
+                me.y = me.originalPosition.y + (Math.sin(me.movementFloat) * me.movementStr);
+                me.x = me.originalPosition.x + (Math.sin(me.movementFloat * .5) * me.movementStr);
+
+                me.currentBrightness = lerp(me.currentBrightness, me.targetBrightness, 0.005 * App.deltaTime);
+                me.filter = `brightness(${me.currentBrightness})`;
+            }
+        })
+
+        const handleSelectOption = async (selectedItemName) => {
+            const isCorrect = selectedItemName === targetFoodItem.name;
+            if(isCorrect){
+                main.setState('cheering');
+            } else {
+                main.setState('uncomfortable');
+            }
+            
+            foodObject.targetBrightness = 1;
+            await TimelineDirector.wait(1000);
+            const msgBubble = App.displayMessageBubble(targetFoodItem.name);
+            await TimelineDirector.wait(3000);
+            msgBubble.close();
+
+            App.fadeScreen({
+                middleFn: () => {
+                    foodObject.removeObject();
+                    main.release();
+                    Activities.task_winMoneyFromArcade({
+                        amount: isCorrect ? 60 : 0,
+                        hasWon: isCorrect
+                    })
+                }
+            })
+        }
+
+        App.toggleGameplayControls(false, () => {
+            App.displayList([
+                {
+                    name: 'What food is that?',
+                    type: 'text',
+                },
+                ...foodOptions.map(item => ({
+                    name: item.name,
+                    onclick: () => {
+                        handleSelectOption(item.name)
+                    }
+                }))
+            ])
+        })
+    }
 
     // school
     static async school_ExpressionGame({onEndFn, maxRounds = 3} = {}){
