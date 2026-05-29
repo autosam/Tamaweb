@@ -7068,7 +7068,8 @@ const App = {
             const backFn = () => {
                 App.handlers.open_activity_list(true);
             }
-            App.displayList([
+
+            const list = [
                 {
                     _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.child,
                     name: `food knowledge ${App.getBadge()}`,
@@ -7157,7 +7158,11 @@ const App = {
                 //         // return Activities.guessGame();
                 //     }
                 // },
-            ], backFn);
+            ];
+
+            list.sort((a, b) => Boolean(a._disable) - Boolean(b._disable));
+
+            App.displayList(list, backFn);
         },
         open_battle_screen: function(){
             Battle.start();
