@@ -1445,7 +1445,7 @@ App.definitions = (() => {
             },
             "frame": {
                 image: "resources/img/background/house/10.png",
-                price: 1000,
+                price: 391,
                 isNew: true,
                 condition: () => App.pet.stats.is_revived_once,
                 onLoad: () => {

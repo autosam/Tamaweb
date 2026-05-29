@@ -6868,7 +6868,8 @@ const App = {
                     room.unlockKey ? 
                     App.getRecord(room.unlockKey) : 
                     true;
-                return room.isNew && isUnlocked && !room.isCraftable;
+                const conditionMet = room.condition ? room.condition() : true;
+                return room.isNew && isUnlocked && !room.isCraftable && conditionMet;
             });
             const hasNewKitchenDecor = Object.keys(App.definitions.room_background).some(key => {
                 const room = App.definitions.room_background[key];
