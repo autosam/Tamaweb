@@ -1443,6 +1443,180 @@ App.definitions = (() => {
                 price: 350,
                 isNew: false,
             },
+            "frame": {
+                image: "resources/img/background/house/10.png",
+                price: 1000,
+                isNew: true,
+                condition: () => App.pet.stats.is_revived_once,
+                onLoad: () => {
+                    const parent = new Object2d({});
+
+                    const spawnedPets = [
+                        ...App.drawer.selectObjects('pet'),
+                        ...App.drawer.selectObjects('animal'),
+                    ]
+
+                    const spawnWatcher = ({x = '50%', y = '30%'}) => {
+                        const watcher = new Object2d({
+                            parent
+                        });
+                        const watcherImage = 'resources/img/misc/watcher_01.png';
+                        const spritesheet = {
+                            cellSize: 44,
+                            columns: 4,
+                            rows: 1,
+                        }
+                        let targetObject = App.pet;
+                        const baseConfig = {
+                            parent: watcher,
+                            x,
+                            y,
+                            img: watcherImage,
+                            localZ: 1,
+                            z: App.constants.BACKGROUND_Z + 0.01,
+                        }
+                        const layer0 = new Object2d({
+                            ...baseConfig,
+                            spritesheet: {
+                                ...spritesheet,
+                                cellNumber: 3,
+                            },
+                        })
+                        const layer1 = new Object2d({
+                            ...baseConfig,
+                            spritesheet: {
+                                ...spritesheet,
+                                cellNumber: 2,
+                            },
+                            nextTargetChangeMs: 0,
+                            onLateDraw: (me) => {
+                                if(!me.originalPosition){
+                                    me.originalPosition = {
+                                        x: me.x, 
+                                        y: me.y
+                                    }
+                                }
+
+                                if(App.time > me.nextTargetChangeMs){
+                                    me.nextTargetChangeMs = App.time + random(1000, 3000);
+                                    const randomPosition = {
+                                        x: random(-100, 100),
+                                        y: random(-100, 100),
+                                    };
+                                    const mainPetBasedPosition = {
+                                        x: App.pet.x + random(-20, 20),
+                                        y: App.pet.y + random(-5, 5)
+                                    }
+
+                                    const possibleTargets = [
+                                        ...spawnedPets,
+                                        ...spawnedPets,
+                                        ...spawnedPets,
+                                        ...spawnedPets,
+                                        ...spawnedPets,
+                                        ...spawnedPets,
+                                        mainPetBasedPosition,
+                                        mainPetBasedPosition,
+                                        mainPetBasedPosition,
+                                        randomPosition,
+                                    ]
+
+                                    targetObject = randomFromArray(possibleTargets);
+                                }
+
+                                if(isNaN(targetObject.x) || isNaN(targetObject.y)){
+                                    return;
+                                }
+
+                                const diff = subtractVector(me.originalPosition, targetObject);
+                                const normalized = normalizeVector(diff);
+
+                                const targetPosition = subtractVector(me.originalPosition, {
+                                    x: normalized.x * 10, y: normalized.y * 4
+                                });
+
+                                me.x = lerp(me.x, targetPosition.x, 0.003 * App.deltaTime);
+                                me.y = lerp(me.y, targetPosition.y, 0.003 * App.deltaTime);
+                            }
+                        })
+                        const layer3 = new Object2d({
+                            ...baseConfig,
+                            scale: 1,
+                            scaleY: 1,
+                            spritesheet: {
+                                ...spritesheet,
+                                cellNumber: 4,
+                            },
+                            nextEyelidOffsetChangeMs: App.time + 5000,
+                            nextBlinkMs: App.time + random(0, 1000),
+                            eyelidOffset: 0,
+                            closedAmount: 0,
+                            onDraw: (me) => {
+                                if(!me.originalPosition){
+                                    if(isNaN(me.x)) return;
+                                    
+                                    me.originalPosition = {
+                                        x: me.x, 
+                                        y: me.y
+                                    }
+                                }
+                                if(App.time > me.nextEyelidOffsetChangeMs){
+                                    me.nextEyelidOffsetChangeMs = App.time + random(250, 3000);
+                                    me.eyelidOffset = Math.random() + 1;
+                                }
+                                if(App.time > me.nextBlinkMs){
+                                    me.nextBlinkMs = App.time + random(500, 8000);
+                                    me.eyelidOffset = -1;
+                                    me.nextEyelidOffsetChangeMs = App.time + 100;
+                                }
+                                const size = me.spritesheet.cellSize;
+                                const closedAmount = (size / 2) * me.eyelidOffset;
+                                me.closedAmount = lerp(me.closedAmount, closedAmount, 0.01 * App.deltaTime);
+                                const {x, y} = me.originalPosition;
+                                me.clip = [
+                                    [x, y],
+                                    [x + size, 0],
+                                    [x + size, y + size - me.closedAmount],
+                                    [x, y + size - me.closedAmount],
+                                ];
+                            }
+                        })
+                        const layer2 = new Object2d({
+                            ...baseConfig,
+                            spritesheet: {
+                                ...spritesheet,
+                                cellNumber: 1,
+                            }
+                        })
+
+                        return watcher;
+                    }
+
+                    spawnWatcher({x: '40%', y: '12%'});
+                    spawnWatcher({x: '80%', y: '27%'});
+                    spawnWatcher({x: '45%', y: '45%'});
+
+                    if(!App.isRoomFurnishable()){
+                        const pillar = new Object2d({
+                            parent,
+                            img: 'resources/img/misc/watcher_pillar_01.png',
+                            x: 0,
+                            y: 0,
+                            localZ: 2,
+                            z: App.constants.BACKGROUND_Z + 0.3,
+                        })
+                    }
+
+
+                    App.temp.whiteRoomWatcherObject = parent;
+
+                    document.querySelector('.graphics-canvas').style.filter = 'grayscale(1) brightness(1.2) contrast(2.5)';
+                },
+                onUnload: () => {
+                    App.temp.whiteRoomWatcherObject?.removeObject();
+                    document.querySelector('.graphics-canvas').style.filter = '';
+                }
+            },
 
             // craftables
             "collage": {

@@ -1372,6 +1372,12 @@ const App = {
 
                 App.handleFurnitureSpawn();
                 App.handleAnimalsSpawn(true);
+
+                const currentBackgroundId = App.background.imageSrc.split('/').slice(-1)[0];
+                App.temp.homeCurrentBackgroundDef = Object
+                    .entries(App.definitions.room_background)
+                    .find(([_, def]) => def.image.endsWith(currentBackgroundId))?.[1];
+                App.temp.homeCurrentBackgroundDef?.onLoad?.();
             },
             onUnload: () => {
                 App.drawer.selectObjects('poop').forEach(p => p.absHidden = true);
@@ -1382,6 +1388,7 @@ const App = {
                 this.christmasTree?.removeObject();
                 App.handleFurnitureSpawn(null, true);
                 App.handleAnimalsSpawn(false);
+                App.temp.homeCurrentBackgroundDef?.onUnload?.();
             }
         }),
         kitchen: new Scene({
@@ -5052,6 +5059,11 @@ const App = {
 
                 // check for unlockables
                 if(current.unlockKey && !App.getRecord(current.unlockKey)){
+                    continue;
+                }
+
+                // check for condition
+                if(current.condition && !current.condition()){
                     continue;
                 }
 

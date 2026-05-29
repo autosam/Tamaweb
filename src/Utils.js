@@ -321,7 +321,7 @@ function normalizeVector({ x, y }) {
     const magnitude = Math.sqrt(x * x + y * y);
 
     if (magnitude === 0) {
-    return { x: 0, y: 0 };
+        return { x: 0, y: 0 };
     }
 
     return {
@@ -329,6 +329,18 @@ function normalizeVector({ x, y }) {
         y: y / magnitude
     };
 }
+const subtractVector = (a, b) => ({
+    x: a.x - b.x,
+    y: a.y - b.y
+})
+const addVector = (a, b) => ({
+    x: a.x + b.x,
+    y: a.y + b.y
+})
+const multVector = (a, mult) => ({
+    x: a.x * mult,
+    y: a.y * mult
+})
 
 
 const wordBank = {
