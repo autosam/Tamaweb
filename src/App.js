@@ -1,6 +1,6 @@
 const App = {
     PI2: Math.PI * 2, INF: 999999999,
-    deltaTime: 0, lastTime: 0, playTime: 0, hour: 12, accurateDeltaTime: 0,
+    time: 0, deltaTime: 0, lastTime: 0, playTime: 0, hour: 12, accurateDeltaTime: 0,
     mouse: { x: 0, y: 0, isInBounds : false },
     userId: '_', userName: null, sessionId: Math.round(Math.random() * 9999999999),
     ENV: location.port == 5500 ? 'dev' : 'prod', isOnItch: false, isOnElectronClient: false,
@@ -485,6 +485,9 @@ const App = {
                 y >= 0 &&
                 x < canvas.width &&
                 y < canvas.height;
+
+            App.mouse.absX = x;
+            App.mouse.absY = y;
 
             App.mouse.x = Math.max(0, Math.min(x, canvas.width));
             App.mouse.y = Math.max(0, Math.min(y, canvas.height));

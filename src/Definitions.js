@@ -1449,7 +1449,10 @@ App.definitions = (() => {
                 isNew: true,
                 condition: () => App.pet.stats.is_revived_once,
                 onLoad: () => {
-                    const parent = new Object2d({});
+                    const parent = new Object2d({
+                        x: 0,
+                        y: 0,
+                    });
 
                     const spawnedPets = [
                         ...App.drawer.selectObjects('pet'),
@@ -1458,7 +1461,9 @@ App.definitions = (() => {
 
                     const spawnWatcher = ({x = '50%', y = '30%'}) => {
                         const watcher = new Object2d({
-                            parent
+                            parent,
+                            x: 0,
+                            y: 0,
                         });
                         const watcherImage = 'resources/img/misc/watcher_01.png';
                         const spritesheet = {
@@ -1474,6 +1479,7 @@ App.definitions = (() => {
                             img: watcherImage,
                             localZ: 1,
                             z: App.constants.BACKGROUND_Z + 0.01,
+                            isRelative: true,
                         }
                         const layer0 = new Object2d({
                             ...baseConfig,
@@ -1495,6 +1501,14 @@ App.definitions = (() => {
                                         x: me.x, 
                                         y: me.y
                                     }
+                                }
+
+                                if(App.mouse.isDown){
+                                    targetObject = {
+                                        x: App.mouse.absX,
+                                        y: App.mouse.absY,
+                                    }
+                                    me.nextTargetChangeMs = App.time + random(1000, 3000);
                                 }
 
                                 if(App.time > me.nextTargetChangeMs){
@@ -1565,7 +1579,7 @@ App.definitions = (() => {
                                     me.eyelidOffset = Math.random() + 1;
                                 }
                                 if(App.time > me.nextBlinkMs){
-                                    me.nextBlinkMs = App.time + random(500, 8000);
+                                    me.nextBlinkMs = App.time + random(300, 8000);
                                     me.eyelidOffset = -1;
                                     me.nextEyelidOffsetChangeMs = App.time + 100;
                                 }
@@ -1579,6 +1593,7 @@ App.definitions = (() => {
                                     [x + size, y + size - me.closedAmount],
                                     [x, y + size - me.closedAmount],
                                 ];
+                                me.y = layer3.eyelidOffset < 0 ? me.originalPosition.y + 1 : me.originalPosition.y;
                             }
                         })
                         const layer2 = new Object2d({
@@ -1586,6 +1601,16 @@ App.definitions = (() => {
                             spritesheet: {
                                 ...spritesheet,
                                 cellNumber: 1,
+                            },
+                            onLateDraw: (me) => {
+                                if(!me.originalPosition){
+                                    me.originalPosition = {
+                                        x: me.x,
+                                        y: me.y
+                                    }
+                                }
+
+                                me.y = layer3.eyelidOffset < 0 ? me.originalPosition.y + 1 : me.originalPosition.y;
                             }
                         })
 

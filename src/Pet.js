@@ -1026,12 +1026,13 @@ class Pet extends Object2d {
             for(let i = 0; i < poopObjectsToBeSpawned; i++){
                 const position = App.constants.POOP_POSITIONS.at(i + spawnedPoopObjects.length);
                 if(!position) break;
-                new Object2d({
+                const poopObject = new Object2d({
                     image: App.preloadedResources["resources/img/misc/poop.png"],
                     ...position,
                     selector: 'poop',
                     onDraw: (me) => {
                         Object2d.animations.flip(me, 300);
+                        this.setLocalZBasedOnSelf(poopObject);
                     }
                 })
             }
@@ -1043,10 +1044,8 @@ class Pet extends Object2d {
             stats.current_cleanliness = 0;
         }
         if(stats.current_cleanliness <= 25){
-            // App.pet.dirtyPatches = true;
             this.dirtyOverlay.hidden = false;
         } else {
-            // App.pet.dirtyPatches = false;
             this.dirtyOverlay.hidden = true;
         }
         if(this.stats.has_poop_out || !this.dirtyOverlay.hidden){ // gradually decrease health if poop is nearby or dirty
