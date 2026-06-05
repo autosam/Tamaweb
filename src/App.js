@@ -14,6 +14,7 @@ const App = {
     ownedFurniture: [], 
     plants: [],
     animals: { treat: null, list: [], nextAttractMs: 0, treatBiteCount: 0 },
+    preloadedResources: {},
 
     settings: {
         screenSize: 1,
@@ -243,7 +244,6 @@ const App = {
             ...NPC_CHARACTERS,
             ...ANIMAL_CHARACTERS,
         ];
-        this.preloadedResources = {};
         const preloadedResources = await this.preloadImages(forPreload);
         preloadedResources.forEach((resource, i) => {
             // let name = forPreload[i].slice(forPreload[i].lastIndexOf('/') + 1);
@@ -710,11 +710,24 @@ const App = {
         if(typeof mods !== 'object' || !mods || !mods.length) return;
         App.mods = mods;
         App.mods.forEach(mod => {
-            if(mod.replaced_resources){
-                mod.replaced_resources.forEach(([source, target]) => {
-                    App.resourceOverrides[source] = target;
-                })
-            }
+            mod.replaced_resources?.forEach(([source, target]) => {
+                App.resourceOverrides[source] = target;
+            })
+            mod.added_resources?.forEach(resource => {
+                switch(resource.type){
+                    case "char":
+                        resource.resId = `${mod.id}_${resource.id}`;
+
+                        App.resourceOverrides[resource.resId] = resource.sprite;
+
+                        if(resource.lifeStage === 'baby') PET_BABY_CHARACTERS.push(resource.resId);
+                        else if(resource.lifeStage === 'teen') PET_TEEN_CHARACTERS.push(resource.resId);
+                        else if(resource.lifeStage === 'child') PET_CHILD_CHARACTERS.push(resource.resId);
+                        else if(resource.lifeStage === 'elder') PET_ELDER_CHARACTERS.push(resource.resId);
+                        else PET_ADULT_CHARACTERS.push(resource.resId);
+                    break;
+                }
+            })
         })
     },
     handleFileLoad: function(inputElement, readType = 'readAsDataURL', onLoad){
@@ -8360,6 +8373,7 @@ const App = {
             .then(() => App.temp.lastSaved = App.time)
             .catch((e) => {
                 setTimeout(() => App.temp.lastSaved = App.time, 5000);
+                console.error(e);
                 App.sendErrorLog(`idbKeyval-setMany: ${e}`);
             });
     },

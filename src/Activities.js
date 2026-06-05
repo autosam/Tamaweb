@@ -4601,6 +4601,8 @@ class Activities {
             otherPet.stopMove();
             App.pet.stopMove();
 
+            App.save();
+
             Activities.task_foam(
             () => {
                 App.setScene(App.currentScene, true);
