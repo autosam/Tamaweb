@@ -2747,8 +2747,7 @@ const App = {
                     App.vibrate();
             }
             if(App.disableGameplayControls || App.settings.classicMainMenuUI) {
-                runControlOverwrite();
-                return;
+                return runControlOverwrite();
             }
             UI.lastClickedButton = null;
             App.playSound(`resources/sounds/ui_click_06.ogg`, true);
@@ -7084,6 +7083,14 @@ const App = {
                 },
                 {
                     _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.child,
+                    name: `picture puzzle ${App.getBadge()}`,
+                    onclick: () => {
+                        App.displayPopup(`Slide each piece into the correct position to complete the picture!`, tutorialDisplayTime, () => Activities.imagePuzzleGame())
+                        return false;
+                    }
+                },
+                {
+                    _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.child,
                     name: `guess the number`,
                     onclick: () => {
                         App.displayPopup(`Try guessing the correct number!`, tutorialDisplayTime, () => Activities.guessTheNumberGame())
@@ -7953,7 +7960,7 @@ const App = {
             ? `<div style="width: 1"><img style="width: 36px; outline: none" src="${image}"></img></div>`
             : `<c-sprite width="64" height="36" index="0" src="${image}"></c-sprite>`;
     },
-    getGenericCSprite: function(index, spritesheet, dimensions, className = '', additional = ''){
+    getGenericCSprite: function(index, spritesheetImg, dimensions, className = '', additional = ''){
         const size = dimensions.rows * dimensions.cellSize;
         return `<c-sprite 
             naturalWidth="${size}" 
@@ -7962,7 +7969,7 @@ const App = {
             height="${dimensions.cellSize}" 
             index="${(index - 1)}" 
             class="${className}"
-            src="${spritesheet}"
+            src="${spritesheetImg}"
             ${additional}></c-sprite>`;
     },
     getTraitCSprite: (traitName, className = 'icon') => {

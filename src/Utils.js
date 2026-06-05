@@ -69,6 +69,12 @@ const random = function(min, max, seeded){
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+function isAdjacent(ax, ay, bx, by) {
+    return (
+        (Math.abs(ax - bx) === 1 && ay === by) ||
+        (Math.abs(ay - by) === 1 && ax === bx)
+    );
+}
 const move = function(s, e, amount){
     if(s > e) {
         s -= amount;

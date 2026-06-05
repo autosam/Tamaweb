@@ -6493,6 +6493,7 @@ class Activities {
                 main.setState('uncomfortable');
             }
             
+            App.toggleGameplayControls(false);
             foodObject.targetBrightness = 1;
             await TimelineDirector.wait(1000);
             const msgBubble = App.displayMessageBubble(targetFoodItem.name);
@@ -6528,6 +6529,215 @@ class Activities {
                 }))
             ])
         })
+    }
+    static async imagePuzzleGame(){
+        App.closeAllDisplays();
+        App.setScene(App.scene.arcade_game01);
+        App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.sendAnalytics('minigame_image_puzzle');
+        App.toggleGameplayControls(false, () => {}, false);
+
+        const TILE_SIZE = 3;
+        const CELL_SIZE = 32;
+        let emptyPos = { x: 0, y: 0 }; // top-left starts empty
+        let grid = [];
+        const image = randomFromArray([
+            'resources/img/background/house/devil_town_01.png',
+            'resources/img/background/house/music_classroom_01.png',
+            'resources/img/background/house/cc_04.png',
+            'resources/img/background/house/c_01.png',
+            'resources/img/background/house/cc_02.png',
+            'resources/img/background/house/cc_06.png',
+            'resources/img/background/house/beach_01.png',
+            'resources/img/background/house/parents_house_01.png',
+            'resources/img/background/house/ex_01_fs.png',
+            'resources/img/background/house/post_office_01.png',
+        ]);
+
+        const parent = new Object2d({
+            img: 'resources/img/misc/image_puzzle_bg.png',
+            ...App.drawer.bounds,
+        });
+
+        const main = new TimelineDirector(App.pet);
+        main.setPosition({x: 999});
+
+        const onEnd = (hasWon) => {
+            main.setPosition({x: '50%'});
+            main.release();
+            App.toggleGameplayControls(true);
+            parent.removeObject();
+            closeBtn.remove();
+            if(hasWon){
+                App.definitions.achievements.perfect_minigame_imagepuzzle_win_x_times.advance();
+            }
+            Activities.task_winMoneyFromArcade({
+                hasWon,
+                amount: hasWon ? 10 * random(16, 20) : 0,
+            })
+        }
+
+        const closeBtn = UI.create({
+            parent: document.querySelector('.screen-wrapper'),
+            componentType: 'button',
+            className: 'mini-game-ui',
+            innerHTML: App.getIcon('sign-out', true),
+            style: "position: absolute;right: 0;top: 0;padding: 2px;",
+            onclick: () => {
+                App.displayConfirm(...GenericUIDef.binaryConfirm({
+                    text: 'Exit the game?',
+                    onAccept: () => {
+                        onEnd();
+                    }
+                }))
+            }
+        })
+
+        // generate and shuffle positions
+        const positions = [];
+        for (let i = 0; i < TILE_SIZE * TILE_SIZE; i++) {
+            if (i === 0) continue;
+            positions.push(i + 1);
+        }
+        const shuffledPositions = shuffleArray(positions);
+        // const shuffledPositions = positions;
+
+        const displayOverlayImage = (isFinal) => {
+            return new Object2d({
+                parent,
+                img: image,
+                x: 0,
+                y: 0,
+                z: 99999,
+                spawnTime: App.time,
+                filter: isFinal ? false : 'saturate(0.5)',
+                onDraw: (me) => {
+                    if(App.time > me.spawnTime + 2000){
+                        helpObject.hasHelperImage = false;
+                        return me.removeObject();
+                    }
+
+                    const time = App.time - me.spawnTime;
+                    me.opacity = 0.5 + (Math.sin(time * 0.005));
+                    if(isFinal) me.opacity = 1;
+                },
+            })
+        }
+        const checkWin = () => {
+            let expected = 1;
+
+            for (let y = 0; y < TILE_SIZE; y++) {
+                for (let x = 0; x < TILE_SIZE; x++) {
+
+                    if (x === 0 && y === 0) continue; // empty slot
+
+                    const tile = grid[y][x];
+
+                    if (!tile) return false;
+
+                    if (tile.spritesheet.cellNumber - 1 !== expected) {
+                        return false;
+                    }
+
+                    expected++;
+                }
+            }
+
+            setTimeout(() => onEnd(true), 2000);
+            displayOverlayImage(true);
+
+            return true;
+        }
+        const helpObject = new Object2d({
+            parent,
+            width: CELL_SIZE,
+            height: CELL_SIZE,
+            img: 'resources/img/misc/help_circle.png',
+            x: 0, y: 0,
+            spawnTime: App.time,
+            onDraw: (me) => {
+                me.x = emptyPos.x * CELL_SIZE;
+                me.y = emptyPos.y * CELL_SIZE;
+
+                const time = App.time - me.spawnTime;
+                me.opacity = 0.2 + Math.abs(Math.sin(time * 0.002));
+
+                if(me.hasHelperImage) me.opacity = 0;
+            },
+            onClick: () => {
+                if(App.haveAnyDisplays()) return;
+                if(helpObject.hasHelperImage) return;
+                helpObject.hasHelperImage = true;
+                displayOverlayImage();
+                App.playSound('resources/sounds/ui_click_06.ogg', true);
+            }
+        })
+
+        let index = 0;
+        for (let y = 0; y < TILE_SIZE; y++) {
+            grid[y] = [];
+            for (let x = 0; x < TILE_SIZE; x++) {
+                // empty slot
+                if (x === 0 && y === 0) {
+                    grid[y][x] = null;
+                    continue;
+                }
+
+                const cellNumber = shuffledPositions[index++];
+                
+                const tileObject = new Object2d({
+                    parent,
+                    img: image,
+                    spritesheet: {
+                        rows: TILE_SIZE,
+                        columns: TILE_SIZE,
+                        cellSize: CELL_SIZE,
+                        cellNumber: cellNumber,
+                    },
+                    x: x * CELL_SIZE,
+                    y: y * CELL_SIZE,
+                    onDraw: (me) => {
+                        if(!isNaN(me.targetX)) me.x = lerp(me.x, me.targetX, 0.025 * App.deltaTime);
+                        if(!isNaN(me.targetY)) me.y = lerp(me.y, me.targetY, 0.025 * App.deltaTime);
+                    },
+                    onClick: () => {
+                        if(App.haveAnyDisplays()) return;
+
+                        const tile = tileObject;
+                        const { gridX, gridY } = tile;
+
+                        const ex = emptyPos.x;
+                        const ey = emptyPos.y;
+
+                        if (!isAdjacent(gridX, gridY, ex, ey)) {
+                            App.playSound('resources/sounds/ui_click_04.ogg', true);
+                            return;
+                        }
+
+                        tile.targetX = ex * CELL_SIZE;
+                        tile.targetY = ey * CELL_SIZE;
+
+                        grid[ey][ex] = tile;
+                        grid[gridY][gridX] = null;
+
+                        tile.gridX = ex;
+                        tile.gridY = ey;
+
+                        emptyPos.x = gridX;
+                        emptyPos.y = gridY;
+
+                        App.playSound('resources/sounds/swoosh_01.ogg', true);
+
+                        checkWin();
+                    }
+                });
+
+                tileObject.gridX = x;
+                tileObject.gridY = y;
+
+                grid[y][x] = tileObject;
+            }
+        }
     }
 
     // school

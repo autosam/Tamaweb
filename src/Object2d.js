@@ -36,8 +36,8 @@ class Object2d {
             this.onClick = () => {
                 App.mouse.isDown = false;
                 App.preventNextGameplayControl = true;
-                App.playSound('resources/sounds/ui_click_06.ogg', true);
-                App.vibrate();
+                // App.playSound('resources/sounds/ui_click_06.ogg', true);
+                // App.vibrate();
                 this.config.onClick?.();
             }
         }
@@ -77,6 +77,10 @@ class Object2d {
         this.image.onload = () => { 
             this.image = this.applyColorOverrides(this.image);
         }
+    }
+    clearImage(){
+        this.image.src = undefined;
+        this.imageSrc = undefined;
     }
     applyColorOverrides(image) {
         const allColorOverrides = [

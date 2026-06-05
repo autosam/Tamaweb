@@ -2921,6 +2921,16 @@ App.definitions = (() => {
                     App.displayPopup(`You've received $200!`);
                 }
             },
+            perfect_minigame_imagepuzzle_win_x_times: {
+                name: 'Tilemaster',
+                description: 'Win in the Picture Puzzle game 5 times!',
+                checkProgress: () => App.getRecord('times_won_image_puzzle_minigame') >= 5,
+                advance: (amount) => App.addRecord('times_won_image_puzzle_minigame', amount),
+                getReward: () => {
+                    App.pet.stats.gold += 500;
+                    App.displayPopup(`You've received $500!`);
+                }
+            },
         },
     
         /* MAIL */
