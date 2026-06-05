@@ -1900,7 +1900,7 @@ a.generic-btn:before {
     content: "\f08e";
     left: 10px;
     position: absolute;
-    font-family: "Font Awesome 6 Free";
+    font-family: "FontAwesome";
     font-size: xx-small;
     padding: 2px;
     border-radius: 100%;
@@ -2398,7 +2398,7 @@ a.generic-btn:before {
     position: absolute;
     z-index: 3;
     pointer-events: none;
-    font-family: "Font Awesome 6 Free";
+    font-family: "FontAwesome";
     font-size: 11px;
     animation: scrollable-indicator-anim 0.55s infinite alternate-reverse ease-in-out;
     color: var(--prim-clr-b-text);
@@ -2549,7 +2549,7 @@ a.generic-btn:before {
     position: relative;
 }
 .seller-analysis:after {
-    font-family: "Font Awesome 6 Free";
+    font-family: "FontAwesome";
     font-size: x-small;
     position: absolute;
     top: 25%;
