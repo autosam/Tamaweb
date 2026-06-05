@@ -236,11 +236,7 @@ const App = {
         // handle preloading
         const forPreload = [
             ...SPRITES,
-            ...PET_ELDER_CHARACTERS,
-            ...PET_ADULT_CHARACTERS,
-            ...PET_TEEN_CHARACTERS,
-            ...PET_CHILD_CHARACTERS,
-            ...PET_BABY_CHARACTERS,
+            ...ALL_PLAYABLE_CHARACTERS,
             ...NPC_CHARACTERS,
             ...ANIMAL_CHARACTERS,
         ];
@@ -709,26 +705,44 @@ const App = {
     loadMods: function(mods){
         if(typeof mods !== 'object' || !mods || !mods.length) return;
         App.mods = mods;
+
+        const handleAddedResource = (modId, resource) => {
+            switch(resource.type){
+                case "char":
+                    resource.resId = `${modId}_${resource.id}`;
+
+                    App.resourceOverrides[resource.resId] = resource.sprite;
+
+                    if(resource.lifeStage === 'baby') PET_BABY_CHARACTERS.push(resource.resId);
+                    else if(resource.lifeStage === 'teen') PET_TEEN_CHARACTERS.push(resource.resId);
+                    else if(resource.lifeStage === 'child') PET_CHILD_CHARACTERS.push(resource.resId);
+                    else if(resource.lifeStage === 'elder') PET_ELDER_CHARACTERS.push(resource.resId);
+                    else PET_ADULT_CHARACTERS.push(resource.resId);
+                break;
+            }
+        }
+
         App.mods.forEach(mod => {
-            mod.replaced_resources?.forEach(([source, target]) => {
+            mod.replaced_resources?.forEach(([source, target], index) => {
                 App.resourceOverrides[source] = target;
-            })
-            mod.added_resources?.forEach(resource => {
-                switch(resource.type){
-                    case "char":
-                        resource.resId = `${mod.id}_${resource.id}`;
 
-                        App.resourceOverrides[resource.resId] = resource.sprite;
-
-                        if(resource.lifeStage === 'baby') PET_BABY_CHARACTERS.push(resource.resId);
-                        else if(resource.lifeStage === 'teen') PET_TEEN_CHARACTERS.push(resource.resId);
-                        else if(resource.lifeStage === 'child') PET_CHILD_CHARACTERS.push(resource.resId);
-                        else if(resource.lifeStage === 'elder') PET_ELDER_CHARACTERS.push(resource.resId);
-                        else PET_ADULT_CHARACTERS.push(resource.resId);
-                    break;
+                if(ALL_PLAYABLE_CHARACTERS.includes(source)){
+                    if(!App.temp.convertedModAddedResources) App.temp.convertedModAddedResources = [];
+                    const targetLifeStage = PetDefinition.getLifeStage(source);
+                    App.temp.convertedModAddedResources.push({
+                        id: source,
+                        sprite: target,
+                        lifeStage: getKeyByValue(PetDefinition.LIFE_STAGE, PetDefinition.getLifeStage(source)),
+                        name: `${mod.name} #${index}`,
+                        modId: mod.id,
+                        type: 'char',
+                    })
                 }
             })
+            mod.added_resources?.forEach(resource => handleAddedResource(mod.id, resource));
         })
+
+        App.temp.convertedModAddedResources?.forEach(resource => handleAddedResource(resource.modId, resource));
     },
     handleFileLoad: function(inputElement, readType = 'readAsDataURL', onLoad){
         inputElement.onchange = () => {
@@ -2970,6 +2984,62 @@ const App = {
                         App.handlers.open_craftables_list();
                         return true;
                     }
+                },
+                {
+                    _ignore: !App.mods.some(mod => mod.added_resources.some(res => res.type === 'char')),
+                    name: `change character ${App.getBadge("Modded")}`,
+                    onclick: () => {
+                        if(App.settings.automaticAging){
+                            return App.displayPopup('Turn <b>Auto aging <span style="color: red;">off</span></b> in the gameplay settings to be able to use this feature.');
+                        }
+
+                        const chars = [];
+                        const addResourceChar = (resource, index) => {
+                            chars.push({
+                                def: new PetDefinition({
+                                    sprite: resource.sprite,
+                                }),
+                                name: resource.name || `#${index}`,
+                                src: resource.resId,
+                            })
+                        }
+                        const changeCharacter = (src) => {
+                            Activities.getDressed(
+                                () => {
+                                    App.petDefinition.sprite = src;
+                                    App.petDefinition.prepareSprite();
+                                    App.pet.recreateAsMainPet();
+                                },
+                                false, true
+                            )
+                        }
+
+                        App.mods.forEach(mod => {
+                            mod.added_resources?.forEach(addResourceChar);
+                        })
+
+                        App.temp.convertedModAddedResources?.forEach(addResourceChar);
+
+                        const items = chars.map(char => ({
+                            name: `${char.def.getCSprite()} <span class="ellipsis">${char.name}</span>`,
+                            onclick: () => {
+                                return App.displayConfirm(...GenericUIDef.binaryConfirm({
+                                    text: `Are you sure you want to change your character? <br>${char.def.getFullCSprite()}`,
+                                    onAccept: () => {
+                                        changeCharacter(char.src);
+                                    },
+                                }))
+                            }
+                        }))
+
+                        return App.displayList([
+                            {
+                                name: `Here you will be able to view and change into characters from your installed mods.<br><br><div style="color: red;">Keep in mind that this action is not reversible, <b class="blink">backup your save file</b> before continuing.</div>`,
+                                type: 'info',
+                            },
+                            ...items,
+                        ]);
+                    }
                 }
             ], null, 'Stuff')
         },
@@ -4064,13 +4134,7 @@ const App = {
             App.handlers.add_active_pet_to_collection();
 
             let unlockedCount = 0;
-            const allCharacters = [
-                ...PET_BABY_CHARACTERS,
-                ...PET_CHILD_CHARACTERS,
-                ...PET_TEEN_CHARACTERS,
-                ...PET_ADULT_CHARACTERS,
-                ...PET_ELDER_CHARACTERS,
-            ];
+            const allCharacters = ALL_PLAYABLE_CHARACTERS;
             const charactersDef = allCharacters.map(char => {
                 const charCode = PetDefinition.getCharCode(char);
                 const isUnlocked = App.getEvent(`${App.constants.CHAR_UNLOCK_PREFIX}_${charCode}`)

@@ -430,3 +430,11 @@ const ANIMAL_CHARACTERS = [
     "resources/img/animal/other_04.png",
     "resources/img/animal/other_05.png",
 ];
+
+const ALL_PLAYABLE_CHARACTERS = [
+    ...PET_BABY_CHARACTERS,
+    ...PET_CHILD_CHARACTERS,
+    ...PET_TEEN_CHARACTERS,
+    ...PET_ADULT_CHARACTERS,
+    ...PET_ELDER_CHARACTERS,
+]

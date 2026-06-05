@@ -691,12 +691,12 @@ class PetDefinition {
 
     getCSprite(noMargin){
         const className = PetDefinition.getSpriteClassName(this);
-        return PetDefinition.generateCSprite(this.sprite, noMargin, className);
+        return PetDefinition.generateCSprite(this.spriteSkin || this.sprite, noMargin, className);
     }
 
     getFullCSprite(){
         const className = PetDefinition.getSpriteClassName(this);
-        return PetDefinition.generateFullCSprite(this.sprite, null, className);
+        return PetDefinition.generateFullCSprite(this.spriteSkin || this.sprite, null, className);
     }
 
     getAvatar(){

@@ -1426,6 +1426,9 @@ class Pet extends Object2d {
     }
     ageUp(){
         this.petDefinition.ageUp()
+        this.recreateAsMainPet();
+    }
+    recreateAsMainPet(){
         this.removeObject();
         App.pet = App.createActivePet(this.petDefinition);
     }

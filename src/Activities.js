@@ -3863,7 +3863,7 @@ class Activities {
         App.pet.playCheeringAnimationIfTrue(cheer, () => {
             App.pet.stats.current_expression += 2;
             App.toggleGameplayControls(true);
-            onEndFn();
+            if(onEndFn) onEndFn();
         });
     }
     static async pet(){

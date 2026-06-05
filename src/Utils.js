@@ -75,6 +75,9 @@ function isAdjacent(ax, ay, bx, by) {
         (Math.abs(ay - by) === 1 && ax === bx)
     );
 }
+function getKeyByValue(obj, value) {
+  return Object.keys(obj).find(key => obj[key] === value);
+}
 const move = function(s, e, amount){
     if(s > e) {
         s -= amount;
