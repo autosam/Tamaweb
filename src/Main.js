@@ -22,6 +22,9 @@ class SpriteElement extends HTMLElement {
         this.image.style.objectFit = "none";
         this.image.style.objectPosition = `-${x + posX}px -${y + posY}px`;
         this.image.style.imageRendering = 'pixelated';
+        this.image.onerror = () => {
+            this.image.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAFBhaW50Lk5FVCA1LjEuNBLfpoMAAAC2ZVhJZklJKgAIAAAABQAaAQUAAQAAAEoAAAAbAQUAAQAAAFIAAAAoAQMAAQAAAAIAAAAxAQIAEAAAAFoAAABphwQAAQAAAGoAAAAAAAAAYAAAAAEAAABgAAAAAQAAAFBhaW50Lk5FVCA1LjEuNAADAACQBwAEAAAAMDIzMAGgAwABAAAAAQAAAAWgBAABAAAAlAAAAAAAAAACAAEAAgAEAAAAUjk4AAIABwAEAAAAMDEwMAAAAADX5rshveZftAAAADNJREFUOE9jZGBg+M+ABxzHL83AhC5AKhg1YDAYwHic4T/eiLZkYEQXQgEUu2DUgMFgAABKkwXjX3A3rgAAAABJRU5ErkJggg==';
+        }
     }
     connectedCallback() {
         this.updateImage();
