@@ -38,6 +38,7 @@ const App = {
         playMusic: true,
         skillsAffectingEvolution: true,
         season: 'auto',
+        tapEffect: true,
     },
     constants: {
         ONE_HOUR: 1000 * 60 * 60,
@@ -578,6 +579,42 @@ const App = {
             document.querySelector('.screen-wrapper'), 
             {childList: true, subtree: false}
         );
+
+        // tap cursor
+        const spawnCursorElement = (x, y, scale = 1) => {
+            const animationTime = random(250, 450);
+            const currentCursorElement = UI.ce({
+                componentType: 'div',
+                className: 'cursor',
+            })
+            currentCursorElement.style.top = `${y}px`;
+            currentCursorElement.style.left = `${x}px`;
+            currentCursorElement.style.rotate = `${random(0, 90)}deg`;
+            currentCursorElement.style.scale = scale;
+            currentCursorElement.style.animationDuration = `${animationTime}ms`;
+            document.body.appendChild(currentCursorElement);
+            setTimeout(() => currentCursorElement.remove(), animationTime);
+            return currentCursorElement;
+        }
+        document.addEventListener('click', (evt) => {
+            if(!App.settings.tapEffect) return;
+
+            const origin = {
+                x: evt.clientX,
+                y: evt.clientY
+            }
+
+            const maxPoints = 3, radius = 10, startingOffset = Math.random();
+            for(let i = 0; i < maxPoints; i++){
+                const currentPoint = (i + startingOffset) * (Math.PI * 2) / maxPoints;
+                const circleVector = {
+                    x: Math.sin(currentPoint) * radius,
+                    y: Math.cos(currentPoint) * radius,
+                }
+                const spawnPosition = addVector(origin, circleVector);
+                spawnCursorElement(spawnPosition.x, spawnPosition.y, random(3, 6) * 0.1);
+            }
+        })
     },
     sendSessionEvent: function(login){
         if(login){
@@ -3585,7 +3622,7 @@ const App = {
                     }
                 },
                 {
-                    name: `system settings`,
+                    name: `system settings ${App.getBadge()}`,
                     onclick: () => {
                         App.displayList([
                             {
@@ -3618,6 +3655,14 @@ const App = {
                                     App.settings.classicMainMenuUI = !App.settings.classicMainMenuUI;
                                     item._mount();
                                     App.applySettings();
+                                    return true;
+                                }
+                            },
+                            {
+                                _mount: (e) => e.innerHTML = `tap effects: <i>${App.settings.tapEffect ? 'on' : 'off'}</i> ${App.getBadge()}`,
+                                onclick: (item) => {
+                                    App.settings.tapEffect = !App.settings.tapEffect;
+                                    item._mount();
                                     return true;
                                 }
                             },
