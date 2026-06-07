@@ -1461,6 +1461,9 @@ input#background-color-picker {
 .width-auto {
     width: auto;
 }
+.width-fit {
+    width: fit-content;
+}
 .items-center {
     align-items: center;
 }
@@ -2958,4 +2961,25 @@ c-sprite.ghost.devil::after {
         opacity: 0;
         transform: scale(1) rotateZ(60deg) translateX(20px);
     }
+}
+
+.ringing-phone {
+    position: absolute;
+    bottom: -30px;
+    left: 10px;
+    font-size: 26px;
+    background-color: var(--mm-clr-1, #fb88ff);
+    border-radius: 8px;
+    height: auto;
+    width: auto;
+    padding: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    outline: 2px solid white;
+}
+.ringing-phone:hover {
+    bottom: -20px;
+}
+.ringing-phone img {
+    width: 30px;
 }

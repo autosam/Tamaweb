@@ -896,7 +896,7 @@ const App = {
                 const response = `${getLetterResponse().replaceAll('%name%', App.petDefinition.name)} ${giftPool ? `<br><br>I've sent you a gift, hope you like!` : ''}`;
                 const friendshipGain = getFriendshipGain();
 
-                setTimeout(() => {
+                return setTimeout(() => {
                     App.queueEvent(() => {
                         friendDef.increaseFriendship(friendshipGain);
                         friendDef.stats.player_sent_letter = false;
@@ -920,6 +920,13 @@ const App = {
                         });
                     })
                 }, random(1000, 2000))
+            }
+        }
+
+        // random friend call
+        if((random(0, 100) < 5 && App.petDefinition.friends.length) || true){
+            if(App.canProceed('friend_call', App.constants.ONE_MINUTE * 30)) {
+                App.handlers.receive_friend_call();
             }
         }
     },
@@ -7402,6 +7409,78 @@ const App = {
                 }
             })
         },
+        receive_friend_call: function(friendDef = randomFromArray(App.petDefinition.friends)){
+            if(!friendDef) return;
+
+            // const screenContent = `
+            //     <div class="flex flex-gap-1 align-center">
+            //         <div class="persona-avatar width-fit">
+            //             ${friendDef.getCSprite(true)}
+            //         </div>
+            //         <small class="bold">${friendDef.name}</small>
+            //     </div>
+            //     <br>
+            //     <div>Can I come over to hang out?</div>
+            // `
+
+            const getCallConfig = () => {
+                let screenContent = `
+                    <div class="flex flex-gap-1 align-center">
+                        <div class="persona-avatar width-fit">
+                            ${friendDef.getCSprite(true)}
+                        </div>
+                        <small class="bold">${friendDef.name}</small>
+                    </div>
+                    <br>
+                `
+                let onAccept;
+
+                switch(random(0, 1)){
+                    case 0:
+                        const hangOutLocation = randomFromArray(['park', 'mall', 'game center']);
+                        screenContent += `<div>Do you want to go hang out at the ${hangOutLocation}?</div>`;
+                        onAccept = () => {
+                            let hangOutScene = App.scene.park;
+                            if(hangOutLocation === 'mall') hangOutScene = App.scene.mallInterior;
+                            if(hangOutLocation === 'game center') hangOutScene = App.scene.arcade_game01;
+                            Activities.talkingSequence({
+                                isPlayerHost: false,
+                                otherPetDef: friendDef,
+                                scene: hangOutScene,
+                            })
+                        }
+                        break;
+                    default:
+                        screenContent += `<div>Can I come over to hang out?</div>`;
+                        onAccept = () => {
+                            Activities.talkingSequence({
+                                isPlayerHost: true,
+                                otherPetDef: friendDef,
+                            })
+                        }
+                }
+
+                return {
+                    screenContent,
+                    onAccept
+                }
+            }
+
+            const config = getCallConfig();
+
+            const ringingPhoneElement = document.querySelector('.ringing-phone');
+            UI.show(ringingPhoneElement);
+            ringingPhoneElement.onclick = () => {
+                UI.hide(ringingPhoneElement);
+                App.displayConfirm(...GenericUIDef.binaryConfirm({
+                    text: config.screenContent,
+                    onAccept: () => {
+                        App.queueEvent(config.onAccept);
+                    }
+                }))
+            }
+            setTimeout(() => UI.hide(ringingPhoneElement), App.constants.ONE_SECOND * random(9, 14));
+        }
     },
     toggleGameplayControls: function(state, onclick, triggerFeedback = true){
         App.disableGameplayControls = !state;

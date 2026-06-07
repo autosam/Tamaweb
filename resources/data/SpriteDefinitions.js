@@ -343,6 +343,7 @@ const SPRITES = [
 "ui/logo_full.png",
 "ui/logo_mask.png",
 "ui/logo_trans_01.png",
+"ui/mobile-phone.png",
 "ui/pointer_right.png",
 "ui/screenshot_overlay.png",
 "ui/shell_background_01.png",
