@@ -924,7 +924,7 @@ const App = {
         }
 
         // random friend call
-        if((random(0, 100) < 5 && App.petDefinition.friends.length) || true){
+        if((random(0, 100) < 5 && App.petDefinition.friends.length)){
             if(App.canProceed('friend_call', App.constants.ONE_MINUTE * 30)) {
                 App.handlers.receive_friend_call();
             }
