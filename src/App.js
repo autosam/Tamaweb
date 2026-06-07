@@ -6205,10 +6205,11 @@ const App = {
             );
         },
         open_phone: function(){
-            App.displayList([
+            App.displayPhoneMenu([
                 {
                     _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby || !navigator?.onLine,
-                    name: `<span style="color: #ff00c6"><i class="icon fa-solid fa-globe"></i> hubchi</span> ${!navigator?.onLine ? App.getBadge('offline', 'gray') : ''}`,
+                    name: 'Hubchi',
+                    icon: 'globe',
                     onclick: () => {
                         if(App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby){
                             return App.displayPopup(`${App.petDefinition.name} is not old enough to go to hubchi!`);
@@ -6263,7 +6264,8 @@ const App = {
                 },
                 {
                     _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby,
-                    name: `<span style="color: mediumvioletred"> <i class="fa-solid fa-burger icon"></i> SnapMeal </span>`,
+                    name: 'Snapmeal',
+                    icon: 'burger',
                     onclick: () => {
                         let list = [
                             ...App.handlers.open_food_list({buyMode: true, getListOnly: true, filterType: 'food', age: PetDefinition.LIFE_STAGE.adult}),
@@ -6416,6 +6418,7 @@ const App = {
                 },
                 {
                     name: `friends`,
+                    icon: 'children',
                     onclick: () => {
                         App.handlers.open_friends_list(null, null, [
                             {
@@ -6428,7 +6431,8 @@ const App = {
                 },
                 {
                     _ignore: App.petDefinition.lifeStage >= PetDefinition.LIFE_STAGE.elder,
-                    name: 'have birthday',
+                    name: 'have bday',
+                    icon: 'cake',
                     onclick: () => {
                         let nextBirthday = App.petDefinition.getNextBirthdayDate();
                         if(moment().isBefore( nextBirthday )){
@@ -6451,16 +6455,9 @@ const App = {
                     }
                 },
                 {
-                    _ignore: true,
-                    name: 'doctor visit',
-                    onclick: () => {
-                        // App.displayPopup(`${App.pet.stats.current_health}`, 1000);
-                        Activities.inviteDoctorVisit();
-                    }
-                },
-                {
                     _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child,
-                    name: `social media`,
+                    name: `social`,
+                    icon: 'users',
                     onclick: () => {
                         App.handlers.open_social_media();
                         return true;
@@ -6468,7 +6465,8 @@ const App = {
                 },
                 {
                     _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby,
-                    name: `go on vacation`,
+                    name: `vacation`,
+                    icon: 'umbrella-beach',
                     onclick: () => {
                         const price = 250;
                         const { goToVacation } = Activities;
@@ -6500,6 +6498,7 @@ const App = {
                 },
                 {
                     name: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child ? `abandon` : `move out`,
+                    icon: 'suitcase-rolling',
                     onclick: () => {
                         const { moveOut } = Activities;
                         App.displayConfirm(`Are you sure you want to send ${App.petDefinition.getAvatar()} back to their home planet? <br><br> They will move out and you'll receive a fresh new egg to raise.`, [
@@ -6533,6 +6532,7 @@ const App = {
                 },
                 {
                     name: `friend codes`,
+                    icon: 'circle-nodes',
                     onclick: () => {
                         App.displayList([
                             {
@@ -7588,6 +7588,69 @@ const App = {
         const sortedDisplays = [...document.querySelectorAll('.screen-wrapper .display')]
             .sort((a, b) => Number(a.style.zIndex) - Number(b.style.zIndex));
         return sortedDisplays.at(-1);
+    },
+    displayPhoneMenu: function(listItems){
+        // const list = document.querySelector('.cloneables .generic-grid-container').cloneNode(true);
+        const container = UI.genericListContainer();
+        container.classList.add('phone-container');
+        const list = UI.create({
+            parent: container,
+            className: 'phone-menu',
+            children: [
+                {
+                    className: 'flex flex-wrap flex-gap-1 phone-menu-list',
+                    children: listItems.map((item, index) => ({
+                        componentType: 'div',
+                        className: 'phone-app flex flex-dir-col justify-center align-center flex-grow',
+                        style: 'width: 45%',
+                        children: [
+                            {
+                                componentType: 'button',
+                                className: 'flex flex-center',
+                                innerHTML: App.getIcon(item.icon, true),
+                                onclick: item.onclick,
+                                style: `--index: ${index}; --rotate: ${random(0, 180)}deg;`
+                            },
+                            {
+                                componentType: 'span',
+                                className: 'ellipsis',
+                                innerHTML: item.name,
+                            }
+                        ]
+                    }))
+                }
+            ]
+        })
+
+        list.close = function(){
+            list.remove();
+        }
+
+        // listItems.forEach(item => {
+        //     const button = UI.create({
+        //         parent: list,
+        //         componentType: 'div',
+        //         className: 'phone-app flex flex-dir-col justify-center align-center flex-grow',
+        //         style: 'width: 45%',
+        //         children: [
+        //             {
+        //                 componentType: 'button',
+        //                 className: 'flex flex-center',
+        //                 innerHTML: App.getIcon(item.icon, true),
+        //                 onclick: item.onclick,
+        //             },
+        //             {
+        //                 componentType: 'span',
+        //                 className: 'ellipsis',
+        //                 innerHTML: item.name,
+        //             }
+        //         ]
+        //     })
+        // });
+
+        document.querySelector('.screen-wrapper').appendChild(container);
+
+        return container;  
     },
     displayList: function(listItems, backFn, backFnTitle){
         const list = UI.genericListContainer(backFn, backFnTitle);

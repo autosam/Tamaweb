@@ -11,7 +11,7 @@ function findPngFiles(dir, fileList = []) {
 
         if (stat.isDirectory()) {
             findPngFiles(filePath, fileList);
-        } else if (path.extname(file).toLowerCase() === '.png') {
+        } else if (['.png', '.svg'].includes(path.extname(file).toLowerCase())) {
             fileList.push(filePath);
         }
     });

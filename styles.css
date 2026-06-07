@@ -2963,6 +2963,7 @@ c-sprite.ghost.devil::after {
     }
 }
 
+/* Phone */
 .ringing-phone {
     position: absolute;
     bottom: -30px;
@@ -2982,4 +2983,140 @@ c-sprite.ghost.devil::after {
 }
 .ringing-phone img {
     width: 30px;
+}
+
+.phone-container {
+    overflow: hidden;
+    background: linear-gradient(-45deg, #ffdcbf 0 10px, #ffd5b3 10px 20px) !important;
+    background: #DB5461 !important;
+    image-rendering: pixelated;
+    backdrop-filter: blur(6px);
+}
+.phone-container::after {
+    display: none;
+}
+.phone-container button.primary {
+    color: rgb(146, 88, 13) !important;
+    background-color: transparent !important;
+    color: white !important;
+}
+.phone-menu {
+    background: repeating-linear-gradient(-45deg, #ffdcbf 0 10px, #ffedde 10px 20px);
+    margin: 10px -4px;
+    padding: 10px 5px;
+    border-radius: 20px 20px 0 0;
+    outline: 8px solid white;
+    margin-bottom: -4px;
+    margin-top: 14px;
+    overflow: auto;
+    box-shadow: 0px -14px 0px 0px #00000026;
+    animation: phone-slide-up forwards 500ms !important;
+    transform: translateY(100px);
+}
+.phone-menu::before {
+    content: '';
+    width: 50%;
+    height: 12px;
+    background: white;
+    border-radius: 999px;
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0px 4px 0px 0px #00000026;
+    z-index: 2;
+}
+.phone-menu-list {
+    margin-top: 24px;
+}
+.phone-app {
+    color: rgb(146, 88, 13);
+}
+.phone-app > button {
+    height: 60px;
+    width: 60px;
+    box-sizing: border-box;
+    justify-content: center;
+    font-size: larger;
+    border-radius: 100% !important;
+    /* background: url(resources/img/ui/phone-app-bg.svg); */
+    background-size: cover;
+    font-size: x-large;
+    position: relative;
+    transform: scale(0);
+    animation: phone-app-scale-up 1s forwards;
+    animation-delay: calc(var(--index) * 100 * 1ms);
+    transition: all 0.2s;
+}
+.phone-menu-list > *:nth-child(1) > button::before {
+    background-color: #ffcbd8;
+    outline-color: currentColor;
+}
+.phone-menu-list > *:nth-child(1) > button {
+    color: #D8315B;
+}
+.phone-menu-list > *:nth-child(2) > button::before {
+    background-color: #ff9328;
+    outline-color: #ff9328;
+}
+.phone-menu-list > *:nth-child(2) > button {
+    color: #ffffff;
+}
+.phone-app > button::before {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    content: "";
+    width: 75%;
+    height: 75%;
+    border-radius: 12px;
+    background-color: #FFBA75;
+    translate: -50% -50%;
+    font-size: 50px;
+    animation: phone-app-bg-animation infinite alternate ease-in-out 1.5s;
+    animation-delay: calc(var(--index) * 325 * -1ms);
+    outline: 2px solid #FFBA75;
+    outline-style: dashed;
+    outline-offset: 1px;
+}
+.phone-app > button:hover {
+    scale: 1.1 !important;
+}
+.phone-app > button > * {
+    animation: phone-app-animation infinite alternate ease-in-out 2s;
+    animation-delay: calc(var(--index) * 325 * -1ms);
+}
+.phone-app > span {
+    white-space: pre;
+    text-overflow: ellipsis;
+    font-size: small;
+    font-weight: bold;
+}
+@keyframes phone-app-animation {
+    0% {
+        transform: translateY(-1px);
+    }
+    100% {
+        transform: translateY(1px);
+    }
+}
+@keyframes phone-app-bg-animation {
+    0% {
+        transform: translateY(-1px) rotateZ(-2deg);
+    }
+    100% {
+        transform: translateY(1px) rotateZ(2deg);
+    }
+}
+@keyframes phone-slide-up {
+    0% {
+        transform: translateY(100px);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+@keyframes phone-app-scale-up {
+    100% {
+        transform: scale(1);
+    }
 }
