@@ -2996,7 +2996,6 @@ c-sprite.ghost.devil::after {
     display: none;
 }
 .phone-container button.primary {
-    color: rgb(146, 88, 13) !important;
     background-color: transparent !important;
     color: white !important;
 }
