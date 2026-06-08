@@ -596,8 +596,12 @@ const App = {
             setTimeout(() => currentCursorElement.remove(), animationTime);
             return currentCursorElement;
         }
-        document.addEventListener('click', (evt) => {
+        const touchDownHandler = (evt) => {
             if(!App.settings.tapEffect) return;
+
+            if(evt.targetTouches){
+                return [...evt.targetTouches].forEach(touchDownHandler);
+            }
 
             const origin = {
                 x: evt.clientX,
@@ -614,7 +618,9 @@ const App = {
                 const spawnPosition = addVector(origin, circleVector);
                 spawnCursorElement(spawnPosition.x, spawnPosition.y, random(3, 6) * 0.1);
             }
-        })
+        }
+        document.addEventListener('mousedown', touchDownHandler);
+        document.addEventListener('touchstart', touchDownHandler);
     },
     sendSessionEvent: function(login){
         if(login){
