@@ -2943,7 +2943,7 @@ const App = {
                 {
                     name: `pet`,
                     onclick: () => {
-                        App.displayPopup(`Tap the screen to pet <b>${App.petDefinition.name}</b><br><br>Don't tap for a few seconds to stop petting`, 2800, () => {
+                        App.displayPopup(`Slide your finger across screen to pet<br><br>Stop sliding for a few seconds to stop petting`, 3200, () => {
                             Activities.pet();
                         });
                     }

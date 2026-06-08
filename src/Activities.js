@@ -3868,7 +3868,6 @@ class Activities {
     }
     static async pet(){
         App.sendAnalytics('petting');
-        let idleTimer = null, closeTimer = null, y = App.pet.y;
         App.pet.stopMove();
         App.pet.x = '50%';
         App.pet.targetY = 132;
@@ -3881,24 +3880,9 @@ class Activities {
         App.pet.scale = 3;
         App.pet.targetY = 60;
         App.pet.stats.current_discipline += random(1, 2);
-        App.toggleGameplayControls(false, () => {
-            App.definitions.achievements.pat_x_times.advance();
-            Missions.done(Missions.TYPES.pat);
-            App.pet.setState('blush');
-            App.pet.stats.current_fun += random(1, 4) * 0.1;
-            if(idleTimer) clearTimeout(idleTimer);
-            if(closeTimer) clearTimeout(closeTimer);
-            App.playSound('resources/sounds/cute.ogg', true);
-            Activities.task_floatingHearts();
-            idleTimer = setTimeout(() => {
-                App.pet.setState('idle');
-                closeTimer = setTimeout(() => App.pet.stopScriptedState(), 5000);
-                idleTimer = null;
-            }, 250);
-        });
+        App.toggleGameplayControls(false, () => {}, false);
+        let lastPosition = '', lastPetTime = -1;
         await App.pet.triggerScriptedState('idle', App.INF, null, true, () => {
-            // App.pet.y = y;
-            // App.pet.x = '50%';
             App.reloadScene();
             App.toggleGameplayControls(true);
             App.pet.shadowOffset = 0;
@@ -3907,6 +3891,32 @@ class Activities {
             App.pet.stats.current_expression += 1;
             App.pet.stats.current_endurance += 1;
             App.pet.stats.current_logic += 1;
+        }, () => {
+            const currentPosition = `${App.mouse.x}_${App.mouse.y}`;
+            const isPetting = App.mouse.isInBounds && App.mouse.isDown && currentPosition !== lastPosition;
+            lastPosition = currentPosition;
+
+            if(isPetting){
+                App.pet.setState(isPetting ? 'blush' : 'idle');
+                lastPetTime = App.time;
+            }
+
+            if(lastPetTime > 0 && App.time - lastPetTime > App.constants.ONE_SECOND * 4) {
+                App.pet.stopScriptedState();
+                return;
+            }
+
+            if(App.canProceed('petting_react_cool_down', 300)){
+                App.pet.setState(isPetting ? 'blush' : 'idle');
+                if(isPetting){
+                    App.playSound('resources/sounds/cute.ogg', true);
+                    Activities.task_floatingHearts();
+
+                    App.pet.stats.current_fun += random(1, 4) * 0.07;
+                    App.definitions.achievements.pat_x_times.advance();
+                    Missions.done(Missions.TYPES.pat);
+                }
+            }
         });
     }
     static standWork(){

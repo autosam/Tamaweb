@@ -2669,8 +2669,8 @@ App.definitions = (() => {
         achievements: {
             pat_x_times: {
                 name: 'Pat! Pat! Pat!',
-                description: 'Pet your buddy 100 times!',
-                checkProgress: () => App.getRecord('times_patted') >= 100,
+                description: 'Pet your buddy a lot!',
+                checkProgress: () => App.getRecord('times_patted') >= 150,
                 advance: (amount) => App.addRecord('times_patted', amount),
                 getReward: () => {
                     App.pet.stats.gold += 150;
