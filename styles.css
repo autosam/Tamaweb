@@ -3011,6 +3011,8 @@ c-sprite.ghost.devil::after {
     box-shadow: 0px -14px 0px 0px #00000026;
     animation: phone-slide-up forwards 500ms !important;
     transform: translateY(100px);
+    flex-grow: 1;
+    color: rgb(146, 88, 13);
 }
 .phone-menu::before {
     content: '';
@@ -3026,9 +3028,6 @@ c-sprite.ghost.devil::after {
 }
 .phone-menu-list {
     margin-top: 24px;
-}
-.phone-app {
-    color: rgb(146, 88, 13);
 }
 .phone-app > button {
     height: 60px;

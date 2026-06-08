@@ -7431,14 +7431,13 @@ const App = {
                         </div>
                         <small class="bold">${friendDef.name}</small>
                     </div>
-                    <br>
                 `
                 let onAccept;
 
                 switch(random(0, 1)){
                     case 0:
                         const hangOutLocation = randomFromArray(['park', 'mall', 'game center']);
-                        screenContent += `<div>Do you want to go hang out at the ${hangOutLocation}?</div>`;
+                        screenContent += `<q>Do you want to go hang out at the ${hangOutLocation}?</q>`;
                         onAccept = () => {
                             let hangOutScene = App.scene.park;
                             if(hangOutLocation === 'mall') hangOutScene = App.scene.mallInterior;
@@ -7451,7 +7450,7 @@ const App = {
                         }
                         break;
                     default:
-                        screenContent += `<div>Can I come over to hang out?</div>`;
+                        screenContent += `<q>Can I come over to hang out?</q>`;
                         onAccept = () => {
                             Activities.talkingSequence({
                                 isPlayerHost: true,
