@@ -935,6 +935,13 @@ const App = {
                 App.handlers.receive_friend_call();
             }
         }
+
+        // ask to be petted
+        if(random(0, 100) <= 5 && App.petDefinition.stats.current_care >= 2){
+            if(App.canProceed('ask_to_be_petted', App.constants.ONE_HOUR * 2)) {
+                App.queueEvent(() => Activities.pet(2000));
+            }
+        }
     },
     onDraw: () => {},
     preloadImages: function(urls) {

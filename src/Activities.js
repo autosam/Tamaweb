@@ -3866,7 +3866,7 @@ class Activities {
             if(onEndFn) onEndFn();
         });
     }
-    static async pet(){
+    static async pet(engageTimer){
         App.sendAnalytics('petting');
         App.pet.stopMove();
         App.pet.x = '50%';
@@ -3881,13 +3881,14 @@ class Activities {
         App.pet.targetY = 60;
         App.pet.stats.current_discipline += random(1, 2);
         App.toggleGameplayControls(false, () => {}, false);
-        let lastPosition = '', lastPetTime = -1;
+        let lastPosition = '', lastPetTime = engageTimer ? App.time + engageTimer : -1;
+        let patCount = 0;
         await App.pet.triggerScriptedState('idle', App.INF, null, true, () => {
             App.reloadScene();
             App.toggleGameplayControls(true);
             App.pet.shadowOffset = 0;
             App.pet.scale = 1;
-            App.pet.playCheeringAnimation();
+            App.pet.playCheeringAnimationIfTrue(patCount);
             App.pet.stats.current_expression += 1;
             App.pet.stats.current_endurance += 1;
             App.pet.stats.current_logic += 1;
@@ -3915,6 +3916,8 @@ class Activities {
                     App.pet.stats.current_fun += random(1, 4) * 0.07;
                     App.definitions.achievements.pat_x_times.advance();
                     Missions.done(Missions.TYPES.pat);
+
+                    patCount++;
                 }
             }
         });
