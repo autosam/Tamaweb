@@ -369,6 +369,7 @@ const SPRITES = [
 "ui/shell_background_21.png",
 "ui/shell_background_cloof_01.png",
 "ui/tap-pointer-sparks.png",
+"ui/tap-pointer.png",
 "ui/tap_01.png",
 "ui/ui_mask_01.png",
 "ui/update_banner.png",

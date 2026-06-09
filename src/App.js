@@ -583,17 +583,43 @@ const App = {
         // tap cursor
         const spawnCursorElement = (x, y, scale = 1) => {
             const animationTime = random(250, 450);
+            const sparksCount = 5, offset = random(0, 45);
+            const sparks = new Array(sparksCount).fill(null).map((_, index) => {
+                const angle = (index * (360 / sparksCount)) + offset;
+                const rad = angle * Math.PI / 180;
+                const distance = random(50, 100);
+                const dx = Math.cos(rad) * distance;
+                const dy = Math.sin(rad) * distance;
+                return {
+                    className: 'cursor-spark',
+                    style: `
+                        top: ${y}px;
+                        left: ${x}px;
+                        animation-duration: ${animationTime * 2}ms;
+                        --dx: ${dx}px;
+                        --dy: ${dy}px;
+                        scale: ${random(5, 10) * 0.1};
+                    `,
+                }
+            })
             const currentCursorElement = UI.ce({
                 componentType: 'div',
-                className: 'cursor',
+                children: [
+                    ...sparks,
+                    {
+                        componentType: 'div',
+                        className: 'cursor',
+                        style: `
+                            top: ${y}px;
+                            left: ${x}px;
+                            scale: ${scale};
+                            animation-duration: ${animationTime}ms;
+                        `,
+                    },
+                ],
             })
-            currentCursorElement.style.top = `${y}px`;
-            currentCursorElement.style.left = `${x}px`;
-            currentCursorElement.style.rotate = `${random(0, 90)}deg`;
-            currentCursorElement.style.scale = scale;
-            currentCursorElement.style.animationDuration = `${animationTime}ms`;
             document.body.appendChild(currentCursorElement);
-            setTimeout(() => currentCursorElement.remove(), animationTime);
+            setTimeout(() => currentCursorElement.remove(), animationTime * 2);
             return currentCursorElement;
         }
         const touchDownHandler = (evt) => {
@@ -608,6 +634,9 @@ const App = {
                 y: evt.clientY
             }
 
+            spawnCursorElement(origin.x, origin.y, 2);
+            return;
+
             const maxPoints = 3, radius = 10, startingOffset = Math.random();
             for(let i = 0; i < maxPoints; i++){
                 const currentPoint = (i + startingOffset) * (Math.PI * 2) / maxPoints;
@@ -619,8 +648,8 @@ const App = {
                 spawnCursorElement(spawnPosition.x, spawnPosition.y, random(3, 6) * 0.1);
             }
         }
-        document.addEventListener('mousedown', touchDownHandler);
-        document.addEventListener('touchstart', touchDownHandler);
+        document.addEventListener('mouseup', touchDownHandler);
+        document.addEventListener('touchend', touchDownHandler);
     },
     sendSessionEvent: function(login){
         if(login){
@@ -937,7 +966,7 @@ const App = {
         }
 
         // ask to be petted
-        if(random(0, 100) <= 5 && App.petDefinition.stats.current_care >= 2){
+        if(random(0, 100) < 5 && App.petDefinition.stats.current_care >= 2){
             if(App.canProceed('ask_to_be_petted', App.constants.ONE_HOUR * 2)) {
                 App.queueEvent(() => Activities.pet(2000));
             }

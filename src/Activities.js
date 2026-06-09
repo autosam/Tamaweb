@@ -3873,6 +3873,7 @@ class Activities {
         App.pet.targetY = 132;
         App.pet.shadowOffset = 999;
         App.toggleGameplayControls(false);
+        App.canProceed('ask_to_be_petted', 0); // trigger autonomous asking cooldown
         await App.pet.triggerScriptedState('cheering', 1000, null, true);
         App.pet.scale = 2;
         App.pet.targetY = 50;

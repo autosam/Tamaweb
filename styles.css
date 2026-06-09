@@ -2941,12 +2941,9 @@ c-sprite.ghost.devil::after {
     animation: cursor-animation 300ms linear forwards;
     translate: calc(-0.5 * var(--size)) calc(-0.5 * var(--size));
     font-size: x-small;
-    background: url('resources/img/ui/tap-pointer-sparks.png');
+    background: url('resources/img/ui/tap-pointer.png');
     background-size: cover;
     z-index: 99999;
-}
-.cursor:nth-child(1) {
-    position: absolute;
 }
 @keyframes cursor-animation {
     0% {
@@ -2955,11 +2952,40 @@ c-sprite.ghost.devil::after {
     }
     20% {
         opacity: 1;
-        transform: scale(1) rotateZ(40deg) ;
+        transform: scale(1) rotateZ(30deg) rotateX(25deg) ;
     }
     100% {
         opacity: 0;
-        transform: scale(1) rotateZ(60deg) translateX(20px);
+        transform: scale(1) rotateZ(0deg) translateY(-4px);
+    }
+}
+.cursor-spark {
+    --size: 20px;
+    width: var(--size);
+    height: var(--size);
+    pointer-events: none;
+    position: absolute;
+    animation: cursor-spark-animation 300ms linear forwards;
+    translate: calc(-0.5 * var(--size)) calc(-0.5 * var(--size));
+    font-size: x-small;
+    background: url('resources/img/ui/tap-pointer-sparks.png');
+    background-size: cover;
+    z-index: 99999;
+}
+@keyframes cursor-spark-animation {
+    0% {
+        opacity: 0;
+    }
+    9% {
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0) translate(var(--dx), var(--dy));
     }
 }
 
