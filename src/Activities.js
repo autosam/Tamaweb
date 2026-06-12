@@ -3998,7 +3998,7 @@ class Activities {
         App.pet.inverted = false;
         let nextCustomerSpawnTime = Date.now() + random(0, 8000);
         let currentCustomer;
-        App.pet.triggerScriptedState('idle', 200000, 0, true, () => {
+        App.pet.triggerScriptedState('idle', App.INF, 0, true, () => {
             backgroundMusic.stop();
             standObject.removeObject();
             currentCustomer?.removeObject();
@@ -4733,7 +4733,7 @@ class Activities {
         App.pet.inverted = true;
         App.pet.x = '53%';
         App.pet.y = '78%';
-        App.pet.triggerScriptedState('eating', 200000, false, true, () => {
+        App.pet.triggerScriptedState('eating', App.INF, false, true, () => {
             backgroundMusic.stop();
             dynamicBackground.removeObject();
         }, (me) => {
