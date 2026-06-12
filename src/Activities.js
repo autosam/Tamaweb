@@ -2310,7 +2310,6 @@ class Activities {
                 App.pet.stopScriptedState();
                 return true;
             }
-            // App.pet.x = -99;
         }
         const driverFrameEvent = App.registerOnDrawEvent(driverFn);
 
@@ -3973,6 +3972,7 @@ class Activities {
                 otherPet.z = 20;
                 otherPet.inverted = true;
                 otherPet.targetX = 8;
+                otherPet.parent = standObject;
                 App.pet.setState('idle_side');
                 otherPet.triggerScriptedState('moving', 4000, 0, true, () => {
                     otherPet.stopMove();
@@ -3997,15 +3997,13 @@ class Activities {
         App.pet.y = '70%';
         App.pet.inverted = false;
         let nextCustomerSpawnTime = Date.now() + random(0, 8000);
-        let currentCustomer;
         App.pet.triggerScriptedState('idle', App.INF, 0, true, () => {
             backgroundMusic.stop();
             standObject.removeObject();
-            currentCustomer?.removeObject();
         }, () => {
             if(Date.now() > nextCustomerSpawnTime){
                 nextCustomerSpawnTime = Date.now() + random(8000, 45000);
-                currentCustomer = spawnCustomer();
+                spawnCustomer();
             }
         });
     }
