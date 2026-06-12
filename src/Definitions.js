@@ -176,6 +176,7 @@ App.definitions = (() => {
                 name: 'Work',
                 image: 'resources/img/misc/activity_building_work.png',
                 onEnter: () => App.handlers.open_works_list(),
+                isNew: true,
             },
             {
                 name: `Underworld Entrance`,
@@ -3344,6 +3345,28 @@ App.definitions = (() => {
                     App.pet.stats.current_fun += 90;
                     App.pet.stats.current_hunger += 25;
                     App.pet.stats.current_sleep -= 50;
+                }
+            },
+            {
+                name: 'Stand Work',
+                duration: App.constants.ONE_HOUR * 1,
+                isNew: true,
+                type: 'job',
+                payAmount: 50,
+                onVisualize: Activities.standWork,
+                onEnd: function(){
+                    App.handlers.finalize_work(this);
+                }
+            },
+            {
+                name: 'Office Work',
+                duration: App.constants.ONE_HOUR * 2,
+                isNew: true,
+                type: 'job',
+                payAmount: 100,
+                onVisualize: Activities.officeWork,
+                onEnd: function(){
+                    App.handlers.finalize_work(this);
                 }
             },
         ],

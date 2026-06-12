@@ -2263,23 +2263,26 @@ class Activities {
     }
     static async goToCurrentRabbitHole() {
         const {current_rabbit_hole: currentRabbitHole} = App.pet.stats;
+        const rabbitHoleDefinition = App.definitions.rabbit_hole_activities.find(activity => activity.name === App.pet.stats.current_rabbit_hole.name);
+        const hasVisualizer = Boolean(rabbitHoleDefinition.onVisualize);
 
         const outOverlay = new Object2d({
             img: 'resources/img/misc/out_overlay_01.png',
             x: 0, y: 0, z: 10,
+            invisible: hasVisualizer,
         });
 
         const onEndFn = (isInterrupted) => {
-            const rabbitHoleDefinition = App.definitions.rabbit_hole_activities.find(activity => activity.name === App.pet.stats.current_rabbit_hole.name);
+            App.unregisterOnDrawEvent(driverFrameEvent);
 
             if(!isInterrupted){
-                App.displayConfirm(`Homeworld Getaway activity <b>"${App.pet.stats.current_rabbit_hole.name}"</b> has ended and ${App.petDefinition.name} is back home!`, [
+                rabbitHoleDefinition?.onEnd?.();
+                App.displayConfirm(`<b>"${App.pet.stats.current_rabbit_hole.name}"</b> activity has ended and ${App.petDefinition.name} is back home!`, [
                     {
                         name: 'ok',
                         onclick: () => {}
                     }
                 ])
-                rabbitHoleDefinition?.onEnd?.();
                 // randomly increase skill points
                 App.pet.stats.current_expression += clamp(random(-2, 3), 0, 3);
                 App.pet.stats.current_logic += clamp(random(-2, 3), 0, 3);
@@ -2290,6 +2293,7 @@ class Activities {
 
             App.fadeScreen({
                 middleFn: () => {
+                    App.pet.stopScriptedState();
                     App.pet.x = '50%';
                     App.pet.stopMove();
                     App.toggleGameplayControls(true);
@@ -2306,8 +2310,9 @@ class Activities {
                 App.pet.stopScriptedState();
                 return true;
             }
-            App.pet.x = -99;
+            // App.pet.x = -99;
         }
+        const driverFrameEvent = App.registerOnDrawEvent(driverFn);
 
         const isAlreadyEnded = driverFn();
         if(isAlreadyEnded) return;
@@ -2318,13 +2323,12 @@ class Activities {
                     <i  class="fa-solid fa-clock" style="margin-right: 2px;"></i>
                     <span>${currentRabbitHole.name}</span>
                 </div>
-                ${App.petDefinition.name} will be back <b>${moment(currentRabbitHole.endTime).fromNow()}</b>
+                ${App.petDefinition.name} will be ${hasVisualizer ? 'done' : 'back'} <b>${moment(currentRabbitHole.endTime).fromNow()}</b>
                 `, [
                 {
                     name: 'end early',
                     onclick: () => {
                         onEndFn(true);
-                        App.pet.stopScriptedState();
                     },
                 },
                 {
@@ -2335,9 +2339,15 @@ class Activities {
             ])
         });
 
-        App.pet.triggerScriptedState('idle', App.INF, false, true, null, driverFn)
-        App.pet.stopMove();
-        App.pet.targetX = -999;
+        if(!hasVisualizer){
+            App.pet.triggerScriptedState('idle', App.INF, false, true, null)
+            App.pet.stopMove();
+            App.pet.targetX = -999;
+        }
+        
+        setTimeout(() => {
+            rabbitHoleDefinition.onVisualize?.();
+        })
     }
     static async goToFortuneTeller(otherPetDef){
         App.toggleGameplayControls(false);
@@ -3933,16 +3943,12 @@ class Activities {
             src: 'resources/sounds/work_track_01.ogg'
         });
 
-        let totalMoneyMade = 0;
-
         let standObject = new Object2d({
             img: 'resources/img/misc/stand_01_booth.png',
             x: 0, y: 0, z: 19
         })
-
-        App.toggleGameplayControls(false, () => {
-            App.pet.stopScriptedState();
-        });
+        //     App.pet.stopScriptedState();
+        // });
 
         function spawnCustomer() {
             const standDuration = random(2000, 5000);
@@ -3959,20 +3965,6 @@ class Activities {
             else possibleAnimations = [...goodAnimations];
 
             const currentAnimation = randomFromArray(possibleAnimations);
-
-            switch(currentAnimation){
-                case "eating":
-                case "cheering":
-                    totalMoneyMade += random(8, 12);
-                    break;
-                case "shocked":
-                case "uncomfortable":
-                    totalMoneyMade += random(3, 5);
-                    break;
-                case "angry":
-                    totalMoneyMade += 2;
-                    break;
-            }
 
             let otherPet = new Pet(App.getRandomPetDef(random(1, 2)));
                 otherPet.stopMove();
@@ -4004,17 +3996,13 @@ class Activities {
         App.pet.x = '68%';
         App.pet.y = '70%';
         App.pet.inverted = false;
-        let startTime = Date.now();
         let nextCustomerSpawnTime = Date.now() + random(0, 8000);
         let currentCustomer;
         App.pet.triggerScriptedState('idle', 200000, 0, true, () => {
             backgroundMusic.stop();
             standObject.removeObject();
-            let elapsedTime = Math.round((Date.now() - startTime) / 1000);
-            Activities.task_endWork(elapsedTime, totalMoneyMade);
             currentCustomer?.removeObject();
         }, () => {
-            // Object2d.animations.bob(App.pet, 0.01, 0.05);
             if(Date.now() > nextCustomerSpawnTime){
                 nextCustomerSpawnTime = Date.now() + random(8000, 45000);
                 currentCustomer = spawnCustomer();
@@ -4741,21 +4729,13 @@ class Activities {
             onDraw: (me) => Object2d.animations.cycleThroughFrames(me, 250, true),
         })
 
-        App.toggleGameplayControls(false, () => {
-            App.pet.stopScriptedState();
-        });
-
-
         App.pet.stopMove();
         App.pet.inverted = true;
         App.pet.x = '53%';
         App.pet.y = '78%';
-        const startTime = Date.now();
         App.pet.triggerScriptedState('eating', 200000, false, true, () => {
             backgroundMusic.stop();
             dynamicBackground.removeObject();
-            let elapsedTime = Math.round((Date.now() - startTime) / 1000);
-            Activities.task_endWork(elapsedTime, Math.round(elapsedTime / 2.5));
         }, (me) => {
             if(random(0, 50)) return;
             me.setState( randomFromArray(['eating', 'sitting']) );

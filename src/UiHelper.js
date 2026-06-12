@@ -176,5 +176,16 @@ const GenericUIDef = {
                 class: 'back-btn'
             }
         ]]
+    },
+    singleConfirm: (text, {
+        onAccept = () => {},
+        acceptLabel = 'Ok',
+    } = {}) => {
+        return [text, [
+            {
+                name: acceptLabel,
+                onclick: onAccept
+            }
+        ]]
     }
 }

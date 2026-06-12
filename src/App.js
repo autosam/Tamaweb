@@ -2534,23 +2534,66 @@ const App = {
             Activities.goToSchool(() => App.handlers.open_activity_list(true))
         },
         open_works_list: function(){
-            const backFn = () => {
-                App.handlers.open_activity_list(true);
-            }
+            const backFn = () => App.handlers.open_activity_list(true);
+
+            const list = App.definitions.rabbit_hole_activities
+                .filter(hole => hole.type === 'job')
+                .map(hole => ({
+                    // name: hole.name,
+                    name: `
+                        <div 
+                            style="max-width: 100%; align-items: center;" 
+                            class="flex-between width-full pointer-events-none"
+                        >
+                            <span class="overflow-hidden" style="margin-right: 10px">
+                                <div style="width: fit-content" class="${hole.name.length > 10 ? 'marquee' : ''}">
+                                    ${hole.name}
+                                </div>
+                            </span>
+
+                            <span style="padding: 2px; margin: 0" class="flex flex-dir-col flex-gap-025 font-small">
+                                <span class="flex flex-gap-025 align-center">${App.getIcon('clock', true)}${Math.ceil(hole.duration / 1000 / 60)}</span>
+                                <span class="flex flex-gap-025 align-center">${App.getIcon('special:gold', true)}${hole.payAmount}</span>
+                            </span>
+                        </div>
+                    `,
+                    class: 'large',
+                    onclick: () => {
+                        return App.displayConfirm(...GenericUIDef.binaryConfirm({
+                            text: `
+                            ${App.petDefinition.name} will do 
+                            <b>${hole.name}</b> 
+                            for 
+                            <b>${moment(hole.duration + Date.now()).fromNow(true)}</b> 
+                            and gets paid 
+                            <b>${App.getIcon('special:gold', true)} ${hole.payAmount}</b>
+                            `,
+                            acceptLabel: 'Accept',
+                            declineLabel: 'Cancel',
+                            onAccept: () => {
+                                App.pet.stats.current_rabbit_hole = {
+                                    name: hole.name,
+                                    endTime: Date.now() + hole.duration
+                                }
+                                Activities.goToCurrentRabbitHole();
+                                App.save();
+                            }
+                        }))
+                    }
+                }));
+
             return App.displayList([
+                ...list,
                 {
-                    name: `stand work`,
-                    onclick: () => {
-                        Activities.standWork();
-                    }
+                    name: `Working takes real-time minutes (${App.getIcon('clock', true)}), you can close the game while your pet is at work and come back later. ${App.getBadge()}`,
+                    type: 'info',
                 },
                 {
-                    name: 'office work',
-                    onclick: () => {
-                        Activities.officeWork();
-                    }
-                },
-            ], backFn)
+                    name: `Ending work early will result in no rewards.`,
+                    type: 'info',
+                    icon: 'warning',
+                }
+            ], backFn);
         },
         open_fortune_teller: function(){
             const backFn = () => {
@@ -2856,6 +2899,11 @@ const App = {
             `;
 
             [...container.querySelectorAll('.news-close')].forEach(btn => btn.onclick = container.close);
+        },
+        finalize_work: function(definition){
+            App.pet.stats.gold += definition.payAmount;
+            App.pet.stats.current_fun -= 25;
+            App.displayConfirm(...GenericUIDef.singleConfirm(`${App.petDefinition.getAvatar()} made $${definition.payAmount}!`));
         },
         open_main_menu: function(){
             if(App.preventNextGameplayControl){
@@ -5832,6 +5880,7 @@ const App = {
             return App.displayList([
                 ...App.definitions.rabbit_hole_activities
                     .sort((a, b) => b.isNew || 0 - a.isNew || 0)
+                    .filter(hole => !hole.type)
                     .map(hole => ({
                         name: `
                             <span class="ellipsis">${hole.name}<span>
@@ -5847,7 +5896,6 @@ const App = {
                                                 name: hole.name,
                                                 endTime: Date.now() + hole.duration
                                             }
-                                            // Activities.goToCurrentRabbitHole(true);
                                             Activities.goToHomePlanet(otherPet);
                                             App.save();
                                             App.closeAllDisplays();
