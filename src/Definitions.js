@@ -1673,6 +1673,18 @@ App.definitions = (() => {
                 isNew: false,
                 type: 'bathroom',
             },
+            "mush-bathroom": {
+                image: 'resources/img/background/house/bathroom_cc_02.png',
+                price: 350,
+                isNew: true,
+                type: 'bathroom',
+            },
+            "gothic bathroom": {
+                image: 'resources/img/background/house/bathroom_cc_03.png',
+                price: 300,
+                isNew: true,
+                type: 'bathroom',
+            },
 
             // kitchen
             "bites": {
@@ -1697,6 +1709,12 @@ App.definitions = (() => {
                 image: 'resources/img/background/house/kitchen_cc_02.png',
                 price: 350,
                 isNew: false,
+                type: 'kitchen',
+            },
+            "gothic kitchen": {
+                image: 'resources/img/background/house/kitchen_cc_03.png',
+                price: 300,
+                isNew: true,
                 type: 'kitchen',
             },
         },
