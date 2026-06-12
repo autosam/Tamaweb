@@ -1,5 +1,5 @@
 const App = {
-    PI2: Math.PI * 2, INF: 999999999,
+    PI2: Math.PI * 2, INF: 9999999999,
     time: 0, deltaTime: 0, lastTime: 0, playTime: 0, hour: 12, accurateDeltaTime: 0,
     mouse: { x: 0, y: 0, isInBounds : false },
     userId: '_', userName: null, sessionId: Math.round(Math.random() * 9999999999),
