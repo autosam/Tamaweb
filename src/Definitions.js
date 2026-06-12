@@ -903,6 +903,15 @@ App.definitions = (() => {
                 type: 'treat',
                 isNew: false,
             },
+            "takoyaki": {
+                sprite: 1068,
+                hunger_replenish: 15,
+                fun_replenish: 5,
+                health_replenish: 2,
+                price: 12,
+                type: 'treat',
+                isNew: true,
+            },
     
     
             // groc
