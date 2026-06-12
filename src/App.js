@@ -958,15 +958,26 @@ const App = {
             }
         }
 
+        if(App.time < App.constants.ONE_SECOND * 30) {
+            return false;
+        }
+
         // random friend call
-        if((random(0, 100) < 5 && App.petDefinition.friends.length)){
+        if(
+            random(0, 100) < 4 && 
+            App.petDefinition.friends.length
+        ){
             if(App.canProceed('friend_call', App.constants.ONE_MINUTE * 30)) {
                 App.handlers.receive_friend_call();
             }
         }
 
         // ask to be petted
-        if(random(0, 100) < 5 && App.petDefinition.stats.current_care >= 2){
+        if(
+            random(0, 100) < 3 && 
+            App.petDefinition.stats.current_care >= 2 &&
+            App.playTime > App.constants.ONE_MINUTE * 30
+        ){
             if(App.canProceed('ask_to_be_petted', App.constants.ONE_HOUR * 2)) {
                 App.queueEvent(() => Activities.pet(2000));
             }
@@ -7454,17 +7465,6 @@ const App = {
         receive_friend_call: function(friendDef = randomFromArray(App.petDefinition.friends)){
             if(!friendDef) return;
 
-            // const screenContent = `
-            //     <div class="flex flex-gap-1 align-center">
-            //         <div class="persona-avatar width-fit">
-            //             ${friendDef.getCSprite(true)}
-            //         </div>
-            //         <small class="bold">${friendDef.name}</small>
-            //     </div>
-            //     <br>
-            //     <div>Can I come over to hang out?</div>
-            // `
-
             const getCallConfig = () => {
                 let screenContent = `
                     <div class="flex flex-gap-1 align-center">
@@ -7508,11 +7508,32 @@ const App = {
             }
 
             const config = getCallConfig();
-
+            
+            let autoStopTimeout;
             const ringingPhoneElement = document.querySelector('.ringing-phone');
-            UI.show(ringingPhoneElement);
-            ringingPhoneElement.onclick = () => {
+            const playRingingSound = () => App.playSound('resources/sounds/call_01.mp3', true);
+            const phoneRingSoundInterval = setInterval(() => {
+                playRingingSound();
+                App.vibrate();
+            }, 2000);
+            const stopRinging = () => {
+                clearInterval(phoneRingSoundInterval);
+                clearTimeout(autoStopTimeout);
+                autoStopTimeout = false;
+                hidePhoneElement();
+            }
+            const showPhoneElement = () => {
+                UI.show(ringingPhoneElement);
+            }
+            const hidePhoneElement = () => {
                 UI.hide(ringingPhoneElement);
+            }
+
+            playRingingSound();
+            showPhoneElement();
+            ringingPhoneElement.onclick = () => {
+                stopRinging();
+                App.playSound('resources/sounds/ui_click_06.ogg', true);
                 App.displayConfirm(...GenericUIDef.binaryConfirm({
                     text: config.screenContent,
                     onAccept: () => {
@@ -7520,7 +7541,7 @@ const App = {
                     }
                 }))
             }
-            setTimeout(() => UI.hide(ringingPhoneElement), App.constants.ONE_SECOND * random(9, 14));
+            autoStopTimeout = setTimeout(stopRinging, App.constants.ONE_SECOND * (random(9, 14) - 0.5));
         }
     },
     toggleGameplayControls: function(state, onclick, triggerFeedback = true){

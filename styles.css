@@ -910,6 +910,10 @@ button {
     scale: 2
 }
 
+.absolute {
+    position: absolute;
+}
+
 .absolute-fullscreen {
     top: 0;
     left: 0;
@@ -2994,8 +2998,7 @@ c-sprite.ghost.devil::after {
     position: absolute;
     bottom: -30px;
     left: 10px;
-    font-size: 26px;
-    background-color: var(--mm-clr-1, #fb88ff);
+    background: var(--prim-clr-b-text, linear-gradient(0deg, #ffc800, #ffb1ee));
     border-radius: 8px;
     height: auto;
     width: auto;
@@ -3003,9 +3006,14 @@ c-sprite.ghost.devil::after {
     cursor: pointer;
     transition: all 0.2s;
     outline: 2px solid white;
+    box-shadow: inset 24px 36px 0px -20px #ffffff3b;
+    z-index: 2;
 }
 .ringing-phone:hover {
     bottom: -20px;
+}
+.ringing-phone:active {
+    scale: 0.9;
 }
 .ringing-phone img {
     width: 30px;

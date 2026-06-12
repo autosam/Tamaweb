@@ -42,5 +42,6 @@ const SOUNDS = [
   "resources/sounds/note_4.mp3",
   "resources/sounds/santa_bm_01.mp3",
   "resources/sounds/move_out_bm_01.mp3",
+  "resources/sounds/call_01.mp3",
   ...SPEECH_SOUNDS
 ];
