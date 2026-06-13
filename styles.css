@@ -393,7 +393,15 @@ hr {
     transition: background 0.2s ease;
 }
 .loading-text #loading-error {
-    color: rgb(255, 170, 170);
+    color: rgb(70, 55, 55);
+    --outline: rgb(255, 230, 230);
+    text-shadow: 
+        -1px -1px var(--outline), 
+        1px -1px var(--outline), 
+        -1px 1px var(--outline), 
+        1px 1px var(--outline);
+    text-align: center;
+    max-width: 400px;
 }
 .loading-text #loading-error i {
     color: red;
@@ -565,11 +573,11 @@ hr {
 .button-mode .generic-btn[data-is-ui-active="true"]:after,
 .generic-btn.active:after,
 .simon-says-button.active:after,
-.screen-wrapper button:active:after,
-.screen-wrapper button:hover:after,
-.screen-wrapper button:focus-within:after,
-.screen-wrapper button[data-is-active-item="true"]:after,
-.button-mode .screen-wrapper [data-is-ui-active="true"]:after
+.graphics-wrapper button:active:after,
+.graphics-wrapper button:hover:after,
+.graphics-wrapper button:focus-within:after,
+.graphics-wrapper button[data-is-active-item="true"]:after,
+.button-mode .graphics-wrapper [data-is-ui-active="true"]:after
 {
     width: 11px;
     height: 9px;

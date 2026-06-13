@@ -741,10 +741,16 @@ const App = {
                     return {
                         className: 'classic-main-menu__item click-sound',
                         innerHTML: def.name,
-                        onclick: def.onclick
+                        onclick: def.onclick,
+                        _mount: (me) => {
+                            me.setAttribute('data-fb-focusable', '');
+                        }
                     }
                 })
             })
+
+            App.indexUIElement(classicMainMenuContainer);
+            App.temp.classicMainMenuContainer = classicMainMenuContainer;            
 
             if(!App.temp.defaultHomeSceneConfig){
                 App.temp.defaultHomeSceneConfig = {
@@ -1061,7 +1067,11 @@ const App = {
         items[activeIndex]?.setAttribute('data-is-ui-active', "true");
     },
     handleShellButton: (buttonNumber) => {
-        const currentDisplay = App.getCurrentDisplay();
+        const classicMainMenuFallback = 
+            App.settings?.classicMainMenuUI && 
+            !App.temp.classicMainMenuContainer?.classList?.contains('disabled') && 
+            App.temp.classicMainMenuContainer;
+        const currentDisplay = App.getCurrentDisplay() || classicMainMenuFallback;
 
         const getItems = () => [...currentDisplay.querySelectorAll('[data-ui-index]')];
         const handleNoDisplay = () => {
@@ -7418,32 +7428,17 @@ const App = {
                 }
             }
 
-
-            // if(App.disableGameplayControls) return;
-
-            /* let disallow = false;
-            [...document.querySelectorAll('.display')].forEach(display => {
-                if(!display.closest('.cloneables')){
-                    if(display.classList.contains('popup')) disallow = true;
-                    if(display.classList.contains('confirm')) disallow = true;
-                    if(display.classList.contains('prompt')) disallow = true;
-                }
-            });
-
-            console.log({disallow})
-
-            if(disallow) return; */
-
             let justOpened = false;
             if(!App.haveAnyDisplays()) {
                 justOpened = App.handlers.open_main_menu();
+
+                if(App.settings.classicMainMenuUI){
+
+                }
             }
 
             if(!justOpened) App.handleShellButton(buttonNumber);
 
-            // App.setScene(App.scene.home);
-            // if(App.haveAnyDisplays()) App.closeAllDisplays();
-            // else App.handlers.open_main_menu();
             App.vibrate();
         },
         sleep: function(){
@@ -7735,28 +7730,6 @@ const App = {
         list.close = function(){
             list.remove();
         }
-
-        // listItems.forEach(item => {
-        //     const button = UI.create({
-        //         parent: list,
-        //         componentType: 'div',
-        //         className: 'phone-app flex flex-dir-col justify-center align-center flex-grow',
-        //         style: 'width: 45%',
-        //         children: [
-        //             {
-        //                 componentType: 'button',
-        //                 className: 'flex flex-center',
-        //                 innerHTML: App.getIcon(item.icon, true),
-        //                 onclick: item.onclick,
-        //             },
-        //             {
-        //                 componentType: 'span',
-        //                 className: 'ellipsis',
-        //                 innerHTML: item.name,
-        //             }
-        //         ]
-        //     })
-        // });
 
         document.querySelector('.screen-wrapper').appendChild(container);
 
