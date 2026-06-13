@@ -3939,7 +3939,8 @@ class Activities {
 
         const backgroundMusic = App.playAdvancedSound({
             loop: true, 
-            src: 'resources/sounds/work_track_01.ogg'
+            src: 'resources/sounds/work_track_01.ogg',
+            volume: 0.5,
         });
 
         let standObject = new Object2d({
@@ -4712,7 +4713,8 @@ class Activities {
         
         const backgroundMusic = App.playAdvancedSound({
             loop: true, 
-            src: 'resources/sounds/work_track_01.ogg'
+            src: 'resources/sounds/work_track_01.ogg',
+            volume: 0.5,
         });
 
         const dynamicBackground = new Object2d({

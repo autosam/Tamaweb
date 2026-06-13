@@ -3352,7 +3352,7 @@ App.definitions = (() => {
                 duration: App.constants.ONE_HOUR * 1,
                 isNew: true,
                 type: 'job',
-                payAmount: 50,
+                payAmount: 75,
                 onVisualize: Activities.standWork,
                 onEnd: function(){
                     App.handlers.finalize_work(this);
@@ -3360,7 +3360,7 @@ App.definitions = (() => {
             },
             {
                 name: 'Office Work',
-                duration: App.constants.ONE_HOUR * 2,
+                duration: App.constants.ONE_HOUR * 2.5,
                 isNew: true,
                 type: 'job',
                 payAmount: 100,

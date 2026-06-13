@@ -2585,7 +2585,7 @@ const App = {
             return App.displayList([
                 ...list,
                 {
-                    name: `Working takes real-time minutes (${App.getIcon('clock', true)}), you can close the game while your pet is at work and come back later. ${App.getBadge()}`,
+                    name: `Working takes real-time minutes ${App.getIcon('clock', true)}, you can close the game while your pet is at work and come back later. ${App.getBadge()}`,
                     type: 'info',
                 },
                 {
