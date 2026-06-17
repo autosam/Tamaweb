@@ -901,7 +901,7 @@ const App = {
         if(friendsPendingLetterResponse.length){
             const friendDef = friendsPendingLetterResponse[0];
             const { rating } = friendDef.stats.player_sent_letter;
-            if(App.canProceed('get_letter_response', App.constants.ONE_MINUTE * 10)){
+            if(App.canProceed('get_letter_response', App.constants.ONE_MINUTE * 15)){
                 const { LETTER_SCORE_RATING } = App.constants;
                 const ratingMap = {
                     [LETTER_SCORE_RATING.awful]: 'awful',
