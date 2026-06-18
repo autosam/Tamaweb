@@ -6538,16 +6538,17 @@ class Activities {
         let emptyPos = { x: 0, y: 0 }; // top-left starts empty
         let grid = [];
         const image = randomFromArray([
-            'resources/img/background/house/devil_town_01.png',
-            'resources/img/background/house/music_classroom_01.png',
-            'resources/img/background/house/cc_04.png',
-            'resources/img/background/house/c_01.png',
-            'resources/img/background/house/cc_02.png',
-            'resources/img/background/house/cc_06.png',
-            'resources/img/background/house/beach_01.png',
-            'resources/img/background/house/parents_house_01.png',
-            'resources/img/background/house/ex_01_fs.png',
-            'resources/img/background/house/post_office_01.png',
+            // 'resources/img/background/house/devil_town_01.png',
+            // 'resources/img/background/house/music_classroom_01.png',
+            // 'resources/img/background/house/cc_04.png',
+            // 'resources/img/background/house/c_01.png',
+            // 'resources/img/background/house/cc_02.png',
+            // 'resources/img/background/house/cc_06.png',
+            // 'resources/img/background/house/beach_01.png',
+            // 'resources/img/background/house/parents_house_01.png',
+            // 'resources/img/background/house/ex_01_fs.png',
+            // 'resources/img/background/house/post_office_01.png',
+            'resources/img/misc/image_puzzle_01.png',
         ]);
 
         const parent = new Object2d({
