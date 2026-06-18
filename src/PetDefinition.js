@@ -350,7 +350,6 @@ class PetDefinition {
     }
     accessories = [];
     traits = [];
-    petId = cyrb53(random(0, 99999999));
 
     constructor(config) {
         if(config){
@@ -382,7 +381,6 @@ class PetDefinition {
         'deceasedPredecessors',
         'spriteSkin',
         'traits',
-        'petId',
     ];
     serializeStats(noStringify){
         let s = {};
