@@ -2912,7 +2912,7 @@ const App = {
         },
         finalize_work: function(definition){
             App.pet.stats.gold += definition.payAmount;
-            App.pet.stats.current_fun -= 25;
+            App.pet.stats.current_fun -= random(25, 45);
             App.displayConfirm(...GenericUIDef.singleConfirm(`${App.petDefinition.getAvatar()} made $${definition.payAmount}!`));
         },
         open_main_menu: function(){
