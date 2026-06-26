@@ -2342,6 +2342,7 @@ class Activities {
             App.pet.triggerScriptedState('idle', App.INF, false, true, null)
             App.pet.stopMove();
             App.pet.targetX = -999;
+            setTimeout(() => App.pet.x = -99);
         }
         
         setTimeout(() => {
