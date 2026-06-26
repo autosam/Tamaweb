@@ -5383,9 +5383,9 @@ class Activities {
                     <div id="score">${score}</div>
                 </div>
             </div>
-            <button style="width: ${buttonSizePx}px; height: ${buttonSizePx}px" class="dog-washing-button">
+            <div style="width: ${buttonSizePx}px; height: ${buttonSizePx}px" class="dog-washing-button cursor-pointer">
                 <i class="fa-solid fa-hands-wash fa-2x"></i>
-            </button>
+            </div>
         `;
         const washActionButton = screen.querySelector('.dog-washing-button');
         const repositionAction = () => {
