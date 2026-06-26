@@ -903,6 +903,8 @@ class Pet extends Object2d {
             this.attemptMisbehave();
         }
 
+        stats.age_progress += 500;
+
         switch(this.petDefinition.lifeStage){
             case PetDefinition.LIFE_STAGE.baby: depletion_mult *= 1.65; break;
             case PetDefinition.LIFE_STAGE.child: depletion_mult *= 1.46; break;

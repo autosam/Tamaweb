@@ -335,11 +335,15 @@ const App = {
         })
             .setStats({is_egg: true})
             .loadStats(loadedData.pet)
-            .loadAccessories(loadedData.accessories);
+            .loadAccessories(loadedData.accessories)
+            .setInitialAgeProgress()
         
         // check automatic age up
         if(App.settings.automaticAging){
-            while(moment().isAfter( App.petDefinition.getNextAutomaticBirthdayDate() )){
+            while(
+                App.petDefinition.stats.age_progress >=
+                App.petDefinition.getNextAutomaticBirthdayDate()
+            ){
                 App.petDefinition.ageUp()
                 App.sendAnalytics('auto_age_up', App.petDefinition.lifeStage);
             }

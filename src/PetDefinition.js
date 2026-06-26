@@ -331,6 +331,9 @@ class PetDefinition {
 
         // gender
         gender: randomFromArray(App.constants.GENDERS.slice(0, 3)),
+
+        // age progress
+        age_progress: -1,
     }
     friends = [];
     family = [];
@@ -357,6 +360,15 @@ class PetDefinition {
         }
 
         this.prepareSprite();
+    }
+
+    setInitialAgeProgress(){
+        if(this.stats.age_progress === -1) {
+            this.stats.age_progress = this.getNextAutomaticBirthdayDate(false);
+            console.log("MIGRATED AGE PROGRESS", this.stats.age_progress, moment.duration(this.stats.age_progress).humanize(), this.lifeStage, this.getLifeStageLabel(), this.name);
+        }
+    
+        return this
     }
 
     getSpritesheetDefinition(){
@@ -425,6 +437,7 @@ class PetDefinition {
                     gender: this.stats.gender,
                     is_ghost: this.stats.is_ghost,
                     has_toothache: this.stats.has_toothache,
+                    // age_progress: this.stats.age_progress,
                 }
                 return;
             }
@@ -566,7 +579,7 @@ class PetDefinition {
         return false;
     }
 
-    getNextAutomaticBirthdayDate(){
+    getNextAutomaticBirthdayDate(includeCurrentStage = true){
         const getLifeStageTotalHours = (lifeStage) => {
             const autoAgeHours = {
                 [PetDefinition.LIFE_STAGE.baby]: App.constants.AUTO_AGE_HOURS_BABY,
@@ -584,6 +597,9 @@ class PetDefinition {
 
             let total = 0;
             for(const code of lifeStages){
+                if (code === lifeStage && !includeCurrentStage) {
+                    break;
+                }
                 const hours = autoAgeHours[code];
                 if(!hours) break;
                 total += hours;
@@ -591,6 +607,8 @@ class PetDefinition {
             }
             return total;
         }
+
+        return getLifeStageTotalHours(this.lifeStage) * 60 * 60 * 1000;
 
         const m = moment(this.birthday);
         switch(this.lifeStage){
