@@ -3177,6 +3177,7 @@ const App = {
                         App.temp.convertedModAddedResources?.forEach(addResourceChar);
 
                         const items = chars.map(char => ({
+                            _disable: char.def.lifeStage !== App.petDefinition.lifeStage,
                             name: `${char.def.getCSprite()} <span class="ellipsis">${char.name}</span>`,
                             onclick: () => {
                                 return App.displayConfirm(...GenericUIDef.binaryConfirm({
