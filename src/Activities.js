@@ -2264,7 +2264,7 @@ class Activities {
     static async goToCurrentRabbitHole() {
         const {current_rabbit_hole: currentRabbitHole} = App.pet.stats;
         const rabbitHoleDefinition = App.definitions.rabbit_hole_activities.find(activity => activity.name === App.pet.stats.current_rabbit_hole.name);
-        const hasVisualizer = Boolean(rabbitHoleDefinition.onVisualize);
+        const hasVisualizer = Boolean(rabbitHoleDefinition?.onVisualize);
 
         const outOverlay = new Object2d({
             img: 'resources/img/misc/out_overlay_01.png',
@@ -2346,7 +2346,7 @@ class Activities {
         }
         
         setTimeout(() => {
-            rabbitHoleDefinition.onVisualize?.();
+            rabbitHoleDefinition?.onVisualize?.();
         })
     }
     static async goToFortuneTeller(otherPetDef){
