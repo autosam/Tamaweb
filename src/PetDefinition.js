@@ -608,6 +608,7 @@ class PetDefinition {
         if(!evolutions) return false;
 
         this.sprite = randomFromArray(evolutions);
+        this.spriteSkin = false;
 
         this.lastBirthday = new Date();
         this.prepareSprite();
@@ -623,16 +624,20 @@ class PetDefinition {
         return true;
     }
 
-    getPossibleEvolutions(isNpc, all){
+    getPossibleEvolutions(isNpc, returnAll){
         const { bounds, ratings } = App.constants.SKILL_EVOLUTION_EFFECTIVENESS;
  
         const careRating = !isNpc ? this.stats.current_care : random(1, 3);
         let possibleEvolutions = GROWTH_CHART[this.sprite];
-        if(!possibleEvolutions){
+        if(!possibleEvolutions) { // get random pet def's evolution in the same life stage
+            const randomSameAgePet = App?.getRandomPetDef?.(this.lifeStage);
+            possibleEvolutions = GROWTH_CHART[randomSameAgePet?.sprite];
+        }
+        if(!possibleEvolutions) { // fallback to fully random character evolution
             possibleEvolutions = GROWTH_CHART[randomFromArray(Object.keys(GROWTH_CHART))]
         }
-
-        if(all) return possibleEvolutions;
+        
+        if(returnAll) return possibleEvolutions;
 
         const skills =  {
             endurance: this.stats.current_endurance,
@@ -640,8 +645,8 @@ class PetDefinition {
             expression: this.stats.current_expression,
         }
         const topSkill = Object.entries(skills).reduce((best, [key, value]) => {
-        if (value <= bounds) return best;
-        return !best || value > best[1] ? [key, value] : best;
+            if (value <= bounds) return best;
+            return !best || value > best[1] ? [key, value] : best;
         }, null)?.[0];
 
         let finalRating = careRating;
@@ -689,14 +694,14 @@ class PetDefinition {
         return false;
     }
 
-    getCSprite(noMargin){
+    getCSprite(noMargin, sprite = this.spriteSkin || this.sprite){
         const className = PetDefinition.getSpriteClassName(this);
-        return PetDefinition.generateCSprite(this.spriteSkin || this.sprite, noMargin, className);
+        return PetDefinition.generateCSprite(sprite, noMargin, className);
     }
 
-    getFullCSprite(){
+    getFullCSprite(sprite = this.spriteSkin || this.sprite){
         const className = PetDefinition.getSpriteClassName(this);
-        return PetDefinition.generateFullCSprite(this.spriteSkin || this.sprite, null, className);
+        return PetDefinition.generateFullCSprite(sprite, null, className);
     }
 
     getAvatar(){

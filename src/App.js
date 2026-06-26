@@ -3141,7 +3141,7 @@ const App = {
                     }
                 },
                 {
-                    _ignore: !App.mods.some(mod => mod.added_resources.some(res => res.type === 'char')),
+                    _ignore: !App.mods.some(mod => mod.added_resources.some(res => res.type === 'char')) && !App.petDefinition.spriteSkin,
                     name: `change character ${App.getBadge("Modded")}`,
                     onclick: () => {
                         if(App.settings.automaticAging){
@@ -3158,12 +3158,13 @@ const App = {
                                 src: resource.resId,
                             })
                         }
-                        const changeCharacter = (src) => {
+                        const changeCharacterSkin = (src) => {
                             Activities.getDressed(
                                 () => {
-                                    App.petDefinition.sprite = src;
+                                    App.petDefinition.spriteSkin = src;
                                     App.petDefinition.prepareSprite();
                                     App.pet.recreateAsMainPet();
+                                    App.save();
                                 },
                                 false, true
                             )
@@ -3179,9 +3180,9 @@ const App = {
                             name: `${char.def.getCSprite()} <span class="ellipsis">${char.name}</span>`,
                             onclick: () => {
                                 return App.displayConfirm(...GenericUIDef.binaryConfirm({
-                                    text: `Are you sure you want to change your character? <br>${char.def.getFullCSprite()}`,
+                                    text: `Are you sure you want to visually change your character? <br>${char.def.getFullCSprite()}`,
                                     onAccept: () => {
-                                        changeCharacter(char.src);
+                                        changeCharacterSkin(char.src);
                                     },
                                 }))
                             }
@@ -3189,8 +3190,21 @@ const App = {
 
                         return App.displayList([
                             {
-                                name: `Here you will be able to view and change into characters from your installed mods.<br><br><div style="color: red;">Keep in mind that this action is not reversible, <b class="blink">backup your save file</b> before continuing.</div>`,
+                                name: `Here you will be able to view and change into characters from your installed mods.<br><br><div style="color: red;">You can <b>change back any time</b>, but please <b class="blink">backup your save file</b> before continuing.</div>`,
                                 type: 'info',
+                            },
+                            {
+                                _disable: !App.petDefinition.spriteSkin,
+                                name: `${App.petDefinition.getCSprite(false, App.petDefinition.sprite)} Change back`,
+                                class: 'primary solid',
+                                onclick: () => {
+                                    return App.displayConfirm(...GenericUIDef.binaryConfirm({
+                                        text: `Are you sure you want to change back to your original character? <br>${App.petDefinition.getFullCSprite(App.petDefinition.sprite)}`,
+                                        onAccept: () => {
+                                            changeCharacterSkin(undefined);
+                                        }
+                                    }))
+                                }
                             },
                             ...items,
                         ]);
