@@ -6536,6 +6536,7 @@ const App = {
                                                                                     current.hunger_replenish ?? 0, 
                                                                                     'food', 
                                                                                 true);
+                                                                                App.addNumToObject(App.pet.inventory.food, foodName, -1);
                                                                             }
                                                                         })), undefined, 'cancel');
                                                                     },
