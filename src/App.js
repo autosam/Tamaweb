@@ -7356,6 +7356,7 @@ const App = {
                     }
                 },
                 {
+                    _ignore: true,
                     _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.child,
                     name: `picture puzzle ${App.getBadge()}`,
                     onclick: () => {
