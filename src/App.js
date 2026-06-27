@@ -6100,7 +6100,7 @@ const App = {
                 }))
 
                 return {
-                    name: `${icon} ${name}`,
+                    name: `${icon} <span class="ellipsis overflow-hidden">${name}</span>`,
                     onclick: () => {
                         const isMonsterGhost = friendDef.stats.is_ghost === PetDefinition.GHOST_TYPE.devil;
                         const isAngelGhost = friendDef.stats.is_ghost === PetDefinition.GHOST_TYPE.angel;
