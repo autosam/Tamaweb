@@ -6,9 +6,7 @@ const UI = {
         'onClick',
         '_mount',
     ],
-    create: (props) => {
-        return UI.ce(props);
-    },
+    create: (props) => UI.ce(props),
     ce: (props) => {
         const e = document.createElement(props?.componentType || 'div');
 
@@ -35,14 +33,12 @@ const UI = {
                         break;
                     case '_mount':
                         e._mount = () => props._mount(e);
+                        e._mount();
                         break;
                 }
                 return;
             }
-
-            e._mount?.()
             e[propName] = props[propName];
-            // e.setAttribute(prop, props[prop]);
         })
         return e;
     },
@@ -174,6 +170,17 @@ const GenericUIDef = {
                 name: declineLabel,
                 onclick: onDecline,
                 class: 'back-btn'
+            }
+        ]]
+    },
+    singleConfirm: (text, {
+        onAccept = () => {},
+        acceptLabel = 'Ok',
+    } = {}) => {
+        return [text, [
+            {
+                name: acceptLabel,
+                onclick: onAccept
             }
         ]]
     }

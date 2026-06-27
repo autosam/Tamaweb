@@ -178,6 +178,7 @@ App.definitions = (() => {
                 name: 'Work',
                 image: 'resources/img/misc/activity_building_work.png',
                 onEnter: () => App.handlers.open_works_list(),
+                isNew: true,
             },
             {
                 name: `Underworld Entrance`,
@@ -189,7 +190,7 @@ App.definitions = (() => {
                 name: `Post Office`,
                 image: 'resources/img/misc/activity_building_post_office.png',
                 onEnter: () => App.handlers.go_to_post_office(),
-                isNew: true,
+                isNew: false,
             }
         ],
     
@@ -486,21 +487,21 @@ App.definitions = (() => {
                 health_replenish: 10,
                 price: 40,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
-                isNew: true,
+                isNew: false,
             },
             "butter steak": {
                 sprite: 689,
                 hunger_replenish: 25,
                 price: 35,
                 age: [_ls.teen, _ls.adult, _ls.elder],
-                isNew: true,
+                isNew: false,
             },
             "stuffed pumpkin": {
                 sprite: 299,
                 hunger_replenish: 17,
                 price: 20,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
-                isNew: true,
+                isNew: false,
             },
 
             // cookable only
@@ -905,6 +906,15 @@ App.definitions = (() => {
                 type: 'treat',
                 isNew: false,
             },
+            "takoyaki": {
+                sprite: 1068,
+                hunger_replenish: 15,
+                fun_replenish: 5,
+                health_replenish: 2,
+                price: 12,
+                type: 'treat',
+                isNew: true,
+            },
     
     
             // groc
@@ -943,7 +953,7 @@ App.definitions = (() => {
                 health_replenish: -10,
                 price: 200,
                 type: 'med',
-                isNew: true,
+                isNew: false,
                 nonCraftable: true,
                 payload: () => {
                     App.petDefinition.stats.last_eaten = [];
@@ -1233,7 +1243,7 @@ App.definitions = (() => {
                 price: 400,
                 interaction_time: 15000,
                 interruptable: false,
-                isNew: true,
+                isNew: false,
                 logic_increase: 0.1,
             },
         },
@@ -1445,6 +1455,205 @@ App.definitions = (() => {
                 price: 350,
                 isNew: false,
             },
+            "frame": {
+                image: "resources/img/background/house/10.png",
+                price: 391,
+                isNew: true,
+                condition: () => App.pet.stats.is_revived_once,
+                onLoad: () => {
+                    const parent = new Object2d({
+                        x: 0,
+                        y: 0,
+                    });
+
+                    const spawnedPets = [
+                        ...App.drawer.selectObjects('pet'),
+                        ...App.drawer.selectObjects('animal'),
+                    ]
+
+                    const spawnWatcher = ({x = '50%', y = '30%'}) => {
+                        const watcher = new Object2d({
+                            parent,
+                            x: 0,
+                            y: 0,
+                        });
+                        const watcherImage = 'resources/img/misc/watcher_01.png';
+                        const spritesheet = {
+                            cellSize: 44,
+                            columns: 4,
+                            rows: 1,
+                        }
+                        let targetObject = App.pet;
+                        const baseConfig = {
+                            parent: watcher,
+                            x,
+                            y,
+                            img: watcherImage,
+                            localZ: 1,
+                            z: App.constants.BACKGROUND_Z + 0.01,
+                            isRelative: true,
+                        }
+                        const layer0 = new Object2d({
+                            ...baseConfig,
+                            spritesheet: {
+                                ...spritesheet,
+                                cellNumber: 3,
+                            },
+                        })
+                        const layer1 = new Object2d({
+                            ...baseConfig,
+                            spritesheet: {
+                                ...spritesheet,
+                                cellNumber: 2,
+                            },
+                            nextTargetChangeMs: 0,
+                            onLateDraw: (me) => {
+                                if(!me.originalPosition){
+                                    me.originalPosition = {
+                                        x: me.x, 
+                                        y: me.y
+                                    }
+                                }
+
+                                if(App.mouse.isDown){
+                                    targetObject = {
+                                        x: App.mouse.absX,
+                                        y: App.mouse.absY,
+                                    }
+                                    me.nextTargetChangeMs = App.time + random(1000, 3000);
+                                }
+
+                                if(App.time > me.nextTargetChangeMs){
+                                    me.nextTargetChangeMs = App.time + random(1000, 3000);
+                                    const randomPosition = {
+                                        x: random(-100, 100),
+                                        y: random(-100, 100),
+                                    };
+                                    const mainPetBasedPosition = {
+                                        x: App.pet.x + random(-20, 20),
+                                        y: App.pet.y + random(-5, 5)
+                                    }
+
+                                    const possibleTargets = [
+                                        ...spawnedPets,
+                                        ...spawnedPets,
+                                        ...spawnedPets,
+                                        ...spawnedPets,
+                                        ...spawnedPets,
+                                        ...spawnedPets,
+                                        mainPetBasedPosition,
+                                        mainPetBasedPosition,
+                                        mainPetBasedPosition,
+                                        randomPosition,
+                                    ]
+
+                                    targetObject = randomFromArray(possibleTargets);
+                                }
+
+                                if(isNaN(targetObject.x) || isNaN(targetObject.y)){
+                                    return;
+                                }
+
+                                const diff = subtractVector(me.originalPosition, targetObject);
+                                const normalized = normalizeVector(diff);
+
+                                const targetPosition = subtractVector(me.originalPosition, {
+                                    x: normalized.x * 10, y: normalized.y * 4
+                                });
+
+                                me.x = lerp(me.x, targetPosition.x, 0.003 * App.deltaTime);
+                                me.y = lerp(me.y, targetPosition.y, 0.003 * App.deltaTime);
+                            }
+                        })
+                        const layer3 = new Object2d({
+                            ...baseConfig,
+                            scale: 1,
+                            scaleY: 1,
+                            spritesheet: {
+                                ...spritesheet,
+                                cellNumber: 4,
+                            },
+                            nextEyelidOffsetChangeMs: App.time + 5000,
+                            nextBlinkMs: App.time + random(0, 1000),
+                            eyelidOffset: 0,
+                            closedAmount: 0,
+                            onDraw: (me) => {
+                                if(!me.originalPosition){
+                                    if(isNaN(me.x)) return;
+                                    
+                                    me.originalPosition = {
+                                        x: me.x, 
+                                        y: me.y
+                                    }
+                                }
+                                if(App.time > me.nextEyelidOffsetChangeMs){
+                                    me.nextEyelidOffsetChangeMs = App.time + random(250, 3000);
+                                    me.eyelidOffset = Math.random() + 1;
+                                }
+                                if(App.time > me.nextBlinkMs){
+                                    me.nextBlinkMs = App.time + random(300, 8000);
+                                    me.eyelidOffset = -1;
+                                    me.nextEyelidOffsetChangeMs = App.time + 100;
+                                }
+                                const size = me.spritesheet.cellSize;
+                                const closedAmount = (size / 2) * me.eyelidOffset;
+                                me.closedAmount = lerp(me.closedAmount, closedAmount, 0.01 * App.deltaTime);
+                                const {x, y} = me.originalPosition;
+                                me.clip = [
+                                    [x, y],
+                                    [x + size, 0],
+                                    [x + size, y + size - me.closedAmount],
+                                    [x, y + size - me.closedAmount],
+                                ];
+                                me.y = layer3.eyelidOffset < 0 ? me.originalPosition.y + 1 : me.originalPosition.y;
+                            }
+                        })
+                        const layer2 = new Object2d({
+                            ...baseConfig,
+                            spritesheet: {
+                                ...spritesheet,
+                                cellNumber: 1,
+                            },
+                            onLateDraw: (me) => {
+                                if(!me.originalPosition){
+                                    me.originalPosition = {
+                                        x: me.x,
+                                        y: me.y
+                                    }
+                                }
+
+                                me.y = layer3.eyelidOffset < 0 ? me.originalPosition.y + 1 : me.originalPosition.y;
+                            }
+                        })
+
+                        return watcher;
+                    }
+
+                    spawnWatcher({x: '40%', y: '12%'});
+                    spawnWatcher({x: '80%', y: '27%'});
+                    spawnWatcher({x: '45%', y: '45%'});
+
+                    if(!App.isRoomFurnishable()){
+                        const pillar = new Object2d({
+                            parent,
+                            img: 'resources/img/misc/watcher_pillar_01.png',
+                            x: 0,
+                            y: 0,
+                            localZ: 2,
+                            z: App.constants.BACKGROUND_Z + 0.3,
+                        })
+                    }
+
+
+                    App.temp.whiteRoomWatcherObject = parent;
+
+                    document.querySelector('.graphics-canvas').style.filter = 'grayscale(1) brightness(1.2) contrast(2.5)';
+                },
+                onUnload: () => {
+                    App.temp.whiteRoomWatcherObject?.removeObject();
+                    document.querySelector('.graphics-canvas').style.filter = '';
+                }
+            },
 
             // craftables
             "collage": {
@@ -1465,6 +1674,18 @@ App.definitions = (() => {
                 image: 'resources/img/background/house/bathroom_cc_01.png',
                 price: 350,
                 isNew: false,
+                type: 'bathroom',
+            },
+            "mush-bathroom": {
+                image: 'resources/img/background/house/bathroom_cc_02.png',
+                price: 350,
+                isNew: true,
+                type: 'bathroom',
+            },
+            "gothic bathroom": {
+                image: 'resources/img/background/house/bathroom_cc_03.png',
+                price: 300,
+                isNew: true,
                 type: 'bathroom',
             },
 
@@ -1491,6 +1712,12 @@ App.definitions = (() => {
                 image: 'resources/img/background/house/kitchen_cc_02.png',
                 price: 350,
                 isNew: false,
+                type: 'kitchen',
+            },
+            "gothic kitchen": {
+                image: 'resources/img/background/house/kitchen_cc_03.png',
+                price: 300,
+                isNew: true,
                 type: 'kitchen',
             },
         },
@@ -2472,8 +2699,8 @@ App.definitions = (() => {
         achievements: {
             pat_x_times: {
                 name: 'Pat! Pat! Pat!',
-                description: 'Pet your buddy 100 times!',
-                checkProgress: () => App.getRecord('times_patted') >= 100,
+                description: 'Pet your buddy a lot!',
+                checkProgress: () => App.getRecord('times_patted') >= 150,
                 advance: (amount) => App.addRecord('times_patted', amount),
                 getReward: () => {
                     App.pet.stats.gold += 150;
@@ -2712,6 +2939,26 @@ App.definitions = (() => {
                 getReward: () => {
                     App.pet.stats.gold += 200;
                     App.displayPopup(`You've received $200!`);
+                }
+            },
+            perfect_minigame_foodknowledge_win_x_times: {
+                name: 'Cuisine Enthusiast',
+                description: 'Win in the Food knowledge game 20 times!',
+                checkProgress: () => App.getRecord('times_won_food_knowledge_minigame') >= 20,
+                advance: (amount) => App.addRecord('times_won_food_knowledge_minigame', amount),
+                getReward: () => {
+                    App.pet.stats.gold += 200;
+                    App.displayPopup(`You've received $200!`);
+                }
+            },
+            perfect_minigame_imagepuzzle_win_x_times: {
+                name: 'Tilemaster',
+                description: 'Win in the Picture Puzzle game 5 times!',
+                checkProgress: () => App.getRecord('times_won_image_puzzle_minigame') >= 5,
+                advance: (amount) => App.addRecord('times_won_image_puzzle_minigame', amount),
+                getReward: () => {
+                    App.pet.stats.gold += 500;
+                    App.displayPopup(`You've received $500!`);
                 }
             },
         },
@@ -3102,6 +3349,28 @@ App.definitions = (() => {
                     App.pet.stats.current_sleep -= 50;
                 }
             },
+            {
+                name: 'Stand Work',
+                duration: App.constants.ONE_HOUR * 1,
+                isNew: true,
+                type: 'job',
+                payAmount: 75,
+                onVisualize: Activities.standWork,
+                onEnd: function(){
+                    App.handlers.finalize_work(this);
+                }
+            },
+            {
+                name: 'Office Work',
+                duration: App.constants.ONE_HOUR * 2.5,
+                isNew: true,
+                type: 'job',
+                payAmount: 100,
+                onVisualize: Activities.officeWork,
+                onEnd: function(){
+                    App.handlers.finalize_work(this);
+                }
+            },
         ],
 
         /* GAMEPLAY BUFFS */
@@ -3304,9 +3573,11 @@ App.definitions = (() => {
             food: () => Object.keys(App.definitions.food)
                 .filter(key => App.definitions.food[key].price > 0)
                 .map(key => { 
+                    const definition = App.definitions.food[key];
                     return {
+                        definition,
                         name: key,
-                        icon: App.getFoodCSprite(App.definitions.food[key].sprite),
+                        icon: App.getFoodCSprite(definition.sprite),
                         count: [1, 4],
                         type: 'consumable',
                         onClaim: (amt) => {

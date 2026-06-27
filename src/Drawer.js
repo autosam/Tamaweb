@@ -92,6 +92,15 @@ class Drawer {
             if (object.additionalX) x += object.additionalX;
             if (object.additionalY) y += object.additionalY;
 
+            if(object.isRelative) {
+                let current = object;
+                while(current?.parent){
+                    current = current.parent;
+                    x += current.x;
+                    y += current.y;
+                }
+            }
+
             // fixes blurriness on some frames
             y = Math.round(y);
             x = Math.round(x);

@@ -535,15 +535,7 @@ class PetDefinition {
     }
 
     getLifeStageLabel(){
-        let age;
-        switch(this.getLifeStage()){
-            case PetDefinition.LIFE_STAGE.baby: age = 'baby'; break;
-            case PetDefinition.LIFE_STAGE.child: age = 'child'; break;
-            case PetDefinition.LIFE_STAGE.teen: age = 'teen'; break;
-            case PetDefinition.LIFE_STAGE.elder: age = 'elder'; break;
-            default: age = 'adult';
-        }
-        return age;
+        return PetDefinition.getLifeStageLabel(this.getLifeStage())
     }
 
     prepareSprite(){
@@ -608,6 +600,7 @@ class PetDefinition {
         if(!evolutions) return false;
 
         this.sprite = randomFromArray(evolutions);
+        this.spriteSkin = false;
 
         this.lastBirthday = new Date();
         this.prepareSprite();
@@ -623,16 +616,20 @@ class PetDefinition {
         return true;
     }
 
-    getPossibleEvolutions(isNpc, all){
+    getPossibleEvolutions(isNpc, returnAll){
         const { bounds, ratings } = App.constants.SKILL_EVOLUTION_EFFECTIVENESS;
  
         const careRating = !isNpc ? this.stats.current_care : random(1, 3);
         let possibleEvolutions = GROWTH_CHART[this.sprite];
-        if(!possibleEvolutions){
+        if(!possibleEvolutions) { // get random pet def's evolution in the same life stage
+            const randomSameAgePet = App?.getRandomPetDef?.(this.lifeStage);
+            possibleEvolutions = GROWTH_CHART[randomSameAgePet?.sprite];
+        }
+        if(!possibleEvolutions) { // fallback to fully random character evolution
             possibleEvolutions = GROWTH_CHART[randomFromArray(Object.keys(GROWTH_CHART))]
         }
-
-        if(all) return possibleEvolutions;
+        
+        if(returnAll) return possibleEvolutions;
 
         const skills =  {
             endurance: this.stats.current_endurance,
@@ -640,8 +637,8 @@ class PetDefinition {
             expression: this.stats.current_expression,
         }
         const topSkill = Object.entries(skills).reduce((best, [key, value]) => {
-        if (value <= bounds) return best;
-        return !best || value > best[1] ? [key, value] : best;
+            if (value <= bounds) return best;
+            return !best || value > best[1] ? [key, value] : best;
         }, null)?.[0];
 
         let finalRating = careRating;
@@ -689,14 +686,14 @@ class PetDefinition {
         return false;
     }
 
-    getCSprite(noMargin){
+    getCSprite(noMargin, sprite = this.spriteSkin || this.sprite){
         const className = PetDefinition.getSpriteClassName(this);
-        return PetDefinition.generateCSprite(this.sprite, noMargin, className);
+        return PetDefinition.generateCSprite(sprite, noMargin, className);
     }
 
-    getFullCSprite(){
+    getFullCSprite(sprite = this.spriteSkin || this.sprite){
         const className = PetDefinition.getSpriteClassName(this);
-        return PetDefinition.generateFullCSprite(this.sprite, null, className);
+        return PetDefinition.generateFullCSprite(sprite, null, className);
     }
 
     getAvatar(){
@@ -951,6 +948,17 @@ class PetDefinition {
         else if(PET_CHILD_CHARACTERS.some(char => char === sprite)) return PetDefinition.LIFE_STAGE.child;
         else if(PET_ELDER_CHARACTERS.some(char => char === sprite)) return PetDefinition.LIFE_STAGE.elder;
         return PetDefinition.LIFE_STAGE.adult;
+    }
+    static getLifeStageLabel(lifeStage){
+        let age;
+        switch(lifeStage){
+            case PetDefinition.LIFE_STAGE.baby: age = 'baby'; break;
+            case PetDefinition.LIFE_STAGE.child: age = 'child'; break;
+            case PetDefinition.LIFE_STAGE.teen: age = 'teen'; break;
+            case PetDefinition.LIFE_STAGE.elder: age = 'elder'; break;
+            default: age = 'adult';
+        }
+        return age;
     }
 
     static getCharCode(sprite){

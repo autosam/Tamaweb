@@ -69,6 +69,15 @@ const random = function(min, max, seeded){
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+function isAdjacent(ax, ay, bx, by) {
+    return (
+        (Math.abs(ax - bx) === 1 && ay === by) ||
+        (Math.abs(ay - by) === 1 && ax === bx)
+    );
+}
+function getKeyByValue(obj, value) {
+  return Object.keys(obj).find(key => obj[key] === value);
+}
 const move = function(s, e, amount){
     if(s > e) {
         s -= amount;
@@ -321,7 +330,7 @@ function normalizeVector({ x, y }) {
     const magnitude = Math.sqrt(x * x + y * y);
 
     if (magnitude === 0) {
-    return { x: 0, y: 0 };
+        return { x: 0, y: 0 };
     }
 
     return {
@@ -329,6 +338,18 @@ function normalizeVector({ x, y }) {
         y: y / magnitude
     };
 }
+const subtractVector = (a, b) => ({
+    x: a.x - b.x,
+    y: a.y - b.y
+})
+const addVector = (a, b) => ({
+    x: a.x + b.x,
+    y: a.y + b.y
+})
+const multVector = (a, mult) => ({
+    x: a.x * mult,
+    y: a.y * mult
+})
 
 
 const wordBank = {
@@ -389,3 +410,21 @@ const generateRandomSentence = (isQuestion = Math.random() > 0.5) => {
     if(isQuestion) return `${randomFromArray(questionStarters)} ${randomFromArray(slot3)}`;
     return `${randomFromArray(slot1)} ${randomFromArray(slot2)} ${randomFromArray(slot3)}`
 }
+
+// https://github.com/bryc/code/blob/master/jshash/experimental/cyrb53.js
+const cyrb53 = (value, seed = 0) => {
+    const str = String(value);
+
+    let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+    for(let i = 0, ch; i < str.length; i++) {
+        ch = str.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1  = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+    h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2  = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+    h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    
+    return (h2>>>0).toString(16).padStart(8,0)+(h1>>>0).toString(16).padStart(8,0);
+};

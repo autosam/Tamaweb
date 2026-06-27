@@ -85,6 +85,9 @@ const Missions = {
             activeMission.isDone = true;
         }
     },
+    setAllAsDone: function(){
+        this.currentStep = this.MAX_STEPS;
+    },
     refresh: function(){
         const oneDayInMs = 1000 * 60 * 60 * 24;
 
@@ -284,19 +287,18 @@ const Missions = {
                     _disable: !m.isDone,
                     name: `
                         <div 
-                        style="max-width: 100%; align-items: center;" 
-                        class="flex-between width-full pointer-events-none"
+                            style="max-width: 100%; align-items: center;" 
+                            class="flex-between width-full pointer-events-none"
                         >
+                            <span class="overflow-hidden" style="margin-right: 10px">
+                                <div style="width: fit-content" class="${title.length > 10 ? 'marquee' : ''}">
+                                    ${title}
+                                </div>
+                            </span>
 
-                        <span class="overflow-hidden" style="margin-right: 10px">
-                            <div style="width: fit-content" class="${title.length > 10 ? 'marquee' : ''}">
-                                ${title}
-                            </div>
-                        </span>
-
-                        <span style="padding: 2px; margin: 0" class="solidd-surface-stylized b-radius-10">
-                            ${m.counter}/${m.targetCount}
-                        </span>
+                            <span style="padding: 2px; margin: 0">
+                                ${m.counter}/${m.targetCount}
+                            </span>
                         </div>
                     `,
                     onclick: (btn) => {

@@ -393,7 +393,15 @@ hr {
     transition: background 0.2s ease;
 }
 .loading-text #loading-error {
-    color: rgb(255, 170, 170);
+    color: rgb(70, 55, 55);
+    --outline: rgb(255, 230, 230);
+    text-shadow: 
+        -1px -1px var(--outline), 
+        1px -1px var(--outline), 
+        -1px 1px var(--outline), 
+        1px 1px var(--outline);
+    text-align: center;
+    max-width: 400px;
 }
 .loading-text #loading-error i {
     color: red;
@@ -565,11 +573,11 @@ hr {
 .button-mode .generic-btn[data-is-ui-active="true"]:after,
 .generic-btn.active:after,
 .simon-says-button.active:after,
-.screen-wrapper button:active:after,
-.screen-wrapper button:hover:after,
-.screen-wrapper button:focus-within:after,
-.screen-wrapper button[data-is-active-item="true"]:after,
-.button-mode .screen-wrapper [data-is-ui-active="true"]:after
+.graphics-wrapper button:active:after,
+.graphics-wrapper button:hover:after,
+.graphics-wrapper button:focus-within:after,
+.graphics-wrapper button[data-is-active-item="true"]:after,
+.button-mode .graphics-wrapper [data-is-ui-active="true"]:after
 {
     width: 11px;
     height: 9px;
@@ -908,6 +916,10 @@ button {
 
 .x2 {
     scale: 2
+}
+
+.absolute {
+    position: absolute;
 }
 
 .absolute-fullscreen {
@@ -1461,6 +1473,9 @@ input#background-color-picker {
 .width-auto {
     width: auto;
 }
+.width-fit {
+    width: fit-content;
+}
 .items-center {
     align-items: center;
 }
@@ -1900,7 +1915,7 @@ a.generic-btn:before {
     content: "\f08e";
     left: 10px;
     position: absolute;
-    font-family: "Font Awesome 6 Free";
+    font-family: "FontAwesome";
     font-size: xx-small;
     padding: 2px;
     border-radius: 100%;
@@ -2311,8 +2326,8 @@ a.generic-btn:before {
 }
 .stepper__step {
     z-index: 2;
-    width: 8px;
-    height: 8px;
+    width: 12px;
+    height: 12px;
     border-radius: 100%;
     display: flex;
     align-items: center;
@@ -2398,7 +2413,7 @@ a.generic-btn:before {
     position: absolute;
     z-index: 3;
     pointer-events: none;
-    font-family: "Font Awesome 6 Free";
+    font-family: "FontAwesome";
     font-size: 11px;
     animation: scrollable-indicator-anim 0.55s infinite alternate-reverse ease-in-out;
     color: var(--prim-clr-b-text);
@@ -2549,7 +2564,7 @@ a.generic-btn:before {
     position: relative;
 }
 .seller-analysis:after {
-    font-family: "Font Awesome 6 Free";
+    font-family: "FontAwesome";
     font-size: x-small;
     position: absolute;
     top: 25%;
@@ -2927,4 +2942,226 @@ c-sprite.ghost.devil::after {
     border-radius: 100%;
     overflow: hidden;
     border: 1px solid;
+}
+.cursor {
+    --size: 40px;
+    width: var(--size);
+    height: var(--size);
+    border-radius: 100%;
+    pointer-events: none;
+    position: absolute;
+    animation: cursor-animation 300ms linear forwards;
+    translate: calc(-0.5 * var(--size)) calc(-0.5 * var(--size));
+    font-size: x-small;
+    background: url('resources/img/ui/tap-pointer.png');
+    background-size: cover;
+    z-index: 99999;
+}
+@keyframes cursor-animation {
+    0% {
+        opacity: 0;
+        transform: scale(0.5) rotateZ(0deg);
+    }
+    20% {
+        opacity: 1;
+        transform: scale(1) rotateZ(30deg) rotateX(25deg) ;
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1) rotateZ(0deg) translateY(-4px);
+    }
+}
+.cursor-spark {
+    --size: 20px;
+    width: var(--size);
+    height: var(--size);
+    pointer-events: none;
+    position: absolute;
+    animation: cursor-spark-animation 300ms linear forwards;
+    translate: calc(-0.5 * var(--size)) calc(-0.5 * var(--size));
+    font-size: x-small;
+    background: url('resources/img/ui/tap-pointer-sparks.png');
+    background-size: cover;
+    z-index: 99999;
+}
+@keyframes cursor-spark-animation {
+    0% {
+        opacity: 0;
+    }
+    9% {
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0) translate(var(--dx), var(--dy));
+    }
+}
+
+/* Phone */
+.ringing-phone {
+    position: absolute;
+    bottom: -30px;
+    left: 10px;
+    background: var(--prim-clr-b-text, linear-gradient(0deg, #ffc800, #ffb1ee));
+    border-radius: 8px;
+    height: auto;
+    width: auto;
+    padding: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    outline: 2px solid white;
+    box-shadow: inset 24px 36px 0px -20px #ffffff3b;
+    z-index: 2;
+}
+.ringing-phone:hover {
+    bottom: -20px;
+}
+.ringing-phone:active {
+    scale: 0.9;
+}
+.ringing-phone img {
+    width: 30px;
+}
+
+.phone-container {
+    overflow: hidden;
+    background: linear-gradient(-45deg, #ffdcbf 0 10px, #ffd5b3 10px 20px) !important;
+    background: #DB5461 !important;
+    image-rendering: pixelated;
+    backdrop-filter: blur(6px);
+}
+.phone-container::after {
+    display: none;
+}
+.phone-container button.primary {
+    background-color: transparent !important;
+    color: white !important;
+}
+.phone-menu {
+    background: repeating-linear-gradient(-45deg, #ffdcbf 0 10px, #ffedde 10px 20px);
+    margin: 10px -4px;
+    padding: 10px 5px;
+    border-radius: 20px 20px 0 0;
+    outline: 8px solid white;
+    margin-bottom: -4px;
+    margin-top: 14px;
+    overflow: auto;
+    box-shadow: 0px -14px 0px 0px #00000026;
+    animation: phone-slide-up forwards 500ms !important;
+    transform: translateY(100px);
+    flex-grow: 1;
+    color: rgb(146, 88, 13);
+}
+.phone-menu::before {
+    content: '';
+    width: 50%;
+    height: 12px;
+    background: white;
+    border-radius: 999px;
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0px 4px 0px 0px #00000026;
+    z-index: 2;
+}
+.phone-menu-list {
+    margin-top: 24px;
+}
+.phone-app > button {
+    height: 60px;
+    width: 60px;
+    box-sizing: border-box;
+    justify-content: center;
+    font-size: larger;
+    border-radius: 100% !important;
+    /* background: url(resources/img/ui/phone-app-bg.svg); */
+    background-size: cover;
+    font-size: x-large;
+    position: relative;
+    transform: scale(0);
+    animation: phone-app-scale-up 1s forwards;
+    animation-delay: calc(var(--index) * 100 * 1ms);
+    transition: all 0.2s;
+}
+.phone-menu-list > *:nth-child(1) > button::before {
+    background-color: #ffcbd8;
+    outline-color: currentColor;
+}
+.phone-menu-list > *:nth-child(1) > button {
+    color: #D8315B;
+}
+.phone-menu-list > *:nth-child(2) > button::before {
+    background-color: #ff9328;
+    outline-color: #ff9328;
+}
+.phone-menu-list > *:nth-child(2) > button {
+    color: #ffffff;
+}
+.phone-app > button::before {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    content: "";
+    width: 75%;
+    height: 75%;
+    border-radius: 12px;
+    background-color: #FFBA75;
+    translate: -50% -50%;
+    font-size: 50px;
+    animation: phone-app-bg-animation infinite alternate ease-in-out 1.5s;
+    animation-delay: calc(var(--index) * 325 * -1ms);
+    outline: 2px solid #FFBA75;
+    outline-style: dashed;
+    outline-offset: 1px;
+}
+.phone-app > button:hover {
+    scale: 1.1 !important;
+}
+.phone-app > button > * {
+    animation: phone-app-animation infinite alternate ease-in-out 2s;
+    animation-delay: calc(var(--index) * 325 * -1ms);
+}
+.phone-app > span {
+    white-space: pre;
+    text-overflow: ellipsis;
+    font-size: small;
+    font-weight: bold;
+}
+.phone-app > button:disabled {
+    filter: grayscale(1);
+    pointer-events: none;
+    cursor: not-allowed;
+}
+@keyframes phone-app-animation {
+    0% {
+        transform: translateY(-1px);
+    }
+    100% {
+        transform: translateY(1px);
+    }
+}
+@keyframes phone-app-bg-animation {
+    0% {
+        transform: translateY(-1px) rotateZ(-2deg);
+    }
+    100% {
+        transform: translateY(1px) rotateZ(2deg);
+    }
+}
+@keyframes phone-slide-up {
+    0% {
+        transform: translateY(100px);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+@keyframes phone-app-scale-up {
+    100% {
+        transform: scale(1);
+    }
 }

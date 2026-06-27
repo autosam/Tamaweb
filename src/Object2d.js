@@ -36,8 +36,8 @@ class Object2d {
             this.onClick = () => {
                 App.mouse.isDown = false;
                 App.preventNextGameplayControl = true;
-                App.playSound('resources/sounds/ui_click_06.ogg', true);
-                App.vibrate();
+                // App.playSound('resources/sounds/ui_click_06.ogg', true);
+                // App.vibrate();
                 this.config.onClick?.();
             }
         }
@@ -60,7 +60,10 @@ class Object2d {
         const preloaded = App.preloadedResources[img];
         if(preloaded && !this.noPreload){
             return this.setImage(
-                this.applyColorOverrides(preloaded)
+                this.applyColorOverrides(preloaded),
+                {
+                    imageSrc: img, // avoids b64 imageSrc
+                }
             );
         }
 
@@ -70,13 +73,18 @@ class Object2d {
             this.image = this.applyColorOverrides(this.image);
         }
     }
-    setImage(image){ // this one gets img object (presume preloadedResource)
+    setImage(image, { imageSrc } = {}){ // this one gets img object (presume preloadedResource)
         this.imageSrc = image.src;
+        if(imageSrc) this.imageSrc = imageSrc;
         this.image = image;
         this.image.src = App.checkResourceOverride(this.image.src);
         this.image.onload = () => { 
             this.image = this.applyColorOverrides(this.image);
         }
+    }
+    clearImage(){
+        this.image.src = undefined;
+        this.imageSrc = undefined;
     }
     applyColorOverrides(image) {
         const allColorOverrides = [

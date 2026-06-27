@@ -2262,24 +2262,27 @@ class Activities {
         });
     }
     static async goToCurrentRabbitHole() {
-        const {current_rabbit_hole: currentRabbitHole} = App.pet.stats;
+        const { current_rabbit_hole: currentRabbitHole } = App.pet.stats;
+        const rabbitHoleDefinition = App.definitions.rabbit_hole_activities.find(activity => activity.name === currentRabbitHole.name);
+        const hasVisualizer = Boolean(rabbitHoleDefinition?.onVisualize);
 
         const outOverlay = new Object2d({
             img: 'resources/img/misc/out_overlay_01.png',
             x: 0, y: 0, z: 10,
+            invisible: hasVisualizer,
         });
 
         const onEndFn = (isInterrupted) => {
-            const rabbitHoleDefinition = App.definitions.rabbit_hole_activities.find(activity => activity.name === App.pet.stats.current_rabbit_hole.name);
+            App.unregisterOnDrawEvent(driverFrameEvent);
 
             if(!isInterrupted){
-                App.displayConfirm(`Homeworld Getaway activity <b>"${App.pet.stats.current_rabbit_hole.name}"</b> has ended and ${App.petDefinition.name} is back home!`, [
+                rabbitHoleDefinition?.onEnd?.();
+                App.displayConfirm(`<b>"${App.pet.stats.current_rabbit_hole.name}"</b> activity has ended and ${App.petDefinition.name} is back home!`, [
                     {
                         name: 'ok',
                         onclick: () => {}
                     }
                 ])
-                rabbitHoleDefinition?.onEnd?.();
                 // randomly increase skill points
                 App.pet.stats.current_expression += clamp(random(-2, 3), 0, 3);
                 App.pet.stats.current_logic += clamp(random(-2, 3), 0, 3);
@@ -2290,6 +2293,7 @@ class Activities {
 
             App.fadeScreen({
                 middleFn: () => {
+                    App.pet.stopScriptedState();
                     App.pet.x = '50%';
                     App.pet.stopMove();
                     App.toggleGameplayControls(true);
@@ -2306,8 +2310,8 @@ class Activities {
                 App.pet.stopScriptedState();
                 return true;
             }
-            App.pet.x = -99;
         }
+        const driverFrameEvent = App.registerOnDrawEvent(driverFn);
 
         const isAlreadyEnded = driverFn();
         if(isAlreadyEnded) return;
@@ -2318,13 +2322,12 @@ class Activities {
                     <i  class="fa-solid fa-clock" style="margin-right: 2px;"></i>
                     <span>${currentRabbitHole.name}</span>
                 </div>
-                ${App.petDefinition.name} will be back <b>${moment(currentRabbitHole.endTime).fromNow()}</b>
+                ${App.petDefinition.name} will be ${hasVisualizer ? 'done' : 'back'} <b>${moment(currentRabbitHole.endTime).fromNow()}</b>
                 `, [
                 {
                     name: 'end early',
                     onclick: () => {
                         onEndFn(true);
-                        App.pet.stopScriptedState();
                     },
                 },
                 {
@@ -2335,9 +2338,16 @@ class Activities {
             ])
         });
 
-        App.pet.triggerScriptedState('idle', App.INF, false, true, null, driverFn)
-        App.pet.stopMove();
-        App.pet.targetX = -999;
+        if(!hasVisualizer){
+            App.pet.triggerScriptedState('idle', App.INF, false, true, null)
+            App.pet.stopMove();
+            App.pet.targetX = -999;
+            setTimeout(() => App.pet.x = -99);
+        }
+        
+        setTimeout(() => {
+            rabbitHoleDefinition?.onVisualize?.();
+        })
     }
     static async goToFortuneTeller(otherPetDef){
         App.toggleGameplayControls(false);
@@ -3863,17 +3873,17 @@ class Activities {
         App.pet.playCheeringAnimationIfTrue(cheer, () => {
             App.pet.stats.current_expression += 2;
             App.toggleGameplayControls(true);
-            onEndFn();
+            if(onEndFn) onEndFn();
         });
     }
-    static async pet(){
+    static async pet(engageTimer){
         App.sendAnalytics('petting');
-        let idleTimer = null, closeTimer = null, y = App.pet.y;
         App.pet.stopMove();
         App.pet.x = '50%';
         App.pet.targetY = 132;
         App.pet.shadowOffset = 999;
         App.toggleGameplayControls(false);
+        App.canProceed('ask_to_be_petted', 0); // trigger autonomous asking cooldown
         await App.pet.triggerScriptedState('cheering', 1000, null, true);
         App.pet.scale = 2;
         App.pet.targetY = 50;
@@ -3881,32 +3891,46 @@ class Activities {
         App.pet.scale = 3;
         App.pet.targetY = 60;
         App.pet.stats.current_discipline += random(1, 2);
-        App.toggleGameplayControls(false, () => {
-            App.definitions.achievements.pat_x_times.advance();
-            Missions.done(Missions.TYPES.pat);
-            App.pet.setState('blush');
-            App.pet.stats.current_fun += random(1, 4) * 0.1;
-            if(idleTimer) clearTimeout(idleTimer);
-            if(closeTimer) clearTimeout(closeTimer);
-            App.playSound('resources/sounds/cute.ogg', true);
-            Activities.task_floatingHearts();
-            idleTimer = setTimeout(() => {
-                App.pet.setState('idle');
-                closeTimer = setTimeout(() => App.pet.stopScriptedState(), 5000);
-                idleTimer = null;
-            }, 250);
-        });
+        App.toggleGameplayControls(false, () => {}, false);
+        let lastPosition = '', lastPetTime = engageTimer ? App.time + engageTimer : -1;
+        let patCount = 0;
         await App.pet.triggerScriptedState('idle', App.INF, null, true, () => {
-            // App.pet.y = y;
-            // App.pet.x = '50%';
             App.reloadScene();
             App.toggleGameplayControls(true);
             App.pet.shadowOffset = 0;
             App.pet.scale = 1;
-            App.pet.playCheeringAnimation();
+            App.pet.playCheeringAnimationIfTrue(patCount);
             App.pet.stats.current_expression += 1;
             App.pet.stats.current_endurance += 1;
             App.pet.stats.current_logic += 1;
+        }, () => {
+            const currentPosition = `${App.mouse.x}_${App.mouse.y}`;
+            const isPetting = App.mouse.isInBounds && App.mouse.isDown && currentPosition !== lastPosition;
+            lastPosition = currentPosition;
+
+            if(isPetting){
+                App.pet.setState(isPetting ? 'blush' : 'idle');
+                lastPetTime = App.time;
+            }
+
+            if(lastPetTime > 0 && App.time - lastPetTime > App.constants.ONE_SECOND * 4) {
+                App.pet.stopScriptedState();
+                return;
+            }
+
+            if(App.canProceed('petting_react_cool_down', 300)){
+                App.pet.setState(isPetting ? 'blush' : 'idle');
+                if(isPetting){
+                    App.playSound('resources/sounds/cute.ogg', true);
+                    Activities.task_floatingHearts();
+
+                    App.pet.stats.current_fun += random(1, 4) * 0.07;
+                    App.definitions.achievements.pat_x_times.advance();
+                    Missions.done(Missions.TYPES.pat);
+
+                    patCount++;
+                }
+            }
         });
     }
     static standWork(){
@@ -3916,19 +3940,16 @@ class Activities {
 
         const backgroundMusic = App.playAdvancedSound({
             loop: true, 
-            src: 'resources/sounds/work_track_01.ogg'
+            src: 'resources/sounds/work_track_01.ogg',
+            volume: 0.5,
         });
-
-        let totalMoneyMade = 0;
 
         let standObject = new Object2d({
             img: 'resources/img/misc/stand_01_booth.png',
             x: 0, y: 0, z: 19
         })
-
-        App.toggleGameplayControls(false, () => {
-            App.pet.stopScriptedState();
-        });
+        //     App.pet.stopScriptedState();
+        // });
 
         function spawnCustomer() {
             const standDuration = random(2000, 5000);
@@ -3946,20 +3967,6 @@ class Activities {
 
             const currentAnimation = randomFromArray(possibleAnimations);
 
-            switch(currentAnimation){
-                case "eating":
-                case "cheering":
-                    totalMoneyMade += random(8, 12);
-                    break;
-                case "shocked":
-                case "uncomfortable":
-                    totalMoneyMade += random(3, 5);
-                    break;
-                case "angry":
-                    totalMoneyMade += 2;
-                    break;
-            }
-
             let otherPet = new Pet(App.getRandomPetDef(random(1, 2)));
                 otherPet.stopMove();
                 otherPet.x = -32;
@@ -3967,6 +3974,7 @@ class Activities {
                 otherPet.z = 20;
                 otherPet.inverted = true;
                 otherPet.targetX = 8;
+                otherPet.parent = standObject;
                 App.pet.setState('idle_side');
                 otherPet.triggerScriptedState('moving', 4000, 0, true, () => {
                     otherPet.stopMove();
@@ -3990,20 +3998,14 @@ class Activities {
         App.pet.x = '68%';
         App.pet.y = '70%';
         App.pet.inverted = false;
-        let startTime = Date.now();
         let nextCustomerSpawnTime = Date.now() + random(0, 8000);
-        let currentCustomer;
-        App.pet.triggerScriptedState('idle', 200000, 0, true, () => {
+        App.pet.triggerScriptedState('idle', App.INF, 0, true, () => {
             backgroundMusic.stop();
             standObject.removeObject();
-            let elapsedTime = Math.round((Date.now() - startTime) / 1000);
-            Activities.task_endWork(elapsedTime, totalMoneyMade);
-            currentCustomer?.removeObject();
         }, () => {
-            // Object2d.animations.bob(App.pet, 0.01, 0.05);
             if(Date.now() > nextCustomerSpawnTime){
                 nextCustomerSpawnTime = Date.now() + random(8000, 45000);
-                currentCustomer = spawnCustomer();
+                spawnCustomer();
             }
         });
     }
@@ -4601,6 +4603,8 @@ class Activities {
             otherPet.stopMove();
             App.pet.stopMove();
 
+            App.save();
+
             Activities.task_foam(
             () => {
                 App.setScene(App.currentScene, true);
@@ -4710,7 +4714,8 @@ class Activities {
         
         const backgroundMusic = App.playAdvancedSound({
             loop: true, 
-            src: 'resources/sounds/work_track_01.ogg'
+            src: 'resources/sounds/work_track_01.ogg',
+            volume: 0.5,
         });
 
         const dynamicBackground = new Object2d({
@@ -4725,21 +4730,13 @@ class Activities {
             onDraw: (me) => Object2d.animations.cycleThroughFrames(me, 250, true),
         })
 
-        App.toggleGameplayControls(false, () => {
-            App.pet.stopScriptedState();
-        });
-
-
         App.pet.stopMove();
         App.pet.inverted = true;
         App.pet.x = '53%';
         App.pet.y = '78%';
-        const startTime = Date.now();
-        App.pet.triggerScriptedState('eating', 200000, false, true, () => {
+        App.pet.triggerScriptedState('eating', App.INF, false, true, () => {
             backgroundMusic.stop();
             dynamicBackground.removeObject();
-            let elapsedTime = Math.round((Date.now() - startTime) / 1000);
-            Activities.task_endWork(elapsedTime, Math.round(elapsedTime / 2.5));
         }, (me) => {
             if(random(0, 50)) return;
             me.setState( randomFromArray(['eating', 'sitting']) );
@@ -5387,9 +5384,9 @@ class Activities {
                     <div id="score">${score}</div>
                 </div>
             </div>
-            <button style="width: ${buttonSizePx}px; height: ${buttonSizePx}px" class="dog-washing-button">
+            <div style="width: ${buttonSizePx}px; height: ${buttonSizePx}px" class="dog-washing-button cursor-pointer">
                 <i class="fa-solid fa-hands-wash fa-2x"></i>
-            </button>
+            </div>
         `;
         const washActionButton = screen.querySelector('.dog-washing-button');
         const repositionAction = () => {
@@ -5981,6 +5978,7 @@ class Activities {
     static async trickOrTreatGame(onEndCallback){
         App.closeAllDisplays();
         App.setScene(App.scene.devil_town_exterior)
+        App.sendAnalytics('minigame_trick_or_treat');
 
         const defaultGroundPositionY = App.drawer.bounds.height - (App.petDefinition.spritesheet.cellSize / 2);
 
@@ -6264,6 +6262,7 @@ class Activities {
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
         App.toggleGameplayControls(false, () => {}, false)
         App.playSound(`resources/sounds/note_4.mp3`, true);
+        App.sendAnalytics('minigame_leaves')
 
         App.pet.stopMove();
         App.pet.x = 9999;
@@ -6430,6 +6429,313 @@ class Activities {
         }
 
         App.pet.triggerScriptedState('idle', App.INF, false, true, null, driverFn);
+    }
+    static async foodKnowledgeGame(){
+        App.closeAllDisplays();
+        App.setScene(App.scene.full_grass);
+        App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.sendAnalytics('minigame_food_knowledge')
+
+        const main = new TimelineDirector(App.pet);
+        main.setPosition({
+            x: '50%',
+        })
+
+        const getRandomFood = (amount = 1) => {
+            const allFoodItems = App.definitions.pools.food();
+            const meals = allFoodItems.filter(item => item.definition.type !== 'med');
+            const shuffled = shuffleArray(meals);
+            return shuffled.slice(0, amount);
+        }
+
+        const foodOptions = getRandomFood(4);
+        const targetFoodItem = randomFromArray(foodOptions);
+
+        const foodObject = new Object2d({
+            image: App.preloadedResources[App.constants.FOOD_SPRITESHEET],
+            spritesheet: {
+                ...App.constants.FOOD_SPRITESHEET_DIMENSIONS,
+                cellNumber: targetFoodItem.definition.sprite,
+            },
+            scale: 2,
+            x: '50%',
+            y: '40%',
+            z: App.pet.z + 10,
+            noPreload: true,
+            filter: `brightness(0)`,
+
+            movementFloat: 0,
+            movementStr: 4,
+            targetBrightness: 0,
+            currentBrightness: 0,
+            onLateDraw: (me) => {
+                if(!me.originalPosition){
+                    me.originalPosition = {x: me.x, y: me.y};
+                }
+
+                me.movementFloat += 0.0035 * App.deltaTime;
+                me.y = me.originalPosition.y + (Math.sin(me.movementFloat) * me.movementStr);
+                me.x = me.originalPosition.x + (Math.sin(me.movementFloat * .5) * me.movementStr);
+
+                me.currentBrightness = lerp(me.currentBrightness, me.targetBrightness, 0.005 * App.deltaTime);
+                me.filter = `brightness(${me.currentBrightness})`;
+            }
+        })
+
+        const handleSelectOption = async (selectedItemName) => {
+            const isCorrect = selectedItemName === targetFoodItem.name;
+            if(isCorrect){
+                main.setState('cheering');
+            } else {
+                main.setState('uncomfortable');
+            }
+            
+            App.toggleGameplayControls(false);
+            foodObject.targetBrightness = 1;
+            await TimelineDirector.wait(1000);
+            const msgBubble = App.displayMessageBubble(targetFoodItem.name);
+            await TimelineDirector.wait(3000);
+            msgBubble.close();
+
+            App.fadeScreen({
+                middleFn: () => {
+                    foodObject.removeObject();
+                    main.release();
+                    if(isCorrect){
+                        App.definitions.achievements.perfect_minigame_foodknowledge_win_x_times.advance();
+                    }
+                    Activities.task_winMoneyFromArcade({
+                        amount: isCorrect ? 50 : 0,
+                        hasWon: isCorrect
+                    })
+                }
+            })
+        }
+
+        App.toggleGameplayControls(false, () => {
+            App.displayList([
+                {
+                    name: 'What food is that?',
+                    type: 'text',
+                },
+                ...foodOptions.map(item => ({
+                    name: item.name,
+                    onclick: () => {
+                        handleSelectOption(item.name)
+                    }
+                }))
+            ])
+        })
+    }
+    static async imagePuzzleGame(){
+        App.closeAllDisplays();
+        App.setScene(App.scene.arcade_game01);
+        App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.sendAnalytics('minigame_image_puzzle');
+        App.toggleGameplayControls(false, () => {}, false);
+
+        const TILE_SIZE = 3;
+        const CELL_SIZE = 32;
+        let emptyPos = { x: 0, y: 0 }; // top-left starts empty
+        let grid = [];
+        const image = randomFromArray([
+            // 'resources/img/background/house/devil_town_01.png',
+            // 'resources/img/background/house/music_classroom_01.png',
+            // 'resources/img/background/house/cc_04.png',
+            // 'resources/img/background/house/c_01.png',
+            // 'resources/img/background/house/cc_02.png',
+            // 'resources/img/background/house/cc_06.png',
+            // 'resources/img/background/house/beach_01.png',
+            // 'resources/img/background/house/parents_house_01.png',
+            // 'resources/img/background/house/ex_01_fs.png',
+            // 'resources/img/background/house/post_office_01.png',
+            'resources/img/misc/image_puzzle_01.png',
+        ]);
+
+        const parent = new Object2d({
+            img: 'resources/img/misc/image_puzzle_bg.png',
+            ...App.drawer.bounds,
+        });
+
+        const main = new TimelineDirector(App.pet);
+        main.setPosition({x: 999});
+
+        const onEnd = (hasWon) => {
+            main.setPosition({x: '50%'});
+            main.release();
+            App.toggleGameplayControls(true);
+            parent.removeObject();
+            closeBtn.remove();
+            if(hasWon){
+                App.definitions.achievements.perfect_minigame_imagepuzzle_win_x_times.advance();
+            }
+            Activities.task_winMoneyFromArcade({
+                hasWon,
+                amount: hasWon ? 10 * random(16, 20) : 0,
+            })
+        }
+
+        const closeBtn = UI.create({
+            parent: document.querySelector('.screen-wrapper'),
+            componentType: 'button',
+            className: 'mini-game-ui',
+            innerHTML: App.getIcon('sign-out', true),
+            style: "position: absolute;right: 0;top: 0;padding: 2px;",
+            onclick: () => {
+                App.displayConfirm(...GenericUIDef.binaryConfirm({
+                    text: 'Exit the game?',
+                    onAccept: () => {
+                        onEnd();
+                    }
+                }))
+            }
+        })
+
+        // generate and shuffle positions
+        const positions = [];
+        for (let i = 0; i < TILE_SIZE * TILE_SIZE; i++) {
+            if (i === 0) continue;
+            positions.push(i + 1);
+        }
+        const shuffledPositions = shuffleArray(positions);
+        // const shuffledPositions = positions;
+
+        const displayOverlayImage = (isFinal) => {
+            return new Object2d({
+                parent,
+                img: image,
+                x: 0,
+                y: 0,
+                z: 99999,
+                spawnTime: App.time,
+                filter: isFinal ? false : 'saturate(0.5)',
+                onDraw: (me) => {
+                    if(App.time > me.spawnTime + 2000){
+                        helpObject.hasHelperImage = false;
+                        return me.removeObject();
+                    }
+
+                    const time = App.time - me.spawnTime;
+                    me.opacity = 0.5 + (Math.sin(time * 0.005));
+                    if(isFinal) me.opacity = 1;
+                },
+            })
+        }
+        const checkWin = () => {
+            let expected = 1;
+
+            for (let y = 0; y < TILE_SIZE; y++) {
+                for (let x = 0; x < TILE_SIZE; x++) {
+
+                    if (x === 0 && y === 0) continue; // empty slot
+
+                    const tile = grid[y][x];
+
+                    if (!tile) return false;
+
+                    if (tile.spritesheet.cellNumber - 1 !== expected) {
+                        return false;
+                    }
+
+                    expected++;
+                }
+            }
+
+            setTimeout(() => onEnd(true), 2000);
+            displayOverlayImage(true);
+
+            return true;
+        }
+        const helpObject = new Object2d({
+            parent,
+            width: CELL_SIZE,
+            height: CELL_SIZE,
+            img: 'resources/img/misc/help_circle.png',
+            x: 0, y: 0,
+            spawnTime: App.time,
+            onDraw: (me) => {
+                me.x = emptyPos.x * CELL_SIZE;
+                me.y = emptyPos.y * CELL_SIZE;
+
+                const time = App.time - me.spawnTime;
+                me.opacity = 0.2 + Math.abs(Math.sin(time * 0.002));
+
+                if(me.hasHelperImage) me.opacity = 0;
+            },
+            onClick: () => {
+                if(App.haveAnyDisplays()) return;
+                if(helpObject.hasHelperImage) return;
+                helpObject.hasHelperImage = true;
+                displayOverlayImage();
+                App.playSound('resources/sounds/ui_click_06.ogg', true);
+            }
+        })
+
+        let index = 0;
+        for (let y = 0; y < TILE_SIZE; y++) {
+            grid[y] = [];
+            for (let x = 0; x < TILE_SIZE; x++) {
+                // empty slot
+                if (x === 0 && y === 0) {
+                    grid[y][x] = null;
+                    continue;
+                }
+
+                const cellNumber = shuffledPositions[index++];
+                
+                const tileObject = new Object2d({
+                    parent,
+                    img: image,
+                    spritesheet: {
+                        rows: TILE_SIZE,
+                        columns: TILE_SIZE,
+                        cellSize: CELL_SIZE,
+                        cellNumber: cellNumber,
+                    },
+                    x: x * CELL_SIZE,
+                    y: y * CELL_SIZE,
+                    onDraw: (me) => {
+                        if(!isNaN(me.targetX)) me.x = lerp(me.x, me.targetX, 0.025 * App.deltaTime);
+                        if(!isNaN(me.targetY)) me.y = lerp(me.y, me.targetY, 0.025 * App.deltaTime);
+                    },
+                    onClick: () => {
+                        if(App.haveAnyDisplays()) return;
+
+                        const tile = tileObject;
+                        const { gridX, gridY } = tile;
+
+                        const ex = emptyPos.x;
+                        const ey = emptyPos.y;
+
+                        if (!isAdjacent(gridX, gridY, ex, ey)) {
+                            App.playSound('resources/sounds/ui_click_04.ogg', true);
+                            return;
+                        }
+
+                        tile.targetX = ex * CELL_SIZE;
+                        tile.targetY = ey * CELL_SIZE;
+
+                        grid[ey][ex] = tile;
+                        grid[gridY][gridX] = null;
+
+                        tile.gridX = ex;
+                        tile.gridY = ey;
+
+                        emptyPos.x = gridX;
+                        emptyPos.y = gridY;
+
+                        App.playSound('resources/sounds/swoosh_01.ogg', true);
+
+                        checkWin();
+                    }
+                });
+
+                tileObject.gridX = x;
+                tileObject.gridY = y;
+
+                grid[y][x] = tileObject;
+            }
+        }
     }
 
     // school
