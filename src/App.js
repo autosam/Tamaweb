@@ -2549,7 +2549,6 @@ const App = {
             const list = App.definitions.rabbit_hole_activities
                 .filter(hole => hole.type === 'job')
                 .map(hole => ({
-                    // name: hole.name,
                     name: `
                         <div 
                             style="max-width: 100%; align-items: center;" 
@@ -3141,7 +3140,7 @@ const App = {
                     }
                 },
                 {
-                    _ignore: !App.mods.some(mod => mod.added_resources.some(res => res.type === 'char')) && !App.petDefinition.spriteSkin,
+                    _ignore: !App.mods.length && !App.petDefinition.spriteSkin,
                     name: `change character ${App.getBadge("Modded")}`,
                     onclick: () => {
                         if(App.settings.automaticAging){
@@ -3176,18 +3175,24 @@ const App = {
 
                         App.temp.convertedModAddedResources?.forEach(addResourceChar);
 
-                        const items = chars.map(char => ({
-                            _disable: char.def.lifeStage !== App.petDefinition.lifeStage,
-                            name: `${char.def.getCSprite()} <span class="ellipsis">${char.name}</span>`,
-                            onclick: () => {
-                                return App.displayConfirm(...GenericUIDef.binaryConfirm({
-                                    text: `Are you sure you want to visually change your character? <br>${char.def.getFullCSprite()}`,
-                                    onAccept: () => {
-                                        changeCharacterSkin(char.src);
-                                    },
-                                }))
+                        const items = chars.map(char => {
+                            const isAgeCompatible = char.def.lifeStage === App.petDefinition.lifeStage;
+                            return {
+                                _disable: !isAgeCompatible,
+                                name: `
+                                    ${char.def.getCSprite()} <span class="ellipsis">${char.name}</span>
+                                    ${App.getBadge(char.def.getLifeStageLabel(), 'neutral')}
+                                `,
+                                onclick: () => {
+                                    return App.displayConfirm(...GenericUIDef.binaryConfirm({
+                                        text: `Are you sure you want to visually change your character? <br>${char.def.getFullCSprite()}`,
+                                        onAccept: () => {
+                                            changeCharacterSkin(char.src);
+                                        },
+                                    }))
+                                }
                             }
-                        }))
+                        })
 
                         return App.displayList([
                             {
@@ -3196,7 +3201,10 @@ const App = {
                             },
                             {
                                 _disable: !App.petDefinition.spriteSkin,
-                                name: `${App.petDefinition.getCSprite(false, App.petDefinition.sprite)} Change back`,
+                                name: `
+                                    ${App.petDefinition.getCSprite(false, App.petDefinition.sprite)} Change back
+                                    ${App.getBadge(App.petDefinition.getLifeStageLabel(), 'neutral')}
+                                `,
                                 class: 'primary solid',
                                 onclick: () => {
                                     return App.displayConfirm(...GenericUIDef.binaryConfirm({

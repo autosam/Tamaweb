@@ -535,15 +535,7 @@ class PetDefinition {
     }
 
     getLifeStageLabel(){
-        let age;
-        switch(this.getLifeStage()){
-            case PetDefinition.LIFE_STAGE.baby: age = 'baby'; break;
-            case PetDefinition.LIFE_STAGE.child: age = 'child'; break;
-            case PetDefinition.LIFE_STAGE.teen: age = 'teen'; break;
-            case PetDefinition.LIFE_STAGE.elder: age = 'elder'; break;
-            default: age = 'adult';
-        }
-        return age;
+        return PetDefinition.getLifeStageLabel(this.getLifeStage())
     }
 
     prepareSprite(){
@@ -956,6 +948,17 @@ class PetDefinition {
         else if(PET_CHILD_CHARACTERS.some(char => char === sprite)) return PetDefinition.LIFE_STAGE.child;
         else if(PET_ELDER_CHARACTERS.some(char => char === sprite)) return PetDefinition.LIFE_STAGE.elder;
         return PetDefinition.LIFE_STAGE.adult;
+    }
+    static getLifeStageLabel(lifeStage){
+        let age;
+        switch(lifeStage){
+            case PetDefinition.LIFE_STAGE.baby: age = 'baby'; break;
+            case PetDefinition.LIFE_STAGE.child: age = 'child'; break;
+            case PetDefinition.LIFE_STAGE.teen: age = 'teen'; break;
+            case PetDefinition.LIFE_STAGE.elder: age = 'elder'; break;
+            default: age = 'adult';
+        }
+        return age;
     }
 
     static getCharCode(sprite){
