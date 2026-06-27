@@ -2262,8 +2262,8 @@ class Activities {
         });
     }
     static async goToCurrentRabbitHole() {
-        const {current_rabbit_hole: currentRabbitHole} = App.pet.stats;
-        const rabbitHoleDefinition = App.definitions.rabbit_hole_activities.find(activity => activity.name === App.pet.stats.current_rabbit_hole.name);
+        const { current_rabbit_hole: currentRabbitHole } = App.pet.stats;
+        const rabbitHoleDefinition = App.definitions.rabbit_hole_activities.find(activity => activity.name === currentRabbitHole.name);
         const hasVisualizer = Boolean(rabbitHoleDefinition?.onVisualize);
 
         const outOverlay = new Object2d({
