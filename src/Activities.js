@@ -4489,6 +4489,7 @@ class Activities {
         App.pet.stats.is_egg = false;
     }
     static birthday(){
+        App.closeAllDisplays();
         App.setScene(App.scene.home);
         App.toggleGameplayControls(false);
         App.pet.stats.has_poop_out = false;
