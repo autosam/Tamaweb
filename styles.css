@@ -2945,15 +2945,23 @@ c-sprite.ghost.devil::after {
 }
 .cursor {
     --size: 40px;
+    border-radius: 100%;
+    animation: cursor-animation 300ms linear forwards;
+    background: url("resources/img/ui/tap-pointer.png");
+}
+.cursor-spark {
+    --size: 20px;
+    animation: cursor-spark-animation 300ms linear forwards;
+    background: url("resources/img/ui/tap-pointer-sparks.png");
+}
+.cursor,
+.cursor-spark {
     width: var(--size);
     height: var(--size);
-    border-radius: 100%;
     pointer-events: none;
     position: absolute;
-    animation: cursor-animation 300ms linear forwards;
     translate: calc(-0.5 * var(--size)) calc(-0.5 * var(--size));
     font-size: x-small;
-    background: url('resources/img/ui/tap-pointer.png');
     background-size: cover;
     z-index: 99999;
 }
@@ -2970,19 +2978,6 @@ c-sprite.ghost.devil::after {
         opacity: 0;
         transform: scale(1) rotateZ(0deg) translateY(-4px);
     }
-}
-.cursor-spark {
-    --size: 20px;
-    width: var(--size);
-    height: var(--size);
-    pointer-events: none;
-    position: absolute;
-    animation: cursor-spark-animation 300ms linear forwards;
-    translate: calc(-0.5 * var(--size)) calc(-0.5 * var(--size));
-    font-size: x-small;
-    background: url('resources/img/ui/tap-pointer-sparks.png');
-    background-size: cover;
-    z-index: 99999;
 }
 @keyframes cursor-spark-animation {
     0% {
