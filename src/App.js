@@ -7457,10 +7457,6 @@ const App = {
             let justOpened = false;
             if(!App.haveAnyDisplays()) {
                 justOpened = App.handlers.open_main_menu();
-
-                if(App.settings.classicMainMenuUI){
-
-                }
             }
 
             if(!justOpened) App.handleShellButton(buttonNumber);
