@@ -3131,6 +3131,11 @@ c-sprite.ghost.devil::after {
     font-size: small;
     font-weight: bold;
 }
+.phone-app > button:disabled {
+    filter: grayscale(1);
+    pointer-events: none;
+    cursor: not-allowed;
+}
 @keyframes phone-app-animation {
     0% {
         transform: translateY(-1px);

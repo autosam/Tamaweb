@@ -7740,6 +7740,7 @@ const App = {
                                 className: 'flex flex-center',
                                 innerHTML: App.getIcon(item.icon, true),
                                 onclick: item.onclick,
+                                disabled: item._disable,
                                 style: `--index: ${index}; --rotate: ${random(0, 180)}deg;`
                             },
                             {
