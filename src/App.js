@@ -1375,7 +1375,7 @@ const App = {
         //     ])
         // })) return;
 
-        if(addEvent(`update_26_notice`, () => {
+        if(addEvent(`update_27_notice`, () => {
             App.displayList([
                 {
                     name: `New update is available!<b> <div><small>${VERSION}</small></div> ${App.getBadge('new!')}`,
@@ -1388,7 +1388,14 @@ const App = {
                         <img class="update-banner" src="resources/img/ui/update_banner.png"></img>
                         <br>
                         <div>
-                        Check out the new <b>Post Office location</b>, <b>Functional Buttons</b>, <b>Guess The Number mini-game</b>, <b>Toothaches</b> and a lot more!
+                            Check out the new:
+                            <ul style="margin: 6px 0px 6px -22px;" class="bold">
+                                <li>Mini-games</li> 
+                                <li>Reworked Jobs system</li> 
+                                <li>Immersive additions</li> 
+                                <li>Room backgrounds</li>
+                            </ul>
+                            and more!
                         </div>
                     `,
                     type: 'text',
