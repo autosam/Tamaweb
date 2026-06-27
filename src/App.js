@@ -3143,9 +3143,9 @@ const App = {
                     _ignore: !App.mods.length && !App.petDefinition.spriteSkin,
                     name: `change character ${App.getBadge("Modded")}`,
                     onclick: () => {
-                        if(App.settings.automaticAging){
+                        /* if(App.settings.automaticAging){
                             return App.displayPopup('Turn <b>Auto aging <span style="color: red;">off</span></b> in the gameplay settings to be able to use this feature.');
-                        }
+                        } */
 
                         const chars = [];
                         const addResourceChar = (resource, index) => {
