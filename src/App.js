@@ -365,6 +365,7 @@ const App = {
         // check if in rabbit hole
         if(App.pet.stats.current_rabbit_hole.name){
             Activities.goToCurrentRabbitHole(false);
+            App.petDefinition.stats.is_sleeping = false;
         }
 
         // simulating offline progression

@@ -1265,16 +1265,19 @@ class Pet extends Object2d {
                 return;
             }
             this.stopMove();
-            this.setState('sleeping');  
-            App.toggleGameplayControls(false, () => {
-                this.stats.is_sleeping = false;
-                App.toggleGameplayControls(true);
-                if(!this.hasMoodlet('rested')){
-                    App.pet.triggerScriptedState('uncomfortable', 3000);
-                } else {
-                    App.pet.playCheeringAnimation();
-                }
-            });
+            this.setState('sleeping');
+            const { state: currentControlState } = App.getGameplayControlsState()
+            if(currentControlState){
+                App.toggleGameplayControls(false, () => {
+                    this.stats.is_sleeping = false;
+                    App.toggleGameplayControls(true);
+                    if(!this.hasMoodlet('rested')){
+                        App.pet.triggerScriptedState('uncomfortable', 3000);
+                    } else {
+                        App.pet.playCheeringAnimation();
+                    }
+                });
+            }
         }
         else if(this.isMoving)
             this.setState('moving');
