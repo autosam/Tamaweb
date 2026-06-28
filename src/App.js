@@ -983,7 +983,8 @@ const App = {
         if(
             random(0, 100) < 3 && 
             App.petDefinition.stats.current_care >= 2 &&
-            App.playTime > App.constants.ONE_MINUTE * 30
+            App.playTime > App.constants.ONE_MINUTE * 30 &&
+            !App.isOnElectronClient
         ){
             if(App.canProceed('ask_to_be_petted', App.constants.ONE_HOUR * 2)) {
                 App.queueEvent(() => Activities.pet(2000));
