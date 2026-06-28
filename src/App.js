@@ -1188,11 +1188,12 @@ const App = {
                     App.pet.stats.current_health = App.pet.stats.max_health;
                 });
                 break;
-            case "UXTW77":
+            case "C29YCNK":
                 if(!addEvent(codeEventId, () => {
-                    App.displayPopup(`Sorry for the inconvenience, here's 250 mission pts and $400!`, 5000, () => {
-                        App.pet.stats.gold += 400;
-                        Missions.currentPts += 250;
+                    const goldAmount = 300, missionPtsAmount = 250;
+                    App.displayPopup(`Sorry for the inconvenience, here's <b>${missionPtsAmount} mission pts</b> and <b>$${goldAmount}</b>!`, 5000, () => {
+                        App.pet.stats.gold += goldAmount;
+                        Missions.currentPts += missionPtsAmount;
                     });
                 })) return showAlreadyUsed();
                 break;
