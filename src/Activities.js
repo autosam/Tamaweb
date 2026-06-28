@@ -6537,7 +6537,6 @@ class Activities {
 
         const TILE_SIZE = 3;
         const CELL_SIZE = 32;
-        let emptyPos = { x: 0, y: 0 }; // top-left starts empty
         let grid = [];
         const image = randomFromArray([
             // 'resources/img/background/house/devil_town_01.png',
@@ -6593,13 +6592,59 @@ class Activities {
         })
 
         // generate and shuffle positions
+        const shuffleBoard = (positions, moveCount = 10) => {
+            const board = [0, ...positions];
+
+            let emptyIndex = 0;
+            let previousEmptyIndex = null;
+
+            for (let i = 0; i < moveCount; i++) {
+                const x = emptyIndex % TILE_SIZE;
+                const y = Math.floor(emptyIndex / TILE_SIZE);
+
+                let possibleMoves = [];
+
+                if (x > 0) possibleMoves.push(emptyIndex - 1);
+                if (x < TILE_SIZE - 1) possibleMoves.push(emptyIndex + 1);
+                if (y > 0) possibleMoves.push(emptyIndex - TILE_SIZE);
+                if (y < TILE_SIZE - 1) possibleMoves.push(emptyIndex + TILE_SIZE);
+
+                // prevent undoing previous move
+                if (previousEmptyIndex !== null) {
+                    possibleMoves = possibleMoves.filter(
+                        index => index !== previousEmptyIndex
+                    );
+                }
+
+                const moveIndex = randomFromArray(possibleMoves);
+
+                [board[emptyIndex], board[moveIndex]] = [
+                    board[moveIndex],
+                    board[emptyIndex],
+                ];
+
+                previousEmptyIndex = emptyIndex;
+                emptyIndex = moveIndex;
+            }
+
+            return {
+                positions: board.filter(value => value !== 0),
+                emptyPos: {
+                    x: emptyIndex % TILE_SIZE,
+                    y: Math.floor(emptyIndex / TILE_SIZE),
+                },
+            };
+
+        };
         const positions = [];
         for (let i = 0; i < TILE_SIZE * TILE_SIZE; i++) {
             if (i === 0) continue;
             positions.push(i + 1);
         }
-        const shuffledPositions = shuffleArray(positions);
-        // const shuffledPositions = positions;
+        const { 
+            positions: shuffledPositions, 
+            emptyPos 
+        } = shuffleBoard(positions, random(15, 25));
 
         const displayOverlayImage = (isFinal) => {
             return new Object2d({
@@ -6677,7 +6722,7 @@ class Activities {
             grid[y] = [];
             for (let x = 0; x < TILE_SIZE; x++) {
                 // empty slot
-                if (x === 0 && y === 0) {
+                if(x === emptyPos.x && y === emptyPos.y) {
                     grid[y][x] = null;
                     continue;
                 }

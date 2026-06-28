@@ -975,7 +975,7 @@ const App = {
             App.petDefinition.friends.length
         ){
             if(App.canProceed('friend_call', App.constants.ONE_MINUTE * 30)) {
-                App.handlers.receive_friend_call();
+                App.queueEvent(App.handlers.receive_friend_call);
             }
         }
 
@@ -7357,7 +7357,6 @@ const App = {
                     }
                 },
                 {
-                    _ignore: true,
                     _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.child,
                     name: `picture puzzle ${App.getBadge()}`,
                     onclick: () => {
