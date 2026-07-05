@@ -126,19 +126,19 @@ App.definitions = (() => {
                 name: "Mall",
                 image: 'resources/img/misc/activity_building_mall.png',
                 onEnter: () => Activities.goToMall(),
-                isNew: true,
+                isNew: false,
             },
             {
                 name: "Market",
                 image: 'resources/img/misc/activity_building_market.png',
                 onEnter: () => Activities.goToMarket(),
-                isNew: true,
+                isNew: false,
             },
             {
                 name: `Game Center`,
                 image: 'resources/img/misc/activity_building_arcade.png',
                 onEnter: () => Activities.goToArcade(),
-                isNew: true,
+                isNew: false,
             },
             {
                 isDisabled: () => App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child,
@@ -178,7 +178,7 @@ App.definitions = (() => {
                 name: 'Work',
                 image: 'resources/img/misc/activity_building_work.png',
                 onEnter: () => App.handlers.open_works_list(),
-                isNew: true,
+                isNew: false,
             },
             {
                 name: `Underworld Entrance`,
@@ -913,7 +913,7 @@ App.definitions = (() => {
                 health_replenish: 2,
                 price: 12,
                 type: 'treat',
-                isNew: true,
+                isNew: false,
             },
     
     
@@ -1458,7 +1458,7 @@ App.definitions = (() => {
             "frame": {
                 image: "resources/img/background/house/10.png",
                 price: 391,
-                isNew: true,
+                isNew: false,
                 condition: () => App.pet.stats.is_revived_once,
                 onLoad: () => {
                     const parent = new Object2d({
@@ -1679,13 +1679,13 @@ App.definitions = (() => {
             "mush-bathroom": {
                 image: 'resources/img/background/house/bathroom_cc_02.png',
                 price: 350,
-                isNew: true,
+                isNew: false,
                 type: 'bathroom',
             },
             "gothic bathroom": {
                 image: 'resources/img/background/house/bathroom_cc_03.png',
                 price: 300,
-                isNew: true,
+                isNew: false,
                 type: 'bathroom',
             },
 
@@ -1717,7 +1717,7 @@ App.definitions = (() => {
             "gothic kitchen": {
                 image: 'resources/img/background/house/kitchen_cc_03.png',
                 price: 300,
-                isNew: true,
+                isNew: false,
                 type: 'kitchen',
             },
         },
@@ -3352,7 +3352,7 @@ App.definitions = (() => {
             {
                 name: 'Stand Work',
                 duration: App.constants.ONE_HOUR * 1,
-                isNew: true,
+                isNew: false,
                 type: 'job',
                 payAmount: 75,
                 onVisualize: Activities.standWork,
@@ -3363,7 +3363,7 @@ App.definitions = (() => {
             {
                 name: 'Office Work',
                 duration: App.constants.ONE_HOUR * 2.5,
-                isNew: true,
+                isNew: false,
                 type: 'job',
                 payAmount: 100,
                 onVisualize: Activities.officeWork,

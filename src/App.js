@@ -2604,7 +2604,7 @@ const App = {
             return App.displayList([
                 ...list,
                 {
-                    name: `Working takes real-time minutes ${App.getIcon('clock', true)}, you can close the game while your pet is at work and come back later. ${App.getBadge()}`,
+                    name: `Working takes real-time minutes ${App.getIcon('clock', true)}, you can close the game while your pet is at work and come back later.`,
                     type: 'info',
                 },
                 {
@@ -3773,7 +3773,7 @@ const App = {
                     }
                 },
                 {
-                    name: `system settings ${App.getBadge()}`,
+                    name: `system settings`,
                     onclick: () => {
                         App.displayList([
                             {
@@ -3810,7 +3810,7 @@ const App = {
                                 }
                             },
                             {
-                                _mount: (e) => e.innerHTML = `tap effects: <i>${App.settings.tapEffect ? 'on' : 'off'}</i> ${App.getBadge()}`,
+                                _mount: (e) => e.innerHTML = `tap effects: <i>${App.settings.tapEffect ? 'on' : 'off'}</i>`,
                                 onclick: (item) => {
                                     App.settings.tapEffect = !App.settings.tapEffect;
                                     item._mount();
@@ -7352,7 +7352,7 @@ const App = {
             const list = [
                 {
                     _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.child,
-                    name: `food knowledge ${App.getBadge()}`,
+                    name: `food knowledge`,
                     onclick: () => {
                         App.displayPopup(`Guess the food's name from its silhouette!`, tutorialDisplayTime, () => Activities.foodKnowledgeGame())
                         return false;
@@ -7360,7 +7360,7 @@ const App = {
                 },
                 {
                     _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.child,
-                    name: `picture puzzle ${App.getBadge()}`,
+                    name: `picture puzzle`,
                     onclick: () => {
                         App.displayPopup(`Slide each piece into the correct position to complete the picture!`, tutorialDisplayTime, () => Activities.imagePuzzleGame())
                         return false;
