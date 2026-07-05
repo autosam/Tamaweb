@@ -2990,7 +2990,7 @@ class Activities {
                 {
                     _ignore: !App.temp.hasActiveDigSpot,
                     name: `
-                        <span style="color: #914f15;">
+                        <span class="overflow-hidden ellipsis" style="color: #914f15;">
                             ${App.getIcon('person-digging icon', true)} Dig up treasure
                         </span>
                     `,
