@@ -92,7 +92,7 @@ class Animal extends Pet {
         length: random(2000, 5000),
     }){
         other.stopMove();
-        other.triggerScriptedState('idle', 10000, false, true);
+        other.triggerScriptedState('idle', 0, false);
 
         this.stopMove();
         if(other.inverted) this.targetX = other.x + this.spritesheet.cellSize;
@@ -101,7 +101,12 @@ class Animal extends Pet {
         await this.triggerScriptedState('moving', 20000, false, true, false, Pet.scriptedEventDrivers.moveCheck.bind({pet: this}));
         this.inverted = !other.inverted;
 
-        other.triggerScriptedState(interactionConfig.animation, interactionConfig.length, false, true);
+        // check if the target has entered a scripted state
+        // during the we were trying to reach them
+        if(other.isDuringScriptedState()) return;
+
+        other.stopMove();
+        other.triggerScriptedState(interactionConfig.animation, interactionConfig.length, false);
         this.triggerScriptedState(interactionConfig.animation, interactionConfig.length, false, true);
     }
     getInteractionTarget(){
