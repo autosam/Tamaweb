@@ -7,8 +7,8 @@ const App = {
     shellBackground: '', deferredInstallPrompt: null,
 
     gameEventsHistory: {}, 
-    mods: [], 
     misc: {}, 
+    mods: [], 
     records: {}, 
     temp: {}, 
     ownedFurniture: [], 
