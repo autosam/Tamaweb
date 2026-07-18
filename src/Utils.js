@@ -381,7 +381,7 @@ const wordBank = {
     "happy", "sad", "sleepy", "bored", "scared", "excited", "calm", "silly", "angry", "curious", "lonely", "proud", "shy",
     "fun", "love", "time", "light", "dark", "dream", "idea", "magic", "star", "name", "secret", "surprise", "wish",
     "hat", "book", "pen", "box", "map", "coin", "chair", "blanket", "pillow", "bed", "window", "mirror", "key", "door",
-    "bag", "lamp", "rope", "glove", "ring", "necklace", "watch", "phone", "screen", "button", "switch", "remote",
+    "bag", "lamp", "tea", "glove", "ring", "necklace", "watch", "phone", "screen", "button", "switch", "remote",
     "cloud", "rain", "snow", "sun", "moon", "tree", "flower", "leaf", "rock", "sand", "fire", "water", "wind", "fog",
     "castle", "tower", "bridge", "path", "trap", "room", "house", "school", "forest", "cave", "island", "planet",
     "color", "shape", "pattern", "number", "letter", "word", "story", "joke", "truth", "lie", "game", "challenge", "push",
