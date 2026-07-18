@@ -2532,7 +2532,7 @@ a.generic-btn:before {
     background: var(--prim-clr-b-bg);
     color: var(--prim-clr-b-text);
     text-shadow: 1px 1px 0px var(--prim-clr-b-text-shadow);
-    box-shadow: -20px -20px 0px -15px inset var(--prim-clr-b-shadow);
+    box-shadow: 10px -20px 0px -15px inset var(--prim-clr-b-shadow);
     border-radius: 10px;
 }
 
