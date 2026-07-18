@@ -577,7 +577,7 @@ class Activities {
         screen.innerHTML = `
             <div class="dialog flex flex-dir-col justify-between width-full">
                 <div class="dialog_icon">
-                    ${speakerPetDef.getFullCSprite(true)}
+                    ${speakerPetDef.getFullCSprite()}
                 </div>
                 <div class="dialog_textContainer">
                     <span class="dialog_text"></span>
