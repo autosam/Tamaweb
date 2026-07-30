@@ -5585,16 +5585,15 @@ class Activities {
         App.sendAnalytics('minigame_bar_timing');
         App.setScene(App.scene.arcade_game01);
 
-        const screen = App.displayEmpty();
+        const screen = UI.empty('pointer-events-none display absolute-fullscreen flex-container flex-row-down height-100p bg-transparent');
+        document.querySelector('.screen-wrapper').appendChild(screen);
         screen.innerHTML = `
-        <div class="pointer-events-none display flex-container flex-row-down height-100p" style="background: url(${App.scene.arcade_game01.image});background-size: contain;image-rendering: pixelated;">
             <div class="timing-bar-container">
                 <div class="timing-bar-rod"></div>
                 <div class="timing-bar-rod"></div>
                 <div class="timing-bar-rod"></div>
                 <div class=timing-bar-cursor></div>
             </div>
-        </div>
         `;
         const cursor = screen.querySelector('.timing-bar-cursor');
         
@@ -5602,14 +5601,11 @@ class Activities {
         let cursorSpeed = 0.19;
         let cursorCurrentPos = 0;
 
-        let reset = (cursorSpeedAdd) => {
+        const reset = (cursorSpeedAdd) => {
             cursorCurrentPos = 0;
             cursor.style.opacity = 1;
         }
-
-        reset();
-
-        App.onDraw = () => {
+        const onDraw = () => {
             cursorCurrentPos += cursorSpeed * App.deltaTime;
             if(cursorCurrentPos >= 98 || cursorCurrentPos <= 0){
                 cursorSpeed *= -1;
@@ -5633,21 +5629,24 @@ class Activities {
                     // success
                     moneyWon += 20;
                     roundsWin++;
+                    App.pet.setState('cheering');
                 } else if(cursorCurrentPos >= 70) {
                     App.playSound(`resources/sounds/ui_click_01.ogg`, true);
                     moneyWon += 3;
+                    App.pet.setState('jumping');
                 } else {
                     App.playSound(`resources/sounds/ui_click_01.ogg`, true);
                     moneyWon -= 5;
                     moneyWon = clamp(moneyWon, 0, 999);
+                    App.pet.setState('mild_uncomfortable');
                 }
 
                 round++;
 
                 if(round === 3){
                     setTimeout(() => {
-                        screen.close();
-                        App.onDraw = null;
+                        screen.remove();
+                        App.pet.stopScriptedState();
                         if(roundsWin === 3){
                             App.definitions.achievements.perfect_minigame_rodrush_win_x_times.advance();
                         }
@@ -5661,10 +5660,17 @@ class Activities {
                     setTimeout(() => {
                         reset(0.15);
                         cursorSpeed = round === 1 ? 0.27 : 0.37;
+                        App.pet.setState('idle');
                     }, 500);
                 }
             }
         }
+
+        App.pet.stopMove();
+        App.pet.x = '50%';
+        App.pet.triggerScriptedState('idle', App.INF, false, true, false, onDraw);
+
+        reset();
     }
     static fallingStuffGame(){
         App.closeAllDisplays();
