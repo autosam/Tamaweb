@@ -991,7 +991,19 @@ const App = {
             }
         }
     },
-    onDraw: () => {},
+    onDraw: () => {
+        if(!App.pet) return;
+
+        if(App.canProceed('gold_diff_check', 50)){
+            const lastGoldAmount = App.temp.playerLastGoldAmount || App.pet.stats.gold || 0;
+            const goldDiff = App.pet.stats.gold - lastGoldAmount;
+            if(goldDiff) {
+                console.log('diff detected', goldDiff, {lastGoldAmount, curr: App.pet.stats.gold});
+                App.showTransaction(App.temp.playerLastGoldAmount, goldDiff);
+            }
+            App.temp.playerLastGoldAmount = App.pet.stats.gold;
+        }
+    },
     preloadImages: function(urls) {
         const promises = urls.map((url) => {
             return new Promise((resolve, reject) => {
@@ -8971,6 +8983,50 @@ const App = {
             App.pet.stats.gold = Math.round(App.pet.stats.gold - finalAmount);
         
         return true;
+    },
+    showTransaction: function(current, diff){
+        const goldDiffElement = document.querySelector('.cloneables #gold-diff').cloneNode(true);
+        const [currentSpan, diffSpan] = goldDiffElement.querySelectorAll('#current, #diff');
+        document.querySelector('.screen-wrapper').appendChild(goldDiffElement);
+
+        let currentBase = current, currentDiff = Math.abs(diff);
+        const isAdditive = diff >= 0;
+        const sign = isAdditive ? '+' : '-';
+
+        const additionPerTick = Math.max((currentDiff / 95), 1);
+
+        UI.show(goldDiffElement);
+
+        const updateUI = () => {
+            currentSpan.textContent = `$${Math.round(currentBase)}`;
+            diffSpan.textContent = `${currentDiff > 0 ? sign : ''}${Math.round(currentDiff)}`;
+        }
+
+        updateUI();
+
+        setTimeout(() => {
+            const transactionTick = setInterval(() => {
+                if(currentDiff > 0){
+                    currentDiff -= additionPerTick;
+
+                    if(isAdditive) currentBase += additionPerTick;
+                    else currentBase -= additionPerTick;
+
+                    if(currentDiff < 0) {
+                        currentDiff = 0;
+                        currentBase = current + diff;
+                    }
+                } else {
+                    currentDiff = 0;
+                    currentBase = current + diff;
+                    clearInterval(transactionTick);
+                    setTimeout(() => {
+                        UI.fadeOut(goldDiffElement, 300, () => goldDiffElement.remove());
+                    }, 1000);
+                }
+                updateUI();
+            }, 15);
+        }, 500)
     },
     getPreciseTimeFromNow: (time) => {
         const duration = moment.duration(moment(time).diff(moment()));

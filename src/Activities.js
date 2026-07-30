@@ -7662,8 +7662,6 @@ class Activities {
 
         amount = Math.floor(amount);
 
-        App.pet.stats.gold += amount;
-        App.pet.stats.current_fun += happiness ?? (amount / 5);
         if(hasWon) Missions.done(Missions.TYPES.win_game);
 
         const petMain = new TimelineDirector(App.pet);
@@ -7678,6 +7676,8 @@ class Activities {
         petClerk.setState('idle')
         await TimelineDirector.wait(1600);
         const messageBubble = App.displayMessageBubble(`$${amount}`);
+        App.pet.stats.gold += amount;
+        App.pet.stats.current_fun += happiness ?? (amount / 5);
         await petMain.bob({maxCycles: 1, animation: 'shocked'});
         if(hasWon){
             setTimeout(() => App.pet.playSound('resources/sounds/cheer_success.ogg', true));
