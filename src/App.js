@@ -9255,3 +9255,16 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
     checkForAwayTimeAndInit();
 });
+
+class DebugHelper {
+    static giveAllHarvests(amount = 10){
+        const keys = Object.keys(App.definitions.plant);
+        keys.forEach(key => {
+            App.addNumToObject(
+                App.pet.inventory.harvests,
+                key,
+                amount
+            )
+        })
+    }
+}
