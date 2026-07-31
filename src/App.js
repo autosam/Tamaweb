@@ -4509,16 +4509,19 @@ const App = {
 
                 const foodIcon = App.getFoodCSprite(current.sprite);
 
+                const isFavorite = App.petDefinition.isFavorite(current.sprite, currentType)
+
                 list.push({
                     disabled: Boolean(isOutOfStock || isDisabled),
                     current,
                     foodName: food,
                     price,
                     icon: foodIcon,
-                    shortName: `<div class="icon">${foodIcon}</div> <span class="ellipsis">${food.toUpperCase()}</span>`,
+                    shortName: `<div class="icon">${foodIcon}</div> <span class="ellipsis">${food.toUpperCase()}</span>  ${isFavorite ? App.getBadge(App.getIcon('heart', true)) : ''}`,
                     name: `
                         ${foodIcon} 
                         ${current.cookableOnly ? '★ ' : ''}
+                        ${isFavorite ? App.getFavoriteItemUI() : ''}
                         ${food.toUpperCase()} 
                         (x${ownedAmount > 0 ? ownedAmount : (!current.price ? '∞' : 0)})
                         ${
@@ -4952,7 +4955,27 @@ const App = {
                     condition: App.pet.stats.is_ghost
                 }
             ]
-            const unknownPersonality = `<span class="opacity-half">?</span>`
+            const unknownTraitIcon = `<span class="opacity-half">?</span>`
+            const wrapAsIcon = ({content, onClickPopupContent}) => `<div 
+                ${onClickPopupContent ? `onclick="App.displayPopup(\`${onClickPopupContent}\`)"` : ''} 
+                class="pet-trait-icon click-sound">
+                    ${content}
+                </div>`;
+            const getFavoriteIcon = (type) => {
+                const value = App.petDefinition.stats.favorites[type];
+
+                const getDescription = (name) => `<small>Favorite ${type}:</small> <div> <b>${name}</b> </div>`;
+
+                if(!value) return '';
+
+                if(['treat', 'food'].includes(type)){
+                    const def = Object.entries(App.definitions.food).find(([_, item]) => item.sprite === value);
+                    return wrapAsIcon({
+                        content: `${App.getFoodCSprite(value)}`,
+                        onClickPopupContent: getDescription(def[0]),
+                    })
+                }
+            }
 
             const playTimeDuration = moment.duration(App.playTime);
 
@@ -4994,10 +5017,10 @@ const App = {
                     <div data-fb-focusable class="relative mt-6 width-full">
                         <div class="stats-label left-0">Personality</div>
                         <div class="pet-trait-icons-container">
-                            ${!App.petDefinition.traits.length ? unknownPersonality : ''}
+                            ${!App.petDefinition.traits.length ? unknownTraitIcon : ''}
                             ${App.petDefinition.traits.map(key => {
                                 const definition = App.definitions.traits[key];
-                                if(!definition) return unknownPersonality;
+                                if(!definition) return unknownTraitIcon;
                                 return `<div onclick="App.displayPopup('<small>trait:</small> <br> <b>${definition.name}</b><br><small>${definition.description}</small>')" title="${definition.name}" class="pet-trait-icon click-sound">
                                     ${App.getTraitCSprite(key)}
                                 </div>`
@@ -5008,6 +5031,13 @@ const App = {
                         <div class="stats-label left-0">Zodiac sign</div>
                         <div class="pet-trait-icons-container">
                             ${App.getZodiacSign(App.petDefinition.birthday)}
+                        </div>
+                    </div>
+                    <div data-fb-focusable class="relative mt-6 width-full">
+                        <div class="stats-label left-0">Favorites</div>
+                        <div class="pet-trait-icons-container">
+                            ${getFavoriteIcon('food')}
+                            ${getFavoriteIcon('treat')}
                         </div>
                     </div>
                 </div>
@@ -8314,7 +8344,7 @@ const App = {
         const size = 
             FOOD_SPRITESHEET_DIMENSIONS.rows 
                 * FOOD_SPRITESHEET_DIMENSIONS.cellSize;
-        return `<c-sprite 
+        return `<c-sprite
             naturalWidth="${size}" 
             naturalHeight="${size}" 
             width="${FOOD_SPRITESHEET_DIMENSIONS.cellSize}" height="${FOOD_SPRITESHEET_DIMENSIONS.cellSize}" 
@@ -8420,6 +8450,13 @@ const App = {
                 </small>
             </div>
         `;
+    },
+    getFavoriteItemUI: () => {
+        return `
+            <div class="favorite-item-icon pulse">
+                ${App.getIcon('heart', true)}
+            </div>
+        `
     },
     pullFromPool: (pool, options = {}) => {
         const { 

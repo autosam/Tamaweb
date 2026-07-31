@@ -3160,3 +3160,8 @@ c-sprite.ghost.devil::after {
         transform: scale(1);
     }
 }
+
+.favorite-item-icon {
+    position: absolute;
+    color: #ff6565;
+}

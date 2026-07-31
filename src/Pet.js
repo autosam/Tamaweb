@@ -551,6 +551,8 @@ class Pet extends Object2d {
     feed(foodSpriteCellNumber, value, type, forced, onEndFn){
         const me = this;
 
+        let hungerReplenishValue = value || 0;
+
         if(!type) type = 'food';
 
         App.toggleGameplayControls(false, () => {
@@ -574,6 +576,8 @@ class Pet extends Object2d {
                     break;
             }
 
+            const isFavorite = this.petDefinition.isFavorite(foodSpriteCellNumber, type);
+
             if(
                 this.stats.is_misbehaving &&
                 (this.stats.current_hunger > this.stats.max_hunger / 2)
@@ -596,7 +600,13 @@ class Pet extends Object2d {
             );
             
             const isMilk = foodSpriteCellNumber === App.definitions.food['milk'].sprite;
-            if(reFedAmount >= App.constants.FEEDING_PICKINESS.refeedingTolerance && type !== 'med' && !isMilk && !this.petDefinition.hasTrait('voraciousHunger')) {
+            if(
+                reFedAmount >= App.constants.FEEDING_PICKINESS.refeedingTolerance 
+                && type !== 'med' 
+                && !isMilk 
+                && !this.petDefinition.hasTrait('voraciousHunger')
+                && !isFavorite
+            ) {
                 this.showThought('thought_vomit');
                 return true;
             }
@@ -634,6 +644,15 @@ class Pet extends Object2d {
 
         Missions.done(Missions.TYPES.food);
 
+        // favorite treat/food item
+        if(['food', 'treat'].includes(type)){
+            const isFavorite = this.petDefinition.checkFavorite(
+                foodSpriteCellNumber,
+                type
+            );
+            if(isFavorite) hungerReplenishValue *= 1.5;
+        }
+
         /* App.foods.hidden = false; // remove this getting rid of ui food
         App.foods.spritesheet.cellNumber = foodSpriteCellNumber; */
 
@@ -645,7 +664,7 @@ class Pet extends Object2d {
         App.uiFood.setAttribute('index', foodSpriteCellNumber - 1);
         
         this.inverted = false;
-        this.stats.current_hunger += (value || 0);
+        this.stats.current_hunger += hungerReplenishValue;
 
         App.setScene(App.scene.kitchen);
 

@@ -318,6 +318,7 @@ class PetDefinition {
         is_ghost: false,
         last_eaten: [],
         has_toothache: false,
+        favorites: {},
 
         // skill points
         current_expression: 0,
@@ -425,6 +426,7 @@ class PetDefinition {
                     gender: this.stats.gender,
                     is_ghost: this.stats.is_ghost,
                     has_toothache: this.stats.has_toothache,
+                    favorites: this.stats.favorites,
                 }
                 return;
             }
@@ -877,6 +879,34 @@ class PetDefinition {
         this.traits.push(traitKey || randomTrait);
 
         console.log(this, 'Developed new trait:', traitKey || randomTrait);
+    }
+    checkFavorite(key, type){
+        const existingFavorite = this.stats?.favorites[type];
+
+        if(existingFavorite){
+            return key === existingFavorite;
+        }
+
+        pRandom.save();
+        const hash = hashCode(`fav_${type}_${key}`);
+        pRandom.seed = App.petDefinition.getCharHash() + hash;
+        const isFavorite = pRandom.getPercent(5);
+
+        if(isFavorite){
+            this.stats.favorites[type] = key;
+            console.log(`Developed new favorite ${type}: ${key}`);
+        }
+
+        pRandom.load();
+        return isFavorite;
+    }
+    isFavorite(key, type){
+        const existingFavorite = this.stats?.favorites[type];
+        if(!existingFavorite) return false;
+        return key === existingFavorite;
+    }
+    resetFavorites() {
+        this.stats.favorites = {};
     }
 
     spritesheetDefinitions = {
