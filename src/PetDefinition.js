@@ -881,6 +881,9 @@ class PetDefinition {
         console.log(this, 'Developed new trait:', traitKey || randomTrait);
     }
     checkFavorite(key, type){
+        // babies can't develop favorites
+        if(this.lifeStage <= PetDefinition.LIFE_STAGE.baby) return;
+
         const existingFavorite = this.stats?.favorites[type];
 
         if(existingFavorite){
