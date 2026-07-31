@@ -893,7 +893,7 @@ class PetDefinition {
         pRandom.save();
         const hash = hashCode(`fav_${type}_${key}`);
         pRandom.seed = App.petDefinition.getCharHash() + hash;
-        const isFavorite = pRandom.getPercent(5);
+        const isFavorite = pRandom.getPercent(6);
 
         if(isFavorite){
             this.stats.favorites[type] = key;
