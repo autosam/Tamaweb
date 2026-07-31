@@ -986,6 +986,16 @@ class PetDefinition {
         return 'ghost devil';
     }
 
+    static getRandomLifeStage(above = -1){
+        let current = -Infinity;
+        while(current <= above) {
+            current = PetDefinition.LIFE_STAGE[randomFromArray(
+                Object.keys(PetDefinition.LIFE_STAGE)
+            )]; 
+        }
+        return current;
+    }
+
     static LIFE_STAGE = {
         baby: 0,
         child: 0.5,

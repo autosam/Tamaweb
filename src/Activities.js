@@ -1331,7 +1331,10 @@ class Activities {
         const sceneParent = new Object2d({});
 
         const getRandomGhostPet = (ghostType = PetDefinition.GHOST_TYPE.devil) => {
-            const npcDef = App.getRandomPetDef();
+            const npcLifeStage = PetDefinition.getRandomLifeStage(
+                PetDefinition.LIFE_STAGE.baby
+            )
+            const npcDef = App.getRandomPetDef(npcLifeStage);
             npcDef.stats.is_ghost = ghostType;
             return new Pet(npcDef, {parent: sceneParent});
         }
