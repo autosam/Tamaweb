@@ -626,7 +626,11 @@ class Pet extends Object2d {
                 food => food.sprite === spriteNumber
             ).type === 'treat'
         ).length;
-        this.petDefinition.stats.has_toothache = treatsCount >= random(7, 8);
+        // elders cannot get toothache
+        this.petDefinition.stats.has_toothache = 
+            this.petDefinition.lifeStage !== PetDefinition.LIFE_STAGE.elder 
+            ? treatsCount >= random(7, 8) 
+            : false;
 
         Missions.done(Missions.TYPES.food);
 

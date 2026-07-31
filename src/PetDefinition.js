@@ -613,6 +613,9 @@ class PetDefinition {
             this.developTrait();
         }
 
+        if(this.lifeStage === PetDefinition.LIFE_STAGE.elder)
+            this.stats.has_toothache = false;
+
         return true;
     }
 
