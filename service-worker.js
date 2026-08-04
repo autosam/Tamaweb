@@ -32,6 +32,7 @@ const ASSETS = [
   "src/StoryGen.js",
   "src/Plant.js",
   "src/Animal.js",
+  "src/Prefab.js",
   // libs
   "src/libs/moment.js",
   "src/libs/idb-keyval.js",
