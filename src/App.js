@@ -9304,4 +9304,20 @@ class DebugHelper {
             )
         })
     }
+    static generateAnswer(){
+        const input = `what's up gang?`;
+        const generator = new StoryGenerator();
+        generator.deserialize(STORIES.a0);
+
+        const buildSentence = (startingWord) => {
+            return generator.generate(random(4, 10), startingWord);
+        }
+
+        const inputWords = shuffleArray(input.split(' ')).slice(0, random(2, 4));
+        const sentences = [];
+        inputWords.forEach(word => sentences.push(buildSentence(word.toLowerCase())))
+
+        console.log('Input:', input)
+        console.log(sentences.join('\n'));
+    }
 }

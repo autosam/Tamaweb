@@ -63,9 +63,7 @@ class StoryGenerator {
             occuranceMap.set(word, (occuranceMap.get(word) || 0) + 1);
         });
 	}
-    generate(length = 10){
-        const firstWord = randomFromArray(this.startingWords).toLowerCase();
-
+    generate(length = 10, firstWord = randomFromArray(this.startingWords).toLowerCase()){
         let sentence = [firstWord];
         for (let i = 0; i < length; i++) {
             const lastWord = sentence.at(-1);
