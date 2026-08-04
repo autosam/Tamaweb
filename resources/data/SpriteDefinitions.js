@@ -309,6 +309,7 @@ const SPRITES = [
 "misc/thought_bubble_type_playdate.png",
 "misc/thought_dislike.png",
 "misc/thought_exclaim.png",
+"misc/thought_favorite.png",
 "misc/thought_gift.png",
 "misc/thought_heart.png",
 "misc/thought_heart_broken.png",

@@ -654,6 +654,7 @@ class PetDefinition {
 
         switch(this.lifeStage){
             case PetDefinition.LIFE_STAGE.adult:
+                // prevent npcs from aging up to elders when unless player is an elder
                 if(
                     isNpc && 
                     App.petDefinition?.getLifeStage() !== PetDefinition.LIFE_STAGE.elder
@@ -887,16 +888,27 @@ class PetDefinition {
         const existingFavorite = this.stats?.favorites[type];
 
         if(existingFavorite){
+            // small chance to develop a new favorite, replacing the old one
+            const isNewFavorite = this.tryDevelopFavorite({ key, type, chance: 1 });
+            if(isNewFavorite) return true;
+
             return key === existingFavorite;
         }
 
+        return this.tryDevelopFavorite({ key, type });
+    }
+    tryDevelopFavorite({ key, type, chance = 6 }){
         pRandom.save();
         const hash = hashCode(`fav_${type}_${key}`);
-        pRandom.seed = App.petDefinition.getCharHash() + hash;
-        const isFavorite = pRandom.getPercent(6);
+        pRandom.seed = this.getCharHash() + hash;
+        const isFavorite = pRandom.getPercent(chance);
 
         if(isFavorite){
             this.stats.favorites[type] = key;
+            
+            const currentPet = App.drawer.selectObjects('pet').find(pet => pet?.petDefinition === this);
+            App.queueEvent(() => currentPet?.showThought('thought_favorite'));
+
             console.log(`Developed new favorite ${type}: ${key}`);
         }
 

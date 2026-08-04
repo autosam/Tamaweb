@@ -570,13 +570,19 @@ class Pet extends Object2d {
         }
 
         const shouldRefuse = () => {
+            if(this.stats.has_toothache){
+                this.showThought('thought_toothbrush');
+                return true;
+            }
+
+            const isFavorite = this.petDefinition.isFavorite(foodSpriteCellNumber, type);
+            if(isFavorite) return false;
+
             switch(type){
                 case "food": 
                     if(this.hasMoodlet('full')) return true;
                     break;
             }
-
-            const isFavorite = this.petDefinition.isFavorite(foodSpriteCellNumber, type);
 
             if(
                 this.stats.is_misbehaving &&
@@ -588,17 +594,11 @@ class Pet extends Object2d {
                 }
             }
 
-            if(this.stats.has_toothache){
-                this.showThought('thought_toothbrush');
-                return true;
-            }
-
             // checking for over feeding the same item
             const reFedAmount = this.petDefinition.stats.last_eaten.reduce(
                 (sum, current) => current === foodSpriteCellNumber ? sum + 1 : sum, 
                 0
             );
-            
             const isMilk = foodSpriteCellNumber === App.definitions.food['milk'].sprite;
             if(
                 reFedAmount >= App.constants.FEEDING_PICKINESS.refeedingTolerance 
