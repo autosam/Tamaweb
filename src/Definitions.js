@@ -1390,6 +1390,64 @@ App.definitions = (() => {
                 icon: 'resources/img/background/outside/09_icon.png',
                 image: 'resources/img/background/outside/09.png',
                 price: 450,
+                onLoad: () => {
+                    let nextSpawnMs = 0, spawnedLeaves = 0;
+                    const controllerObject = new Object2d({
+                        onDraw: () => {
+                            if(App.time > nextSpawnMs && spawnedLeaves < 12) {
+                                nextSpawnMs = App.time + random(1000, 3000);
+                                nextSpawnMs = App.time + random(50, 4000);
+                                spawnedLeaves++;
+                                const leaf = new Object2d({
+                                    img: `resources/img/misc/leaves_01.png`,
+                                    spritesheet: {
+                                        cellSize: 13,
+                                        cellNumber: 4,
+                                        rows: 2,
+                                        columns: 4,
+                                    },
+                                    x: `${random(5, 85) + Math.random()}%`,
+                                    y: `${random(25, 40)}%`,
+                                    z: App.pet.z,
+                                    rotation: random(0, 180),
+                                    parent: controllerObject,
+                                    opacity: 0,
+                                    velocity: 0.5,
+                                    floatValue: 0,
+                                    scale: random(5, 8) * 0.1,
+                                    restingPositionY: random(15, 30),
+                                    onLateDraw: (me) => {
+                                        if(!me.spawnX) me.spawnX = me.x;
+
+                                        if(me.y > App.drawer.bounds.height - me.restingPositionY){
+                                            if(me.opacity <= 0) {
+                                                me.removeObject();
+                                                spawnedLeaves--;
+                                            }
+                                            me.opacity -= 0.0005 * App.deltaTime
+                                            return;
+                                        }
+
+                                        App.pet.setLocalZBasedOnSelf(me);
+
+                                        me.y += me.velocity * 0.1 * App.deltaTime;
+                                        me.opacity += 0.002 * App.deltaTime;
+                                        me.opacity = clamp(me.opacity, 0, 0.75);
+                                        me.floatValue += 0.0085 * App.deltaTime;
+                                        me.x = me.spawnX + Math.sin(me.floatValue) * 5;
+                                        me.rotation += me.velocity * 0.2 * App.deltaTime;
+                                    }
+                                })
+                            }
+                        }
+                    });
+
+                    App.temp.forestBgControllerObject = controllerObject;
+                },
+                onUnload: () => {
+                    App.temp.forestBgControllerObject?.removeObject();
+                    App.temp.forestBgControllerObject = null;
+                }
             },
             "silky retreat": {
                 image: 'resources/img/background/house/ex_01.png',
