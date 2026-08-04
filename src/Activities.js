@@ -4587,6 +4587,7 @@ class Activities {
             sprite: 'resources/img/character/chara_290b.png',
         })
         let otherPet = new Pet(otherPetDef);
+        App.pet.setLocalZBasedOnSelf(otherPet);
 
         otherPet.stopMove();
         otherPet.x = '100%';
