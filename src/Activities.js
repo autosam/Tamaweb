@@ -285,13 +285,14 @@ class Activities {
             Object2d.actionAnimations.horizontalJiggle(App.temp.digSpotObject);
         }
 
-        App.temp.digSpotObject.spritesheet.cellNumber = 2;        
+        App.temp.digSpotObject.spritesheet.cellNumber = 2;
 
         const chestObject = new Object2d({
             parent,
             img: 'resources/img/misc/treasure_chest_01.png',
             x: '40%',
             y: '78%',
+            z: App.pet.z + 1,
             opacity: 0,
             scale: 0.1,
             rotation: 0,
@@ -307,7 +308,7 @@ class Activities {
                 me.rotation = lerp(me.rotation, 0, 0.01 * App.deltaTime);
             }
         })
-        App.pet.setLocalZBasedOnSelf(chestObject);
+        // App.pet.setLocalZBasedOnSelf(chestObject);
         await TimelineDirector.wait(10);
         App.pet.playSound('resources/sounds/jump.ogg', true);
         await main.jumpTo({x: '80%', speed: 0.0015, curve: 0.5, y: main.getPosition('y'), endState: 'shocked_without_sound', animation: 'shocked_without_sound'});

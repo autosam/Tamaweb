@@ -1668,7 +1668,9 @@ const App = {
             image: 'resources/img/background/outside/garden_01.png',
             petY: '95%',
             shadowOffset: -5,
-            onLoad: (args) => {
+            onLoad: function(args) {
+                this.grassFieldObject = Prefab.grassField({ height: 30 });
+
                 App.pet.staticShadow = false;
                 
                 if(!args?.noPetBowl){
@@ -1723,7 +1725,8 @@ const App = {
                     // App.pet.setLocalZBasedOnSelf(App.temp.digSpotObject);
                 }
             },
-            onUnload: () => {
+            onUnload: function() {
+                this.grassFieldObject?.removeObject();
                 App.pet.staticShadow = true;
 
                 App.temp.petBowlObject?.removeObject?.();
@@ -7532,6 +7535,7 @@ const App = {
             }
 
             const poopObjects = App.drawer.selectObjects('poop');
+            const miscObjects = App.drawer.selectObjects(['falling_leaf']);
 
             const mop = new Object2d({
                 image: App.preloadedResources["resources/img/misc/cleaner.png"],
@@ -7546,6 +7550,7 @@ const App = {
 
                     getDraggedWithMop(App.pet, App.petDefinition.spritesheet.cellSize);
                     poopObjects.forEach(poop => getDraggedWithMop(poop));
+                    miscObjects.forEach(object => getDraggedWithMop(object));
                     App.spawnedAnimals?.forEach(animal => getDraggedWithMop(animal))
 
                     if(this.x >= mop.width/1.5){

@@ -346,6 +346,10 @@ class Drawer {
         this.cameraPosition.y = targetY;
     }
     selectObjects(selector){
+        if(Array.isArray(selector)){
+            const results = selector.map(group => this.selectObjects(group));
+            return results.flat();
+        }
         return this.objects.filter((object) => object?.selector === selector);
     }
 }

@@ -1,14 +1,13 @@
 const Prefab = {
-    grassField({ height = 30, parent = new Object2d({})} = {}){
+    grassField({ height = 32, parent = new Object2d({})} = {}){
         for(let i = 0; i < height; i += 1){
             const grassLayer = new Object2d({
                 parent,
                 img: 'resources/img/misc/grass_layer_01.png',
                 x: 0,
                 y: App.drawer.bounds.height - i,
-                onLateDraw: (me) => {
+                onDraw: (me) => {
                     App.pet.setLocalZBasedOnSelf(me);
-                    me.onDraw = null;
                 }
             })
         }
@@ -33,6 +32,7 @@ const Prefab = {
             floatValue: 0,
             scale: random(5, 8) * 0.1,
             restingPositionY: random(15, 30),
+            selector: 'falling_leaf',
             onLateDraw: (me) => {
                 if(!me.spawnX) me.spawnX = me.x;
 

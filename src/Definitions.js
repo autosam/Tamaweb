@@ -1391,7 +1391,7 @@ App.definitions = (() => {
                 image: 'resources/img/background/outside/09.png',
                 price: 450,
                 onLoad: () => {
-                    let nextSpawnMs = 0, spawnedLeaves = 0;
+                    let nextSpawnMs = App.time + 500, spawnedLeaves = 0;
                     const controllerObject = new Object2d({
                         onDraw: () => {
                             if(App.time > nextSpawnMs && spawnedLeaves < 12) {
@@ -1408,12 +1408,10 @@ App.definitions = (() => {
                         }
                     });
 
-                    App.temp.forestBgGrassObject = Prefab.grassField();
                     App.temp.forestBgControllerObject = controllerObject;
                 },
                 onUnload: () => {
                     App.temp.forestBgControllerObject?.removeObject?.();
-                    App.temp.forestBgGrassObject?.removeObject?.();
                 }
             },
             "silky retreat": {
