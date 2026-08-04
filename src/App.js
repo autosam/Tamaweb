@@ -7521,17 +7521,16 @@ const App = {
             Missions.done(Missions.TYPES.clean_room);
 
             const getDraggedWithMop = (object2d, size) => {
+                let dragStart;
                 if(object2d.x <= mop.x + mop.width){
                     object2d.x = mop.x + mop.width;
-                    if(!object2d._dragStart){
-                        object2d._dragStart = App.time;
-                    }
+                    if(!dragStart) dragStart = App.time
                     object2d.setState?.(
-                        App.time - object2d._dragStart < 500 
+                        App.time - dragStart < 500 
                         ? 'shocked'
                         : App.pet.stats.has_poop_out ? 'idle' : 'mild_uncomfortable'
                     );
-                } else delete object2d._dragStart;
+                };
             }
 
             const poopObjects = App.drawer.selectObjects('poop');
