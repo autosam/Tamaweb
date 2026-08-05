@@ -7042,7 +7042,8 @@ const App = {
                                                 : `${reactionBaseCharacter}👍`;
                                             App.displayConfirm(
                                                 ...GenericUIDef.singleConfirm(
-                                                    `${friendDef.getAvatar()} <div class="mt-6 italic">${profanityCleaner.clean(answer)}</div> ${reaction}`,
+                                                    `${UIComponent.PetDefMessageHead({ friendDef })}
+                                                    <q>${profanityCleaner.clean(answer)} ${reaction}</q>`,
                                                 ),
                                             );
                                         },
@@ -7622,14 +7623,9 @@ const App = {
             if(!friendDef) return;
 
             const getCallConfig = () => {
-                let screenContent = `
-                    <div class="flex flex-gap-1 align-center">
-                        <div class="persona-avatar width-fit">
-                            ${friendDef.getCSprite(true)}
-                        </div>
-                        <small class="bold">${friendDef.name}</small>
-                    </div>
-                `
+                let screenContent = UIComponent.PetDefMessageHead({
+                    friendDef,
+                })
                 let onAccept;
 
                 switch(random(0, 1)){
