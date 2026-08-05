@@ -1,0 +1,8 @@
+[
+  {
+    "label": "Start Live Server",
+    "command": "npx live-server --port=5500 --no-browser",
+    "use_new_terminal": true,
+    "hide": "always"
+  }
+]
