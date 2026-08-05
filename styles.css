@@ -17,7 +17,7 @@
     --prim-clr-c-border: #ff572257;
     /* generic */
     .disabled {
-        color: var(--prim-clr-b-text-shadow); 
+        color: var(--prim-clr-b-text-shadow);
     }
     /* buttons */
     /* main */
@@ -101,7 +101,7 @@
     }
     .classic-main-menu__item:nth-child(3):hover,
     .grid-item:nth-child(3):before {
-    
+
         background: var(--mm-clr-3);
     }
     .classic-main-menu__item:nth-child(4):hover,
@@ -114,7 +114,7 @@
     }
     .classic-main-menu__item:nth-child(6):hover,
     .grid-item:nth-child(6):before {
-    
+
         background: var(--mm-clr-6)
     }
     .classic-main-menu__item:nth-child(7):hover,
@@ -265,7 +265,7 @@
         background: #fcae7c !important;
     }
     .save-indicator {
-        text-shadow: 
+        text-shadow:
             1px 1px 0px #ff00c6,
             2px 2px 0px #ff00c6,
             -1px 1px 0px #ff00c6,
@@ -395,10 +395,10 @@ hr {
 .loading-text #loading-error {
     color: rgb(70, 55, 55);
     --outline: rgb(255, 230, 230);
-    text-shadow: 
-        -1px -1px var(--outline), 
-        1px -1px var(--outline), 
-        -1px 1px var(--outline), 
+    text-shadow:
+        -1px -1px var(--outline),
+        1px -1px var(--outline),
+        -1px 1px var(--outline),
         1px 1px var(--outline);
     text-align: center;
     max-width: 400px;
@@ -756,21 +756,27 @@ input[type="file"] {
     width: -webkit-fill-available;
 }
 
-input {
+input, textarea {
     all: unset;
     margin: 5px;
     padding: 5px 10px;
     border-radius: 10px;
     text-transform: none !important;
-    background: rgba(255, 255, 255, 0.849);
-    border: 1px solid var(--prim-clr-b-border);
+    background: rgba(255, 255, 255);
+    border: 2px solid var(--prim-clr-b-border);
     color: var(--prim-clr-b-text);
+}
+textarea {
+    height: 100%;
 }
 input:focus {
     outline: 3px solid;
 }
 input:focus {
     background: white;
+}
+input::placeholder, textarea::placeholder {
+    color: color-mix(in srgb, var(--prim-clr-b-text) 50%, transparent);
 }
 
 @keyframes slider-item-anim-in-left {
@@ -1105,9 +1111,9 @@ button {
     background: linear-gradient(180deg, #f7f7f7, white);
     border-radius: 50px;
     /* border-bottom: 3px solid #00000057; */
-    box-shadow: 
-        0px 7px 5px -3px #00000061, 
-        inset -5px -7px 5px -3px #0000005c, 
+    box-shadow:
+        0px 7px 5px -3px #00000061,
+        inset -5px -7px 5px -3px #0000005c,
         inset 5px 7px 5px -3px #ffffff5c;
     height: calc(var(--shell-btn-size) - 3px);
     height: calc(var(--shell-btn-size));
@@ -1515,6 +1521,9 @@ input#background-color-picker {
 .mt-2 {
     margin-top: 4px;
 }
+.mt-4 {
+    margin-top: 6px;
+}
 .mt-6 {
     margin-top: 12px;
 }
@@ -1919,7 +1928,7 @@ a.generic-btn:before {
     font-size: xx-small;
     padding: 2px;
     border-radius: 100%;
-    
+
 }
 
 .generic-btn i {
@@ -2009,6 +2018,7 @@ a.generic-btn:before {
 .bold {
     font-weight: bold;
 }
+.italic { font-style: italic; }
 
 .generic-list-container {
     padding: 4px;
@@ -2216,14 +2226,14 @@ a.generic-btn:before {
     filter: saturate(2);
 }
 .classic-main-menu__item > i {
-    text-shadow: 
-        1px 0px 0px white, 
-        -1px 0px 0px white, 
-        0px 1px 0px white, 
+    text-shadow:
+        1px 0px 0px white,
+        -1px 0px 0px white,
+        0px 1px 0px white,
         0px -1px 0px white,
-        2px 0px 0px white, 
-        -2px 0px 0px white, 
-        0px 2px 0px white, 
+        2px 0px 0px white,
+        -2px 0px 0px white,
+        0px 2px 0px white,
         0px -2px 0px white;
     pointer-events: none;
 }
@@ -2391,7 +2401,7 @@ a.generic-btn:before {
         transform: scale(3) rotateZ(45deg);
     }
     to {
-       
+
     }
 }
 @keyframes revealing-anim-inner {
@@ -2417,14 +2427,14 @@ a.generic-btn:before {
     font-size: 11px;
     animation: scrollable-indicator-anim 0.55s infinite alternate-reverse ease-in-out;
     color: var(--prim-clr-b-text);
-    text-shadow: 
-        1px 0 var(--prim-clr-b-text-shadow), 
-        -1px 0 var(--prim-clr-b-text-shadow), 
-        2px 0 var(--prim-clr-b-text-shadow), 
-        -2px 0 var(--prim-clr-b-text-shadow), 
-        0px 1px var(--prim-clr-b-text-shadow), 
+    text-shadow:
+        1px 0 var(--prim-clr-b-text-shadow),
+        -1px 0 var(--prim-clr-b-text-shadow),
+        2px 0 var(--prim-clr-b-text-shadow),
+        -2px 0 var(--prim-clr-b-text-shadow),
+        0px 1px var(--prim-clr-b-text-shadow),
         0px -1px var(--prim-clr-b-text-shadow),
-        0px 2px var(--prim-clr-b-text-shadow), 
+        0px 2px var(--prim-clr-b-text-shadow),
         0px -2px var(--prim-clr-b-text-shadow);
 }
 @keyframes scrollable-indicator-anim {
@@ -2509,14 +2519,14 @@ a.generic-btn:before {
 .directional-control__activity-name {
     background: transparent;
     border: none;
-    text-shadow: 
-        1px 0 var(--prim-clr-b-text), 
-        -1px 0 var(--prim-clr-b-text), 
-        2px 0 var(--prim-clr-b-text), 
-        -2px 0 var(--prim-clr-b-text), 
-        0px 1px var(--prim-clr-b-text), 
+    text-shadow:
+        1px 0 var(--prim-clr-b-text),
+        -1px 0 var(--prim-clr-b-text),
+        2px 0 var(--prim-clr-b-text),
+        -2px 0 var(--prim-clr-b-text),
+        0px 1px var(--prim-clr-b-text),
         0px -1px var(--prim-clr-b-text),
-        0px 2px var(--prim-clr-b-text), 
+        0px 2px var(--prim-clr-b-text),
         0px -2px var(--prim-clr-b-text);
     color: var(--prim-clr-b-bg);
     white-space: nowrap;
@@ -2603,10 +2613,10 @@ a.generic-btn:before {
 	border-radius: 12px;
     color: #000060;
     padding: 4px 10px;
-    filter: 
-        drop-shadow(-1px -1px 0px #000060) 
-        drop-shadow(1px 1px 0px #000060) 
-        drop-shadow(0px 2px 0px #000060) 
+    filter:
+        drop-shadow(-1px -1px 0px #000060)
+        drop-shadow(1px 1px 0px #000060)
+        drop-shadow(0px 2px 0px #000060)
         drop-shadow(2px 2px 0px #f86000);
 }
 button.message-bubble {
@@ -2666,9 +2676,9 @@ button.message-bubble:active {
     height: 38%;
     background: white;
     border-radius: 0 0 4px 4px;
-    filter: drop-shadow(-1px -1px 0px #000060) 
-        drop-shadow(1px 1px 0px #000060) 
-        drop-shadow(0px 2px 0px #000060) 
+    filter: drop-shadow(-1px -1px 0px #000060)
+        drop-shadow(1px 1px 0px #000060)
+        drop-shadow(0px 2px 0px #000060)
         drop-shadow(2px 2px 0px #f86000);
     color: #000060;
     pointer-events: none;
@@ -2728,8 +2738,8 @@ button.message-bubble:active {
 }
 
 .outlined-icon {
-    text-shadow: 
-        1px 1px 0px #00014b, 
+    text-shadow:
+        1px 1px 0px #00014b,
         -1px -1px 0px #00014b,
         1px -1px 0px #00014b,
         -1px 1px 0px #00014b;

@@ -6639,6 +6639,7 @@ const App = {
                     _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child,
                     name: `social`,
                     icon: 'users',
+                    isNew: true,
                     onclick: () => {
                         App.handlers.open_social_media();
                         return true;
@@ -6996,17 +6997,62 @@ const App = {
                     }
                 },
                 {
-                    name: `send message`,
+                    name: `send message ${App.getBadge()}`,
                     onclick: () => {
                         App.handlers.open_friends_list((friendDef) => {
                             if(friendDef.sentMessage){
                                 App.displayPopup(`${App.petDefinition.name} shouldn't spam ${friendDef.name}'s inbox!`, 3000);
                                 return;
                             }
-                            App.displayPopup(`sent message to ${friendDef.name}!`, 3000);
-                            friendDef.increaseFriendship(10);
-                            friendDef.sentMessage = true;
-                            App.pet.stats.current_expression += 0.5;
+
+                            App.displayPrompt(
+                                false,
+                                [
+                                    {
+                                        name: "send",
+                                        onclick: (value) => {
+                                            friendDef.sentMessage = true;
+                                            App.pet.stats.current_expression += 0.5;
+                                            const isProfane = profanityCleaner.isProfane(value);
+                                            const answer = DebugHelper.generateAnswer(value);
+                                            if(isProfane) friendDef.increaseFriendship(-random(0, 2));
+                                            else friendDef.increaseFriendship(10);
+                                            const getReactionBaseCharacter = () => {
+                                                if(friendDef.stats.is_ghost === PetDefinition.GHOST_TYPE.angel)
+                                                    return isProfane ? '😟' : '😇'
+                                                if(friendDef.stats.is_ghost === PetDefinition.GHOST_TYPE.devil)
+                                                    return isProfane ? '😈' : '👿'
+                                                return isProfane
+                                                    ? randomFromArray([
+                                                          "😡",
+                                                          "😒",
+                                                          "😠",
+                                                          "😭",
+                                                      ])
+                                                    : randomFromArray([
+                                                          "🙂",
+                                                          "🥰",
+                                                          "😁",
+                                                          "😀",
+                                                      ]);
+                                            }
+                                            const reactionBaseCharacter = getReactionBaseCharacter();
+                                            const reaction = isProfane
+                                                ? `👎${reactionBaseCharacter}`
+                                                : `${reactionBaseCharacter}👍`;
+                                            App.displayConfirm(
+                                                ...GenericUIDef.singleConfirm(
+                                                    `${friendDef.getAvatar()} <div class="mt-6 italic">${profanityCleaner.clean(answer)}</div> ${reaction}`,
+                                                ),
+                                            );
+                                        },
+                                    },
+                                    { name: "cancel", onclick: () => {}, class: 'back-btn' },
+                                ],
+                                null,
+                                "textarea",
+                                `enter your message for ${friendDef.name.toLowerCase()}`,
+                            );
                         })
                         return true;
                     }
@@ -7779,7 +7825,7 @@ const App = {
                             {
                                 componentType: 'button',
                                 className: 'flex flex-center',
-                                innerHTML: App.getIcon(item.icon, true),
+                                innerHTML: `${App.getIcon(item.icon, true)} ${item.isNew ? App.getBadge('new!') : ''}`,
                                 onclick: item.onclick,
                                 disabled: item._disable,
                                 style: `--index: ${index}; --rotate: ${random(0, 180)}deg;`
@@ -8127,15 +8173,17 @@ const App = {
         document.querySelector('.screen-wrapper').appendChild(list);
         return list;
     },
-    displayPrompt: function(text, buttons, defaultValue){
+    displayPrompt: function(text, buttons, defaultValue, inputType = 'input', placeholder){
         let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
             list.classList.add('prompt');
             list.innerHTML = `
-                <div class="uppercase flex-center">
-                    <div class="inner-padding b-radius-10 surface-stylized">
-                        ${text}
+                ${text ? `
+                    <div class="uppercase flex-center">
+                        <div class="inner-padding b-radius-10 surface-stylized">
+                            ${text}
+                        </div>
                     </div>
-                </div>
+                ` : ''}
                 <div class="buttons-container"></div>
             `;
             list.style['z-index'] = 3;
@@ -8147,8 +8195,9 @@ const App = {
 
         const btnContainer = list.querySelector('.buttons-container');
 
-        let input = document.createElement('input');
-            input.setAttribute('spellcheck', false);
+        const input = document.createElement(inputType);
+        input.setAttribute('spellcheck', false);
+        input.setAttribute('placeholder', placeholder)
         if(defaultValue !== undefined) input.value = defaultValue;
 
         list.insertBefore(input, btnContainer);
@@ -9308,8 +9357,7 @@ class DebugHelper {
             )
         })
     }
-    static generateAnswer(){
-        const input = `what's up gang?`;
+    static generateAnswer(input){
         const generator = new StoryGenerator();
         generator.deserialize(STORIES.a0);
 
@@ -9321,7 +9369,6 @@ class DebugHelper {
         const sentences = [];
         inputWords.forEach(word => sentences.push(buildSentence(word.toLowerCase())))
 
-        console.log('Input:', input)
-        console.log(sentences.join('\n'));
+        return sentences.join('\n')
     }
 }
