@@ -137,7 +137,7 @@ class StoryGenerator {
 	deserialize(compactStory){
 		const allWords = [];
 		this.map = new Map();
-		
+
 		const entries = compactStory.split('|');
 		entries.forEach(entry => {
 			const [currentWord, nextWordsJoined] = entry.split('=');
@@ -155,7 +155,7 @@ class ChainLetterScorer {
     constructor(storyGenerator) {
         this.storyGen = storyGenerator;
     }
-    
+
     scoreLetter(text){
         const wordChain = text.split(' ');
 
@@ -206,4 +206,21 @@ class ChainLetterScorer {
     static BadScore = 10;
     static MediumScore = 20;
     static GoodScore = 40;
+}
+
+class MessageAnswerGenerator extends StoryGenerator {
+    buildSentence(startingWord) {
+        return this.generate(random(4, 10), startingWord);
+    }
+    answer(input) {
+        const inputWords = shuffleArray(input.split(" ")).slice(
+            0,
+            random(2, 4),
+        );
+        const sentences = [];
+        inputWords.forEach((word) =>
+            sentences.push(this.buildSentence(word.toLowerCase())),
+        );
+        return sentences.join("\n");
+    }
 }

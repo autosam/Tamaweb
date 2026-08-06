@@ -7011,10 +7011,12 @@ const App = {
                                     {
                                         name: "send",
                                         onclick: (value) => {
+                                            const generator = new MessageAnswerGenerator();
+                                            generator.deserialize(STORIES.a0);
                                             friendDef.sentMessage = true;
                                             App.pet.stats.current_expression += 0.5;
                                             const isProfane = profanityCleaner.isProfane(value);
-                                            const answer = DebugHelper.generateAnswer(value);
+                                            const answer = generator.answer(value);
                                             if(isProfane) friendDef.increaseFriendship(-random(0, 2));
                                             else friendDef.increaseFriendship(10);
                                             const getReactionBaseCharacter = () => {
@@ -9352,19 +9354,5 @@ class DebugHelper {
                 amount
             )
         })
-    }
-    static generateAnswer(input){
-        const generator = new StoryGenerator();
-        generator.deserialize(STORIES.a0);
-
-        const buildSentence = (startingWord) => {
-            return generator.generate(random(4, 10), startingWord);
-        }
-
-        const inputWords = shuffleArray(input.split(' ')).slice(0, random(2, 4));
-        const sentences = [];
-        inputWords.forEach(word => sentences.push(buildSentence(word.toLowerCase())))
-
-        return sentences.join('\n')
     }
 }
