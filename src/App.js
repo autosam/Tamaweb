@@ -7011,41 +7011,19 @@ const App = {
                                     {
                                         name: "send",
                                         onclick: (value) => {
-                                            const generator = new MessageAnswerGenerator();
+                                            const generator = new MessageAnswerGenerator(friendDef);
                                             generator.deserialize(STORIES.a0);
+                                            const { isProfane, answer } = generator.generateAnswer(value);
+
                                             friendDef.sentMessage = true;
-                                            App.pet.stats.current_expression += 0.5;
-                                            const isProfane = profanityCleaner.isProfane(value);
-                                            const answer = generator.answer(value);
+                                            App.pet.stats.current_expression += 0.2;
                                             if(isProfane) friendDef.increaseFriendship(-random(0, 2));
                                             else friendDef.increaseFriendship(10);
-                                            const getReactionBaseCharacter = () => {
-                                                if(friendDef.stats.is_ghost === PetDefinition.GHOST_TYPE.angel)
-                                                    return isProfane ? '😟' : '😇'
-                                                if(friendDef.stats.is_ghost === PetDefinition.GHOST_TYPE.devil)
-                                                    return isProfane ? '😈' : '👿'
-                                                return isProfane
-                                                    ? randomFromArray([
-                                                          "😡",
-                                                          "😒",
-                                                          "😠",
-                                                          "😭",
-                                                      ])
-                                                    : randomFromArray([
-                                                          "🙂",
-                                                          "🥰",
-                                                          "😁",
-                                                          "😀",
-                                                      ]);
-                                            }
-                                            const reactionBaseCharacter = getReactionBaseCharacter();
-                                            const reaction = isProfane
-                                                ? `👎${reactionBaseCharacter}`
-                                                : `${reactionBaseCharacter}👍`;
+
                                             App.displayConfirm(
                                                 ...GenericUIDef.singleConfirm(
                                                     `${UIComponent.PetDefMessageHead({ friendDef })}
-                                                    <q>${profanityCleaner.clean(answer)} ${reaction}</q>`,
+                                                    <q>${answer}</q>`,
                                                 ),
                                             );
                                         },
