@@ -13,7 +13,14 @@ const Prefab = {
         }
         return parent;
     },
-    fallingLeaf({ onDespawn, parent } = {}){
+    fallingLeaf({
+        onDespawn,
+        parent,
+        x = () => `${random(5, 85) + Math.random()}%`,
+        y = () => `${random(25, 40)}%`,
+        z = () => App.pet.z,
+        ...rest
+    } = {}) {
         return new Object2d({
             img: `resources/img/misc/leaves_01.png`,
             spritesheet: {
@@ -22,9 +29,7 @@ const Prefab = {
                 rows: 2,
                 columns: 4,
             },
-            x: `${random(5, 85) + Math.random()}%`,
-            y: `${random(25, 40)}%`,
-            z: App.pet.z,
+            x: x(), y: y(), z: z(),
             rotation: random(0, 180),
             parent,
             opacity: 0,
@@ -33,6 +38,7 @@ const Prefab = {
             scale: random(5, 8) * 0.1,
             restingPositionY: random(15, 30),
             selector: 'falling_leaf',
+            ...rest,
             onLateDraw: (me) => {
                 if(!me.spawnX) me.spawnX = me.x;
 
@@ -55,5 +61,30 @@ const Prefab = {
                 me.rotation += me.velocity * 0.2 * App.deltaTime;
             }
         })
+    },
+    fallingLeafSpawner({
+        maxActiveLeaves = 12,
+        getNextSpawnMs = () => App.time + random(50, 4000),
+        leafConfig = {},
+        ...rest
+    } = {}){
+        let spawnedLeaves = 0, nextSpawnMs = getNextSpawnMs();
+        const controllerObject = new Object2d({
+            ...rest,
+            onDraw: () => {
+                if(App.time > nextSpawnMs && spawnedLeaves < maxActiveLeaves) {
+                    nextSpawnMs = getNextSpawnMs();
+                    spawnedLeaves++;
+                    Prefab.fallingLeaf({
+                        parent: controllerObject,
+                        ...leafConfig,
+                        onDespawn: () => {
+                            spawnedLeaves--;
+                        }
+                    })
+                }
+            }
+        });
+        return controllerObject;
     }
 }

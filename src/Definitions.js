@@ -1391,24 +1391,7 @@ App.definitions = (() => {
                 image: 'resources/img/background/outside/09.png',
                 price: 450,
                 onLoad: () => {
-                    let nextSpawnMs = App.time + 500, spawnedLeaves = 0;
-                    const controllerObject = new Object2d({
-                        onDraw: () => {
-                            if(App.time > nextSpawnMs && spawnedLeaves < 12) {
-                                nextSpawnMs = App.time + random(1000, 3000);
-                                nextSpawnMs = App.time + random(50, 4000);
-                                spawnedLeaves++;
-                                Prefab.fallingLeaf({
-                                    parent: controllerObject,
-                                    onDespawn: () => {
-                                        spawnedLeaves--;
-                                    }
-                                })
-                            }
-                        }
-                    });
-
-                    App.temp.forestBgControllerObject = controllerObject;
+                    App.temp.forestBgControllerObject = Prefab.fallingLeafSpawner();
                 },
                 onUnload: () => {
                     App.temp.forestBgControllerObject?.removeObject?.();
