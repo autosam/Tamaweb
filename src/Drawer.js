@@ -1,4 +1,7 @@
 class Drawer {
+    UNCLEANED_REMOVED_OBJECTS_THRESHOLD = 50;
+
+    uncleanedRemovedObjects = 0;
     constructor(canvas, optWidth, optHeight) {
         if (!canvas) {
             canvas = document.createElement("canvas");
@@ -30,6 +33,13 @@ class Drawer {
         if (!skipClear) this.clear();
 
         this.context.save();
+
+        if (
+            this.uncleanedRemovedObjects >
+            this.UNCLEANED_REMOVED_OBJECTS_THRESHOLD
+        ) {
+            this.cleanupObjectsArray();
+        }
 
         if (this.cameraPosition.z !== 0) {
             const canvasCenterX = this.canvas.width / 2;
@@ -332,6 +342,15 @@ class Drawer {
                 this.removeObject(otherObject);
             }
         });
+
+        this.uncleanedRemovedObjects += 1;
+    }
+    cleanupObjectsArray() {
+         this.objects = this.objects.filter((object) => object !== null);
+         this.objects.forEach((object, index) => {
+             object.drawerId = index;
+         });
+         this.uncleanedRemovedObjects = 0;
     }
     setCameraPosition(x, y, lerpSpeed) {
         const targetX = x ?? this.cameraPosition.x,
