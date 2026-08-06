@@ -337,6 +337,9 @@ class Drawer {
 
         this.objects[object.drawerId] = null;
         object.isRemoved = true;
+
+        // fixme: very poor performance over large active objects,
+        // every object loops over the entire objects list on removal
         this.objects.forEach((otherObject) => {
             if (otherObject?.parent?.drawerId === object.drawerId) {
                 this.removeObject(otherObject);
