@@ -9355,4 +9355,12 @@ class DebugHelper {
             )
         })
     }
+    static stressTest() {
+        const parent = new Object2d({});
+        for (let i = 0; i < 5000; i++) {
+            const pet = new Pet(App.getRandomPetDef())
+            pet.parent = parent;
+        }
+        return () => parent.removeObject();
+    }
 }
