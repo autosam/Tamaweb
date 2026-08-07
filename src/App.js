@@ -1692,7 +1692,7 @@ const App = {
             onLoad: function(args) {
                 this.grassFieldObject = Prefab.grassField({ height: 30 });
                 this.treeBunchObject = Prefab.treeBunch({
-                    seed: 2,
+                    seed: 64522824,
                     randomDisplacementRange: [-5, 5],
                     treeConfig: {
                         z: App.constants.BACKGROUND_Z - 1,

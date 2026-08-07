@@ -94,7 +94,7 @@ const Prefab = {
         treeConfig = {},
         randomDisplacementRange = [-10, 10],
     } = {}) {
-        pRandom.seed = seed;
+        pRandom.seed = seed
         const spacing = 100 / amount;
         const possiblePositions = {
             x: new Array(amount)
