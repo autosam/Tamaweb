@@ -1723,7 +1723,7 @@ input#background-color-picker {
 .cards-container > .card.turning {
     transform: rotateY(180deg);
     background: #5DA271;
-    background: repeating-linear-gradient(-45deg, #4a8a5c 0 10px, #5DA271 10px 20px);;
+    background: repeating-linear-gradient(-45deg, #4a8a5c 0 10px, #5DA271 10px 20px);
     border-color: #dadada;
     color: transparent;
     box-shadow: inset -2px 2px 0px 0 #ffffff38, inset 2px -2px 0px 0 #00000038;
@@ -3174,4 +3174,45 @@ c-sprite.ghost.devil::after {
 .favorite-item-icon {
     position: absolute;
     color: #ff6565;
+}
+
+/* tutorial */
+.tutorial__backdrop {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 999;
+}
+.tutorial__content {
+    width: auto;
+    max-width: 50%;
+    z-index: 9999;
+    position: absolute;
+    transition: all 0.5s;
+    margin: 0;
+    max-width: 300px;
+}
+.tutorial__content.message-bubble::before {
+    display: none;
+}
+.tutorial__target {
+    z-index: 1000 !important;
+    position: absolute;
+    outline: 4px solid white;
+    border: 2px solid black;
+    /*border-radius: 12px;*/
+    animation: tutorial-target-animation infinite alternate ease-in-out 1s;
+    cursor: pointer;
+    background: transparent;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.44);
+}
+@keyframes tutorial-target-animation {
+    0% {
+        outline-offset: 0;
+    }
+    100% {
+        outline-offset: 10px;
+    }
 }

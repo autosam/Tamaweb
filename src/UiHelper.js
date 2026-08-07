@@ -32,6 +32,7 @@ const UI = {
                         e.onclick = () => props.onClick(e)
                         break;
                     case '_mount':
+                        if(typeof props._mount !== 'function') break;
                         e._mount = () => props._mount(e);
                         e._mount();
                         break;

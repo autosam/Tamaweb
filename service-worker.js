@@ -33,6 +33,7 @@ const ASSETS = [
   "src/Plant.js",
   "src/Animal.js",
   "src/Prefab.js",
+  "src/Tutorials.js",
   // libs
   "src/libs/moment.js",
   "src/libs/idb-keyval.js",
@@ -126,7 +127,7 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (!event.request.url.startsWith(self.location.origin)) return;
-  
+
   handleOnlineFirst(event);
 });
 
