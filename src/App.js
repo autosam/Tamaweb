@@ -8308,14 +8308,10 @@ const App = {
         })
     },
     initSound: function(){
-        // main audio channel
         try {
             this.audioChannel = new AudioChannel({
                 preloadList: SOUNDS
             });
-        } catch(e) {}
-        // speech audio channel
-        try {
             this.speechAudioChannel = new AudioChannel({
                 preloadList: SPEECH_SOUNDS
             });
@@ -8325,7 +8321,6 @@ const App = {
         const clickSoundClassNames = ['click-sound', 'list-item', 'tab-title'];
         const backSoundClassNames = ['back-btn', 'back-sound'];
         document.addEventListener('click', (e) => {
-
             // sfx
             if(
                 clickSoundClassNames.some(n => e.target.classList.contains(n)) ||
@@ -8334,7 +8329,7 @@ const App = {
             ){
                 App.vibrate();
                 if(!e.target.classList.contains('mute') && !e.target.parentElement?.classList.contains('mute')){
-                    if(backSoundClassNames.some(n => e.target.classList.contains(n)) || e.target.textContent.toLowerCase() == 'back')
+                    if(backSoundClassNames.some(n => e.target.classList.contains(n)) || e.target.textContent.toLowerCase() === 'back')
                         this.playSound(`resources/sounds/ui_click_02.ogg`, true);
                     else
                         this.playSound(`resources/sounds/ui_click_01.ogg`, true);

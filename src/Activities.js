@@ -3939,7 +3939,7 @@ class Activities {
             if(App.canProceed('petting_react_cool_down', 300)){
                 App.pet.setState(isPetting ? 'blush' : 'idle');
                 if(isPetting){
-                    App.playSound('resources/sounds/cute.ogg', true);
+                    App.playSound('resources/sounds/ui_click_05.ogg', true);
                     Activities.task_floatingHearts();
 
                     App.pet.stats.current_fun += random(1, 4) * 0.07;
@@ -5404,11 +5404,11 @@ class Activities {
                     <div id="score">${score}</div>
                 </div>
             </div>
-            <div style="width: ${buttonSizePx}px; height: ${buttonSizePx}px" class="dog-washing-button cursor-pointer">
+            <div style="width: ${buttonSizePx}px; height: ${buttonSizePx}px" class="groom-button cursor-pointer">
                 <i class="fa-solid fa-hands-wash fa-2x"></i>
             </div>
         `;
-        const washActionButton = screen.querySelector('.dog-washing-button');
+        const washActionButton = screen.querySelector('.groom-button');
         const repositionAction = () => {
             const bounds = {
                 width: washActionButton.parentElement.clientWidth - buttonSizePx - 2,
@@ -5481,6 +5481,7 @@ class Activities {
         washActionButton.onclick = () => {
             repositionAction();
             advanceProgress();
+            App.playSound('resources/sounds/ui_click_05.ogg');
         }
     }
     static async plantMatchingGame(){
