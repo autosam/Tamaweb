@@ -5742,37 +5742,9 @@ const App = {
                         parent,
                         isRelative: true,
                     });
-                    pRandom.seed = (currentActivityIndex % activitiesLength) * 6943;
-                    const possiblePositions = {
-                        x: new Array(5).fill(0).map((_, i) => (i * 20) + 10),
-                    };
-                    possiblePositions.x.forEach((x) => {
-                        const tree = new Object2d({
-                            img: `resources/img/misc/tree_01.png`,
-                            x: `${x + pRandom.getIntBetween(-10, 10)}%`,
-                            y: pRandom.getIntBetween(0, 10),
-                            localZ: -1,
-                            width: 21,
-                            parent,
-                            isRelative: true,
-                        });
-                        Prefab.fallingLeafSpawner({
-                            parent: tree,
-                            maxActiveLeaves: 1,
-                            getNextSpawnMs: () =>
-                                App.time +
-                                random(
-                                    0,
-                                    App.constants.ONE_SECOND * 15,
-                                ),
-                            leafConfig: {
-                                parent: tree,
-                                isRelative: true,
-                                x: () => random(-5, 5),
-                                y: () => random(0, 15),
-                                z: () => App.pet.z + 5,
-                            }
-                        });
+                    Prefab.treeBunch({
+                        seed: (currentActivityIndex % activitiesLength) * 6943,
+                        parent,
                     })
                     for(let i = 0; i < 2; i++){
                         new Object2d({

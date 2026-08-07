@@ -86,5 +86,44 @@ const Prefab = {
             }
         });
         return controllerObject;
+    },
+    treeBunch({
+        seed,
+        amount = 5,
+        parent = new Object2d({}),
+    }){
+        pRandom.seed = seed;
+        const spacing = 100 / amount;
+        const possiblePositions = {
+            x: new Array(amount).fill(0).map((_, i) => (i * spacing) + (spacing / 2)),
+        };
+        possiblePositions.x.forEach((x) => {
+            const tree = new Object2d({
+                img: `resources/img/misc/tree_01.png`,
+                x: `${x + pRandom.getIntBetween(-10, 10)}%`,
+                y: pRandom.getIntBetween(0, 10),
+                localZ: -1,
+                width: 21,
+                parent,
+                isRelative: true,
+            });
+            Prefab.fallingLeafSpawner({
+                parent: tree,
+                maxActiveLeaves: 1,
+                getNextSpawnMs: () =>
+                    App.time +
+                    random(
+                        0,
+                        App.constants.ONE_SECOND * 15,
+                    ),
+                leafConfig: {
+                    parent: tree,
+                    isRelative: true,
+                    x: () => random(-5, 5),
+                    y: () => random(0, 15),
+                    z: () => App.pet.z + 5,
+                }
+            });
+        })
     }
 }
