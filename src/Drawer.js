@@ -349,7 +349,7 @@ class Drawer {
         this.uncleanedRemovedObjects += 1;
     }
     cleanupObjectsArray() {
-        this.objects = this.objects.filter((object) => object !== null);
+        this.objects = this.objects.filter(Boolean);
         this.objects.forEach((object, index) => {
             object.drawerId = index;
         });
