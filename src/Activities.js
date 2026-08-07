@@ -1948,6 +1948,7 @@ class Activities {
         activities,
         floorImage = 'resources/img/background/outside/activities_base_01.png',
         scene = App.scene.emptyOutside,
+        decorators,
         id,
     } = {}){
         const tempId = App.handlers.getOutsideActivityId(id);
@@ -2084,57 +2085,15 @@ class Activities {
                 img: floorImage,
                 x: scenePositionX, y: 0,
             });
+            spawnedGameObjects.push(backgroundObject);
+
             // decorators
-            new Object2d({
-                img: 'resources/img/background/outside/activities_decor_01.png',
-                x: 0, y: 0, localZ: -2,
+            decorators?.({
                 parent: backgroundObject,
-                isRelative: true,
+                currentActivityIndex,
+                activitiesLength: activities.length,
             });
-            pRandom.seed = (currentActivityIndex % activities.length) * 6943;
-            // todo: refactor below
-            const possiblePositions = {
-                x: new Array(5).fill(0).map((_, i) => (i * 20) + 10),
-            };
-            for(let i = 0; i < 5; i++){
-                const tree = new Object2d({
-                    img: `resources/img/misc/tree_01.png`,
-                    x: `${possiblePositions.x[i] + pRandom.getIntBetween(-10, 10)}%`,
-                    y: pRandom.getIntBetween(0, 10),
-                    localZ: -1,
-                    width: 21,
-                    parent: backgroundObject,
-                    isRelative: true,
-                });
-                Prefab.fallingLeafSpawner({
-                    parent: tree,
-                    maxActiveLeaves: 1,
-                    getNextSpawnMs: () =>
-                        App.time +
-                        random(
-                            App.constants.ONE_SECOND,
-                            App.constants.ONE_SECOND * 10,
-                        ),
-                    leafConfig: {
-                        parent: tree,
-                        isRelative: true,
-                        x: () => random(-5, 5),
-                        y: () => random(0, 15),
-                        z: () => App.pet.z + 5,
-                    }
-                });
-            }
-            for(let i = 0; i < 2; i++){
-                new Object2d({
-                    img: 'resources/img/misc/bush_01.png',
-                    x: i == 0 ? '0%' : '100%',
-                    y: pRandom.getIntBetween(45, 55),
-                    width: 27,
-                    localZ: -0.5,
-                    parent: backgroundObject,
-                    isRelative: true,
-                });
-            }
+
             // building
             new Object2d({
                 img: currentActivity.image,
@@ -2143,10 +2102,7 @@ class Activities {
                 selector: 'building',
                 isRelative: true,
             });
-            spawnedGameObjects.push(backgroundObject);
 
-            // App.pet.x = scenePositionX + App.drawer.bounds.width;
-            // App.pet.targetX = scenePositionX + App.drawer.bounds.width - 40;
             App.pet.targetX = scenePositionX +
                 App.drawer.getRelativePositionX(50) -
                 (App.petDefinition.spritesheet.cellSize / 2);
