@@ -15,14 +15,14 @@ class Pet extends Object2d {
     animObjectsQueue = [];
     accessoryObjects = [];
     additionalAccessories = [];
-    
+
     // flags
     castShadow = true;
     speedOverride = 0;
     ignoreAnimationSetObjects = false;
 
     constructor(petDefinition, additionalProps){
-        const image = petDefinition.spriteSkin 
+        const image = petDefinition.spriteSkin
             ? App.getPreloadedResource(petDefinition.spriteSkin)
             : App.getPreloadedResource(petDefinition.sprite);
 
@@ -79,7 +79,7 @@ class Pet extends Object2d {
         this.shadowOverlay = new Object2d({
             parent: this,
             img: 'resources/img/misc/shadow_01.png',
-            width: this.petDefinition.spritesheet.cellSize, 
+            width: this.petDefinition.spritesheet.cellSize,
             height: this.petDefinition.spritesheet.cellSize,
             // z: (this.z - 0.1) || 4.9,
             z: this.z,
@@ -147,7 +147,7 @@ class Pet extends Object2d {
             onDraw: (me) => {
                 // if(me.parent.state !== 'sleeping') return;
                 if(!me.parent?.stats?.is_sleeping) return;
-                
+
                 me.spawnTimerMs -= App.deltaTime;
                 if(me.spawnTimerMs > 0) return;
 
@@ -217,9 +217,9 @@ class Pet extends Object2d {
             const accessory = App.definitions.accessories[accName];
             if(!accessory) return;
 
-            const accessoryObject = 
-                accessory.createFn 
-                    ? accessory.createFn(this) 
+            const accessoryObject =
+                accessory.createFn
+                    ? accessory.createFn(this)
                     : new Object2d({
                         parent: this,
                         img: accessory.image,
@@ -257,8 +257,8 @@ class Pet extends Object2d {
 
         this.castShadow = false;
         this.opacity = 0.7;
-        this.additionalAccessories = isDevilGhostType 
-            ? ['monster wings', 'demon horns'] 
+        this.additionalAccessories = isDevilGhostType
+            ? ['monster wings', 'demon horns']
             : ['angel wings', 'angel halo'];
         this.showOutline(isDevilGhostType ? '#B51919' : '#F9E07B', true)
 
@@ -269,7 +269,7 @@ class Pet extends Object2d {
 
         // bobbing animation
         const bobStoppingStates =  [
-            'eating', 
+            'eating',
             'sitting',
             'kissing',
         ];
@@ -282,7 +282,7 @@ class Pet extends Object2d {
             if(animationFloat > App.PI2) animationFloat = 0;
             me._ghostAnimationFloat = animationFloat;
 
-            me.additionalY = bobStoppingStates.includes(App.pet.state) ? 
+            me.additionalY = bobStoppingStates.includes(App.pet.state) ?
                 initialAdditionalY :
                 initialAdditionalY - 3 - Math.sin(animationFloat) * 3;
         }
@@ -313,10 +313,10 @@ class Pet extends Object2d {
             initialY: this.y
         }
 
-        this.triggerScriptedState('shocked', App.INF, false, true, 
+        this.triggerScriptedState('shocked', App.INF, false, true,
             () => {
                 me.isInteractingWith = false;
-            }, 
+            },
             () => {
                 const repositionSpeed = 0.008 * App.deltaTime;
                 me.directInteractionInfo.x = App.mouse.x - (me.spritesheet.cellSize / 2);
@@ -419,7 +419,7 @@ class Pet extends Object2d {
         if(!this.ghostObject){
             this.ghostObject = new Object2d({
                 img: 'resources/img/misc/ghost_01.png',
-                x: 0, 
+                x: 0,
                 y: -5,
                 onDraw: (ghostObject) => {
                     Object2d.animations.bob(ghostObject, 0.001, 0.1);
@@ -445,7 +445,7 @@ class Pet extends Object2d {
         const getEggSpritesheet = () => {
             if(this.stats.is_ghost === PetDefinition.GHOST_TYPE.angel)
                 return 'resources/img/misc/egg_angel_01.png'
-            
+
             if(this.stats.is_ghost === PetDefinition.GHOST_TYPE.devil)
                 return 'resources/img/misc/egg_devil_01.png'
 
@@ -463,7 +463,7 @@ class Pet extends Object2d {
                     columns: 2,
                     cellNumber: 1
                 },
-                x: '50%', 
+                x: '50%',
                 y: '80%',
             });
             this.eggMotionFloat = 0;
@@ -579,7 +579,7 @@ class Pet extends Object2d {
             if(isFavorite) return false;
 
             switch(type){
-                case "food": 
+                case "food":
                     if(this.hasMoodlet('full')) return true;
                     break;
             }
@@ -596,14 +596,14 @@ class Pet extends Object2d {
 
             // checking for over feeding the same item
             const reFedAmount = this.petDefinition.stats.last_eaten.reduce(
-                (sum, current) => current === foodSpriteCellNumber ? sum + 1 : sum, 
+                (sum, current) => current === foodSpriteCellNumber ? sum + 1 : sum,
                 0
             );
             const isMilk = foodSpriteCellNumber === App.definitions.food['milk'].sprite;
             if(
-                reFedAmount >= App.constants.FEEDING_PICKINESS.refeedingTolerance 
-                && type !== 'med' 
-                && !isMilk 
+                reFedAmount >= App.constants.FEEDING_PICKINESS.refeedingTolerance
+                && type !== 'med'
+                && !isMilk
                 && !this.petDefinition.hasTrait('voraciousHunger')
                 && !isFavorite
             ) {
@@ -625,7 +625,7 @@ class Pet extends Object2d {
 
         // keeping a track of last X consumed items
         this.petDefinition.stats.last_eaten = [
-            foodSpriteCellNumber, 
+            foodSpriteCellNumber,
             ...this.petDefinition.stats.last_eaten
         ].slice(0, App.constants.FEEDING_PICKINESS.bufferSize);
 
@@ -637,9 +637,9 @@ class Pet extends Object2d {
             ).type === 'treat'
         ).length;
         // elders cannot get toothache
-        this.petDefinition.stats.has_toothache = 
-            this.petDefinition.lifeStage !== PetDefinition.LIFE_STAGE.elder 
-            ? treatsCount >= random(7, 8) 
+        this.petDefinition.stats.has_toothache =
+            this.petDefinition.lifeStage !== PetDefinition.LIFE_STAGE.elder
+            ? treatsCount >= random(7, 8)
             : false;
 
         Missions.done(Missions.TYPES.food);
@@ -662,7 +662,7 @@ class Pet extends Object2d {
 
         App.uiFood.style.visibility = 'visible';
         App.uiFood.setAttribute('index', foodSpriteCellNumber - 1);
-        
+
         this.inverted = false;
         this.stats.current_hunger += hungerReplenishValue;
 
@@ -819,7 +819,7 @@ class Pet extends Object2d {
         // thinking
         this.statsManager();
 
-        if(this.state == 'sleeping') 
+        if(this.state == 'sleeping')
             return;
 
         if(!this.isDuringScriptedState()){
@@ -894,10 +894,10 @@ class Pet extends Object2d {
         if(!hasBadMoodlets){
             if(random(0, 100) < 10){
                 let animations = [
-                    {name: 'sitting', length: random(2000, 4000)}, 
-                    {name: 'blush', length: random(550, 1000)}, 
-                    {name: 'cheering', length: random(550, 1000)}, 
-                    {name: 'shocked', length: random(450, 800)}, 
+                    {name: 'sitting', length: random(2000, 4000)},
+                    {name: 'blush', length: random(550, 1000)},
+                    {name: 'cheering', length: random(550, 1000)},
+                    {name: 'shocked', length: random(450, 800)},
                 ];
                 let animation = randomFromArray(animations);
                 this.triggerScriptedState(animation.name, animation.length, random(10000, 20000));
@@ -970,14 +970,14 @@ class Pet extends Object2d {
         let discipline_depletion_rate = this.stats.is_at_vacation ? 0 : stats.discipline_depletion_rate;
         let max_death_tick = stats.max_death_tick;
         switch(this.petDefinition.lifeStage){
-            case PetDefinition.LIFE_STAGE.baby: 
-                max_death_tick = stats.baby_max_death_tick; 
+            case PetDefinition.LIFE_STAGE.baby:
+                max_death_tick = stats.baby_max_death_tick;
                 break;
-            case PetDefinition.LIFE_STAGE.child: 
-                max_death_tick = stats.child_max_death_tick; 
+            case PetDefinition.LIFE_STAGE.child:
+                max_death_tick = stats.child_max_death_tick;
                 break;
-            case PetDefinition.LIFE_STAGE.teen: 
-                max_death_tick = stats.teen_max_death_tick; 
+            case PetDefinition.LIFE_STAGE.teen:
+                max_death_tick = stats.teen_max_death_tick;
                 break;
         }
 
@@ -1043,7 +1043,7 @@ class Pet extends Object2d {
         const poopObjectsToBeSpawned = this.stats.has_poop_out - spawnedPoopObjects.length;
         if(
             poopObjectsToBeSpawned > 0
-            && spawnedPoopObjects.length < App.constants.POOP_POSITIONS.length 
+            && spawnedPoopObjects.length < App.constants.POOP_POSITIONS.length
             && !this.isDuringScriptedState()
         ){
             for(let i = 0; i < poopObjectsToBeSpawned; i++){
@@ -1088,9 +1088,9 @@ class Pet extends Object2d {
             }
         }
 
-        if(stats.current_health <= 0 && 
-            stats.current_cleanliness <= 0 && 
-            stats.current_fun <= 0 && 
+        if(stats.current_health <= 0 &&
+            stats.current_cleanliness <= 0 &&
+            stats.current_fun <= 0 &&
             stats.current_hunger <= 0 &&
             !stats.is_ghost
         ) stats.current_death_tick -= stats.death_tick_rate;
@@ -1146,7 +1146,7 @@ class Pet extends Object2d {
 
         // moodlets
         const hasGrumpyTrait = hasTrait('grumpy');
-        
+
         let hunger_min_desire = stats.hunger_min_desire;
         if(hasGrumpyTrait) hunger_min_desire *= 1.5;
 
@@ -1215,7 +1215,7 @@ class Pet extends Object2d {
                 if(this.scriptedEventTime){
                     return resolve(); // already during scripted event
                 }
-        
+
                 if(this.scriptedEventCooldowns[state]){
                     if(this.scriptedEventCooldowns[state] > App.lastTime){
                         return resolve();
@@ -1227,11 +1227,11 @@ class Pet extends Object2d {
             // if(this.scriptedEventTime){
             //     if(this.scriptedEventOnEndFn) this.scriptedEventOnEndFn();
             // } */
-    
+
             if(cooldown){
                 this.scriptedEventCooldowns[state] = App.lastTime + cooldown;
             }
-    
+
             this.scriptedEventTime = App.lastTime + length;
             this.scriptedEventOnEndFn = (...args) => {
                 if(typeof onEndFn === "function") onEndFn(...args);
@@ -1276,11 +1276,11 @@ class Pet extends Object2d {
                 return;
             }
         }
-        
+
         if(this.stats.is_sleeping){
             if(
-                (this.stats.current_sleep >= this.stats.max_sleep 
-                || (this.hasMoodlet('rested') && Math.random() < this.stats.light_sleepiness * 0.01)) 
+                (this.stats.current_sleep >= this.stats.max_sleep
+                || (this.hasMoodlet('rested') && Math.random() < this.stats.light_sleepiness * 0.01))
                 && !App.isSleepHour()
             ){
                 this.stats.is_sleeping = false;
@@ -1309,7 +1309,7 @@ class Pet extends Object2d {
                 if(this.hasMoodlet('hungry') || this.hasMoodlet('sleepy') || this.hasMoodlet('bored') || this.hasMoodlet('sick')){
                     if(random(0, 1))
                         this.setState('idle_uncomfortable');
-                    else 
+                    else
                         this.setState('idle_side_uncomfortable');
                 }
                 else {
@@ -1328,15 +1328,16 @@ class Pet extends Object2d {
         const frameRound = set.end - set.start;
 
         if(this.animation.nextFrameTime < App.lastTime){ // go to next frame
-
             if(this.animObjectsQueue.length){
-                this.animObjectsQueue.forEach(obj => {
+                this.animObjectsQueue.forEach((obj, index) => {
                     if(obj._lives && obj._lives > 0){
                         obj._lives --;
                         return;
                     }
-                    App.drawer.removeObject(obj);
+                    obj.removeObject();
+                    this.animObjectsQueue[index] = null;
                 })
+                this.animObjectsQueue = this.animObjectsQueue.filter(Boolean);
             }
 
             this.animation.nextFrameTime = App.lastTime + set.frameTime;
@@ -1398,7 +1399,7 @@ class Pet extends Object2d {
         let velocity = strength;
         if(!silent) this.playSound('resources/sounds/jump.ogg', true);
 
-        this.triggerScriptedState('jumping', App.INF, 0, true, 
+        this.triggerScriptedState('jumping', App.INF, 0, true,
         () => { // on end
             this.y = startY;
             this.isJumping = false;
@@ -1441,7 +1442,7 @@ class Pet extends Object2d {
             let date = new Date(startTime - elapsedTime);
             let hour = date.getHours();
 
-            // supplying hour because from 22:00 to 9:00 the starts will 
+            // supplying hour because from 22:00 to 9:00 the starts will
             // drop much slower and pet will get sleep
             if(this.stats.is_egg){
                 this.handleEgg();
@@ -1473,7 +1474,7 @@ class Pet extends Object2d {
         const currentLifeStage = this.petDefinition.lifeStage;
         if(targetLifeStage != null) this.petDefinition.lifeStage = targetLifeStage;
         const { MAX_OFFLINE_PROGRESSION_SECS } = App.constants;
-        
+
         const report = {};
         // let offline = false;
 
@@ -1505,7 +1506,7 @@ class Pet extends Object2d {
     showCurrentWant(withName){
         if(this.stats.current_want.type){
             this.showThought(this.stats.current_want.type, this.stats.current_want.item);
-        
+
             if(withName){
                 const display = App.displayMessageBubble(this.petDefinition.getWantName());
                 setTimeout(() => display.close(), 3500);
@@ -1516,7 +1517,7 @@ class Pet extends Object2d {
         const bubble = new Object2d({
             parent: this,
             img: 'resources/img/misc/thought_bubble_01.png',
-            x: -999, 
+            x: -999,
             y: -999,
             opacity: 0,
             z: App.constants.ACTIVE_PET_Z + 0.1,
@@ -1526,7 +1527,7 @@ class Pet extends Object2d {
                 me.x = this.x;
                 me.float += 0.004 * App.deltaTime;
                 if(me.float > App.PI2) me.float = 0;
-                me.y = this.y - (this.spritesheet.cellSize * 1.5) - (this.spritesheet.offsetY * 1.8 || 0) + Math.sin(me.float); 
+                me.y = this.y - (this.spritesheet.cellSize * 1.5) - (this.spritesheet.offsetY * 1.8 || 0) + Math.sin(me.float);
                 const opacityTarget = me.shouldFadeout ? 0 : 1;
                 me.opacity = lerp(me.opacity, opacityTarget, App.deltaTime * 0.01);
             }
@@ -1544,7 +1545,7 @@ class Pet extends Object2d {
             const typeIcon = new Object2d({
                 parent: bubble,
                 img: `resources/img/misc/thought_bubble_type_${type}.png`,
-                x: 0, 
+                x: 0,
                 y: 0,
                 opacity: 0,
                 z: 10.01,
@@ -1583,8 +1584,8 @@ class Pet extends Object2d {
                 })
                 break;
             case App.constants.WANT_TYPES.playdate:
-                const friendDef = item instanceof PetDefinition 
-                    ? item 
+                const friendDef = item instanceof PetDefinition
+                    ? item
                     : this.petDefinition.friends[item];
                 if(!friendDef) break;
                 new Object2d({
@@ -1666,7 +1667,7 @@ class Pet extends Object2d {
     setLocalZBasedOnSelf(otherObject){
         const currentBoundingBox = this.getBoundingBox();
         const otherBoundingBox = otherObject.getBoundingBox();
-        
+
         const localZ = (otherBoundingBox.y + otherBoundingBox.height) - (currentBoundingBox.y + currentBoundingBox.height);
 
         otherObject.z = this.z;
@@ -1676,7 +1677,7 @@ class Pet extends Object2d {
         const message = App.displayMessageBubble(sentence, this.petDefinition.getFullCSprite());
         setTimeout(() => message?.close(), ms);
     }
-    
+
     applyColorOverrides(){ return this.image; }
 
     static scriptedEventDrivers = {
@@ -1811,7 +1812,7 @@ class Pet extends Object2d {
                         this.rotation = 0 + (Math.sin(this._animFloat) * 25);
                     }
                     break;
-                
+
                 case "rubicube":
                 case "smartphone":
                 case "magazine":
@@ -1819,7 +1820,7 @@ class Pet extends Object2d {
                     const extendedAnimationItems = ['smartphone', 'retroboy'];
                     this.pet.setState(
                         randomFromArray([
-                            'sitting', 'sitting', 
+                            'sitting', 'sitting',
                             extendedAnimationItems.includes(this.item?.name) ? 'eating' : 'sitting', 'shocked', 'blush'
                         ])
                     );
@@ -1883,7 +1884,7 @@ class Pet extends Object2d {
                         const xOffset = (this.pet.petDefinition.spritesheet.cellSize / 2.5) * randomFromArray([-0.5, 0.25, 1]);
                         this.itemObject.x = this.pet.x + xOffset;
                     }
-                    
+
                     const cappedSpeed = clamp(this.itemObject._speed, 0, 999);
                     this.itemObject.z = this.pet.z + 0.1;
                     this.itemObject.y = this.pet.y - 6;
@@ -1916,7 +1917,7 @@ class Pet extends Object2d {
                         this.pet.setState( randomFromArray( ['cheering', 'shocked', 'idle_side', 'jumping', 'jumping', 'idle'] ) );
                         setTimeout(() => this.pet.setState('idle'), 350);
                     }
-                    
+
                     this.stateIndex++;
                     if(this.stateIndex >= this.positions.length){
                         this.positions.reverse();

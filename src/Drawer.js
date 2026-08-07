@@ -335,6 +335,12 @@ class Drawer {
             return console.log("no drawer id, cant remove", object);
         }
 
+        if(object?.isRemoved) return;
+
+        if (this.objects[object.drawerId] !== object) {
+            return console.error('drawerId mismatch', object);
+        }
+
         this.objects[object.drawerId] = null;
         object.isRemoved = true;
 

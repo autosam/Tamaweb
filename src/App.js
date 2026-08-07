@@ -1499,7 +1499,7 @@ const App = {
         home: new Scene({
             image: 'resources/img/background/house/02.png',
             petX: '50%', petY: '100%',
-            onLoad: () => {
+            onLoad: function() {
                 App.drawer.selectObjects('poop').forEach(p => p.absHidden = false);
                 App.pet.staticShadow = false;
                 if(App.pet.sicknessOverlay){
@@ -1525,8 +1525,22 @@ const App = {
                     .entries(App.definitions.room_background)
                     .find(([_, def]) => def.image.endsWith(currentBackgroundId))?.[1];
                 App.temp.homeCurrentBackgroundDef?.onLoad?.();
+
+                // grime overlay
+                this.grimeOverlay = new Object2d({
+                    img: 'resources/img/misc/interior_grime_01.png',
+                    x: 0,
+                    y: 0,
+                    z: 2,
+                    invisible: true,
+                    composite: 'source-atop',
+                    onDraw: (me) => {
+                        if(App.pet.stats.has_poop_out >= 2) me.invisible = false;
+                        else me.invisible = true;
+                    }
+                })
             },
-            onUnload: () => {
+            onUnload: function() {
                 App.drawer.selectObjects('poop').forEach(p => p.absHidden = true);
                 App.pet.staticShadow = true;
                 if(App.pet.sicknessOverlay){
@@ -1536,6 +1550,7 @@ const App = {
                 App.handleFurnitureSpawn(null, true);
                 App.handleAnimalsSpawn(false);
                 App.temp.homeCurrentBackgroundDef?.onUnload?.();
+                this.grimeOverlay?.removeObject();
             }
         }),
         kitchen: new Scene({
@@ -7618,14 +7633,25 @@ const App = {
                 z: 100,
                 rotation: -90,
                 width: 96, height: 96,
+                opacity: 0.9,
                 onDraw: function(me){
                     Object2d.animations.flip(me);
-                    this.x += 1;
+                    this.x += 0.08 * App.deltaTime;
 
                     getDraggedWithMop(App.pet, App.petDefinition.spritesheet.cellSize);
                     poopObjects.forEach(poop => getDraggedWithMop(poop));
                     miscObjects.forEach(object => getDraggedWithMop(object));
                     App.spawnedAnimals?.forEach(animal => getDraggedWithMop(animal))
+
+                    if(App.scene.home?.grimeOverlay){
+                        const grimeClipX = Math.max(this.x + mop.width, 0);
+                        App.scene.home.grimeOverlay.clip = [
+                            [grimeClipX, 0],
+                            [App.scene.home.grimeOverlay.image.width, 0],
+                            [App.scene.home.grimeOverlay.image.width, App.scene.home.grimeOverlay.image.height],
+                            [grimeClipX, App.scene.home.grimeOverlay.image.height]
+                        ]
+                    }
 
                     if(this.x >= mop.width/1.5){
                         me.hidden = true;
@@ -7634,13 +7660,16 @@ const App = {
                         App.fadeScreen({
                             middleFn: () => {
                                 App.pet.stopScriptedState();
-                                App.drawer.removeObject(this);
+                                me.removeObject();
                                 App.toggleGameplayControls(true);
                                 App.pet.x = '50%';
                                 App.pet.playCheeringAnimationIfTrue(App.pet.stats.has_poop_out, () => {});
                                 App.pet.stats.has_poop_out = false;
                                 poopObjects.forEach(poop => poop.removeObject())
                                 App.spawnedAnimals?.forEach(animal => animal.x = `${random(20, 80)}%`);
+                                if(App.scene.home?.grimeOverlay){
+                                    App.scene.home.grimeOverlay.clip = false;
+                                }
                             }
                         })
                     }
