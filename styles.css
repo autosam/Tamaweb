@@ -1723,7 +1723,7 @@ input#background-color-picker {
 .cards-container > .card.turning {
     transform: rotateY(180deg);
     background: #5DA271;
-    background: repeating-linear-gradient(-45deg, #4a8a5c 0 10px, #5DA271 10px 20px);;
+    background: repeating-linear-gradient(-45deg, #4a8a5c 0 10px, #5DA271 10px 20px);
     border-color: #dadada;
     color: transparent;
     box-shadow: inset -2px 2px 0px 0 #ffffff38, inset 2px -2px 0px 0 #00000038;
