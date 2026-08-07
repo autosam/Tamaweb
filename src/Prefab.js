@@ -16,7 +16,7 @@ const Prefab = {
     fallingLeaf({
         onDespawn,
         parent,
-        x = () => `${random(5, 85) + Math.random()}%`,
+        x = () => `${random(5, 95) + Math.random()}%`,
         y = () => `${random(25, 40)}%`,
         z = () => App.pet.z,
         ...rest
@@ -88,24 +88,29 @@ const Prefab = {
         return controllerObject;
     },
     treeBunch({
-        seed,
+        seed = 1,
         amount = 5,
-        parent = new Object2d({}),
-    }){
+        parent = new Object2d({ x: 0, y: 0 }),
+        treeConfig = {},
+        randomDisplacementRange = [-10, 10],
+    } = {}) {
         pRandom.seed = seed;
         const spacing = 100 / amount;
         const possiblePositions = {
-            x: new Array(amount).fill(0).map((_, i) => (i * spacing) + (spacing / 2)),
+            x: new Array(amount)
+                .fill(0)
+                .map((_, i) => i * spacing + spacing / 2),
         };
         possiblePositions.x.forEach((x) => {
             const tree = new Object2d({
                 img: `resources/img/misc/tree_01.png`,
-                x: `${x + pRandom.getIntBetween(-10, 10)}%`,
+                x: `${x + pRandom.getIntBetween(...randomDisplacementRange)}%`,
                 y: pRandom.getIntBetween(0, 10),
                 localZ: -1,
                 width: 21,
                 parent,
                 isRelative: true,
+                ...treeConfig,
             });
             Prefab.fallingLeafSpawner({
                 parent: tree,
@@ -125,5 +130,6 @@ const Prefab = {
                 }
             });
         })
+        return parent;
     }
 }

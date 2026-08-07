@@ -1552,6 +1552,12 @@ const App = {
         }),
         park: new Scene({
             image: 'resources/img/background/outside/park_02.png',
+            onLoad: function(){
+                this.fallingLeaves = Prefab.fallingLeafSpawner();
+            },
+            onUnload: function(){
+                this.fallingLeaves?.removeObject();
+            }
         }),
         mallWalkway: new Scene({
             image: 'resources/img/background/outside/mall_walkway.png'
@@ -1670,6 +1676,13 @@ const App = {
             shadowOffset: -5,
             onLoad: function(args) {
                 this.grassFieldObject = Prefab.grassField({ height: 30 });
+                this.treeBunchObject = Prefab.treeBunch({
+                    seed: 2,
+                    randomDisplacementRange: [-5, 5],
+                    treeConfig: {
+                        z: App.constants.BACKGROUND_Z - 1,
+                    },
+                })
 
                 App.pet.staticShadow = false;
 
@@ -1727,6 +1740,8 @@ const App = {
             },
             onUnload: function() {
                 this.grassFieldObject?.removeObject();
+                this.treeBunchObject?.removeObject();
+
                 App.pet.staticShadow = true;
 
                 App.temp.petBowlObject?.removeObject?.();
@@ -1850,6 +1865,12 @@ const App = {
         }),
         full_grass: new Scene({
             image: 'resources/img/background/outside/full_grass_01.png',
+            onLoad: function(){
+                this.fallingLeaves = Prefab.fallingLeafSpawner();
+            },
+            onUnload: function(){
+                this.fallingLeaves?.removeObject();
+            }
         }),
         galaxy: new Scene({
             image: 'resources/img/background/house/galaxy_01.png',
