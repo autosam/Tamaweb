@@ -5003,12 +5003,12 @@ const App = {
             const getFavoriteIcon = (type) => {
                 const value = App.petDefinition.stats.favorites[type];
 
-                const getDescription = (name) => `<small>Favorite ${type}:</small> <div> <b>${name}</b> </div>`;
+                const getDescription = (name) => `<small>Favorite ${type}:</small> <div> <b>${name ?? 'Invalid'}</b> </div>`;
 
                 if(!value) return '';
 
                 if(['treat', 'food'].includes(type)){
-                    const def = Object.entries(App.definitions.food).find(([_, item]) => item.sprite === value);
+                    const def = Object.entries(App.definitions.food).find(([_, item]) => item.sprite === value) || [];
                     return wrapAsIcon({
                         content: `${App.getFoodCSprite(value)}`,
                         onClickPopupContent: getDescription(def[0]),
@@ -5075,6 +5075,7 @@ const App = {
                     <div data-fb-focusable class="relative mt-6 width-full">
                         <div class="stats-label left-0">Favorites</div>
                         <div class="pet-trait-icons-container">
+                            ${!Object.keys(App.pet.stats.favorites).length ? unknownTraitIcon : ''}
                             ${getFavoriteIcon('food')}
                             ${getFavoriteIcon('treat')}
                         </div>
