@@ -8204,7 +8204,7 @@ const App = {
         document.querySelector('.screen-wrapper').appendChild(list);
         return list;
     },
-    displayPrompt: function(text, buttons, defaultValue, inputType = 'input', placeholder){
+    displayPrompt: function(text, buttons, defaultValue, inputType = 'input', placeholder = ''){
         let list = document.querySelector('.cloneables .generic-list-container').cloneNode(true);
             list.classList.add('prompt');
             list.innerHTML = `
