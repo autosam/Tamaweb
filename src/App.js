@@ -90,8 +90,8 @@ const App = {
         PARENT_DAYCARE_START: 3,
         PARENT_DAYCARE_END: 18,
         MAX_SHELL_SHAPES: 7,
-        AFTERNOON_TIME: [12, 17],
-        EVENING_TIME: [17, 20],
+        AFTERNOON_TIME: [12, 18],
+        EVENING_TIME: [18, 20],
         NIGHT_TIME: [20, 6],
         CHRISTMAS_TIME: {
             start: '12-14',
