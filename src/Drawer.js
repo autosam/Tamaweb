@@ -1,5 +1,5 @@
 class Drawer {
-    UNCLEANED_REMOVED_OBJECTS_THRESHOLD = 50;
+    UNCLEANED_REMOVED_OBJECTS_THRESHOLD = 64;
 
     uncleanedRemovedObjects = 0;
     constructor(canvas, optWidth, optHeight) {
@@ -349,11 +349,11 @@ class Drawer {
         this.uncleanedRemovedObjects += 1;
     }
     cleanupObjectsArray() {
-         this.objects = this.objects.filter((object) => object !== null);
-         this.objects.forEach((object, index) => {
-             object.drawerId = index;
-         });
-         this.uncleanedRemovedObjects = 0;
+        this.objects = this.objects.filter((object) => object !== null);
+        this.objects.forEach((object, index) => {
+            object.drawerId = index;
+        });
+        this.uncleanedRemovedObjects = 0;
     }
     setCameraPosition(x, y, lerpSpeed) {
         const targetX = x ?? this.cameraPosition.x,
