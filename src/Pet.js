@@ -38,6 +38,10 @@ class Pet extends Object2d {
         this.animations = this.petDefinition.animations;
         this.additionalY += this.petDefinition.spritesheet.offsetY || 0;
 
+        if(App?.currentScene?.petY){
+            this.y = App.currentScene.petY;
+        }
+
         this.selector = 'pet';
 
         for(let prop in additionalProps){
