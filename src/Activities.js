@@ -1,4 +1,117 @@
 class Activities {
+    static async openScratchCard(){
+        App.closeAllDisplays();
+        App.toggleGameplayControls(false);
+        App.pet.triggerScriptedState('idle', App.INF, false, true);
+        App.pet.stopMove();
+        App.pet.x = '50%';
+
+        pRandom.seed = App.getDayId(true) + App.petDefinition.getCharHash();
+
+        const mascotAnimal = App.getRandomAnimalDef();
+
+        const prizeSlots = new Array(3).fill(null).map(() => {
+            return pRandom.getPercent(25) ? mascotAnimal : { isPoop: true };
+        })
+
+        const screen = UI.empty();
+        document.querySelector('.screen-wrapper').appendChild(screen);
+        screen.innerHTML = `
+            <div class="flex flex-dir-col justify-center align-center absolute-fullscreen display">
+                <div class="scratch-card flex flex-center">
+                    <div class="scratch-card__animal">${mascotAnimal.getFullCSprite(true)}</div>
+                    <div class="scratch-card__content flex-center">
+                        <span class="flex align-center justify-between width-half">
+                            ${prizeSlots.map(slot => {
+                                return slot.isPoop ? '<img src="./resources/img/misc/poop.png"/>' : slot.getFullCSprite(true)
+                            }).join('\n')}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const drawer = new Drawer(null, 150, 40);
+        const contentElement = screen.querySelector('.scratch-card__content');
+        contentElement.appendChild(drawer.canvas);
+
+        // init
+        const patternImage = new Image();
+        patternImage.src = 'resources/img/ui/lucky_ticket_pattern.png';
+        patternImage.onload = () => {
+            const pattern = drawer.context.createPattern(patternImage, 'repeat');
+            pattern.setTransform(new DOMMatrix().scale(1));
+
+            drawer.context.fillStyle = pattern;
+            drawer.context.fillRect(
+                0,
+                0,
+                drawer.bounds.width,
+                drawer.bounds.height
+            );
+        };
+
+        const { canvas } = drawer;
+        const rect = canvas.getBoundingClientRect();
+
+        const getPercentRevealed = () => {
+            const imageData = drawer.context.getImageData(0, 0, drawer.bounds.width, drawer.bounds.height);
+            const data = imageData.data;
+            let transparentPixels = 0;
+
+            // check alpha channel
+            for (let i = 3; i < data.length; i += 4) {
+              if (data[i] === 0) transparentPixels++;
+            }
+
+            return transparentPixels / (drawer.bounds.width * drawer.bounds.height);
+        }
+
+        const onEnd = () => {
+            const matchingPrizes = prizeSlots.reduce(
+                (acc, animal) =>
+                    animal.sprite === mascotAnimal.sprite
+                        ? acc + 1
+                        : acc,
+                0,
+            );
+
+            screen.remove();
+            App.pet.stopScriptedState();
+            App.toggleGameplayControls(true);
+            App.displayPopup(
+                `You got <b>${matchingPrizes}</b>/<b>${prizeSlots.length}</b> right!`,
+                3000,
+                () => {
+                    Activities.task_winMoneyFromArcade({
+                        amount: Math.floor(35 * matchingPrizes * (matchingPrizes / 1.35)),
+                        hasWon: matchingPrizes >= 1,
+                        shouldOpenGameList: false,
+                    })
+                },
+            );
+        }
+
+        const eventDriver = App.registerOnDrawEvent(() => {
+            if(!App.mouse.isDown) return;
+            const scaledX = (App.mouse.screenX - rect.left) * (canvas.width / rect.width),
+                scaledY = (App.mouse.screenY - rect.top) * (canvas.height / rect.height);
+
+            drawer.context.globalCompositeOperation = 'destination-out';
+            drawer.context.beginPath();
+            drawer.context.arc(scaledX, scaledY, 10, 0, App.PI2);
+            drawer.context.fill();
+
+            const percent = getPercentRevealed();
+            if(percent > .95){
+                drawer.canvas.remove();
+                App.unregisterOnDrawEvent(eventDriver);
+
+
+                setTimeout(onEnd, 1000);
+            }
+        })
+    }
     static async openGenericGift({onEnd, onMiddle}){
         App.toggleGameplayControls(false);
 
@@ -7663,7 +7776,8 @@ class Activities {
             amount = 0,
             happiness,
             hasWon,
-            npc = 'resources/img/character/chara_175b.png'
+            npc = 'resources/img/character/chara_175b.png',
+            shouldOpenGameList = true,
         } = {}){
         App.reloadScene();
         App.toggleGameplayControls(false);
@@ -7719,7 +7833,8 @@ class Activities {
         App.toggleGameplayControls(true);
         UI.clearLastClicked();
         messageBubble.close();
-        App.handlers.open_game_list();
+
+        if(shouldOpenGameList) App.handlers.open_game_list();
     }
 }
 

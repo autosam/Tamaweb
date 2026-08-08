@@ -3175,3 +3175,46 @@ c-sprite.ghost.devil::after {
     position: absolute;
     color: #ff6565;
 }
+
+.scratch-card {
+    background: url('./resources/img/ui/lucky_ticket.png');
+    mask: url('./resources/img/ui/lucky_ticket.png') 100%;
+    background-size: 100%;
+    width: 90%;
+    height: 55%;
+    border-radius: 14px;
+    color: var(--prim-clr-b-text);
+    overflow: hidden;
+    z-index: 90;
+    position: relative;
+}
+.scratch-card__animal {
+    scale: 4;
+    position: absolute;
+    top: 28px;
+    right: 28px;
+}
+.scratch-card__content {
+    background: #F7F7F7;
+    border-radius: 10px;
+    overflow: hidden;
+    width: 150px;
+    height: 40px;
+    position: relative;
+    margin-top: 46px;
+}
+.scratch-card__content > span {
+    position: absolute;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    gap: 26px;
+}
+.scratch-card__content > span > * {
+    scale: 2;
+    opacity: 1;
+}
+.scratch-card__content > canvas {
+    z-index: 3;
+    image-rendering: pixelated;
+}

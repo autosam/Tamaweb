@@ -468,7 +468,7 @@ const App = {
     },
     registerInputUpdates: function(){
         const moveEventHandler = (evt) => {
-            const canvas = App.drawer.canvas;
+            const { canvas } = App.drawer;
             const rect = canvas.getBoundingClientRect();
 
             const target = evt.type.startsWith("touch")
@@ -489,6 +489,9 @@ const App = {
 
             App.mouse.x = Math.max(0, Math.min(x, canvas.width));
             App.mouse.y = Math.max(0, Math.min(y, canvas.height));
+
+            App.mouse.screenX = target.clientX;
+            App.mouse.screenY = target.clientY;
         }
         const mouseDownHandler = (evt) => {
             App.mouse.isDown = true;
