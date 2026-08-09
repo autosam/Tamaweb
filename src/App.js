@@ -1053,8 +1053,14 @@ const App = {
         this.records[name] = shouldReplaceValue ? value : currentValue + value;
         return this.records[name];
     },
+    replaceRecord: function(name, value){
+        return this.addRecord(name, value, true);
+    },
     getRecord: function(name){
         return this.records[name];
+    },
+    deleteRecord: function(name){
+        delete this.records[name];
     },
     indexUIElement: (element) => {
         if(!element) return;
@@ -2549,7 +2555,7 @@ const App = {
                 App.queueEvent(() => {
                     Activities.getMail();
                     const nextMs = Date.now();
-                    App.addRecord('newspaper_delivery_ms', nextMs, true);
+                    App.replaceRecord('newspaper_delivery_ms', nextMs);
                 })
             }, random(1000, 2000))
             return;
