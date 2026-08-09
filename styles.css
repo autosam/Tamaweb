@@ -1508,6 +1508,8 @@ input#background-color-picker {
     box-sizing: border-box;
 }
 
+.whitespace-no-wrap { white-space: nowrap; }
+
 .m {
     margin: 6px;
 }
@@ -3217,4 +3219,18 @@ c-sprite.ghost.devil::after {
 .scratch-card__content > canvas {
     z-index: 3;
     image-rendering: pixelated;
+}
+.scratch-card.single-pulse-anim {
+    animation: scratch-card-pulse-anim 1s !important;
+}
+@keyframes scratch-card-pulse-anim {
+    0% {
+        transform: scale(1);
+    }
+    20% {
+        transform: scale(1.05) rotateY(20deg);
+    }
+    50% {
+        transform: scale(1);
+    }
 }

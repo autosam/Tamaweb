@@ -1,7 +1,12 @@
 class Activities {
-    static async openScratchCard(){
+    static async openScratchCard({
+        npc = "resources/img/character/mall_npc_01.png",
+        scene = App.scene.mallInterior,
+        onEndCallback,
+    } = {}) {
         App.closeAllDisplays();
         App.toggleGameplayControls(false);
+        App.setScene(scene),
         App.pet.triggerScriptedState('idle', App.INF, false, true);
         App.pet.stopMove();
         App.pet.x = '50%';
@@ -17,7 +22,7 @@ class Activities {
         const screen = UI.empty();
         document.querySelector('.screen-wrapper').appendChild(screen);
         screen.innerHTML = `
-            <div class="flex flex-dir-col justify-center align-center absolute-fullscreen display">
+            <div class="flex flex-dir-col justify-center align-center absolute-fullscreen display menu-animation">
                 <div class="scratch-card flex flex-center">
                     <div class="scratch-card__animal">${mascotAnimal.getFullCSprite(true)}</div>
                     <div class="scratch-card__content flex-center">
@@ -30,9 +35,10 @@ class Activities {
                 </div>
             </div>
         `;
+        const contentElement = screen.querySelector('.scratch-card__content');
+        const cardElement = screen.querySelector('.scratch-card');
 
         const drawer = new Drawer(null, 150, 40);
-        const contentElement = screen.querySelector('.scratch-card__content');
         contentElement.appendChild(drawer.canvas);
 
         // init
@@ -83,10 +89,12 @@ class Activities {
                 `You got <b>${matchingPrizes}</b>/<b>${prizeSlots.length}</b> right!`,
                 3000,
                 () => {
-                    Activities.task_winMoneyFromArcade({
+                    Activities.task_winMoney({
+                        npc,
                         amount: Math.floor(35 * matchingPrizes * (matchingPrizes / 1.35)),
                         hasWon: matchingPrizes >= 1,
                         shouldOpenGameList: false,
+                        onEndCallback,
                     })
                 },
             );
@@ -103,12 +111,11 @@ class Activities {
             drawer.context.fill();
 
             const percent = getPercentRevealed();
-            if(percent > .95){
+            if(percent > .9){
                 drawer.canvas.remove();
                 App.unregisterOnDrawEvent(eventDriver);
-
-
-                setTimeout(onEnd, 1000);
+                cardElement.classList.add('single-pulse-anim');
+                setTimeout(onEnd, 1500);
             }
         })
     }
@@ -5282,7 +5289,7 @@ class Activities {
             if(hasWon){
                 App.definitions.achievements.perfect_minigame_guessnum_win_x_times.advance();
             }
-            Activities.task_winMoneyFromArcade({
+            Activities.task_winMoney({
                 hasWon,
                 amount: hasWon ? 50 : 0,
             })
@@ -5478,7 +5485,7 @@ class Activities {
                 App.definitions.achievements.perfect_minigame_flags_win_x_times.advance();
             }
 
-            Activities.task_winMoneyFromArcade({
+            Activities.task_winMoney({
                 hasWon,
                 amount: winScore * 20,
                 happiness: winScore * 3,
@@ -5545,7 +5552,7 @@ class Activities {
             if(hasWon){
                 App.definitions.achievements.perfect_minigame_petgroom_win_x_times.advance();
             }
-            Activities.task_winMoneyFromArcade({
+            Activities.task_winMoney({
                 amount: moneyWon,
                 hasWon: hasWon,
                 happiness: score * 1.2,
@@ -5675,7 +5682,7 @@ class Activities {
                 }
 
                 const moneyWon = Math.max((correctChoices - 1) * 20, 0);
-                Activities.task_winMoneyFromArcade({
+                Activities.task_winMoney({
                     amount: moneyWon,
                     happiness: moneyWon / 5,
                     hasWon: Boolean(moneyWon)
@@ -5783,7 +5790,7 @@ class Activities {
                         if(roundsWin === 3){
                             App.definitions.achievements.perfect_minigame_rodrush_win_x_times.advance();
                         }
-                        Activities.task_winMoneyFromArcade({
+                        Activities.task_winMoney({
                             amount: moneyWon,
                             happiness: roundsWin * 10,
                             hasWon: roundsWin >= 2
@@ -5925,7 +5932,7 @@ class Activities {
             if(moneyWon >= App.definitions.achievements.perfect_minigame_catch_win_x_gold.required){
                 App.definitions.achievements.perfect_minigame_catch_win_x_gold.advance();
             }
-            Activities.task_winMoneyFromArcade({
+            Activities.task_winMoney({
                 amount: moneyWon,
                 hasWon: moneyWon > 30,
                 happiness: moneyWon / 6,
@@ -5972,7 +5979,7 @@ class Activities {
                 if(roundsWon === totalRounds){
                     App.definitions.achievements.perfect_minigame_mimic_win_x_times.advance();
                 }
-                Activities.task_winMoneyFromArcade({
+                Activities.task_winMoney({
                     amount: moneyWon,
                     happiness: roundsWon * 15,
                     hasWon: roundsWon !== 0,
@@ -6518,7 +6525,7 @@ class Activities {
                         if(hasWon){
                             App.definitions.achievements.perfect_minigame_leaves_win_x_times.advance();
                         }
-                        Activities.task_winMoneyFromArcade({
+                        Activities.task_winMoney({
                             hasWon,
                             amount: clamp(
                                     Math.floor(((targetLeavesCount - currentLeavesCount) / 5 )- (currentLeavesCount ? 20 : 0)),
@@ -6644,7 +6651,7 @@ class Activities {
                     if(isCorrect){
                         App.definitions.achievements.perfect_minigame_foodknowledge_win_x_times.advance();
                     }
-                    Activities.task_winMoneyFromArcade({
+                    Activities.task_winMoney({
                         amount: isCorrect ? 50 : 0,
                         hasWon: isCorrect
                     })
@@ -6708,7 +6715,7 @@ class Activities {
             if(hasWon){
                 App.definitions.achievements.perfect_minigame_imagepuzzle_win_x_times.advance();
             }
-            Activities.task_winMoneyFromArcade({
+            Activities.task_winMoney({
                 hasWon,
                 amount: hasWon ? 10 * random(16, 20) : 0,
             })
@@ -7772,12 +7779,13 @@ class Activities {
         messageBubble.close();
         App.handlers.open_school_activity_list();
     }
-    static async task_winMoneyFromArcade({
+    static async task_winMoney({
             amount = 0,
             happiness,
             hasWon,
             npc = 'resources/img/character/chara_175b.png',
             shouldOpenGameList = true,
+            onEndCallback,
         } = {}){
         App.reloadScene();
         App.toggleGameplayControls(false);
@@ -7835,6 +7843,7 @@ class Activities {
         messageBubble.close();
 
         if(shouldOpenGameList) App.handlers.open_game_list();
+        onEndCallback?.();
     }
 }
 

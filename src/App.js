@@ -1053,7 +1053,7 @@ const App = {
         this.records[name] = shouldReplaceValue ? value : currentValue + value;
         return this.records[name];
     },
-    replaceRecord: function(name, value){
+    setRecord: function(name, value){
         return this.addRecord(name, value, true);
     },
     getRecord: function(name){
@@ -2555,7 +2555,7 @@ const App = {
                 App.queueEvent(() => {
                     Activities.getMail();
                     const nextMs = Date.now();
-                    App.replaceRecord('newspaper_delivery_ms', nextMs);
+                    App.setRecord('newspaper_delivery_ms', nextMs);
                 })
             }, random(1000, 2000))
             return;
@@ -7325,6 +7325,7 @@ const App = {
                     true;
                 return furniture.isNew && isUnlocked && !furniture.isCraftable;
             });
+            const hasPendingLuckyTicket = App.getRecord('last_lucky_ticket') !== App.getDayId();
 
             const backFn = () => {
                 if(App.temp.purchasedMallItem){
@@ -7336,7 +7337,11 @@ const App = {
                 }
             }
 
-            App.displayList([
+            const getWeight = (item) => {
+                if(item._disable) return -1;
+                return item.priority || 0;
+            }
+            const activities = [
                 {
                     name: `buy items ${hasNewItem ? App.getBadge('new!') : ''}`,
                     onclick: () => {
@@ -7395,8 +7400,31 @@ const App = {
                         App.handlers.open_furniture_list();
                         return true;
                     }
+                },
+                {
+                    name: `<span style="color: #4e36d3;">${App.getIcon('ticket')} Lucky Ticket</span> ${hasPendingLuckyTicket ? App.getBadge('', 'circle red pulse') : ''}`,
+                    priority: 2,
+                    _disable: !hasPendingLuckyTicket,
+                    onclick: () => {
+                        App.displayPopup(
+                            `Scratch a <div class="bold whitespace-no-wrap">${App.getIcon('ticket', true)} lucky ticket</div> once a day for free!`,
+                            3000,
+                            () =>
+                                Activities.openScratchCard({
+                                    onEndCallback: () => {
+                                        App.setRecord(
+                                            "last_lucky_ticket",
+                                            App.getDayId(),
+                                        );
+                                        App.handlers.open_mall_activity_list();
+                                    },
+                                }),
+                        );
+                    }
                 }
-            ], backFn);
+            ].sort((a, b) => getWeight(b) - getWeight(a));
+
+            App.displayList(activities, backFn);
         },
         open_market_menu: function(){
             const backFn = () => {
