@@ -436,7 +436,6 @@ class Activities {
         })
         // App.pet.setLocalZBasedOnSelf(chestObject);
         await TimelineDirector.wait(10);
-        App.pet.playSound('resources/sounds/jump.ogg', true);
         await main.jumpTo({x: '80%', speed: 0.0015, curve: 0.5, y: main.getPosition('y'), endState: 'shocked_without_sound', animation: 'shocked_without_sound'});
         App.pet.playSound('resources/sounds/shock.ogg', true);
         main.actor.stopMove();
@@ -8022,6 +8021,8 @@ class TimelineDirector {
             }
 
             let progress = 0;
+
+            App.playSound(`resources/sounds/jump.ogg`, true);
 
             const drawEvent = App.registerOnDrawEvent(() => {
                 if (!actor) {
