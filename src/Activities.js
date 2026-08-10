@@ -102,6 +102,11 @@ class Activities {
 
         const eventDriver = App.registerOnDrawEvent(() => {
             if(!App.mouse.isDown) return;
+
+            if(App.canProceed('lucky_ticket_sfx', 200)){
+                App.playSound(`resources/sounds/swoosh_0${random(1, 2)}.ogg`, true);
+            }
+
             const scaledX = (App.mouse.screenX - rect.left) * (canvas.width / rect.width),
                 scaledY = (App.mouse.screenY - rect.top) * (canvas.height / rect.height);
 
@@ -116,6 +121,7 @@ class Activities {
                 App.unregisterOnDrawEvent(eventDriver);
                 cardElement.classList.add('single-pulse-anim');
                 setTimeout(onEnd, 1500);
+                setTimeout(() => App.playSound(`resources/sounds/cute.ogg`, true));
             }
         })
     }
