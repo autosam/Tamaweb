@@ -85,6 +85,7 @@ class Activities {
             screen.remove();
             App.pet.stopScriptedState();
             App.toggleGameplayControls(true);
+            Missions.done(Missions.TYPES.scratch_lucky_ticket);
             App.displayPopup(
                 `You got <b>${matchingPrizes}</b>/<b>${prizeSlots.length}</b> right!`,
                 3000,
