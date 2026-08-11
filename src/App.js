@@ -4630,7 +4630,10 @@ const App = {
                         if(ateFood) {
                             removeFoodFromInventory();
 
-                            App.pet.stats.current_fun += current.fun_replenish ?? 0;
+                            let funReplenish = current.fun_replenish ?? 0;
+                            if(isFavorite) funReplenish += 10;
+                            App.pet.stats.current_fun += funReplenish;
+
                             App.pet.stats.current_sleep += current.sleep_replenish ?? 0;
 
                             App.pet.stats.current_expression += current.expression_increase ?? 0;
@@ -5265,16 +5268,6 @@ const App = {
                             return App.displayPopup(`This item is not appropriate for ${App.petDefinition.name}'s age!`);
                         }
                         Activities.useItem({...current, name: item});
-
-                        // let useditem = App.pet.feed(current.sprite, current.hunger_replenish, current.type);
-                        // if(useditem) {
-                        //     App.pet.inventory.item[item] -= 1;
-                        //     App.pet.stats.current_fun += current.fun_replenish;
-                        //     if(App.pet.hasMoodlet('healthy') && current.type === 'med')
-                        //         App.pet.stats.current_health = App.pet.stats.current_health * 0.6;
-                        //     else
-                        //         App.pet.stats.current_health += current.health_replenish;
-                        // }
                     }
                 })
             }
