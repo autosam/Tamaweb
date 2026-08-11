@@ -4812,6 +4812,14 @@ const App = {
                                         pRandom.load();
                                         return results;
                                     }
+                                    const getMinOwnedIngredients = (ingredients) => {
+                                        let minOwnedIngredients = Infinity;
+                                        ingredients.forEach((ingredientName) => {
+                                            const ownedAmount = App.pet.inventory.harvests[ingredientName];
+                                            if(minOwnedIngredients > ownedAmount) minOwnedIngredients = ownedAmount;
+                                        })
+                                        return minOwnedIngredients;
+                                    }
 
                                     return App.displayList([
                                         {
@@ -4840,33 +4848,56 @@ const App = {
                                                     ${food.cookableOnly ? App.getBadge('★', 'gold') : ''}
                                                 `,
                                                 onclick: () => {
-                                                    const confirm = App.displayConfirm(`
-                                                        Cook <div>${App.getFoodCSprite(food.sprite)}</div> <b>${food.cookableOnly ? '★ ' : ''}${food.name}</b>?
-                                                        <button id="effects" style="display: none; position: absolute; bottom: 0; right: 0" class="generic-btn stylized"><b>effects</b></button>
-                                                    `, [
+                                                    const sprite = App.getFoodCSprite(food.sprite);
+                                                    const maxBatchCookingAmount = getMinOwnedIngredients(food.ingredients);
+                                                    return App.displayList([
                                                         {
-                                                            name: 'yes',
-                                                            onclick: () => {
-                                                                food.ingredients.forEach(ingredient => {
-                                                                    if(App.pet.inventory.harvests[ingredient] > 0)
-                                                                        App.pet.inventory.harvests[ingredient] -= 1;
-                                                                })
-                                                                Activities.cookingGame({skipCamera: true, resultFoodName: food.name, stirringSpeed: 0.0095});
-                                                            },
+                                                            type: 'text',
+                                                            name: 'How many?',
                                                         },
-                                                        {
-                                                            name: 'no',
-                                                            class: 'back-btn',
-                                                            onclick: () => {}
-                                                        }
-                                                    ])
+                                                        ...new Array(4).fill(null).map((_, index) => ({
+                                                            _disable: index + 1 > maxBatchCookingAmount,
+                                                            name: `
+                                                                <span class="mr-auto">x${index + 1}</span>
+                                                                ${new Array(index + 1).fill(sprite).join(' ')}
+                                                            `,
+                                                            onclick: () => {
+                                                                const amount = index + 1;
+                                                                const confirm = App.displayConfirm(`
+                                                                    Cook <div>${App.getFoodCSprite(food.sprite)}</div> <b>${food.cookableOnly ? '★ ' : ''}${food.name}</b>?
+                                                                    <button id="effects" style="display: none; position: absolute; bottom: 0; right: 0" class="generic-btn stylized"><b>effects</b></button>
+                                                                `, [
+                                                                    {
+                                                                        name: 'yes',
+                                                                        onclick: () => {
+                                                                            food.ingredients.forEach((ingredient) => {
+                                                                                if(App.pet.inventory.harvests[ingredient] >= amount)
+                                                                                    App.pet.inventory.harvests[ingredient] -= amount;
+                                                                            })
+                                                                            Activities.cookingGame({
+                                                                                skipCamera: true,
+                                                                                resultFoodName: food.name,
+                                                                                resultFoodAmount: amount,
+                                                                                stirringSpeed: 0.0095,
+                                                                            });
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        name: 'no',
+                                                                        class: 'back-btn',
+                                                                        onclick: () => {}
+                                                                    }
+                                                                ])
 
-                                                    const effectsBtn = confirm.querySelector('#effects');
-                                                    if(effectsBtn){
-                                                        effectsBtn.onclick = () => App.handlers.open_food_stats(food.name)
-                                                    }
+                                                                const effectsBtn = confirm.querySelector('#effects');
+                                                                if(effectsBtn){
+                                                                    effectsBtn.onclick = () => App.handlers.open_food_stats(food.name)
+                                                                }
 
-                                                    return true;
+                                                                return true;
+                                                            }
+                                                        }))
+                                                    ], null, food.name);
                                                 }
                                             })),
                                         {

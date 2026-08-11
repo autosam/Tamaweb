@@ -3850,6 +3850,7 @@ class Activities {
         stirringSpeed = 0.001,
         skipCamera,
         resultFoodName,
+        resultFoodAmount,
     } = {}){
         App.closeAllDisplays();
         App.pet.triggerScriptedState('idle', App.INF, 0, false);
@@ -3965,7 +3966,10 @@ class Activities {
                                     App.pet.x = '50%';
                                 }
                                 if(!failed){
-                                    let amount = resultFoodName ? random(1, 3) : 1;
+                                    let amount = resultFoodName ? resultFoodAmount || random(1, 3) : 1;
+                                    if(resultFoodName && random(1, 4) === 1) {
+                                        amount += random(0, 2);
+                                    }
                                     if(App.petDefinition.hasTrait('naturalChef')) amount *= 2;
                                     App.displayPopup(`${App.petDefinition.name} <br>made x${amount}<br> <b>${randomFoodName}</b>!`, 3000, () => {
                                         end();
