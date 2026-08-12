@@ -4875,7 +4875,7 @@ const App = {
                                                             _mount: (me) => {
                                                                 const input = me.querySelector('input');
                                                                 input.value = currentCookAmount;
-                                                                input.oninput = (evt) => updateCookAmount(evt.target.value);
+                                                                input.addEventListener('input', (evt) => updateCookAmount(input.value))
                                                             }
                                                         },
                                                         {
@@ -7924,6 +7924,9 @@ const App = {
                     // attributes: [
                     //     ['data-fb-focusable', 1],
                     // ],
+                    attributes: [
+                        ['oninput', `App.playSound('resources/sounds/ui_click_08.ogg')`]
+                    ]
                 },
                 {
                     _ignore: !dataList,
