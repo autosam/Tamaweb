@@ -4790,6 +4790,7 @@ class Activities {
         task_otherPetMoveIn();
     }
     static inviteGiveGift(otherPetDef){
+        App.closeAllDisplays();
         App.setScene(App.scene.home);
         App.toggleGameplayControls(false);
         let otherPet = new Pet(otherPetDef);

@@ -5558,6 +5558,8 @@ const App = {
                 activeIndex,
                 accessShop,
                 onClose,
+                useMode,
+                useModeLabel = 'Use',
             } = props;
 
             let list = [];
@@ -5627,6 +5629,18 @@ const App = {
                             return reopen(buyMode);
                         }
 
+                        if(useMode){
+                            const useResult = useMode({
+                                ...current,
+                                name: accessoryName,
+                                equipped,
+                            });
+                            if(useResult) {
+                                App.pet.inventory.accessory[accessoryName] = false;
+                            }
+                            return;
+                        }
+
                         // toggle equip mode
                         if(equipped) App.petDefinition.accessories.splice(App.petDefinition.accessories.indexOf(accessoryName), 1);
                         else App.petDefinition.accessories.push(accessoryName);
@@ -5641,14 +5655,18 @@ const App = {
                 return;
             }
 
+            const getButtonLabel = () => {
+                if(useMode) return useModeLabel;
+                if(buyMode) return 'Purchase'
+                return 'Toggle';
+            }
+
             list = list.sort((a, b) => b.isNew - a.isNew)
             sliderInstance = App.displaySlider(
                 list,
                 activeIndex,
                 {
-                    accept: buyMode
-                        ? 'Purchase'
-                        : 'Toggle'
+                    accept: getButtonLabel(),
                 },
                 buyMode ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : '')}` : null);
             return sliderInstance;
@@ -6441,28 +6459,64 @@ const App = {
                             },
                             {
                                 _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child,
-                                name: 'gift',
+                                name: `gift ${App.getBadge()}`,
                                 onclick: () => {
-                                    App.displayConfirm(`Are you sure you want to give gift to ${icon} ${name}?`, [
+                                    const handleOpenFoodMenu = (type) => {
+                                        return App.handlers.open_food_list({
+                                            filterType: type,
+                                            age: PetDefinition.LIFE_STAGE.adult,
+                                            useMode: (item) => {
+                                                friendDef.increaseFriendship(Math.floor(item.price / 2.7));
+                                                Activities.inviteGiveGift(friendDef);
+                                                return true;
+                                            },
+                                        })
+                                    }
+
+                                    return App.displayList([
                                         {
-                                            name: 'yes',
+                                            name: 'Items',
                                             onclick: () => {
-                                                App.closeAllDisplays();
-                                                App.handlers.open_item_list(null, null, (item) => {
+                                                return App.handlers.open_item_list(null, null, (item) => {
                                                     App.pet.inventory.item[item.name] -= 1;
                                                     friendDef.increaseFriendship(Math.floor(item.price / 2.7));
                                                     Activities.inviteGiveGift(friendDef);
                                                 })
-                                                return true;
                                             }
                                         },
                                         {
-                                            name: 'no',
-                                            class: 'back-btn',
-                                            onclick: () => { }
-                                        }
-                                    ]);
-                                    return true;
+                                            name: `Accessories ${App.getBadge()}`,
+                                            onclick: () => {
+                                                return App.handlers.open_accessory_list({
+                                                    useMode: (item) => {
+                                                        if(friendDef.accessories?.includes(item.name)) {
+                                                            App.displayPopup(`${name} already has this accessory!`);
+                                                            return false;
+                                                        }
+                                                        if(item.equipped) {
+                                                            App.displayPopup('You have to unequip this accessory to be able to gift it.');
+                                                            return false;
+                                                        }
+                                                        friendDef.increaseFriendship(Math.floor(item.price / 2.7));
+                                                        Activities.inviteGiveGift(friendDef);
+                                                        if(friendDef.accessories?.length >= 3){
+                                                            friendDef.accessories?.shift();
+                                                        }
+                                                        friendDef.accessories?.push(item.name);
+                                                        return true;
+                                                    }
+                                                })
+                                            }
+                                        },
+                                        {
+                                            name: `Food ${App.getBadge()}`,
+                                            onclick: () => handleOpenFoodMenu('food')
+                                        },
+                                        {
+                                            name: `Snacks ${App.getBadge()}`,
+                                            onclick: () => handleOpenFoodMenu('treat')
+                                        },
+                                    ])
                                 }
                             },
                             {
@@ -6495,7 +6549,7 @@ const App = {
 
             friendsList = App.displayList(
                 [
-                    ...mappedFriendsList,
+                ...mappedFriendsList,
                     ...additionalButtons,
                 ]
             );
@@ -6716,6 +6770,7 @@ const App = {
                 {
                     name: `friends`,
                     icon: 'children',
+                    isNew: true,
                     onclick: () => {
                         App.handlers.open_friends_list(null, null, [
                             {
