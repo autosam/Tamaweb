@@ -778,6 +778,38 @@ input:focus {
 input::placeholder, textarea::placeholder {
     color: color-mix(in srgb, var(--prim-clr-b-text) 50%, transparent);
 }
+input[type="range"] {
+    all: unset;
+    background-color: var(--prim-clr-b-text);
+    border-radius: 999px;
+    height: 6px;
+    max-width: stretch;
+}
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 16px;
+    width: 16px;
+    border-radius: 999px;
+    background-color: var(--prim-clr-b-bg);
+    outline: 2px solid var(--prim-clr-b-text);
+    transition: transform 0.1s;
+    box-shadow: -4px -4px 0px 0px inset var(--prim-clr-b-shadow);
+}
+input[type="range"]:hover::-webkit-slider-thumb {
+    transform: scale(1.2);
+}
+input[type="range"][disabled] {
+    pointer-events: none;
+    opacity: 0.5;
+}
+datalist {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    font-size: small;
+    margin-top: 4px;
+}
 
 @keyframes slider-item-anim-in-left {
     from {

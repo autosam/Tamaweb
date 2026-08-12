@@ -3899,7 +3899,7 @@ class Activities {
             starObjects.push(img);
         }
 
-        let failChance = resultFoodName ? 3 : 25;
+        let failChance = resultFoodName ? 0 : 25;
         let currentTargetImgIndex = 0;
         App.toggleGameplayControls(false, () => {
             if(currentTargetImgIndex < starObjects.length && !skipCamera){
@@ -3966,7 +3966,7 @@ class Activities {
                                     App.pet.x = '50%';
                                 }
                                 if(!failed){
-                                    let amount = resultFoodName ? resultFoodAmount || random(1, 3) : 1;
+                                    let amount = Number(resultFoodName ? resultFoodAmount || random(1, 3) : 1);
                                     if(resultFoodName && random(1, 4) === 1) {
                                         amount += random(0, 2);
                                     }

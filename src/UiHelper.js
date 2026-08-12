@@ -5,6 +5,7 @@ const UI = {
         'children',
         'onClick',
         '_mount',
+        'attributes',
     ],
     create: (props) => UI.ce(props),
     ce: (props) => {
@@ -15,7 +16,7 @@ const UI = {
             if(UI.specialProps.includes(propName)){
                 switch(propName){
                     case 'children':
-                        props.children.forEach((child) => {
+                        props.children?.forEach((child) => {
                             UI.ce({
                                 ...child,
                                 parent: e
@@ -34,6 +35,11 @@ const UI = {
                     case '_mount':
                         e._mount = () => props._mount(e);
                         e._mount();
+                        break;
+                    case 'attributes':
+                        props.attributes?.forEach(attr => {
+                            e.setAttribute(attr[0], attr[1]);
+                        })
                         break;
                 }
                 return;

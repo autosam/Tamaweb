@@ -4848,36 +4848,54 @@ const App = {
                                                     ${food.cookableOnly ? App.getBadge('★', 'gold') : ''}
                                                 `,
                                                 onclick: () => {
-                                                    const sprite = App.getFoodCSprite(food.sprite);
                                                     const maxBatchCookingAmount = getMinOwnedIngredients(food.ingredients);
-                                                    return App.displayList([
+                                                    let currentCookAmount = 1;
+                                                    const updateCookAmount = (amount) => {
+                                                        currentCookAmount = Number(amount);
+                                                        list.querySelector('#cook-amount').textContent = currentCookAmount;
+                                                    }
+                                                    const list = App.displayList([
                                                         {
                                                             type: 'text',
-                                                            name: 'How many?',
-                                                        },
-                                                        ...new Array(4).fill(null).map((_, index) => ({
-                                                            _disable: index + 1 > maxBatchCookingAmount,
                                                             name: `
-                                                                <span class="mr-auto">x${index + 1}</span>
-                                                                ${new Array(index + 1).fill(sprite).join(' ')}
+                                                                <div>How many?</div>
+                                                                <div class="mt-4"></div>
+                                                                ${
+                                                                    App.createRangeSlider({
+                                                                        min: 1,
+                                                                        max: maxBatchCookingAmount,
+                                                                        _disable: maxBatchCookingAmount === 1,
+                                                                        dataList: [
+                                                                            [1, 1],
+                                                                            [maxBatchCookingAmount, maxBatchCookingAmount]
+                                                                        ]
+                                                                    }).outerHTML
+                                                                }
                                                             `,
+                                                            _mount: (me) => {
+                                                                const input = me.querySelector('input');
+                                                                input.value = currentCookAmount;
+                                                                input.oninput = (evt) => updateCookAmount(evt.target.value);
+                                                            }
+                                                        },
+                                                        {
+                                                            name: `<span class="icon">${App.getFoodCSprite(food.sprite)}</span> <span class="mr-auto">Cook</span> x<span id="cook-amount">${currentCookAmount}</span>`,
                                                             onclick: () => {
-                                                                const amount = index + 1;
                                                                 const confirm = App.displayConfirm(`
-                                                                    Cook <div>${App.getFoodCSprite(food.sprite)}</div> <b>${food.cookableOnly ? '★ ' : ''}${food.name}</b>?
+                                                                    Cook <div>${App.getFoodCSprite(food.sprite)}</div> <b>${food.cookableOnly ? '★ ' : ''}${food.name}</b> <span>x${currentCookAmount}</span>?
                                                                     <button id="effects" style="display: none; position: absolute; bottom: 0; right: 0" class="generic-btn stylized"><b>effects</b></button>
                                                                 `, [
                                                                     {
                                                                         name: 'yes',
                                                                         onclick: () => {
                                                                             food.ingredients.forEach((ingredient) => {
-                                                                                if(App.pet.inventory.harvests[ingredient] >= amount)
-                                                                                    App.pet.inventory.harvests[ingredient] -= amount;
+                                                                                if(App.pet.inventory.harvests[ingredient] >= currentCookAmount)
+                                                                                    App.pet.inventory.harvests[ingredient] -= currentCookAmount;
                                                                             })
                                                                             Activities.cookingGame({
                                                                                 skipCamera: true,
                                                                                 resultFoodName: food.name,
-                                                                                resultFoodAmount: amount,
+                                                                                resultFoodAmount: currentCookAmount,
                                                                                 stirringSpeed: 0.0095,
                                                                             });
                                                                         },
@@ -4896,8 +4914,9 @@ const App = {
 
                                                                 return true;
                                                             }
-                                                        }))
+                                                        },
                                                     ], null, food.name);
+                                                    return true;
                                                 }
                                             })),
                                         {
@@ -7888,6 +7907,38 @@ const App = {
         `
 
         return {node: element}
+    },
+    createRangeSlider: function ({ min = 0, max = 100, dataList, _disable, ...rest } = {}) {
+        const listId = hashCode(Math.random().toString());
+
+        const element = UI.create({
+            children: [
+                {
+                    componentType: 'input',
+                    type: 'range',
+                    list: listId,
+                    min,
+                    max,
+                    ...rest,
+                    disabled: _disable,
+                    // attributes: [
+                    //     ['data-fb-focusable', 1],
+                    // ],
+                },
+                {
+                    _ignore: !dataList,
+                    componentType: 'datalist',
+                    id: listId,
+                    children: dataList?.map(([value, label]) => ({
+                        componentType: 'option',
+                        value,
+                        label
+                    }))
+
+                }
+            ]
+        })
+        return element;
     },
     closeAllDisplays: function(){
         [...document.querySelectorAll('.display')].forEach(display => {
