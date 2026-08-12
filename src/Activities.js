@@ -11,12 +11,12 @@ class Activities {
         App.pet.stopMove();
         App.pet.x = '50%';
 
-        pRandom.seed = App.getDayId(true) + App.petDefinition.getCharHash();
+        // pRandom.seed = App.getDayId(true) + App.petDefinition.getCharHash();
 
         const mascotAnimal = App.getRandomAnimalDef();
 
         const prizeSlots = new Array(3).fill(null).map(() => {
-            return pRandom.getPercent(25) ? mascotAnimal : { isPoop: true };
+            return random(0, 100) <= 25 ? mascotAnimal : { isPoop: true };
         })
 
         const screen = UI.empty();
