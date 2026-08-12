@@ -1156,7 +1156,7 @@ const App = {
         }
     },
     handleInputCode: function(rawCode){
-        const {addEvent} = App;
+        const { addEvent } = App;
 
         function showAlreadyUsed(){
             App.displayPopup(`You can only use this code once`);
@@ -1215,9 +1215,9 @@ const App = {
                 })) return showAlreadyUsed();
                 break;
             // update specific
-            case "KNOWFOOD":
-            case "NEWPHONE":
-            case "PICPUZZLE":
+            case "LUCKY":
+            case "FAVORITE":
+            case "GIVEGIFT":
                 if(!addEvent(codeEventId, () => {
                     const goldAmount = 200, missionPtsAmount = 50;
                     App.pet.stats.gold += goldAmount;
