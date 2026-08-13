@@ -38,7 +38,7 @@ const App = {
         playMusic: true,
         skillsAffectingEvolution: true,
         season: 'auto',
-      tapEffect: true,
+        tapEffect: true,
     },
     constants: {
         ONE_HOUR: 1000 * 60 * 60,
