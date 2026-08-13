@@ -1,0 +1,14 @@
+{
+  "tab_size": 4,
+  "use_on_type_format": false,
+  "indent_guides": {
+    "line_width": 1,
+    "active_line_width": 2,
+    "background_coloring": "disabled",
+    "coloring": "fixed",
+    "enabled": true
+  },
+  "show_wrap_guides": true,
+  "auto_indent_on_paste": true,
+  "auto_indent": "syntax_aware"
+}

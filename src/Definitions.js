@@ -38,15 +38,15 @@ App.definitions = (() => {
         },
         /* THEMES */
         themes: [
-            'default', 
-            'pardis', 
-            'sunset', 
-            'uni', 
+            'default',
+            'pardis',
+            'sunset',
+            'uni',
             'color lavender',
             'color pink',
             'color azure',
             'color gray',
-            'color red', 
+            'color red',
             'color blue',
             'color green',
             'color purple',
@@ -126,7 +126,7 @@ App.definitions = (() => {
                 name: "Mall",
                 image: 'resources/img/misc/activity_building_mall.png',
                 onEnter: () => Activities.goToMall(),
-                isNew: false,
+                isNew: true,
             },
             {
                 name: "Market",
@@ -193,7 +193,7 @@ App.definitions = (() => {
                 isNew: false,
             }
         ],
-    
+
         /* FOOD AND SNACKS */
         food: {
             // foods
@@ -649,8 +649,8 @@ App.definitions = (() => {
                 cookableOnly: true,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
-    
-    
+
+
             // treats
             "koluche": {
                 sprite: 1030,
@@ -915,8 +915,8 @@ App.definitions = (() => {
                 type: 'treat',
                 isNew: false,
             },
-    
-    
+
+
             // groc
             /* "broccoli": {
                 sprite: 632,
@@ -926,9 +926,9 @@ App.definitions = (() => {
                 price: 3,
                 age: [__ls.teen, __ls.adult, __ls.elder],
             }, */
-    
-    
-    
+
+
+
             // other
             "milk": {
                 sprite: 1036,
@@ -1105,7 +1105,7 @@ App.definitions = (() => {
                 }
             }
         },
-    
+
         /* ITEMS */
         item: {
             "rattle": {
@@ -1247,7 +1247,7 @@ App.definitions = (() => {
                 logic_increase: 0.1,
             },
         },
-    
+
         /* GARDENING PLANTS */
         plant: {
             // wateredDuration: minutes
@@ -1348,7 +1348,7 @@ App.definitions = (() => {
                 inedible: true,
             },
         },
-    
+
         /* ROOM BACKGROUNDS */
         room_background: {
             "blue": {
@@ -1390,6 +1390,12 @@ App.definitions = (() => {
                 icon: 'resources/img/background/outside/09_icon.png',
                 image: 'resources/img/background/outside/09.png',
                 price: 450,
+                onLoad: () => {
+                    App.temp.forestBgControllerObject = Prefab.fallingLeafSpawner();
+                },
+                onUnload: () => {
+                    App.temp.forestBgControllerObject?.removeObject?.();
+                }
             },
             "silky retreat": {
                 image: 'resources/img/background/house/ex_01.png',
@@ -1456,6 +1462,7 @@ App.definitions = (() => {
                 isNew: false,
             },
             "frame": {
+                icon: 'resources/img/background/house/10_icon.png',
                 image: "resources/img/background/house/10.png",
                 price: 391,
                 isNew: false,
@@ -1510,7 +1517,7 @@ App.definitions = (() => {
                             onLateDraw: (me) => {
                                 if(!me.originalPosition){
                                     me.originalPosition = {
-                                        x: me.x, 
+                                        x: me.x,
                                         y: me.y
                                     }
                                 }
@@ -1580,9 +1587,9 @@ App.definitions = (() => {
                             onDraw: (me) => {
                                 if(!me.originalPosition){
                                     if(isNaN(me.x)) return;
-                                    
+
                                     me.originalPosition = {
-                                        x: me.x, 
+                                        x: me.x,
                                         y: me.y
                                     }
                                 }
@@ -1721,7 +1728,7 @@ App.definitions = (() => {
                 type: 'kitchen',
             },
         },
-    
+
         /* ROOM PLACEABLE FURNITURE */
         furniture: [
             // mushroom set
@@ -1805,7 +1812,7 @@ App.definitions = (() => {
                 price: 150,
                 isNew: false,
             },
-    
+
             // gothic set
             {
                 name: 'Gothic Bookcase',
@@ -1837,7 +1844,7 @@ App.definitions = (() => {
                 id: "statue_gothic",
                 price: 150,
             },
-    
+
             // arcade
             {
                 name: 'Arcade Machines',
@@ -1863,7 +1870,7 @@ App.definitions = (() => {
                 id: "sofa_arcade",
                 price: 120,
             },
-    
+
             {
                 name: 'CLR bookshelf',
                 image: 'resources/img/furniture/bookcase_colorful.png',
@@ -1876,7 +1883,7 @@ App.definitions = (() => {
                 id: "sofa_pink",
                 price: 150,
             },
-    
+
             {
                 name: 'Wooden bookshelf',
                 image: 'resources/img/furniture/bookcase_wooden.png',
@@ -1889,7 +1896,7 @@ App.definitions = (() => {
                 id: "sofa_woodleather",
                 price: 120,
             },
-    
+
             {
                 name: 'Peachy Pot',
                 image: 'resources/img/furniture/pot_peachy.png',
@@ -1902,7 +1909,7 @@ App.definitions = (() => {
                 id: "sofa_peachy",
                 price: 150,
             },
-    
+
             {
                 name: 'Blue Stand',
                 image: 'resources/img/furniture/stand_blue.png',
@@ -1915,7 +1922,7 @@ App.definitions = (() => {
                 id: "sofa_blue",
                 price: 80,
             },
-    
+
             {
                 name: 'Lite Stand',
                 image: 'resources/img/furniture/stand_rainbow.png',
@@ -1962,7 +1969,7 @@ App.definitions = (() => {
                 price: 50,
                 isNew: false,
             },
-    
+
             // misc
             {
                 name: 'Pink Pillow Pile',
@@ -2036,7 +2043,7 @@ App.definitions = (() => {
                 id: "sofa_futura",
                 price: 120,
             },
-    
+
             // craftables
             {
                 name: 'Bird Stand',
@@ -2098,7 +2105,7 @@ App.definitions = (() => {
                 craftingRecipe: ['green tulip', 'hephasto', 'bamboo'],
             },
         ],
-    
+
         /* SHELL BACKGROUNDS */
         shell_background: [
             {
@@ -2213,7 +2220,7 @@ App.definitions = (() => {
                 isNew: false,
             },
         ],
-    
+
         /* ACCESSORIES */
         accessories: {
             "crown": {
@@ -2280,8 +2287,8 @@ App.definitions = (() => {
                                 }
                                 // me.movementMultDirection = followsParent ? 1 : -1;
                             }
-    
-    
+
+
                             if (me.lastScene != App.currentScene) {
                                 me.lastScene = App.currentScene;
                                 me.currentPosition.y = -40;
@@ -2291,21 +2298,21 @@ App.definitions = (() => {
                                 me.y = -100;
                                 return;
                             }
-    
+
                             me.animationFloat += (0.005 * App.deltaTime) % App.PI2;
                             me.bodyAnimationFloat += (0.0025 * App.deltaTime) % App.PI2;
                             me.currentPosition.x = lerp(me.currentPosition.x, me.targetPosition.x, 0.0005 * App.deltaTime);
                             me.x = me.currentPosition.x;
                             me.currentPosition.y = lerp(me.currentPosition.y, me.targetPosition.y, 0.0005 * App.deltaTime);
                             me.y = me.currentPosition.y + Math.sin(me.animationFloat);
-    
+
                             const xDiff = Math.abs(me.currentPosition.x - me.targetPosition.x);
                             const yDiff = Math.abs(me.currentPosition.y - me.targetPosition.y);
                             me.targetMovementMult = Math.max((xDiff + yDiff) * 0.1, 1);
                             me.movementMult = lerp(me.movementMult, me.targetMovementMult * me.movementMultDirection, 0.01 * App.deltaTime);
                         }
                     })
-    
+
                     /* body */
                     const handleBody = (me, i) => {
                         const spread = 6 + (secretary.movementMult * 0.5);
@@ -2316,12 +2323,12 @@ App.definitions = (() => {
                         const localPosition = {
                             x: 0, y: 0,
                         }
-    
+
                         switch (i) {
                             case (0):
                                 localPosition.x = -spread;
                                 localPosition.y = -spread;
-    
+
                                 break;
                             case (1):
                                 localPosition.x = -spread;
@@ -2340,12 +2347,12 @@ App.definitions = (() => {
                                 me.rotation = 180;
                                 break;
                         }
-    
+
                         localPosition.y += Math.sin(secretary.bodyAnimationFloat + i) * 0.55;
                         localPosition.y += Math.sin(secretary.bodyAnimationFloat + i) * 0.55;
-    
+
                         // me.rotation = i * 90;
-    
+
                         me.x = localPosition.x + basePosition.x;
                         me.y = localPosition.y + basePosition.y;
                     }
@@ -2362,7 +2369,7 @@ App.definitions = (() => {
                             // composite: "darken"
                         })
                     }
-    
+
                     /* body */
                     const handleArrows = (me, i) => {
                         const spread = 13 + secretary.movementMult;
@@ -2373,7 +2380,7 @@ App.definitions = (() => {
                         const localPosition = {
                             x: 0, y: 0
                         }
-    
+
                         const offsetMult = 10, strength = 0.8 + (-secretary.movementMult * 0.25);
                         switch (i) {
                             case (0):
@@ -2405,10 +2412,10 @@ App.definitions = (() => {
                                 localPosition.y -= Math.sin(secretary.animationFloat - i * offsetMult) * strength;
                                 break;
                         }
-    
+
                         localPosition.y += Math.sin(secretary.bodyAnimationFloat + i) * 0.55;
                         localPosition.y += Math.sin(secretary.bodyAnimationFloat + i) * 0.55;
-    
+
                         me.x = localPosition.x + basePosition.x;
                         me.y = localPosition.y + basePosition.y;
                     }
@@ -2424,7 +2431,7 @@ App.definitions = (() => {
                             // composite: "darken"
                         })
                     }
-    
+
                     /* head */
                     new Object2d({
                         parent: secretary,
@@ -2440,7 +2447,7 @@ App.definitions = (() => {
                         },
                         // composite: "darken"
                     })
-    
+
                     /* light */
                     new Object2d({
                         parent: secretary,
@@ -2459,7 +2466,7 @@ App.definitions = (() => {
                         composite: "lighten",
                         opacity: 0.1,
                     })
-    
+
                     return secretary;
                 }
             },
@@ -2505,7 +2512,7 @@ App.definitions = (() => {
                             const additionalMotionY = Math.sin(me.animationFloatY) * 3;
                             me.x = parent.x + additionalMotionX;
                             me.y = parent.y - 40 - (App.pet.spritesheet.offsetY ?? 0) + additionalMotionY;
-    
+
                             if (!App.isCompanionAllowed()) {
                                 me.x = -100;
                                 me.y = -100;
@@ -2513,7 +2520,7 @@ App.definitions = (() => {
                             }
                         }
                     })
-    
+
                     return cloof;
                 }
             },
@@ -2610,7 +2617,7 @@ App.definitions = (() => {
                 front: false,
                 price: -1,
                 onDraw: (overlay) => {
-                    const flapSpeed = overlay?.parent?.stats?.is_sleeping ? 0.0045 : 0.009; 
+                    const flapSpeed = overlay?.parent?.stats?.is_sleeping ? 0.0045 : 0.009;
                     if(!overlay._flappingMotion) overlay._flappingMotion = 0;
                     overlay._flappingMotion += flapSpeed * App.deltaTime * Math.sinh(overlay.parent._ghostAnimationFloat - (Math.PI/2));
                     if(overlay._flappingMotion > App.PI2) overlay._flappingMotion = 0;
@@ -2622,7 +2629,7 @@ App.definitions = (() => {
                 front: false,
                 price: -1,
                 onDraw: (overlay) => {
-                    const flapSpeed = overlay?.parent?.stats?.is_sleeping ? 0.0045 : 0.02; 
+                    const flapSpeed = overlay?.parent?.stats?.is_sleeping ? 0.0045 : 0.02;
                     if(!overlay._flappingMotion) overlay._flappingMotion = 0;
                     overlay._flappingMotion += flapSpeed * App.deltaTime;
                     if(overlay._flappingMotion > App.PI2) overlay._flappingMotion = 0;
@@ -2694,7 +2701,7 @@ App.definitions = (() => {
                 accessShop: 'none',
             },
         },
-    
+
         /* ACHIEVEMENTS */
         achievements: {
             pat_x_times: {
@@ -2858,7 +2865,7 @@ App.definitions = (() => {
                     App.displayPopup(`You've received $500!`);
                 }
             },
-    
+
             // minigames
             perfect_minigame_rodrush_win_x_times: {
                 name: 'Rod Rush Pro',
@@ -2962,7 +2969,7 @@ App.definitions = (() => {
                 }
             },
         },
-    
+
         /* MAIL */
         mail: {
             affirmations: [
@@ -3162,7 +3169,7 @@ App.definitions = (() => {
                 ],
             ]
         },
-    
+
         /* TWEETS */
         tweets: {
             generic: [
@@ -3232,7 +3239,7 @@ App.definitions = (() => {
                 `Dear %name%, I loved your letter so much!!! I read it five times!!! I put it under my pillow so I can read it again tomorrow!!! Please write back fast!!!`,
             ]
         },
-    
+
         /* RABBIT HOLE ACTIVITIES */
         rabbit_hole_activities: [
             {
@@ -3572,7 +3579,7 @@ App.definitions = (() => {
         pools: {
             food: () => Object.keys(App.definitions.food)
                 .filter(key => App.definitions.food[key].price > 0)
-                .map(key => { 
+                .map(key => {
                     const definition = App.definitions.food[key];
                     return {
                         definition,
@@ -3583,10 +3590,10 @@ App.definitions = (() => {
                         onClaim: (amt) => {
                             App.addNumToObject(App.pet.inventory.food, key, amt || 1);
                         }
-                    } 
+                    }
                 }),
             items: () => Object.keys(App.definitions.item)
-                .map(key => { 
+                .map(key => {
                     return {
                         name: key,
                         icon: App.getItemCSprite(App.definitions.item[key].sprite),
@@ -3595,11 +3602,11 @@ App.definitions = (() => {
                         onClaim: () => {
                             App.addNumToObject(App.pet.inventory.item, key, 1);
                         }
-                    } 
+                    }
                 }),
             accessories: () => Object.keys(App.definitions.accessories)
                 .filter(key => App.definitions.accessories[key].price !== -1)
-                .map(key => { 
+                .map(key => {
                     return {
                         name: key,
                         icon: App.getAccessoryCSprite(key),
@@ -3608,14 +3615,14 @@ App.definitions = (() => {
                         onClaim: () => {
                             App.pet.inventory.accessory[key] = true;
                         }
-                    } 
+                    }
                 }),
             exclusivePotions: () => Object.keys(App.definitions.food)
                 .filter(key => {
                     const item = App.definitions.food[key];
                     return item.type === 'med' && item.unbuyable;
                 })
-                .map(key => { 
+                .map(key => {
                     return {
                         name: key,
                         icon: App.getFoodCSprite(App.definitions.food[key].sprite),
@@ -3624,7 +3631,7 @@ App.definitions = (() => {
                         onClaim: (amt) => {
                             App.addNumToObject(App.pet.inventory.food, key, amt || 1);
                         }
-                    } 
+                    }
                 }),
             goldDef: (min = 1, max = 25) => ({
                 name: 'gold',

@@ -32,6 +32,7 @@ const Missions = {
         earn_school_points: 'earn_school_points',
         go_to_restaurant: 'go_to_restaurant',
         go_to_rabbithole: 'go_to_rabbithole',
+        scratch_lucky_ticket: 'scratch_lucky_ticket',
     },
     TYPE_DESCRIPTIONS: {
         food: 'Eat food',
@@ -60,7 +61,11 @@ const Missions = {
         order_food: 'Order something on Snapmeal',
         earn_school_points: 'Earn points at school',
         go_to_restaurant: 'Go to the restaurant',
-        go_to_rabbithole: 'Do a Homeworld Getaways activity'
+        go_to_rabbithole: 'Do a Homeworld Getaways activity',
+        scratch_lucky_ticket: 'Scratch a lucky ticket',
+    },
+    MAX_TARGET_COUNTS: {
+        scratch_lucky_ticket: 1,
     },
     init: function(data){
         if(data?.current) this.current = data?.current;
@@ -97,7 +102,7 @@ const Missions = {
         else while(this.refreshTime < Date.now()) { // resets in 24hrs
             this.refreshTime += oneDayInMs;
         }
-        
+
         for(let i = 0; i < 8; i++){
             let type;
             while(!type || this.current.find(m => m.type === type)){
@@ -107,19 +112,22 @@ const Missions = {
             const mission = {
                 type,
                 counter: 0,
-                targetCount: random(1, 3),
+                targetCount: Math.min(
+                    this.MAX_TARGET_COUNTS[type] || Infinity,
+                    random(1, 3),
+                ),
                 pts: 25,
             }
 
             mission.description = `${Missions.TYPE_DESCRIPTIONS[mission.type]} ${mission.targetCount} ${mission.targetCount === 1 ? 'time' : 'times'}.`
-            
+
             this.current.push(mission);
         }
         console.log(this.current);
     },
     openRewardsMenu: function(){
         App.sendAnalytics('opened_mission_rewards', Missions.currentPts);
-        
+
         const foodPool = App.definitions.pools.food();
         const itemsPool = App.definitions.pools.items();
         const accessoriesPool = App.definitions.pools.accessories();
@@ -206,10 +214,10 @@ const Missions = {
             },
             ...chests.map(chest => {
                 return {
-                    name: 
+                    name:
                         '<div class="pointer-events-none">'
                         + `<div><small>${App.getIcon('coins', true)} <span>${chest.price}</span></small></div>`
-                        + chest.name 
+                        + chest.name
                         + `<br><small class="inline-list">${chest.info}</small>`
                         + (chest.isNew ? App.getBadge('New!') : '')
                         + '</div>',
@@ -286,8 +294,8 @@ const Missions = {
                 return {
                     _disable: !m.isDone,
                     name: `
-                        <div 
-                            style="max-width: 100%; align-items: center;" 
+                        <div
+                            style="max-width: 100%; align-items: center;"
                             class="flex-between width-full pointer-events-none"
                         >
                             <span class="overflow-hidden" style="margin-right: 10px">

@@ -138,23 +138,23 @@ class PetDefinition {
                                 z: me.parent.z + 0.1,
                                 scale: 3,
                                 opacity: 1,
-        
+
                                 offsetX, offsetY: random(-3, 2),
                                 rotation,
-                                animationFloat: 0, 
+                                animationFloat: 0,
                                 animationSpeed: 0.005,
                                 animationStr: clamp(Math.random(), 0.2, 0.5),
                                 onDraw: (heart) => {
                                     heart.mimicParent(['scale', 'opacity']);
-        
+
                                     heart.animationFloat = (heart.animationFloat + (heart.animationSpeed * App.deltaTime)) % Math.PI;
                                     const animationFloat = Math.sin(heart.animationFloat) * heart.animationStr;
-        
+
                                     heart.x += heart.offsetX - heart.image.naturalWidth/2;
                                     heart.y -= (animationFloat * 4) + heart.offsetY + (heart.parent.spritesheet.offsetY || 0);
-        
+
                                     heart.scale = 0.5 + animationFloat;
-        
+
                                     heart.opacity -= 0.001 * App.deltaTime;
                                     if(heart.opacity <= 0) {
                                         heart.removeObject();
@@ -270,7 +270,7 @@ class PetDefinition {
         // wander (sec)
         wander_min: 0.5,
         wander_max: 4,
-        
+
         // discipline
         max_discipline: 100,
         discipline_depletion_rate: 0.00009, // 154 hours
@@ -318,6 +318,7 @@ class PetDefinition {
         is_ghost: false,
         last_eaten: [],
         has_toothache: false,
+        favorites: {},
 
         // skill points
         current_expression: 0,
@@ -367,16 +368,16 @@ class PetDefinition {
         }
         this.spritesheet = this.spritesheetDefinitions[this.lifeStage + ''];
     }
-    
+
     serializables = [
-        'name', 
-        'stats', 
-        'inventory', 
-        'friends', 
-        'family', 
-        'sprite', 
-        'birthday', 
-        'lastBirthday', 
+        'name',
+        'stats',
+        'inventory',
+        'friends',
+        'family',
+        'sprite',
+        'birthday',
+        'lastBirthday',
         'accessories',
         'deceasedPredecessors',
         'spriteSkin',
@@ -425,6 +426,7 @@ class PetDefinition {
                     gender: this.stats.gender,
                     is_ghost: this.stats.is_ghost,
                     has_toothache: this.stats.has_toothache,
+                    favorites: this.stats.favorites,
                 }
                 return;
             }
@@ -434,7 +436,7 @@ class PetDefinition {
                     s['friends'] = this.friends.map(friendDef => {
                         const minimizedPetDef = App.minimalizePetDef(friendDef.serializeStats(true));
                         return {
-                            ...minimizedPetDef, 
+                            ...minimizedPetDef,
                             stats: {
                                 ...minimizedPetDef.stats,
                                 player_friendship: friendDef.stats.player_friendship,
@@ -540,7 +542,7 @@ class PetDefinition {
 
     prepareSprite(){
         this.lifeStage = this.getLifeStage();
-        this.getSpritesheetDefinition();  
+        this.getSpritesheetDefinition();
     }
 
     getNextBirthdayDate(){
@@ -613,12 +615,15 @@ class PetDefinition {
             this.developTrait();
         }
 
+        if(this.lifeStage === PetDefinition.LIFE_STAGE.elder)
+            this.stats.has_toothache = false;
+
         return true;
     }
 
     getPossibleEvolutions(isNpc, returnAll){
         const { bounds, ratings } = App.constants.SKILL_EVOLUTION_EFFECTIVENESS;
- 
+
         const careRating = !isNpc ? this.stats.current_care : random(1, 3);
         let possibleEvolutions = GROWTH_CHART[this.sprite];
         if(!possibleEvolutions) { // get random pet def's evolution in the same life stage
@@ -628,7 +633,7 @@ class PetDefinition {
         if(!possibleEvolutions) { // fallback to fully random character evolution
             possibleEvolutions = GROWTH_CHART[randomFromArray(Object.keys(GROWTH_CHART))]
         }
-        
+
         if(returnAll) return possibleEvolutions;
 
         const skills =  {
@@ -649,8 +654,9 @@ class PetDefinition {
 
         switch(this.lifeStage){
             case PetDefinition.LIFE_STAGE.adult:
+                // prevent npcs from aging up to elders when unless player is an elder
                 if(
-                    isNpc && 
+                    isNpc &&
                     App.petDefinition?.getLifeStage() !== PetDefinition.LIFE_STAGE.elder
                 ) return false;
                 return [possibleEvolutions[0]];
@@ -705,7 +711,7 @@ class PetDefinition {
 
         let parents = this.friends.filter(friendDef => friendDef.stats.is_player_family);
         if(!parents.length) return false;
-        
+
         return parents;
     }
 
@@ -752,7 +758,7 @@ class PetDefinition {
                 const wantedFood = randomFromArray(Object.keys(App.definitions.food));
                 const wantedFoodDef = App.definitions.food[wantedFood];
                 if(
-                    ('age' in wantedFoodDef 
+                    ('age' in wantedFoodDef
                     && !wantedFoodDef.age.includes(this.lifeStage) )
                     || ['med', 'treat'].includes(wantedFoodDef.type)
                 ) return this.refreshWant(++currentTry, currentCategory);
@@ -763,7 +769,7 @@ class PetDefinition {
                 const wantedSnack = randomFromArray(Object.keys(App.definitions.food));
                 const wantedSnackDef = App.definitions.food[wantedSnack];
                 if(
-                    ('age' in wantedSnackDef 
+                    ('age' in wantedSnackDef
                     && !wantedSnackDef.age.includes(this.lifeStage) )
                     || !['treat'].includes(wantedSnackDef.type)
                 ) return this.refreshWant(++currentTry, currentCategory);
@@ -824,7 +830,7 @@ class PetDefinition {
             case App.constants.WANT_TYPES.item:
             case App.constants.WANT_TYPES.food:
                 return this.stats.current_want.item;
-            case App.constants.WANT_TYPES.playdate:             
+            case App.constants.WANT_TYPES.playdate:
                 return this.friends?.at(this.stats.current_want.item)?.name || "Friend";
             case App.constants.WANT_TYPES.minigame:
                 return "Game Center";
@@ -874,6 +880,48 @@ class PetDefinition {
         this.traits.push(traitKey || randomTrait);
 
         console.log(this, 'Developed new trait:', traitKey || randomTrait);
+    }
+    checkFavorite(key, type){
+        // babies can't develop favorites
+        if(this.lifeStage <= PetDefinition.LIFE_STAGE.baby) return;
+
+        const existingFavorite = this.stats?.favorites[type];
+
+        if(existingFavorite){
+            // small chance to develop a new favorite, replacing the old one
+            const isNewFavorite = this.tryDevelopFavorite({ key, type, chance: 1 });
+            if(isNewFavorite) return true;
+
+            return key === existingFavorite;
+        }
+
+        return this.tryDevelopFavorite({ key, type });
+    }
+    tryDevelopFavorite({ key, type, chance = 6 }){
+        pRandom.save();
+        const hash = hashCode(`fav_${type}_${key}`);
+        pRandom.seed = this.getCharHash() + hash;
+        const isFavorite = pRandom.getPercent(chance);
+
+        if(isFavorite){
+            this.stats.favorites[type] = key;
+
+            const currentPet = App.drawer.selectObjects('pet').find(pet => pet?.petDefinition === this);
+            App.queueEvent(() => currentPet?.showThought('thought_favorite'));
+
+            console.log(`Developed new favorite ${type}: ${key}`);
+        }
+
+        pRandom.load();
+        return isFavorite;
+    }
+    isFavorite(key, type){
+        const existingFavorite = this.stats?.favorites[type];
+        if(!existingFavorite) return false;
+        return key === existingFavorite;
+    }
+    resetFavorites() {
+        this.stats.favorites = {};
     }
 
     spritesheetDefinitions = {
@@ -977,10 +1025,20 @@ class PetDefinition {
     static getSpriteClassName(petDef){
         if(!petDef?.stats?.is_ghost) return '';
 
-        if(petDef.stats.is_ghost === PetDefinition.GHOST_TYPE.angel) 
+        if(petDef.stats.is_ghost === PetDefinition.GHOST_TYPE.angel)
             return 'ghost angel';
 
         return 'ghost devil';
+    }
+
+    static getRandomLifeStage(above = -1){
+        let current = -Infinity;
+        while(current <= above) {
+            current = PetDefinition.LIFE_STAGE[randomFromArray(
+                Object.keys(PetDefinition.LIFE_STAGE)
+            )];
+        }
+        return current;
     }
 
     static LIFE_STAGE = {

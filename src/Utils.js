@@ -22,7 +22,8 @@ const pRandom = {
         return this.getFloat() * (max - min) + min;
     },
     getPercent: function(p){
-        return (this.getFloatBetween(0,100) > p || p <= 0) ? false : true;
+        const float = this.getFloatBetween(0,100);
+        return (float > p || p <= 0) ? false : true;
     },
     save: function(){
     	this._seed = this._private_seed;
@@ -161,7 +162,7 @@ function downloadUpscaledCanvasAsImage(canvas, imageName, scale = 1){
     scaledCtx.drawImage(canvas, 0, 0, scaledCanvas.width, scaledCanvas.height);
 
     const imageData = scaledCanvas.toDataURL();
-    
+
     let xhr = new XMLHttpRequest();
     xhr.responseType = 'blob';
     xhr.onload = function() {
@@ -254,7 +255,7 @@ function recolorImage(originalImage, replaceColors) {
     for (let i = 0; i < data.length; i += 4) {
         const pixelKey = (data[i] << 16) | (data[i+1] << 8) | data[i+2];
         const replacement = colorMap.get(pixelKey);
-        
+
         if (replacement !== undefined) {
             data[i] = (replacement >> 16) & 0xFF;
             data[i+1] = (replacement >> 8) & 0xFF;
@@ -368,7 +369,7 @@ const wordBank = {
     "laugh", "cry", "smile", "frown", "yell", "whisper", "sing", "shout", "giggle", "mumble", "scream", "argue",
     "dream", "imagine", "explore", "solve", "remember", "forget", "guess", "suspect", "wonder", "believe", "know",
     "help", "share", "trade", "steal", "hug", "kiss", "tickle", "scare", "follow", "lead", "watch", "listen",
-    "draw", "paint", "write", "read", "count", "measure", "cook", "clean", "decorate", "design", "code", "program", 
+    "draw", "paint", "write", "read", "count", "measure", "cook", "clean", "decorate", "design", "code", "program",
     "King", "Queen", "Knight", "Prince", "Princess", "Soldier", "Captain", "Pirate", "Ninja", "Samurai",
     "Giant", "Angel", "Demon", "Beast", "Clown", "Jester", "Hunter", "Traveler", "Explorer", "Seeker",
     "Player", "Singer", "Dancer", "Painter", "Writer", "Thinker", "Watcher", "Listener", "Maker", "Breaker",
@@ -381,13 +382,13 @@ const wordBank = {
     "happy", "sad", "sleepy", "bored", "scared", "excited", "calm", "silly", "angry", "curious", "lonely", "proud", "shy",
     "fun", "love", "time", "light", "dark", "dream", "idea", "magic", "star", "name", "secret", "surprise", "wish",
     "hat", "book", "pen", "box", "map", "coin", "chair", "blanket", "pillow", "bed", "window", "mirror", "key", "door",
-    "bag", "lamp", "rope", "glove", "ring", "necklace", "watch", "phone", "screen", "button", "switch", "remote",
+    "bag", "lamp", "tea", "glove", "ring", "necklace", "watch", "phone", "screen", "button", "switch", "remote",
     "cloud", "rain", "snow", "sun", "moon", "tree", "flower", "leaf", "rock", "sand", "fire", "water", "wind", "fog",
     "castle", "tower", "bridge", "path", "trap", "room", "house", "school", "forest", "cave", "island", "planet",
     "color", "shape", "pattern", "number", "letter", "word", "story", "joke", "truth", "lie", "game", "challenge", "push",
     "pull", "lift", "throw", "catch", "cut", "freeze", "melt", "grow",
     "shine", "glow", "fade", "enter", "leave", "stay", "wait", "move", "turn", "spin",
-    "clap", "stomp", "kick", "punch", "wave", "nod", "bow", "dance", "cheer", "whistle", "mountain", 
+    "clap", "stomp", "kick", "punch", "wave", "nod", "bow", "dance", "cheer", "whistle", "mountain",
     "valley", "river", "lake", "ocean", "desert", "volcano", "starfall", "comet", "galaxy",
     "armor", "sword", "shield", "bow", "arrow", "helmet", "crown", "cloak", "staff", "wand",
     "painting", "statue", "poem", "scroll", "note", "message", "signal", "alarm", "flag", "sign",
@@ -399,8 +400,8 @@ const wordBank = {
     "Why is", "How do", "When will", "Can you see", "Did you hear", "Will it be",
     "Is there", "Are you", "Should I", "Could we", "Would you", "May I", "Do they",
     "What happens if", "Can it", "Does it", "Is it okay to", "Can I touch", "Do you want",
-    "What do you think of", "Is it true that", "Can we play with", "Would it be fun to", 
-    "Is this yours", "How many", "Which one", "What if", "Can we try", "Do you remember", 
+    "What do you think of", "Is it true that", "Can we play with", "Would it be fun to",
+    "Is this yours", "How many", "Which one", "What if", "Can we try", "Do you remember",
     "Shall we", "Could it be", "Would you like to", "Can I join", "What should", "Is it possible to",
     "Do you believe", "Will you help", "Should we wait", "When can we", "Is it safe to"
   ]
@@ -425,6 +426,6 @@ const cyrb53 = (value, seed = 0) => {
     h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
     h2  = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
     h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
-    
+
     return (h2>>>0).toString(16).padStart(8,0)+(h1>>>0).toString(16).padStart(8,0);
 };

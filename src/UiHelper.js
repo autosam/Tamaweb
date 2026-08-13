@@ -5,6 +5,7 @@ const UI = {
         'children',
         'onClick',
         '_mount',
+        'attributes',
     ],
     create: (props) => UI.ce(props),
     ce: (props) => {
@@ -15,7 +16,7 @@ const UI = {
             if(UI.specialProps.includes(propName)){
                 switch(propName){
                     case 'children':
-                        props.children.forEach((child) => {
+                        props.children?.forEach((child) => {
                             UI.ce({
                                 ...child,
                                 parent: e
@@ -34,6 +35,11 @@ const UI = {
                     case '_mount':
                         e._mount = () => props._mount(e);
                         e._mount();
+                        break;
+                    case 'attributes':
+                        props.attributes?.forEach(attr => {
+                            e.setAttribute(attr[0], attr[1]);
+                        })
                         break;
                 }
                 return;
@@ -67,9 +73,9 @@ const UI = {
         const activeListContainers = [...document.querySelectorAll('.screen-wrapper .generic-list-container')];
         const previousListItem = activeListContainers?.at(-1);
         if(activeListContainers.length > 0){ // to make sure it always display "back" when only one layer deep in the interaction tree
-            backBtnName = backFnTitle 
-            || UI.lastClickedButton?.textContent?.trim()?.replace(' new!', '') 
-            || previousListItem?._listItems?.at(0)?.name 
+            backBtnName = backFnTitle
+            || UI.lastClickedButton?.textContent?.trim()?.replace(' new!', '')
+            || previousListItem?._listItems?.at(0)?.name
             || backBtnName;
         }
         UI.lastClickedButton = null;
@@ -102,7 +108,7 @@ const UI = {
                         className: 'fa-solid fa-arrow-left',
                         style: `
                             margin-right: 4px;
-                        `,  
+                        `,
                         parentInsertBefore: true,
                     }
                 ]
@@ -155,10 +161,10 @@ const UI = {
 
 const GenericUIDef = {
     binaryConfirm: ({
-        onAccept = () => {}, 
-        onDecline = () => {}, 
-        acceptLabel = 'Yes', 
-        declineLabel = 'No', 
+        onAccept = () => {},
+        onDecline = () => {},
+        acceptLabel = 'Yes',
+        declineLabel = 'No',
         text = 'Are you sure?',
     } = {}) => {
         return [text, [
@@ -184,4 +190,15 @@ const GenericUIDef = {
             }
         ]]
     }
+}
+
+const UIComponent = {
+    PetDefMessageHead: ({ friendDef }) => `
+        <div class="flex flex-gap-1 align-center">
+            <div class="persona-avatar width-fit">
+                ${friendDef.getCSprite(true)}
+            </div>
+            <small class="bold">${friendDef.name}</small>
+        </div>
+    `
 }

@@ -55,7 +55,7 @@ class AnimalDefinition extends PetDefinition {
         return `<c-sprite width="16" height="16" index="0" src="${this.sprite}" pos-x="0" pos-y="0" style="margin-right: ${margin}px;"></c-sprite>`;
     }
     getBuff(){
-        return App.getGameplayBuffDefinitionFromKey(this.stats.buff) || 
+        return App.getGameplayBuffDefinitionFromKey(this.stats.buff) ||
             App.definitions.gameplay_buffs.increasedWateredDuration;
     }
 
@@ -66,10 +66,10 @@ class AnimalDefinition extends PetDefinition {
         const maxStat = 100;
         const timeToZeroMilliseconds = (maxStat / decreaseRate) * 1000;
         const duration = moment.duration(timeToZeroMilliseconds);
-      
+
         const hours = Math.floor(duration.asHours());
         const minutes = duration.minutes();
-      
+
         console.log(`${hours}:${minutes}`);
     }
 }
@@ -154,7 +154,7 @@ class Animal extends Pet {
     getValidRandomYPosition(minY){
         const sceneMinY = minY || App.currentScene.animalMinY || 88;
         return random(
-            this.drawer.getRelativePositionX(100) - (this.spritesheet.cellSize / 2), 
+            this.drawer.getRelativePositionX(100) - (this.spritesheet.cellSize / 2),
             this.drawer.getRelativePositionX(sceneMinY) - this.spritesheet.cellSize
         );
     }
@@ -193,9 +193,9 @@ class Animal extends Pet {
         if(!hasBadMoodlets){
             if(random(0, 100) < 10){
                 const commonAnimations = [
-                    {name: 'sitting', length: random(2000, 4000)}, 
-                    {name: 'blush', length: random(550, 1000)}, 
-                    {name: 'cheering', length: random(550, 1000)}, 
+                    {name: 'sitting', length: random(2000, 4000)},
+                    {name: 'blush', length: random(550, 1000)},
+                    {name: 'cheering', length: random(550, 1000)},
                     {name: 'shocked', length: random(450, 800)},
                 ];
                 const rareAnimation = [

@@ -1,0 +1,15 @@
+[
+  {
+    "label": "Run Current File with Node",
+    "command": "node $ZED_FILE",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always"
+  },
+  {
+    "label": "Start Live Server",
+    "command": "npx live-server --port=5500 --no-browser",
+    "use_new_terminal": true,
+    "hide": "always"
+  }
+]

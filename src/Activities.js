@@ -1,4 +1,131 @@
 class Activities {
+    static async openScratchCard({
+        npc = "resources/img/character/mall_npc_01.png",
+        scene = App.scene.mallInterior,
+        onEndCallback,
+    } = {}) {
+        App.closeAllDisplays();
+        App.toggleGameplayControls(false);
+        App.setScene(scene),
+        App.pet.triggerScriptedState('idle', App.INF, false, true);
+        App.pet.stopMove();
+        App.pet.x = '50%';
+
+        // pRandom.seed = App.getDayId(true) + App.petDefinition.getCharHash();
+
+        const mascotAnimal = App.getRandomAnimalDef();
+
+        const prizeSlots = new Array(3).fill(null).map(() => {
+            return random(0, 100) <= 25 ? mascotAnimal : { isPoop: true };
+        })
+
+        const screen = UI.empty();
+        document.querySelector('.screen-wrapper').appendChild(screen);
+        screen.innerHTML = `
+            <div class="flex flex-dir-col justify-center align-center absolute-fullscreen display menu-animation">
+                <div class="scratch-card flex flex-center">
+                    <div class="scratch-card__animal">${mascotAnimal.getFullCSprite(true)}</div>
+                    <div class="scratch-card__content flex-center">
+                        <span class="flex align-center justify-between width-half">
+                            ${prizeSlots.map(slot => {
+                                return slot.isPoop ? '<img src="./resources/img/misc/poop.png"/>' : slot.getFullCSprite(true)
+                            }).join('\n')}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        `;
+        const contentElement = screen.querySelector('.scratch-card__content');
+        const cardElement = screen.querySelector('.scratch-card');
+
+        const drawer = new Drawer(null, 150, 40);
+        contentElement.appendChild(drawer.canvas);
+
+        // init
+        const patternImage = new Image();
+        patternImage.src = 'resources/img/ui/lucky_ticket_pattern.png';
+        patternImage.onload = () => {
+            const pattern = drawer.context.createPattern(patternImage, 'repeat');
+            pattern.setTransform(new DOMMatrix().scale(1));
+
+            drawer.context.fillStyle = pattern;
+            drawer.context.fillRect(
+                0,
+                0,
+                drawer.bounds.width,
+                drawer.bounds.height
+            );
+        };
+
+        const { canvas } = drawer;
+        const rect = canvas.getBoundingClientRect();
+
+        const getPercentRevealed = () => {
+            const imageData = drawer.context.getImageData(0, 0, drawer.bounds.width, drawer.bounds.height);
+            const data = imageData.data;
+            let transparentPixels = 0;
+
+            // check alpha channel
+            for (let i = 3; i < data.length; i += 4) {
+              if (data[i] === 0) transparentPixels++;
+            }
+
+            return transparentPixels / (drawer.bounds.width * drawer.bounds.height);
+        }
+
+        const onEnd = () => {
+            const matchingPrizes = prizeSlots.reduce(
+                (acc, animal) =>
+                    animal.sprite === mascotAnimal.sprite
+                        ? acc + 1
+                        : acc,
+                0,
+            );
+
+            screen.remove();
+            App.pet.stopScriptedState();
+            App.toggleGameplayControls(true);
+            Missions.done(Missions.TYPES.scratch_lucky_ticket);
+            App.displayPopup(
+                `You got <b>${matchingPrizes}</b>/<b>${prizeSlots.length}</b> right!`,
+                3000,
+                () => {
+                    Activities.task_winMoney({
+                        npc,
+                        amount: Math.floor(35 * matchingPrizes * (matchingPrizes / 1.35)),
+                        hasWon: matchingPrizes >= 1,
+                        shouldOpenGameList: false,
+                        onEndCallback,
+                    })
+                },
+            );
+        }
+
+        const eventDriver = App.registerOnDrawEvent(() => {
+            if(!App.mouse.isDown) return;
+
+            if(App.canProceed('lucky_ticket_sfx', 200)){
+                App.playSound(`resources/sounds/swoosh_0${random(1, 2)}.ogg`, true);
+            }
+
+            const scaledX = (App.mouse.screenX - rect.left) * (canvas.width / rect.width),
+                scaledY = (App.mouse.screenY - rect.top) * (canvas.height / rect.height);
+
+            drawer.context.globalCompositeOperation = 'destination-out';
+            drawer.context.beginPath();
+            drawer.context.arc(scaledX, scaledY, 10, 0, App.PI2);
+            drawer.context.fill();
+
+            const percent = getPercentRevealed();
+            if(percent > .9){
+                drawer.canvas.remove();
+                App.unregisterOnDrawEvent(eventDriver);
+                cardElement.classList.add('single-pulse-anim');
+                setTimeout(onEnd, 1500);
+                setTimeout(() => App.playSound(`resources/sounds/cute.ogg`, true));
+            }
+        })
+    }
     static async openGenericGift({onEnd, onMiddle}){
         App.toggleGameplayControls(false);
 
@@ -175,7 +302,7 @@ class Activities {
             await clerk.bob({maxCycles: 1, animation: 'shocked', landAnimation: 'idle'});
 
             await TimelineDirector.wait(200);
-            
+
             clerk.actor.say('welcome to the post office!', 2000);
             await TimelineDirector.wait(2000);
 
@@ -191,17 +318,17 @@ class Activities {
 
             main.setState('idle_side');
             main.lookAt(true);
-            
+
             const currentPositionX = clerk.getPosition('x');
             await clerk.moveTo({x: '150%', speed: 0.05});
             await clerk.moveTo({x: currentPositionX, speed: 0.05});
-            
+
             await TimelineDirector.wait(200);
             clerk.actor.say('all done!', 2000);
 
             main.setState('cheering_with_icon');
             App.pet.playSound('resources/sounds/task_complete_02.ogg', true);
-            
+
             await TimelineDirector.wait(2500);
 
             App.fadeScreen({
@@ -270,7 +397,7 @@ class Activities {
         }
 
         const main = new TimelineDirector(App.pet);
-        
+
         main.setState('idle_side');
         main.lookAt(false);
         main.setPosition({x: '50%'});
@@ -285,13 +412,14 @@ class Activities {
             Object2d.actionAnimations.horizontalJiggle(App.temp.digSpotObject);
         }
 
-        App.temp.digSpotObject.spritesheet.cellNumber = 2;        
+        App.temp.digSpotObject.spritesheet.cellNumber = 2;
 
         const chestObject = new Object2d({
             parent,
             img: 'resources/img/misc/treasure_chest_01.png',
             x: '40%',
             y: '78%',
+            z: App.pet.z + 1,
             opacity: 0,
             scale: 0.1,
             rotation: 0,
@@ -307,17 +435,16 @@ class Activities {
                 me.rotation = lerp(me.rotation, 0, 0.01 * App.deltaTime);
             }
         })
-        App.pet.setLocalZBasedOnSelf(chestObject);
+        // App.pet.setLocalZBasedOnSelf(chestObject);
         await TimelineDirector.wait(10);
-        App.pet.playSound('resources/sounds/jump.ogg', true);
         await main.jumpTo({x: '80%', speed: 0.0015, curve: 0.5, y: main.getPosition('y'), endState: 'shocked_without_sound', animation: 'shocked_without_sound'});
         App.pet.playSound('resources/sounds/shock.ogg', true);
         main.actor.stopMove();
-        await TimelineDirector.wait(500); 
+        await TimelineDirector.wait(500);
         main.setState('idle_side');
-        await TimelineDirector.wait(500); 
+        await TimelineDirector.wait(500);
         await main.moveTo({x: '72%', speed: 0.01});
-        await TimelineDirector.wait(500); 
+        await TimelineDirector.wait(500);
 
         for(let i = 0; i < 3; i++){
             await main.bob({animation: 'idle_side_uncomfortable', landAnimation: 'idle_side', maxCycles: 1});
@@ -325,20 +452,20 @@ class Activities {
             Object2d.actionAnimations.horizontalJiggle(chestObject);
             spawnSmoke(chestObject.x, chestObject.y, 0.2);
             App.pet.playSound('resources/sounds/ui_click_05.ogg', true);
-            await TimelineDirector.wait(200); 
+            await TimelineDirector.wait(200);
         }
 
         await main.bob({animation: 'idle_side_uncomfortable', landAnimation: 'shocked', maxCycles: 1});
         chestObject.rotation = randomFromArray([-10, 10]);
         Object2d.actionAnimations.horizontalJiggle(chestObject);
-        
+
         spawnSmoke(chestObject.x, chestObject.y, 0.2);
         chestObject.scale = 1.3;
         chestObject.spritesheet.cellNumber = 2;
         App.pet.playSound('resources/sounds/task_complete.ogg', true);
 
         Activities.task_explodingParticles({
-            img: isValuable 
+            img: isValuable
                 ? 'resources/img/misc/twinkle_01.png'
                 : 'resources/img/misc/poop.png',
             despawnTime: 1500,
@@ -350,8 +477,8 @@ class Activities {
         // treasure object
         const treasureObject = new Object2d({
             parent,
-            img: isValuable 
-                ? 'resources/img/misc/money_bag_01.png' 
+            img: isValuable
+                ? 'resources/img/misc/money_bag_01.png'
                 : 'resources/img/misc/poop.png',
             x: '40%',
             y: '80%',
@@ -402,7 +529,7 @@ class Activities {
         const parent = new Object2d({});
 
         const backgroundMusic = App.playAdvancedSound({
-            loop: true, 
+            loop: true,
             src: 'resources/sounds/move_out_bm_01.mp3',
             volume: 0.5,
         });
@@ -455,7 +582,7 @@ class Activities {
 
         const dialog = getDialogMessage();
         const isSenderPet = App.petDefinition.name === dialog.sender;
-        
+
         const main = new TimelineDirector(App.pet, {
             driverFn: (me) => {
                 if(!me.circleMovementVector && typeof me.x !== 'string'){
@@ -472,7 +599,7 @@ class Activities {
         });
 
         const mood = getMood();
-        
+
         main.setPosition({x: '50%', y: '80%'});
 
         main.actor.opacity = 0.0001;
@@ -483,7 +610,7 @@ class Activities {
 
         if(mood === 'blush') {
             await main.bob({
-                maxCycles: 2, 
+                maxCycles: 2,
                 landAnimation: 'idle'
             });
         }
@@ -493,7 +620,7 @@ class Activities {
 
         if(isSenderPet){
             await Activities.enterDialog(
-                App.petDefinition, 
+                App.petDefinition,
                 dialog.msg,
             );
         }
@@ -577,7 +704,7 @@ class Activities {
         screen.innerHTML = `
             <div class="dialog flex flex-dir-col justify-between width-full">
                 <div class="dialog_icon">
-                    ${speakerPetDef.getFullCSprite(true)}
+                    ${speakerPetDef.getFullCSprite()}
                 </div>
                 <div class="dialog_textContainer">
                     <span class="dialog_text"></span>
@@ -602,7 +729,7 @@ class Activities {
                 dialogTextElement.innerHTML = nextString;
             }
         }, 50);
-        
+
         const progressDialog = () => {
             if(currentLetterPointer < activeText.length){
                 currentLetterPointer = 999;
@@ -660,7 +787,7 @@ class Activities {
                 App.unregisterOnDrawEvent(checkDriver);
             }
         })
-        
+
         robber.setPosition({x: `${random(20, 80)}%`, y: '85%'});
 
         for(let i = 0; i < 4; i++){
@@ -705,7 +832,7 @@ class Activities {
         const waiter = new TimelineDirector(
             new Pet(new PetDefinition({
                 sprite: randomFromArray([
-                    'resources/img/character/chara_179b.png', 
+                    'resources/img/character/chara_179b.png',
                     'resources/img/character/chara_220b.png'
                 ]),
             }))
@@ -785,7 +912,7 @@ class Activities {
 
             App.pet.stats.current_hunger += hunger_replenish * 1.25;
             App.pet.stats.current_fun += random(15, 30);
-            
+
             const wantedFoodItem = App.definitions.food[App.pet.stats.current_want.item];
             App.petDefinition.checkWant(sprite === wantedFoodItem?.sprite, App.constants.WANT_TYPES.food);
 
@@ -795,15 +922,15 @@ class Activities {
             foodObject.spritesheet.cellNumber = sprite + 2;
             await TimelineDirector.wait(1500);
             foodObject.removeObject();
-            
+
             pet.setState('blush');
-            
+
             await TimelineDirector.wait(1000);
 
             pet.release();
             App.pet.playCheeringAnimation(onEnd);
         }
-        
+
         const getMenuItems = () => {
             if(App.temp.restaurantMenuItems) return App.temp.restaurantMenuItems;
 
@@ -825,7 +952,7 @@ class Activities {
 
         const menuItems = getMenuItems()
             .map(item => ({
-                ...item, 
+                ...item,
                 disabled: false,
                 onclick: () => {
                     if(App.pay(item.price)){
@@ -859,7 +986,7 @@ class Activities {
 
         App.displayPopup(`Try to use the words that best describe the ${isTargetNegative ? App.constants.SPANS.monster : App.constants.SPANS.angel}`, 3000);
         await TimelineDirector.wait(3000);
-        
+
         let remainingRounds = 3, wonRounds = 0;
 
         const showNewRound = () => {
@@ -929,15 +1056,15 @@ class Activities {
                             App.handlers.open_devil_town_activity_list(true);
                         }
                     })
-                    
+
                     return;
                 }
 
                 showNewRound();
-            } 
+            }
 
             const buttons = screen.querySelectorAll('button');
-            
+
             let targetBucket = isTargetNegative ? negativeWords : positiveWords;
             const randomTargetWord = randomFromArray(targetBucket)
             let randomNonTargetWords = [];
@@ -1094,11 +1221,11 @@ class Activities {
     }
     static async ghost_convertOtherPet(otherPetDef = App.getRandomPetDef(), ghostType = App.petDefinition.stats.is_ghost){
         const isTurningIntoDevil = ghostType === PetDefinition.GHOST_TYPE.devil;
-        
+
         App.closeAllDisplays();
         App.setScene(App.scene.reviverDen);
         App.toggleGameplayControls(false);
-        
+
         if(isTurningIntoDevil) otherPetDef.increaseFriendship(-random(10, 50));
         else otherPetDef.increaseFriendship(random(5, 30));
 
@@ -1156,11 +1283,11 @@ class Activities {
             },
         })
     }
-    static async ghost_beConverted(otherPetDef = App.getRandomPetDef(), ghostType = PetDefinition.GHOST_TYPE.angel){        
+    static async ghost_beConverted(otherPetDef = App.getRandomPetDef(), ghostType = PetDefinition.GHOST_TYPE.angel){
         App.closeAllDisplays();
         App.setScene(App.scene.reviverDen);
         App.toggleGameplayControls(false);
-    
+
 
         const otherPet = new TimelineDirector(new Pet(otherPetDef));
         const main = new TimelineDirector(App.pet);
@@ -1203,7 +1330,7 @@ class Activities {
         mainConverted.setState('cheering');
 
         otherPet.setState('blush');
-        
+
         App.save();
 
         await TimelineDirector.wait(3500);
@@ -1331,7 +1458,10 @@ class Activities {
         const sceneParent = new Object2d({});
 
         const getRandomGhostPet = (ghostType = PetDefinition.GHOST_TYPE.devil) => {
-            const npcDef = App.getRandomPetDef();
+            const npcLifeStage = PetDefinition.getRandomLifeStage(
+                PetDefinition.LIFE_STAGE.baby
+            )
+            const npcDef = App.getRandomPetDef(npcLifeStage);
             npcDef.stats.is_ghost = ghostType;
             return new Pet(npcDef, {parent: sceneParent});
         }
@@ -1369,8 +1499,8 @@ class Activities {
             return App.displayList([
                 ...[npcB, npcA].map(npc => ({
                     name: `
-                    ${npc.actor.petDefinition.getCSprite()} 
-                    ${npc.actor.petDefinition.name} 
+                    ${npc.actor.petDefinition.getCSprite()}
+                    ${npc.actor.petDefinition.name}
                     ${App.getBadge(`<img src="resources/img/misc/${npc.actor.petDefinition.stats.is_ghost === PetDefinition.GHOST_TYPE.devil ? 'devil_icon' : 'angel_icon'}.png"></img>`, 'transparent')}
                     `,
                     onclick: () => {
@@ -1399,7 +1529,7 @@ class Activities {
                 sprite: 'resources/img/character/chara_193b.png',
                 name: 'The Exorcist',
                 accessories: ['reviver hood'],
-            }), 
+            }),
             {
                 x: '20%',
                 z: App.constants.ACTIVE_PET_Z - 1,
@@ -1483,7 +1613,7 @@ class Activities {
         }
 
         await TimelineDirector.wait(350);
-        
+
         App.fadeScreen({
             middleFn: () => {
                 main.release()
@@ -1558,7 +1688,7 @@ class Activities {
                 }
             )
         )
-    
+
         const negativeReaction = App.pet.stats.has_poop_out ? 'thought_poop' : false;
 
         main.setState('idle_side');
@@ -1680,11 +1810,11 @@ class Activities {
         }
 
         const reactions = [
-            'shocked', 
-            'blush', 
-            'uncomfortable', 
-            'angry', 
-            'mild_uncomfortable', 
+            'shocked',
+            'blush',
+            'uncomfortable',
+            'angry',
+            'mild_uncomfortable',
             'cheering',
             'cheering',
             'cheering',
@@ -1844,10 +1974,10 @@ class Activities {
         const otherPet = new Pet(App.getRandomPetDef(), {
             staticShadow: false
         });
-        
+
         const main = new TimelineDirector(App.pet);
         const other = new TimelineDirector(otherPet);
-        
+
 
         other.setState('idle_side');
         other.setPosition({x: -other.getSize()})
@@ -1940,15 +2070,16 @@ class Activities {
             mallNpc.removeObject();
         });
     }
-    static async goToActivities({ 
-        activities, 
+    static async goToActivities({
+        activities,
         floorImage = 'resources/img/background/outside/activities_base_01.png',
         scene = App.scene.emptyOutside,
+        decorators,
         id,
     } = {}){
         const tempId = App.handlers.getOutsideActivityId(id);
         let currentActivityIndex = App.temp[tempId] ?? 1;
-        
+
         App.setScene({
             ...scene,
             petY: '94%',
@@ -2017,7 +2148,12 @@ class Activities {
 
         // camera position adjuster draw event
         const directorTask = () => {
-            const newPositionX = lerp(App.drawer.cameraPosition.x, -scenePositionX, 0.01 * App.deltaTime);
+            const distance = Math.abs(App.drawer.cameraPosition.x + scenePositionX);
+            const speed =
+                distance > 0.1
+                    ? Math.max(distance * 0.01, 0.1) * App.deltaTime
+                    : 0;
+            const newPositionX = move(App.drawer.cameraPosition.x, -scenePositionX, speed);
             App.drawer.setCameraPosition(newPositionX, null);
         }
         App.registerOnDrawEvent(directorTask);
@@ -2043,7 +2179,7 @@ class Activities {
             currentActivity.onEnter?.();
             setTimeout(() => App.playSound('resources/sounds/ui_click_03.ogg', true));
         }
-        
+
         const updateSelectedActivity = (offset = 1) => {
             while(spawnedGameObjects.length >= 3){
                 const toDespawn = spawnedGameObjects.shift();
@@ -2071,22 +2207,30 @@ class Activities {
 
             scenePositionX += App.drawer.bounds.width * offset;
 
-            const background = new Object2d({
+            const backgroundObject = new Object2d({
                 img: floorImage,
                 x: scenePositionX, y: 0,
             });
+            spawnedGameObjects.push(backgroundObject);
+
+            // decorators
+            decorators?.({
+                parent: backgroundObject,
+                currentActivityIndex,
+                activitiesLength: activities.length,
+            });
+
+            // building
             new Object2d({
                 img: currentActivity.image,
-                x: scenePositionX, y: 0,
-                parent: background,
+                x: 0, y: 0,
+                parent: backgroundObject,
                 selector: 'building',
+                isRelative: true,
             });
-            spawnedGameObjects.push(background);
-            
-            // App.pet.x = scenePositionX + App.drawer.bounds.width;
-            // App.pet.targetX = scenePositionX + App.drawer.bounds.width - 40;
-            App.pet.targetX = scenePositionX + 
-                App.drawer.getRelativePositionX(50) - 
+
+            App.pet.targetX = scenePositionX +
+                App.drawer.getRelativePositionX(50) -
                 (App.petDefinition.spritesheet.cellSize / 2);
         }
 
@@ -2193,7 +2337,7 @@ class Activities {
                 sprite: 'resources/img/character/chara_193b.png',
                 name: 'The Exorcist',
                 accessories: ['reviver hood'],
-            }), 
+            }),
             {
                 x: '20%',
                 z: App.constants.ACTIVE_PET_Z - 1,
@@ -2344,7 +2488,7 @@ class Activities {
             App.pet.targetX = -999;
             setTimeout(() => App.pet.x = -99);
         }
-        
+
         setTimeout(() => {
             rabbitHoleDefinition?.onVisualize?.();
         })
@@ -2364,7 +2508,7 @@ class Activities {
             const petDef = new PetDefinition({
                 sprite,
             })
-            
+
             // handle ghost combinations
             if(!otherPetDef){
                 if(App.petDefinition.stats.is_ghost){
@@ -2454,7 +2598,7 @@ class Activities {
             App.pet.playAngryAnimation();
             return;
         }
-        
+
         const itemObject = new Object2d({
             img: App.constants.ITEM_SPRITESHEET,
             spritesheet: {
@@ -2484,7 +2628,7 @@ class Activities {
         App.pet.y = '92%';
         App.pet.inverted = true;
         App.pet.staticShadow = true;
-        App.pet.triggerScriptedState('cheering', item.interaction_time || 10000, false, true, () => {  
+        App.pet.triggerScriptedState('cheering', item.interaction_time || 10000, false, true, () => {
             App.toggleGameplayControls(true);
             itemObject?.removeObject();
 
@@ -2526,7 +2670,7 @@ class Activities {
         otherPet.inverted = true;
         otherPet.triggerScriptedState('eating', 8000, false, true);
         await App.pet.triggerScriptedState('eating', 8000, false, true);
-        
+
         // conclusion
         const end = () => {
             App.pet.stopScriptedState();
@@ -2553,7 +2697,7 @@ class Activities {
         const petEnjoyment = otherEnjoyment ? !!random(0, 6) : random(0, 1); // just to make it more common for both parties to not like each other
         determineBehavior(App.pet, petEnjoyment);
         determineBehavior(otherPet, otherEnjoyment);
-        
+
         setTimeout(() => {
             if(!petEnjoyment || !otherEnjoyment){
                 let text = '';
@@ -2622,15 +2766,15 @@ class Activities {
         }
 
         Activities.task_handleLeavingAnimals();
-        
+
         App.pet.stopScriptedState();
         App.pet.x = '100%';
         App.pet.targetX = 50;
         App.setScene(App.scene.garden_inner);
-        
+
         const displayPlantsList = ({
-            onPlantClick, 
-            filterFn = () => true, 
+            onPlantClick,
+            filterFn = () => true,
             additionalStartOptions = [],
         }) => {
             const allPlantsList = App.plants
@@ -2968,7 +3112,7 @@ class Activities {
             })
             spawnedAnimal.stopMove();
             spawnedAnimal.inverted = true;
-            spawnedAnimal.triggerScriptedState('eating', App.INF, false, true, 
+            spawnedAnimal.triggerScriptedState('eating', App.INF, false, true,
                 () => {
                     foodObject.removeObject();
                     spawnedAnimal.playCheeringAnimation(null, true);
@@ -3113,10 +3257,10 @@ class Activities {
                                         return true;
                                     }
                                     const openFoodList = () => App.handlers.open_food_list({
-                                        buyMode: false, 
-                                        filterType: 'food', 
-                                        useMode: onUseFn, 
-                                        age: PetDefinition.LIFE_STAGE.adult, 
+                                        buyMode: false,
+                                        filterType: 'food',
+                                        useMode: onUseFn,
+                                        age: PetDefinition.LIFE_STAGE.adult,
                                         useModeLabel: `Use (x${App.animals.list.length})`,
                                         useAmount: App.animals.list.length,
                                     });
@@ -3250,7 +3394,7 @@ class Activities {
             def.interactions = (def.interactions ?? 0) + INTERACTION_LIKES.outgoing;
             hasUploadedPetDef.interactions = (hasUploadedPetDef.interactions ?? 0) + INTERACTION_LIKES.receiving;
         }
-        
+
         App.setScene(App.scene.online_hub);
 
         App.pet.stopMove();
@@ -3337,8 +3481,8 @@ class Activities {
                                 <div style="
                                     display: flex;
                                     justify-content: space-between;
-                                    flex-wrap: wrap;   
-                                    align-items: center;                                     
+                                    flex-wrap: wrap;
+                                    align-items: center;
                                 ">
                                     <div>
                                         <i class="fa-solid fa-user-circle"></i> ${def.owner}
@@ -3368,10 +3512,10 @@ class Activities {
                 ...petInteractions,
                 {
                     name: `
-                        Every time you interact with another pet you'll receive 
-                        <i class="fa-solid fa-thumbs-up"></i> ${INTERACTION_LIKES.receiving} 
+                        Every time you interact with another pet you'll receive
+                        <i class="fa-solid fa-thumbs-up"></i> ${INTERACTION_LIKES.receiving}
                         and they'll receive
-                        <i class="fa-solid fa-thumbs-up"></i> ${INTERACTION_LIKES.outgoing} 
+                        <i class="fa-solid fa-thumbs-up"></i> ${INTERACTION_LIKES.outgoing}
                     `,
                     type: 'info',
                 },
@@ -3444,7 +3588,7 @@ class Activities {
             ])
         }
         const handleFriendSearch = () => App.handlers.open_hubchi_search((def) => addInteraction(def, true));
-        
+
         const handleRewardStore = () => {
             const showItem = (image, name, description, unlockLikesReq, unlockKey) => {
                 const isUnlocked = App.getRecord(unlockKey);
@@ -3461,7 +3605,7 @@ class Activities {
                             _disable: isUnlocked,
                             // name: !isUnlocked ? 'unlock' : 'reward collected',
                             name: !isUnlocked ? `unlock <div style="margin-left: auto"><i class="fa-solid fa-thumbs-up"></i> ${unlockLikesReq} </div>` : 'reward collected',
-                            onclick: unlockKey 
+                            onclick: unlockKey
                             ? () => {
                                 if((App.temp.online?.hasUploadedPetDef?.interactions || 0) < unlockLikesReq){
                                     return App.displayPopup(`You don't have enough interactions to unlock ${name}.`)
@@ -3480,7 +3624,7 @@ class Activities {
                 )
                 return confirm;
             }
-        
+
             const createEntryButton = (icon, name, item, onClick) => {
                 return {
                     name: `<img class="icon" src="${icon}"></img> ${name} ${item.isNew ? App.getBadge('new!') : ''}`,
@@ -3488,7 +3632,7 @@ class Activities {
                     isNew: item.isNew,
                 }
             }
-        
+
             // const accessories = App.definitions.accessories.filter(e => e.onlineShopAccessible);
             const accessories = Object.keys(App.definitions.accessories)
                 .filter(e =>
@@ -3499,7 +3643,7 @@ class Activities {
                     const icon = item.icon || item.image;
                     return createEntryButton(icon, name, item, () => showItem(icon, name, 'accessory', item.unlockLikes, item.unlockKey))
                 })
-        
+
             const backgrounds = Object.keys(App.definitions.room_background)
                 .filter(e =>
                     App.definitions.room_background[e].onlineShopAccessible
@@ -3509,7 +3653,7 @@ class Activities {
                     const icon = item.image;
                     return createEntryButton(icon, name, item, () => showItem(icon, name, 'background', item.unlockLikes, item.unlockKey))
                 })
-        
+
             const shells = Object.keys(App.definitions.shell_background)
                 .filter(e =>
                     App.definitions.shell_background[e].onlineShopAccessible
@@ -3519,13 +3663,13 @@ class Activities {
                     const icon = item.image;
                     return createEntryButton(icon, item.name, item, () => showItem(icon, item.name, 'shell design', item.unlockLikes, item.unlockKey))
                 })
-        
+
             const finalList = [
                 ...accessories,
                 ...backgrounds,
                 ...shells,
             ].sort((a, b) => b.isNew - a.isNew);
-        
+
             return App.displayList(finalList)
         }
 
@@ -3567,7 +3711,7 @@ class Activities {
                         ">
                             <div style="
                                 display: flex;
-                                align-items: center;                        
+                                align-items: center;
                             ">
                                 ${App.petDefinition.getCSprite()} You
                             </div>
@@ -3636,7 +3780,7 @@ class Activities {
 
                 me.isDespawning = !App.pet.stats.is_sleeping;
             }
-        }); 
+        });
         return true;
     }
     static goToVacation(vacationFn){
@@ -3655,7 +3799,7 @@ class Activities {
         App.setScene(App.scene.seaVacation);
 
         const backgroundMusic = App.playAdvancedSound({
-            loop: true, 
+            loop: true,
             src: 'resources/sounds/vacation_track_01.ogg'
         });
 
@@ -3670,7 +3814,7 @@ class Activities {
                 App.pet.playCheeringAnimation();
                 App.save();
             })
-            
+
             // feed all animals before ending
             App.animals?.list?.forEach(a => {
                 a.feed?.(100);
@@ -3678,7 +3822,7 @@ class Activities {
             });
         }
 
-        App.pet.triggerScriptedState('idle', App.INF, 0, true, null, 
+        App.pet.triggerScriptedState('idle', App.INF, 0, true, null,
             Pet.scriptedEventDrivers.playingWithItem.bind({pet: App.pet})
         );
 
@@ -3704,8 +3848,9 @@ class Activities {
     }
     static async cookingGame({
         stirringSpeed = 0.001,
-        skipCamera, 
+        skipCamera,
         resultFoodName,
+        resultFoodAmount,
     } = {}){
         App.closeAllDisplays();
         App.pet.triggerScriptedState('idle', App.INF, 0, false);
@@ -3754,7 +3899,7 @@ class Activities {
             starObjects.push(img);
         }
 
-        let failChance = resultFoodName ? 3 : 25;
+        let failChance = resultFoodName ? 0 : 25;
         let currentTargetImgIndex = 0;
         App.toggleGameplayControls(false, () => {
             if(currentTargetImgIndex < starObjects.length && !skipCamera){
@@ -3821,7 +3966,10 @@ class Activities {
                                     App.pet.x = '50%';
                                 }
                                 if(!failed){
-                                    let amount = resultFoodName ? random(1, 3) : 1;
+                                    let amount = Number(resultFoodName ? resultFoodAmount || random(1, 3) : 1);
+                                    if(resultFoodName && random(1, 4) === 1) {
+                                        amount += random(0, 2);
+                                    }
                                     if(App.petDefinition.hasTrait('naturalChef')) amount *= 2;
                                     App.displayPopup(`${App.petDefinition.name} <br>made x${amount}<br> <b>${randomFoodName}</b>!`, 3000, () => {
                                         end();
@@ -3921,7 +4069,7 @@ class Activities {
             if(App.canProceed('petting_react_cool_down', 300)){
                 App.pet.setState(isPetting ? 'blush' : 'idle');
                 if(isPetting){
-                    App.playSound('resources/sounds/cute.ogg', true);
+                    App.playSound('resources/sounds/ui_click_05.ogg', true);
                     Activities.task_floatingHearts();
 
                     App.pet.stats.current_fun += random(1, 4) * 0.07;
@@ -3939,7 +4087,7 @@ class Activities {
         App.definitions.achievements.work_x_times.advance();
 
         const backgroundMusic = App.playAdvancedSound({
-            loop: true, 
+            loop: true,
             src: 'resources/sounds/work_track_01.ogg',
             volume: 0.5,
         });
@@ -4024,7 +4172,7 @@ class Activities {
             }, () => {
                 Object2d.animations.bob(otherPet, 0.01, 0.1)
             })
-        
+
         App.pet.stopMove();
         App.pet.x = '25%';
         App.pet.y = '90%';
@@ -4112,14 +4260,14 @@ class Activities {
     static goToClinic(onEndFn){
         App.toggleGameplayControls(false);
         Missions.done(Missions.TYPES.visit_doctor);
-        
+
         const task_visit_doctor = async () => {
             App.setScene(App.scene.hospitalInterior);
 
             const doctorPetDef = new PetDefinition({
                 sprite: 'resources/img/character/doctor_01.png',
             });
-            
+
             const main = new TimelineDirector(App.pet);
             const other = new TimelineDirector(new Pet(doctorPetDef, {staticShadow: false}));
 
@@ -4144,12 +4292,12 @@ class Activities {
                     await TimelineDirector.wait(1000);
 
                     const health = App.pet.stats.current_health;
-    
+
                     let state = 'very healthy';
                     if(health <= App.pet.stats.max_health * 0.20) state = 'very sick';
                     else if(health <= App.pet.stats.max_health * 0.45) state = 'sick';
                     else if(health <= App.pet.stats.max_health * 0.75) state = 'healthy'
-                    
+
                     const onEnd = () => {
                         main.release();
                         other.remove();
@@ -4178,11 +4326,11 @@ class Activities {
 
                     if(isSick){
                         other.actor.say('Buy some medicine from the market...', 3500);
-                        await TimelineDirector.wait(3500); 
+                        await TimelineDirector.wait(3500);
                         other.actor.say('And drink it immediately!', 2000);
-                        await TimelineDirector.wait(3000); 
+                        await TimelineDirector.wait(3000);
                     }
-                    
+
                     App.fadeScreen({
                         middleFn: onEnd
                     })
@@ -4244,7 +4392,7 @@ class Activities {
                             if(me.opacity <= 0) me.removeObject();
                         }
                     })
-                    
+
                     if(brushTimes >= 8) {
                         App.pet.stopScriptedState();
                     }
@@ -4298,7 +4446,7 @@ class Activities {
             let foamStr = random(1, 4) * 0.1;
             let foam = new Object2d({
                 img: 'resources/img/misc/foam_single.png',
-                x: 50 + random(-15, 15) + Math.random(), 
+                x: 50 + random(-15, 15) + Math.random(),
                 y: 42 + random(-2, 2) + Math.random(),
                 z: 20,
                 onDraw: (me) => {
@@ -4348,7 +4496,7 @@ class Activities {
         App.closeAllDisplays();
         App.setScene(App.scene.bathroom);
         App.toggleGameplayControls(false);
-        
+
         if(!force && App.pet.stats.current_bladder > App.pet.stats.max_bladder / 2){ // more than half
             App.pet.playRefuseAnimation(() => {
                 App.setScene(App.scene.home);
@@ -4505,7 +4653,7 @@ class Activities {
         }
 
         const otherPets = otherPetDefs.slice(0, 3).map(def => new Pet(def));
-        
+
         const table = new Object2d({
             img: 'resources/img/misc/table_01.png',
             x: 28,
@@ -4584,6 +4732,7 @@ class Activities {
             sprite: 'resources/img/character/chara_290b.png',
         })
         let otherPet = new Pet(otherPetDef);
+        App.pet.setLocalZBasedOnSelf(otherPet);
 
         otherPet.stopMove();
         otherPet.x = '100%';
@@ -4610,7 +4759,7 @@ class Activities {
             () => {
                 App.setScene(App.currentScene, true);
                 App.pet.x = 10;
-            }, 
+            },
             () => {
                 App.pet.stopScriptedState();
             })
@@ -4641,6 +4790,7 @@ class Activities {
         task_otherPetMoveIn();
     }
     static inviteGiveGift(otherPetDef){
+        App.closeAllDisplays();
         App.setScene(App.scene.home);
         App.toggleGameplayControls(false);
         let otherPet = new Pet(otherPetDef);
@@ -4712,9 +4862,9 @@ class Activities {
         App.closeAllDisplays();
         App.setScene(App.scene.office);
         App.definitions.achievements.work_x_times.advance();
-        
+
         const backgroundMusic = App.playAdvancedSound({
-            loop: true, 
+            loop: true,
             src: 'resources/sounds/work_track_01.ogg',
             volume: 0.5,
         });
@@ -4848,7 +4998,7 @@ class Activities {
 
             let petDef = App.getRandomPetDef(1);
             let npcPet = new Pet(petDef);
-            
+
             if(i == 1) npcPet.x = 15;
             else npcPet.x = 0;
 
@@ -4877,7 +5027,7 @@ class Activities {
 
             let petDef = App.getRandomPetDef(2);
             let npcPet = new Pet(petDef);
-            
+
             if(i == 1) npcPet.x = 30;
             else {
                 npcPet.x = 0;
@@ -5104,7 +5254,7 @@ class Activities {
             App.petDefinition.addFriend(otherPetDef, 1);
             otherPetDef.increaseFriendship();
         }
-        
+
         const onEnd = () => {
             App.toggleGameplayControls(false);
             App.pet.x = '50%';
@@ -5150,7 +5300,7 @@ class Activities {
             if(hasWon){
                 App.definitions.achievements.perfect_minigame_guessnum_win_x_times.advance();
             }
-            Activities.task_winMoneyFromArcade({
+            Activities.task_winMoney({
                 hasWon,
                 amount: hasWon ? 50 : 0,
             })
@@ -5195,7 +5345,7 @@ class Activities {
                 <div class="absolute-fullscreen inner-padding-sm mini-game-ui">
                     ${remainingChoices}/${maxChoices}
                 </div>
-                
+
                 <div class="flex-container flex-between" style="padding: 4px">
                     <div class="flex flex-dir-row flex-wrap justify-between align-end flex-gap-05" style="width: 75%;">
                         ${new Array(9).fill(1).map((_, index) => {
@@ -5299,11 +5449,11 @@ class Activities {
 
             if(App.time <= nextPoseUpdate) return;
             nextPoseUpdate = App.time + currentDelayMs;
-            
+
             if(scoreArray.every(e => e !== undefined)){
                 return endFn();
             }
-            
+
             paused = false;
             parent.opacity = 1;
             App.pet.setState('idle');
@@ -5346,7 +5496,7 @@ class Activities {
                 App.definitions.achievements.perfect_minigame_flags_win_x_times.advance();
             }
 
-            Activities.task_winMoneyFromArcade({
+            Activities.task_winMoney({
                 hasWon,
                 amount: winScore * 20,
                 happiness: winScore * 3,
@@ -5385,11 +5535,11 @@ class Activities {
                     <div id="score">${score}</div>
                 </div>
             </div>
-            <div style="width: ${buttonSizePx}px; height: ${buttonSizePx}px" class="dog-washing-button cursor-pointer">
+            <div style="width: ${buttonSizePx}px; height: ${buttonSizePx}px" class="groom-button cursor-pointer">
                 <i class="fa-solid fa-hands-wash fa-2x"></i>
             </div>
         `;
-        const washActionButton = screen.querySelector('.dog-washing-button');
+        const washActionButton = screen.querySelector('.groom-button');
         const repositionAction = () => {
             const bounds = {
                 width: washActionButton.parentElement.clientWidth - buttonSizePx - 2,
@@ -5413,7 +5563,7 @@ class Activities {
             if(hasWon){
                 App.definitions.achievements.perfect_minigame_petgroom_win_x_times.advance();
             }
-            Activities.task_winMoneyFromArcade({
+            Activities.task_winMoney({
                 amount: moneyWon,
                 hasWon: hasWon,
                 happiness: score * 1.2,
@@ -5443,8 +5593,8 @@ class Activities {
 
             const foam = new Object2d({
                 img: 'resources/img/misc/foam_single.png',
-                x: (animal.x - 6) + random(-4, 4), 
-                y: (animal.y - 18) + random(-4, 4), 
+                x: (animal.x - 6) + random(-4, 4),
+                y: (animal.y - 18) + random(-4, 4),
                 scale: random(5, 10) * 0.1, opacity: 1, z: 10,
                 onDraw: (me) => {
                     Object2d.animations.flip(me);
@@ -5462,13 +5612,14 @@ class Activities {
         washActionButton.onclick = () => {
             repositionAction();
             advanceProgress();
+            App.playSound('resources/sounds/ui_click_05.ogg');
         }
     }
     static async plantMatchingGame(){
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
         App.sendAnalytics('minigame_plant_matching');
 
-        const getRandomPlant = () => 
+        const getRandomPlant = () =>
             randomFromArray(Object.keys(App.definitions.plant))
         const appendNonRepeatedPlant = (list = []) => {
             let newPlant;
@@ -5496,7 +5647,7 @@ class Activities {
         App.pet.stopMove();
         App.pet.x = '50%';
         App.pet.triggerScriptedState('idle', App.INF, null, true);
-        
+
         // main list
         const targetList = getListOfNonRepeatedPlants([], 4);
         const selectionLists = targetList.map(item => {
@@ -5542,7 +5693,7 @@ class Activities {
                 }
 
                 const moneyWon = Math.max((correctChoices - 1) * 20, 0);
-                Activities.task_winMoneyFromArcade({
+                Activities.task_winMoney({
                     amount: moneyWon,
                     happiness: moneyWon / 5,
                     hasWon: Boolean(moneyWon)
@@ -5563,7 +5714,7 @@ class Activities {
                         }
                     }))
                 )
-                
+
                 const counterElement = UI.create({
                     componentType: 'div',
                     className: 'absolute-fullscreen pointer-events-none flex-container',
@@ -5576,7 +5727,7 @@ class Activities {
                     ]
                 })
             })
-        
+
     }
     static barTimingGame(){
         App.closeAllDisplays();
@@ -5585,31 +5736,27 @@ class Activities {
         App.sendAnalytics('minigame_bar_timing');
         App.setScene(App.scene.arcade_game01);
 
-        const screen = App.displayEmpty();
+        const screen = UI.empty('pointer-events-none display absolute-fullscreen flex-container flex-row-down height-100p bg-transparent');
+        document.querySelector('.screen-wrapper').appendChild(screen);
         screen.innerHTML = `
-        <div class="pointer-events-none display flex-container flex-row-down height-100p" style="background: url(${App.scene.arcade_game01.image});background-size: contain;image-rendering: pixelated;">
             <div class="timing-bar-container">
                 <div class="timing-bar-rod"></div>
                 <div class="timing-bar-rod"></div>
                 <div class="timing-bar-rod"></div>
                 <div class=timing-bar-cursor></div>
             </div>
-        </div>
         `;
         const cursor = screen.querySelector('.timing-bar-cursor');
-        
+
         let moneyWon = 0, round = 0, roundsWin = 0;
         let cursorSpeed = 0.19;
         let cursorCurrentPos = 0;
 
-        let reset = (cursorSpeedAdd) => {
+        const reset = (cursorSpeedAdd) => {
             cursorCurrentPos = 0;
             cursor.style.opacity = 1;
         }
-
-        reset();
-
-        App.onDraw = () => {
+        const onDraw = () => {
             cursorCurrentPos += cursorSpeed * App.deltaTime;
             if(cursorCurrentPos >= 98 || cursorCurrentPos <= 0){
                 cursorSpeed *= -1;
@@ -5633,25 +5780,28 @@ class Activities {
                     // success
                     moneyWon += 20;
                     roundsWin++;
+                    App.pet.setState('cheering');
                 } else if(cursorCurrentPos >= 70) {
                     App.playSound(`resources/sounds/ui_click_01.ogg`, true);
                     moneyWon += 3;
+                    App.pet.setState('jumping');
                 } else {
                     App.playSound(`resources/sounds/ui_click_01.ogg`, true);
                     moneyWon -= 5;
                     moneyWon = clamp(moneyWon, 0, 999);
+                    App.pet.setState('mild_uncomfortable');
                 }
 
                 round++;
 
                 if(round === 3){
                     setTimeout(() => {
-                        screen.close();
-                        App.onDraw = null;
+                        screen.remove();
+                        App.pet.stopScriptedState();
                         if(roundsWin === 3){
                             App.definitions.achievements.perfect_minigame_rodrush_win_x_times.advance();
                         }
-                        Activities.task_winMoneyFromArcade({
+                        Activities.task_winMoney({
                             amount: moneyWon,
                             happiness: roundsWin * 10,
                             hasWon: roundsWin >= 2
@@ -5661,10 +5811,17 @@ class Activities {
                     setTimeout(() => {
                         reset(0.15);
                         cursorSpeed = round === 1 ? 0.27 : 0.37;
+                        App.pet.setState('idle');
                     }, 500);
                 }
             }
         }
+
+        App.pet.stopMove();
+        App.pet.x = '50%';
+        App.pet.triggerScriptedState('idle', App.INF, false, true, false, onDraw);
+
+        reset();
     }
     static fallingStuffGame(){
         App.closeAllDisplays();
@@ -5673,7 +5830,7 @@ class Activities {
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
         App.sendAnalytics('minigame_falling_stuff');
         App.mouse.x = null;
-        
+
         App.pet.speedOverride = 0.07;
         App.pet.x = '50%';
         App.pet.stopMove();
@@ -5722,7 +5879,7 @@ class Activities {
                             me.rotation += me.speed * App.deltaTime;
 
                             if(
-                                me.y > petHeight && me.y < 80 && 
+                                me.y > petHeight && me.y < 80 &&
                                 xCenter > App.pet.x - petWidth && xCenter < App.pet.x + petWidth
                             ) {
                                 spawnSmoke(xCenter, me.y);
@@ -5786,7 +5943,7 @@ class Activities {
             if(moneyWon >= App.definitions.achievements.perfect_minigame_catch_win_x_gold.required){
                 App.definitions.achievements.perfect_minigame_catch_win_x_gold.advance();
             }
-            Activities.task_winMoneyFromArcade({
+            Activities.task_winMoney({
                 amount: moneyWon,
                 hasWon: moneyWon > 30,
                 happiness: moneyWon / 6,
@@ -5822,7 +5979,7 @@ class Activities {
         });
 
         const opponentPet = new Pet(opponentPetDef, {x: '70%'});
-        
+
         let totalRounds = 3, playedRounds = 0, roundsWon = 0;
 
         const reset = () => {
@@ -5833,7 +5990,7 @@ class Activities {
                 if(roundsWon === totalRounds){
                     App.definitions.achievements.perfect_minigame_mimic_win_x_times.advance();
                 }
-                Activities.task_winMoneyFromArcade({
+                Activities.task_winMoney({
                     amount: moneyWon,
                     happiness: roundsWon * 15,
                     hasWon: roundsWon !== 0,
@@ -5925,8 +6082,8 @@ class Activities {
                 }, 1500);
             }, 1000);
         }
-        
-        return false;  
+
+        return false;
     }
     static parkRngGame(){
         /* unused */
@@ -5973,8 +6130,8 @@ class Activities {
                 });
             }
         });
-        
-        return false;  
+
+        return false;
     }
     static async trickOrTreatGame(onEndCallback){
         App.closeAllDisplays();
@@ -5985,15 +6142,15 @@ class Activities {
 
         const backgroundMusic = App.playAdvancedSound({
             src: 'resources/sounds/trick_or_treat_bm_01.mp3',
-            loop: true, 
+            loop: true,
             volume: 0.4,
         });
 
         const currencyIcon = App.getFoodCSprite(App.definitions.food[App.constants.UNDERWORLD_TREAT_CURRENCY]?.sprite);
 
         // init vars
-        let activeSpeed = 2.5, 
-            globalOffset = 0, 
+        let activeSpeed = 2.5,
+            globalOffset = 0,
             lastGlobalOffsetLooped = App.INF,
             globalSpawnOffset = App.drawer.bounds.width,
             spawnTicks = 0;
@@ -6065,7 +6222,7 @@ class Activities {
 
                 const gravity = 0.001;
                 let velocity = 0.31;
-                App.pet.triggerScriptedState('talking', App.INF, 0, true, 
+                App.pet.triggerScriptedState('talking', App.INF, 0, true,
                     () => {
                         App.pet.y = groundPositionY;
                         jumpCount = 0;
@@ -6104,7 +6261,7 @@ class Activities {
             if(!jumpCount) {
                 App.pet.setState(activeSpeed ? 'moving' : 'idle_side');
             }
-            
+
             const globalOffsetLooped = globalOffset % App.drawer.bounds.width;
             if(globalOffsetLooped < lastGlobalOffsetLooped){
                 spawnEntities();
@@ -6239,7 +6396,7 @@ class Activities {
 
         const movingBackgrounds = new Array(2)
             .fill(true)
-            .map((_, i) => 
+            .map((_, i) =>
                 new Object2d({
                     parent: sceneParent,
                     img: 'resources/img/misc/devil_walkway_01.png',
@@ -6309,14 +6466,14 @@ class Activities {
                 y: `${random(5, 95)}%`,
                 rotation: random(0, 180),
                 parent: leavesParent,
-            
+
                 velocityX: 0,
                 velocityY: 0,
                 drag: 0.91,
                 shouldDespawn: false,
                 opacity: 1,
                 scale: 1 + ((Math.random() - 0.5) * 0.1),
-                
+
                 onDraw: (me) => {
                     if(typeof me.x === 'string') return;
 
@@ -6324,19 +6481,19 @@ class Activities {
                         const manhattanDistX = Math.abs(me.x - activeForce.origin.x);
                         const manhattanDistY = Math.abs(me.y - activeForce.origin.y);
                         const manhattanDist = manhattanDistX + manhattanDistY;
-                        
+
                         if (manhattanDist < activeForce.maxDistance) {
                             const dirX = me.x > activeForce.origin.x ? 1 : -1;
                             const dirY = me.y > activeForce.origin.y ? 1 : -1;
 
                             const forceScale = 1 - (manhattanDist / activeForce.maxDistance);
                             const forceMagnitude = activeForce.strength * forceScale * forceScale;
-                            
+
                             me.velocityX += dirX * forceMagnitude * (manhattanDistX / manhattanDist);
                             me.velocityY += dirY * forceMagnitude * (manhattanDistY / manhattanDist);
                         }
                     }
-                    
+
                     me.x += me.velocityX * App.deltaTime;
                     me.y += me.velocityY * App.deltaTime;
 
@@ -6379,10 +6536,10 @@ class Activities {
                         if(hasWon){
                             App.definitions.achievements.perfect_minigame_leaves_win_x_times.advance();
                         }
-                        Activities.task_winMoneyFromArcade({
+                        Activities.task_winMoney({
                             hasWon,
                             amount: clamp(
-                                    Math.floor(((targetLeavesCount - currentLeavesCount) / 5 )- (currentLeavesCount ? 20 : 0)), 
+                                    Math.floor(((targetLeavesCount - currentLeavesCount) / 5 )- (currentLeavesCount ? 20 : 0)),
                                 0, Infinity),
                         })
                         leavesParent.removeObject();
@@ -6402,15 +6559,15 @@ class Activities {
                 x: App.mouse.x,
                 y: App.mouse.y
             }
-            
+
             if(App.time > lastSmokeSpawnTime + 100){
                 lastSmokeSpawnTime = App.time;
                 App.playSound(`resources/sounds/swoosh_0${random(1, 2)}.ogg`, true);
                 new Object2d({
                     img: 'resources/img/misc/foam_single.png',
-                    x: activeForce.origin.x - 12, 
-                    y: activeForce.origin.y - 12, 
-                    z: 6, opacity: 1, scale: random(3, 6) * 0.1, 
+                    x: activeForce.origin.x - 12,
+                    y: activeForce.origin.y - 12,
+                    z: 6, opacity: 1, scale: random(3, 6) * 0.1,
                     rotation: random(0, 180),
                     onDraw: (me) => {
                         me.rotation += 0.1 * App.deltaTime;
@@ -6490,7 +6647,7 @@ class Activities {
             } else {
                 main.setState('uncomfortable');
             }
-            
+
             App.toggleGameplayControls(false);
             foodObject.targetBrightness = 1;
             await TimelineDirector.wait(1000);
@@ -6505,7 +6662,7 @@ class Activities {
                     if(isCorrect){
                         App.definitions.achievements.perfect_minigame_foodknowledge_win_x_times.advance();
                     }
-                    Activities.task_winMoneyFromArcade({
+                    Activities.task_winMoney({
                         amount: isCorrect ? 50 : 0,
                         hasWon: isCorrect
                     })
@@ -6569,7 +6726,7 @@ class Activities {
             if(hasWon){
                 App.definitions.achievements.perfect_minigame_imagepuzzle_win_x_times.advance();
             }
-            Activities.task_winMoneyFromArcade({
+            Activities.task_winMoney({
                 hasWon,
                 amount: hasWon ? 10 * random(16, 20) : 0,
             })
@@ -6641,9 +6798,9 @@ class Activities {
             if (i === 0) continue;
             positions.push(i + 1);
         }
-        const { 
-            positions: shuffledPositions, 
-            emptyPos 
+        const {
+            positions: shuffledPositions,
+            emptyPos
         } = shuffleBoard(positions, random(15, 25));
 
         const displayOverlayImage = (isFinal) => {
@@ -6728,7 +6885,7 @@ class Activities {
                 }
 
                 const cellNumber = shuffledPositions[index++];
-                
+
                 const tileObject = new Object2d({
                     parent,
                     img: image,
@@ -6913,7 +7070,7 @@ class Activities {
         App.pet.triggerScriptedState('idle', App.INF, 0, true);
 
         let lastSpawnTime = 0;
-        
+
 
         App.toggleGameplayControls(false, () => {});
 
@@ -7213,10 +7370,10 @@ class Activities {
         })
     }
     static async school_CardShuffleGame({
-        activeCards = 2, 
-        maxCards = 12, 
-        onEndFn, 
-        swapDelay = 400, 
+        activeCards = 2,
+        maxCards = 12,
+        onEndFn,
+        swapDelay = 400,
         maxSwaps,
         maxAttempts = 4,
         skillIcon,
@@ -7250,7 +7407,7 @@ class Activities {
                 correctCards++;
             }
             App.playSound(card.isTarget ? 'resources/sounds/ui_click_03.ogg' : 'resources/sounds/ui_click_01.ogg', true);
-            
+
             const animationDelay = 350;
             counter.textContent = totalTurnedCards;
 
@@ -7345,7 +7502,7 @@ class Activities {
 
         // swapping
         const scrambledCards = shuffleArray([
-            ...shuffleArray(cards).slice(0, maxSwaps ?? cards.length/1.5), 
+            ...shuffleArray(cards).slice(0, maxSwaps ?? cards.length/1.5),
             cards.find(c => c.isTarget)
         ]);
         for(let i = 0; i < scrambledCards.length; i++){
@@ -7442,13 +7599,13 @@ class Activities {
     static task_floatingObjects(num, textures, yRange = [105, 115]){
         if(!num) num = random(1, 4);
         for(let i = 0; i < num; i++){
-            let floatSpeed = random(4, 5) * 0.01, 
-                swayFloat = 0, 
+            let floatSpeed = random(4, 5) * 0.01,
+                swayFloat = 0,
                 swaySpeed = random(2, 20) * 0.001;
             const floatingObject = new Object2d({
                 img: randomFromArray(textures),
-                z: randomFromArray([0, 100]), 
-                x: `${random(0, 100)}%`, 
+                z: randomFromArray([0, 100]),
+                x: `${random(0, 100)}%`,
                 y: `${random(yRange[0], yRange[1])}%`
             });
             floatingObject.onDraw = (me) => {
@@ -7469,8 +7626,8 @@ class Activities {
             let floatSpeed = random(5, 6) * 0.01;
             const floatingObject = new Object2d({
                 img: randomFromArray(textures),
-                z: randomFromArray([0, 100]), 
-                x: `${xPosition}%`, 
+                z: randomFromArray([0, 100]),
+                x: `${xPosition}%`,
                 y: `${random(yRange[0], yRange[1])}%`
             });
             floatingObject.onDraw = (me) => {
@@ -7520,7 +7677,7 @@ class Activities {
 
                 if(App.time < me.lastSpawnTime + PARAMS.spawnDelay) return;
                 me.lastSpawnTime = App.time;
-                
+
                 // particle
                 new Object2d({
                     parent: PARAMS.parent,
@@ -7568,7 +7725,7 @@ class Activities {
                         <br><br>
                         ${leavingAnimals.map(animalDef => (`
                             <span style="color: red;">
-                                ${animalDef.getFullCSprite()}${animalDef.name}    
+                                ${animalDef.getFullCSprite()}${animalDef.name}
                             </span>
                         `)).join('<br>')}
                     `,
@@ -7587,8 +7744,8 @@ class Activities {
         }
     }
     static async task_winSkillPointFromSchool({
-            amount = 0, 
-            hasWon, 
+            amount = 0,
+            hasWon,
             npc = 'resources/img/character/chara_175b.png',
             icon,
         } = {}){
@@ -7633,11 +7790,13 @@ class Activities {
         messageBubble.close();
         App.handlers.open_school_activity_list();
     }
-    static async task_winMoneyFromArcade({
-            amount = 0, 
-            happiness, 
-            hasWon, 
-            npc = 'resources/img/character/chara_175b.png'
+    static async task_winMoney({
+            amount = 0,
+            happiness,
+            hasWon,
+            npc = 'resources/img/character/chara_175b.png',
+            shouldOpenGameList = true,
+            onEndCallback,
         } = {}){
         App.reloadScene();
         App.toggleGameplayControls(false);
@@ -7693,7 +7852,9 @@ class Activities {
         App.toggleGameplayControls(true);
         UI.clearLastClicked();
         messageBubble.close();
-        App.handlers.open_game_list();
+
+        if(shouldOpenGameList) App.handlers.open_game_list();
+        onEndCallback?.();
     }
 }
 
@@ -7752,10 +7913,10 @@ class TimelineDirector {
     }
     getSize = () => this.actor?.spritesheet.cellSize;
     bob = ({
-        speed = 0.011, 
-        strength = 5, 
-        maxCycles = 3, 
-        animation = 'cheering', 
+        speed = 0.011,
+        strength = 5,
+        maxCycles = 3,
+        animation = 'cheering',
         landAnimation,
         sound
     } = {}) => {
@@ -7766,8 +7927,8 @@ class TimelineDirector {
             const defaultY = this.actor.y;
             const actor = this.actor;
 
-            let animationFloat = 0, 
-            currentCycles = 0, 
+            let animationFloat = 0,
+            currentCycles = 0,
             cycleCounted = false;
 
             const drawEvent = App.registerOnDrawEvent(() => {
@@ -7847,7 +8008,7 @@ class TimelineDirector {
                 if(actor.opacity.toFixed(2) === target) end();
             })
         })
-    } 
+    }
     jumpTo = ({x, y, curve = 0.5, speed = 0.02, endState = 'idle', animation = 'jumping'}) => {
         return new Promise(resolve => {
             if (!this.actor) return resolve();
@@ -7866,6 +8027,8 @@ class TimelineDirector {
             }
 
             let progress = 0;
+
+            App.playSound(`resources/sounds/jump.ogg`, true);
 
             const drawEvent = App.registerOnDrawEvent(() => {
                 if (!actor) {
@@ -7896,6 +8059,6 @@ class TimelineDirector {
             this.registeredDrawEvents.push(drawEvent);
         });
     }
-    
+
     static wait = (...args) => App.wait(...args);
 }

@@ -1,6 +1,6 @@
 class Object2d {
-    defaultDrawer;
-    colorOverrides;
+    static defaultDrawer;
+    static colorOverrides;
 
     constructor(config) {
         if(config.parent?.isRemoved){
@@ -69,7 +69,7 @@ class Object2d {
 
         this.imageSrc = img;
         this.image.src = App.checkResourceOverride(img);
-        this.image.onload = () => { 
+        this.image.onload = () => {
             this.image = this.applyColorOverrides(this.image);
         }
     }
@@ -78,7 +78,7 @@ class Object2d {
         if(imageSrc) this.imageSrc = imageSrc;
         this.image = image;
         this.image.src = App.checkResourceOverride(this.image.src);
-        this.image.onload = () => { 
+        this.image.onload = () => {
             this.image = this.applyColorOverrides(this.image);
         }
     }
@@ -103,7 +103,7 @@ class Object2d {
         function should(val){
             return !ignoreList.includes(val);
         }
-        
+
         if(should('x')) this.x = this.parent.x;
         if(should('y')) this.y = this.parent.y + this.parent.additionalY;
         if(should('inverted')) this.inverted = this.parent.inverted;
@@ -264,7 +264,7 @@ class Object2d {
             let y = -Math.ceil(radius * Math.cos(deg));
             let x = Math.ceil(radius * Math.sin(deg));
 
-            me.x = originX + x; 
+            me.x = originX + x;
             me.y = originY + y;
         },
         pulseScale: function(me, speed, strength){
@@ -285,7 +285,7 @@ class Object2d {
         cycleThroughFrames: function(me, delay = 250, alternateDirection){
             if(!me.spritesheet) return;
             const maxCells = me.spritesheet.rows * me.spritesheet.columns;
-            
+
             if(!me._cycleThroughFrames) me._cycleThroughFrames = {
                 nextTime: 0,
                 adder: 1,
