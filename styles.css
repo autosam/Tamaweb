@@ -1591,6 +1591,10 @@ input#background-color-picker {
     pointer-events: none;
 }
 
+li+li {
+    margin-top: 4px;
+}
+
 .modal {
     position: fixed;
     top: 0px;

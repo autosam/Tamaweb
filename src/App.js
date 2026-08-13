@@ -1387,7 +1387,7 @@ const App = {
         //     ])
         // })) return;
 
-        if(addEvent(`update_27_notice`, () => {
+        if(addEvent(`update_28_notice`, () => {
             App.displayList([
                 {
                     name: `New update is available!<b> <div><small>${VERSION}</small></div> ${App.getBadge('new!')}`,
@@ -1402,10 +1402,11 @@ const App = {
                         <div>
                             Check out the new:
                             <ul style="margin: 6px 0px 6px -22px;" class="bold">
-                                <li>Mini-games</li>
-                                <li>Reworked Jobs system</li>
-                                <li>Immersive additions</li>
-                                <li>Room backgrounds</li>
+                                <li>Favorites</li>
+                                <li>Lucky Tickets</li>
+                                <li>Visual Overhauls</li>
+                                <li>Social Media Messaging</li>
+                                <li>Lots of quality of life improvements</li>
                             </ul>
                             and more!
                         </div>
