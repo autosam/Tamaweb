@@ -4772,7 +4772,7 @@ const App = {
                 {
                     // _ignore: !App.isTester(),
                     _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby,
-                    name: `cook`,
+                    name: `cook ${App.getBadge()}`,
                     onclick: () => {
                         return App.displayList([
                             {
@@ -4792,7 +4792,7 @@ const App = {
                                 }
                             },
                             {
-                                name: `harvests`,
+                                name: `harvests ${App.getBadge()}`,
                                 onclick: () => {
                                     let allPlants = [];
                                     const getIngredients = (name) => {
@@ -4859,7 +4859,7 @@ const App = {
                                                         {
                                                             type: 'text',
                                                             name: `
-                                                                <div>How many?</div>
+                                                                <div>How many? ${App.getBadge()}</div>
                                                                 <div class="mt-4"></div>
                                                                 ${
                                                                     App.createRangeSlider({
