@@ -221,7 +221,10 @@ function recolorImage(originalImage, replaceColors) {
     if(!originalImage.width || !originalImage.height)
         return originalImage;
 
-    const cacheKey = `${originalImage.src}${originalImage.width}x${originalImage.height}${replaceColors.toString()}`;
+    const width = originalImage.naturalWidth;
+    const height = originalImage.naturalHeight;
+
+    const cacheKey = `${originalImage.src}${width}x${height}${replaceColors.toString()}`;
 
     const asNewImage = (sourceImg) => {
         const image = new Image();
@@ -234,10 +237,10 @@ function recolorImage(originalImage, replaceColors) {
     }
 
     const offCanvas = document.createElement('canvas');
-    offCanvas.width = originalImage.width;
-    offCanvas.height = originalImage.height;
+    offCanvas.width = width;
+    offCanvas.height = height;
     const ctx = offCanvas.getContext('2d');
-
+    ctx.imageSmoothingEnabled = false;
     ctx.drawImage(originalImage, 0, 0);
 
     const imageData = ctx.getImageData(0, 0, offCanvas.width, offCanvas.height);
