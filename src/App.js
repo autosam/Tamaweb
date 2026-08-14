@@ -585,6 +585,8 @@ const App = {
         })
     },
     registerLoadEvents: function(){
+        this.initOverlay();
+
         const initializeRenderer = () => {
             App.targetFps = 60;
             App.fpsInterval = 1000 / App.targetFps;
@@ -691,6 +693,141 @@ const App = {
         }
         document.addEventListener('mouseup', touchDownHandler);
         document.addEventListener('touchend', touchDownHandler);
+    },
+    initOverlay: function(){
+        const container = document.querySelector('.overlay-container');
+
+        function getAngleToCenter(objectX, objectY) {
+            // Get the center of the screen
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+
+            // Calculate the angle in radians
+            const angleRad = Math.atan2(centerY - objectY, centerX - objectX);
+
+            // Convert to degrees
+            const angleDeg = angleRad * (180 / Math.PI);
+
+            return angleDeg + 90;
+        }
+
+        function getRandomEdgePosition(objectWidth, objectHeight) {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            // Randomly choose which edge (0: top, 1: right, 2: bottom, 3: left)
+            const edge = Math.floor(Math.random() * 4);
+
+            let x, y;
+            const halfWidth = objectWidth / 2;
+            const halfHeight = objectHeight / 2;
+
+            switch(edge) {
+                case 0: // Top edge - offset down by half height
+                    x = Math.random() * (width - objectWidth) + halfWidth;
+                    y = -halfHeight;
+                    break;
+                case 1: // Right edge - offset left by half width
+                    x = width - halfWidth;
+                    y = Math.random() * (height - objectHeight) + halfHeight;
+                    break;
+                case 2: // Bottom edge - offset up by half height
+                    x = Math.random() * (width - objectWidth) + halfWidth;
+                    y = height - halfHeight;
+                    break;
+                case 3: // Left edge - offset right by half width
+                    x = -halfWidth;
+                    y = Math.random() * (height - objectHeight) + halfHeight;
+                    break;
+            }
+
+            return { x, y };
+        }
+        function getEvenEdgePosition(index, total, objectWidth, objectHeight) {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            const halfWidth = objectWidth / 2;
+            const halfHeight = objectHeight / 2;
+
+            // The center travels around a rectangle expanded by half the
+            // object's dimensions so that the object's edges touch the viewport.
+            const left = -halfWidth;
+            const right = width - halfWidth;
+            const top = -halfHeight;
+            const bottom = height - halfHeight;
+
+            const horizontalLength = right - left;
+            const verticalLength = bottom - top;
+
+            const perimeter = 2 * (horizontalLength + verticalLength);
+            const position = (index / total) * perimeter;
+
+            let x, y;
+
+            if (position < horizontalLength) {
+                // Top: left → right
+                x = left + position;
+                y = top;
+            } else if (position < horizontalLength + verticalLength) {
+                // Right: top → bottom
+                x = right;
+                y = top + (position - horizontalLength);
+            } else if (position < 2 * horizontalLength + verticalLength) {
+                // Bottom: right → left
+                x = right - (position - horizontalLength - verticalLength);
+                y = bottom;
+            } else {
+                // Left: bottom → top
+                x = left;
+                y = bottom - (position - 2 * horizontalLength - verticalLength);
+            }
+
+            return { x, y };
+        }
+
+        const TOTAL = 100;
+        for(let i = 0; i < TOTAL; i++){
+            // const position = {
+            //     x: random(0, window.innerWidth),
+            //     y: random(0, window.innerHeight),
+            // }
+            // if(position.x > window.innerWidth / 2) position.x = window.innerWidth;
+            // else position.x = 0;
+            // if(position.y > window.innerHeight / 2) position.y = window.innerHeight;
+            // else position.y = 0;
+
+            const size = {
+                x: 106,
+                y: 272
+            };
+            const scale = clamp(Math.random(), 0.4, 1);
+            size.x *= scale;
+            size.y *= scale;
+
+            // const position = getRandomEdgePosition(size.x, size.y);
+            const position = getEvenEdgePosition(i, TOTAL, size.x, size.y);
+            position.x += random(-24, 24);
+            position.y += random(-24, 24);
+
+            UI.create({
+                parent: container,
+                componentType: 'img',
+                src: 'resources/img/ui/leaf_01.png',
+                style: `
+                    left: ${position.x}px;
+                    top: ${position.y}px;
+                    rotate: ${getAngleToCenter(position.x, position.y)}deg;
+                    // animation-delay: ${-random(1, 5) + Math.random()}s;
+                    width: ${size.x}px;
+                    height: ${size.y}px;
+                    // animation-duration: ${Math.random() + 2.5}s;
+                    animation-delay: ${i * -150}ms;
+                    --brightness: ${1 || clamp(Math.random() * 2, 0.75, 1.25)};
+                `,
+            })
+        }
+
     },
     sendSessionEvent: function(login){
         if(login){
