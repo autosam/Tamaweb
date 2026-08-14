@@ -643,7 +643,7 @@ class Pet extends Object2d {
         // elders cannot get toothache
         this.petDefinition.stats.has_toothache =
             this.petDefinition.lifeStage !== PetDefinition.LIFE_STAGE.elder
-            ? treatsCount >= random(7, 8)
+            ? treatsCount >= random(7, 8) && type === 'treat'
             : false;
 
         Missions.done(Missions.TYPES.food);
