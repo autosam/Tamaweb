@@ -289,14 +289,42 @@ function recolorImage(originalImage, replaceColors) {
 }
 recolorImage.cache = [];
 
-function downloadTextFile(filename, text = '') {
+function isIOS() {
+    return (
+        /iPad|iPhone|iPod/.test(navigator?.userAgent) ||
+        (navigator?.platform === 'MacIntel' && navigator?.maxTouchPoints > 1)
+    );
+}
+
+async function downloadTextFile(filename, text = '') {
+    if (isIOS() && navigator?.share) {
+        const file = new File(
+            [text],
+            filename,
+            { type: 'text/plain;charset=utf-8' }
+        );
+
+        const fileObject = { files: [file] };
+
+        if (navigator.canShare?.(fileObject)) {
+            await navigator.share(fileObject);
+            return;
+        }
+    }
+
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+
     const element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-    element.setAttribute('download', filename);
+    element.href = url;
+    element.download = filename;
     element.style.display = 'none';
+
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
+
+    URL.revokeObjectURL(url);
 }
 // https://stackoverflow.com/questions/6122571/simple-non-secure-hash-function-for-javascript
 function hashCode(str) {
