@@ -2,6 +2,15 @@ class Object2d {
     static defaultDrawer;
     static colorOverrides;
 
+    x = '50%';
+    y = '50%';
+    rotation = 0;
+    imageSrc = '';
+    positionOffset = {
+        x: 0,
+        y: 0
+    }
+
     constructor(config) {
         if(config.parent?.isRemoved){
             console.error('Cannot instantiate, parent is removed.', config);
@@ -18,18 +27,11 @@ class Object2d {
             }
         }
 
-        // basic
-        this.x = '50%';
-        this.y = '50%';
-        this.rotation = 0;
-        this.imageSrc = '';
-
         // props
         for (let key of Object.keys(config)) {
             this[key] = config[key];
         }
 
-        // config
         this.config = config;
 
         if(this.config.onClick){

@@ -130,6 +130,11 @@ class Drawer {
             if (object.additionalX) x += object.additionalX;
             if (object.additionalY) y += object.additionalY;
 
+            if (object.positionOffset) {
+                x += object.positionOffset.x || 0;
+                y += object.positionOffset.y || 0;
+            }
+
             if (object.isRelative) {
                 let current = object;
                 while (current?.parent) {
