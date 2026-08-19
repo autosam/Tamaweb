@@ -1411,6 +1411,7 @@ class Pet extends Object2d {
             velocity -= gravity * App.deltaTime;
             this.positionOffset.y -= velocity * App.deltaTime;
             if(this.positionOffset.y >= startY){
+                this.positionOffset.y = startY;
                 this.stopScriptedState();
                 onEndFn?.();
             }
