@@ -1668,13 +1668,13 @@ class Pet extends Object2d {
             setTimeout(() => bubble.removeObject(), 1000);
         }, disappearDelay);
     }
-    setLocalZBasedOnSelf(otherObject){
+    setLocalZBasedOnSelf(otherObject, matchBase = true){
         const currentBoundingBox = this.getBoundingBox();
         const otherBoundingBox = otherObject.getBoundingBox();
 
         const localZ = (otherBoundingBox.y + otherBoundingBox.height) - (currentBoundingBox.y + currentBoundingBox.height);
 
-        otherObject.z = this.z;
+        if(matchBase) otherObject.z = this.z;
         otherObject.localZ = localZ;
     }
     say(sentence, ms = 6000){

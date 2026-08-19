@@ -61,10 +61,16 @@ class Drawer {
         objects = objects
             .filter(Boolean)
             .sort((a, b) => {
-                if ((a.z || 0) === (b.z || 0)) {
-                    return (a.localZ || 0) - (b.localZ || 0);
+                const aZ = a.z || 0,
+                    bZ = b.z || 0;
+                const aLocalZ = a.localZ || 0,
+                    bLocalZ = b.localZ || 0;
+
+                if (aZ === bZ) {
+                    return aLocalZ - bLocalZ;
                 }
-                return (a.z || 0) - (b.z || 0);
+
+                return aZ - bZ;
             });
 
         objects.forEach((object) => {

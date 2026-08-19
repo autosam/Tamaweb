@@ -1996,22 +1996,23 @@ const App = {
             const furnitureDef = App.getFurnitureDefFromId(furniture.id);
             if(!furnitureDef)
                 return console.log('furniture was not found', furniture);
-            let lastY = 0;
+            let lastY = -App.INF, lastPetY = -App.INF;
             const furnitureObject = new Object2d({
                 // image: App.preloadedResources[furnitureDef.image],
                 img: furnitureDef.image,
                 x: furniture.x || 0,
                 y: furniture.y || 0,
                 z: furniture.z || App.constants.BACKGROUND_Z + 0.1,
+                z: App.pet.z,
+                localZ: 0,
                 def: furniture,
                 onDraw: (me) => {
                     furnitureDef.onDraw?.(me);
 
-                    if(lastY === me.y) return;
+                    if(lastY === me.y && lastPetY === App.pet.y) return;
                     lastY = me.y;
-                    me.z = App.constants.BACKGROUND_Z +
-                            0.3 +
-                            ((me.y + (me.image.height)) * 0.01);
+                    lastPetY = App.pet.y;
+                    App.pet.setLocalZBasedOnSelf(me);
                 }
             })
             App.activeFurnitureObjects.push(furnitureObject);
@@ -2519,7 +2520,7 @@ const App = {
             delete this._queueEventKeys[eventKey];
         }
         App.registerOnDrawEvent(checkForDecentTime);
-    },
+},
     runRandomEncounters: function(){
         if(
             App.pet.stats.is_egg ||
