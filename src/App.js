@@ -972,6 +972,8 @@ const App = {
             return false;
         }
 
+        if(App.pet.stats.is_sleeping) return;
+
         // random friend call
         if(
             random(0, 100) < 4 &&
@@ -979,18 +981,20 @@ const App = {
         ){
             if(App.canProceed('friend_call', App.constants.ONE_MINUTE * 30)) {
                 App.queueEvent(App.handlers.receive_friend_call);
+                return;
             }
         }
 
         // ask to be petted
         if(
             random(0, 100) < 3 &&
-            App.petDefinition.stats.current_care >= 2 &&
+            App.pet.stats.current_care >= 2 &&
             App.playTime > App.constants.ONE_MINUTE * 30 &&
             !App.isOnElectronClient
         ){
             if(App.canProceed('ask_to_be_petted', App.constants.ONE_HOUR * 2)) {
                 App.queueEvent(() => Activities.pet(2000));
+                return;
             }
         }
     },
