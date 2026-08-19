@@ -524,6 +524,37 @@ const App = {
             App.mouse.isDownMs = App.time - App.mouse.isDownStartMs;
         })
 
+        // gamepad
+        window.addEventListener("gamepadconnected", () => {
+            if(App.temp.gamepadDrawEvent) return;
+
+            const gamepadKeys = {};
+            const actionsMap = {
+                0: () => App.handlers.shell_button(1),
+                1: () => App.handlers.shell_button(2),
+                2: () => App.handlers.shell_button(0),
+            }
+
+            App.temp.gamepadDrawEvent = App.registerOnDrawEvent(() => {
+                const gamepad = navigator?.getGamepads()?.find(Boolean);
+                if(!gamepad) return;
+
+                // reset unpressed keys
+                Object.keys(gamepadKeys).forEach(key => {
+                    if(gamepad.buttons[key]?.pressed) return;
+                    gamepadKeys[key] = false;
+                });
+
+                // handle pressed keys
+                Object.keys(actionsMap).forEach(key => {
+                    if(!gamepad.buttons[key]?.pressed) return;
+                    if(gamepadKeys[key]) return;
+                    gamepadKeys[key] = true;
+                    actionsMap[key]();
+                });
+            })
+        });
+
         // key down
         document.addEventListener('keydown', (event) => {
             switch(event.key){
