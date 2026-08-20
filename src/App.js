@@ -448,10 +448,12 @@ const App = {
         App.sendSessionEvent(true);
 
         // periodic update
-        setTimeout(() => App.onPeriodicUpdate(), App.constants.ONE_SECOND * 2);
-        setInterval(() => {
-            App.onPeriodicUpdate();
-        }, App.constants.ONE_SECOND * 30);
+        setTimeout(() => {
+            App.registerOnDrawEvent(() => {
+                if(!App.canProceed('periodic_update', App.constants.ONE_SECOND * 1)) return;
+                App.onPeriodicUpdate();
+            })
+        }, App.constants.ONE_SECOND * 2);
 
         // saver
         setInterval(() => {
