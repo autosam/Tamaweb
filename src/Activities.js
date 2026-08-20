@@ -1353,6 +1353,7 @@ class Activities {
         otherPetDef.increaseFriendship(random(-5, 5));
 
         const otherPet = new TimelineDirector(new Pet(otherPetDef));
+        App.pet.setLocalZBasedOnSelf(otherPet.actor);
         const main = new TimelineDirector(App.pet);
 
         main.setPosition({x: '30%'});
@@ -1401,6 +1402,7 @@ class Activities {
         otherPetDef.increaseFriendship(-random(2, 5));
 
         const otherPet = new TimelineDirector(new Pet(otherPetDef));
+        App.pet.setLocalZBasedOnSelf(otherPet.actor);
         const main = new TimelineDirector(App.pet);
 
         main.setPosition({x: '150%'});
@@ -1688,6 +1690,7 @@ class Activities {
                 }
             )
         )
+        App.pet.setLocalZBasedOnSelf(deliveryMan.actor);
 
         const negativeReaction = App.pet.stats.has_poop_out ? 'thought_poop' : false;
 
@@ -4674,6 +4677,7 @@ class Activities {
             pet.stopMove();
             pet.targetX = 20;
             pet.x = -10 * i;
+            App.pet.setLocalZBasedOnSelf(pet);
             switch(i){
                 case 0:
                     pet.targetX = 50;
@@ -4789,11 +4793,12 @@ class Activities {
 
         task_otherPetMoveIn();
     }
-    static inviteGiveGift(otherPetDef){
+    static inviteGiveGift(otherPetDef = App.getRandomPetDef()){
         App.closeAllDisplays();
         App.setScene(App.scene.home);
         App.toggleGameplayControls(false);
         let otherPet = new Pet(otherPetDef);
+        App.pet.setLocalZBasedOnSelf(otherPet);
         App.definitions.achievements.give_gifts_x_times.advance();
         Missions.done(Missions.TYPES.gift);
 

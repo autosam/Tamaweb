@@ -59,6 +59,7 @@ class Pet extends Object2d {
             img: 'resources/img/misc/needstoilet_01.png',
             x: 0,
             y: 0,
+            z: this.z,
             width: this.petDefinition.spritesheet.cellSize, height: this.petDefinition.spritesheet.cellSize,
             hidden: true,
             onDraw: (overlay) => {
@@ -72,6 +73,8 @@ class Pet extends Object2d {
             img: 'resources/img/misc/stinky_01.png',
             x: 0,
             y: 0,
+            z: this.z,
+            localZ: -0.001,
             width: this.petDefinition.spritesheet.cellSize, height: this.petDefinition.spritesheet.cellSize,
             hidden: true,
             onDraw: (overlay) => {
