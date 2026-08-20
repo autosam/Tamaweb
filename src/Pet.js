@@ -1395,9 +1395,15 @@ class Pet extends Object2d {
         }
 
         if (App.lastTime > this.nextRandomTargetSelect) {
-            this.targetX = random(this.drawer.getRelativePositionX(0), this.drawer.getRelativePositionX(100) - this.spritesheet.cellSize);
+            this.targetX = this.getRandomValidPosition();
             this.nextRandomTargetSelect = 0;
         }
+    }
+    getRandomValidPosition(axis = 'x'){
+        return random(
+            this.drawer.getRelativePositionX(0),
+            this.drawer.getRelativePositionX(100) - this.spritesheet.cellSize,
+        );
     }
     jump(strength = 0.28, silent, onEndFn, gravity = 0.001){
         if(this.isJumping) return false;
@@ -1407,19 +1413,22 @@ class Pet extends Object2d {
         let velocity = strength;
         if(!silent) this.playSound('resources/sounds/jump.ogg', true);
 
-        this.triggerScriptedState('jumping', App.INF, 0, true,
-        () => { // on end
-            this.positionOffset.y = startY;
-            this.isJumping = false;
-        }, () => { // driver fn
+        this.targetX = this.getRandomValidPosition();
+
+        const jumpHander = App.registerOnDrawEvent(() => {
             velocity -= gravity * App.deltaTime;
             this.positionOffset.y -= velocity * App.deltaTime;
             if(this.positionOffset.y >= startY){
                 this.positionOffset.y = startY;
-                this.stopScriptedState();
+                this.isJumping = false;
+                if(this.state === 'jumping')
+                    this.stopScriptedState();
+                App.unregisterOnDrawEvent(jumpHander);
                 onEndFn?.();
             }
-        });
+        })
+
+        this.triggerScriptedState('jumping', App.INF, 0, true);
     }
     simulateAwayProgression(elapsedTime){
         this.isMainPet = true;
