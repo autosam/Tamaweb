@@ -524,6 +524,37 @@ const App = {
             App.mouse.isDownMs = App.time - App.mouse.isDownStartMs;
         })
 
+        // gamepad
+        window.addEventListener("gamepadconnected", () => {
+            if(App.temp.gamepadDrawEvent) return;
+
+            const gamepadKeys = {};
+            const actionsMap = {
+                0: () => App.handlers.shell_button(1),
+                1: () => App.handlers.shell_button(2),
+                2: () => App.handlers.shell_button(0),
+            }
+
+            App.temp.gamepadDrawEvent = App.registerOnDrawEvent(() => {
+                const gamepad = navigator?.getGamepads()?.find(Boolean);
+                if(!gamepad) return;
+
+                // reset unpressed keys
+                Object.keys(gamepadKeys).forEach(key => {
+                    if(gamepad.buttons[key]?.pressed) return;
+                    gamepadKeys[key] = false;
+                });
+
+                // handle pressed keys
+                Object.keys(actionsMap).forEach(key => {
+                    if(!gamepad.buttons[key]?.pressed) return;
+                    if(gamepadKeys[key]) return;
+                    gamepadKeys[key] = true;
+                    actionsMap[key]();
+                });
+            })
+        });
+
         // key down
         document.addEventListener('keydown', (event) => {
             switch(event.key){
@@ -972,6 +1003,8 @@ const App = {
             return false;
         }
 
+        if(App.pet.stats.is_sleeping) return;
+
         // random friend call
         if(
             random(0, 100) < 4 &&
@@ -979,18 +1012,20 @@ const App = {
         ){
             if(App.canProceed('friend_call', App.constants.ONE_MINUTE * 30)) {
                 App.queueEvent(App.handlers.receive_friend_call);
+                return;
             }
         }
 
         // ask to be petted
         if(
             random(0, 100) < 3 &&
-            App.petDefinition.stats.current_care >= 2 &&
+            App.pet.stats.current_care >= 2 &&
             App.playTime > App.constants.ONE_MINUTE * 30 &&
             !App.isOnElectronClient
         ){
             if(App.canProceed('ask_to_be_petted', App.constants.ONE_HOUR * 2)) {
                 App.queueEvent(() => Activities.pet(2000));
+                return;
             }
         }
     },
@@ -1521,10 +1556,13 @@ const App = {
                 }
 
                 if(App.isDuringChristmas()){
-                    this.christmasTree = new Object2d({
+                    // xmas tree
+                    const tree = new Object2d({
                         img: 'resources/img/misc/xmas_tree_01.png',
                         x: 60, y: 12, z: App.constants.CHRISTMAS_TREE_Z,
+                        parent: App.currentSceneObject,
                     });
+                    App.pet.setLocalZBasedOnSelf(tree);
                 }
 
                 App.handleFurnitureSpawn();
@@ -1537,13 +1575,14 @@ const App = {
                 App.temp.homeCurrentBackgroundDef?.onLoad?.();
 
                 // grime overlay
-                this.grimeOverlay = new Object2d({
+                new Object2d({
                     img: 'resources/img/misc/interior_grime_01.png',
                     x: 0,
                     y: 0,
                     z: 2,
                     invisible: true,
                     composite: 'source-atop',
+                    parent: App.currentSceneObject,
                     onDraw: (me) => {
                         if(App.pet.stats.has_poop_out >= 2) me.invisible = false;
                         else me.invisible = true;
@@ -1556,11 +1595,9 @@ const App = {
                 if(App.pet.sicknessOverlay){
                     App.pet.sicknessOverlay.absHidden = true;
                 }
-                this.christmasTree?.removeObject();
                 App.handleFurnitureSpawn(null, true);
                 App.handleAnimalsSpawn(false);
                 App.temp.homeCurrentBackgroundDef?.onUnload?.();
-                this.grimeOverlay?.removeObject();
             }
         }),
         kitchen: new Scene({
@@ -1947,7 +1984,11 @@ const App = {
         })
     },
     setScene(scene, noPositionChange, onLoadArg){
+        App.currentSceneObject?.removeObject();
+
         App.currentScene?.onUnload?.(scene);
+
+        App.currentSceneObject = new Object2d({});
 
         App.currentScene = scene;
         if(!noPositionChange){
@@ -1992,22 +2033,23 @@ const App = {
             const furnitureDef = App.getFurnitureDefFromId(furniture.id);
             if(!furnitureDef)
                 return console.log('furniture was not found', furniture);
-            let lastY = 0;
+            let lastY = -App.INF, lastPetY = -App.INF;
             const furnitureObject = new Object2d({
                 // image: App.preloadedResources[furnitureDef.image],
                 img: furnitureDef.image,
                 x: furniture.x || 0,
                 y: furniture.y || 0,
                 z: furniture.z || App.constants.BACKGROUND_Z + 0.1,
+                z: App.pet.z,
+                localZ: 0,
                 def: furniture,
                 onDraw: (me) => {
                     furnitureDef.onDraw?.(me);
 
-                    if(lastY === me.y) return;
+                    if(lastY === me.y && lastPetY === App.pet.y) return;
                     lastY = me.y;
-                    me.z = App.constants.BACKGROUND_Z +
-                            0.3 +
-                            ((me.y + (me.image.height)) * 0.01);
+                    lastPetY = App.pet.y;
+                    App.pet.setLocalZBasedOnSelf(me);
                 }
             })
             App.activeFurnitureObjects.push(furnitureObject);
@@ -2515,7 +2557,7 @@ const App = {
             delete this._queueEventKeys[eventKey];
         }
         App.registerOnDrawEvent(checkForDecentTime);
-    },
+},
     runRandomEncounters: function(){
         if(
             App.pet.stats.is_egg ||

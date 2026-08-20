@@ -110,7 +110,7 @@ class Pet extends Object2d {
                 }
 
                 overlay.y = 96 + this.additionalY + (App.currentScene.shadowOffset || 0) + (this.shadowOffset || 0);
-                const distanceToCaster = overlay.y - this.y;
+                const distanceToCaster = overlay.y - this.y - this.positionOffset.y;
                 overlay.scale = 1 - ((distanceToCaster + 4) * 0.01);
             }
         })
@@ -831,6 +831,7 @@ class Pet extends Object2d {
             this.handleRandomGestures();
             this.handleWants();
             this.handleRandomSentences();
+            this.tickCorrector();
         }
     }
     handleRandomSentences(){
@@ -853,6 +854,9 @@ class Pet extends Object2d {
                 })
             }
         }
+    }
+    tickCorrector(){
+        if(!this.isJumping) this.positionOffset.y = 0;
     }
     handleRandomGestures(){
         /* if(random(0, 100) == 1){
@@ -1399,18 +1403,19 @@ class Pet extends Object2d {
         if(this.isJumping) return false;
 
         this.isJumping = true;
-        const startY = this.y;
+        const startY = this.positionOffset.y;
         let velocity = strength;
         if(!silent) this.playSound('resources/sounds/jump.ogg', true);
 
         this.triggerScriptedState('jumping', App.INF, 0, true,
         () => { // on end
-            this.y = startY;
+            this.positionOffset.y = startY;
             this.isJumping = false;
         }, () => { // driver fn
             velocity -= gravity * App.deltaTime;
-            this.y -= velocity * App.deltaTime;
-            if(this.y >= startY){
+            this.positionOffset.y -= velocity * App.deltaTime;
+            if(this.positionOffset.y >= startY){
+                this.positionOffset.y = startY;
                 this.stopScriptedState();
                 onEndFn?.();
             }
@@ -1668,13 +1673,13 @@ class Pet extends Object2d {
             setTimeout(() => bubble.removeObject(), 1000);
         }, disappearDelay);
     }
-    setLocalZBasedOnSelf(otherObject){
+    setLocalZBasedOnSelf(otherObject, matchBase = true){
         const currentBoundingBox = this.getBoundingBox();
         const otherBoundingBox = otherObject.getBoundingBox();
 
         const localZ = (otherBoundingBox.y + otherBoundingBox.height) - (currentBoundingBox.y + currentBoundingBox.height);
 
-        otherObject.z = this.z;
+        if(matchBase) otherObject.z = this.z;
         otherObject.localZ = localZ;
     }
     say(sentence, ms = 6000){
