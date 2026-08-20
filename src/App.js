@@ -449,10 +449,7 @@ const App = {
 
         // periodic update
         setTimeout(() => {
-            App.registerOnDrawEvent(() => {
-                if(!App.canProceed('periodic_update', App.constants.ONE_SECOND * 1)) return;
-                App.onPeriodicUpdate();
-            })
+            App.registerInterval(App.onPeriodicUpdate, App.constants.ONE_SECOND * 30);
         }, App.constants.ONE_SECOND * 2);
 
         // saver
@@ -880,6 +877,15 @@ const App = {
     unregisterOnDrawEvent: function(inp){
         const index = typeof inp === "function" ? this.registeredDrawEvents.indexOf(inp) : inp;
         if(index !== -1) this.registeredDrawEvents[index] = null;
+    },
+    registerInterval: function(fn, interval){
+        App.temp.intervalId ??= 0;
+        App.temp.intervalId++;
+        const key = `_frm_interval_${App.temp.intervalId}`;
+        return App.registerOnDrawEvent(() => {
+            if(!App.canProceed(key, interval)) return;
+            fn?.();
+        })
     },
     onFrameUpdate: function(time){
         App.date = new Date();
