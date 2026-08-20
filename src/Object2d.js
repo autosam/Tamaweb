@@ -112,6 +112,7 @@ class Object2d {
         if(should('upperHalfOffsetY')) this.upperHalfOffsetY = this.parent.upperHalfOffsetY;
         if(should('scale')) this.scale = this.parent.scale;
         if(should('opacity')) this.opacity = this.parent.opacity;
+        if(should('positionOffset')) this.positionOffset = this.parent.positionOffset;
 
         if(should('spritesheet')) if(this.spritesheet) this.spritesheet.cellNumber = this.parent.spritesheet.cellNumber;
     }
