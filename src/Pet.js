@@ -1413,8 +1413,6 @@ class Pet extends Object2d {
         let velocity = strength;
         if(!silent) this.playSound('resources/sounds/jump.ogg', true);
 
-        this.targetX = this.getRandomValidPosition();
-
         const jumpHander = App.registerOnDrawEvent(() => {
             velocity -= gravity * App.deltaTime;
             this.positionOffset.y -= velocity * App.deltaTime;
