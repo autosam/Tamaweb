@@ -831,6 +831,7 @@ class Pet extends Object2d {
             this.handleRandomGestures();
             this.handleWants();
             this.handleRandomSentences();
+            this.tickCorrector();
         }
     }
     handleRandomSentences(){
@@ -853,6 +854,9 @@ class Pet extends Object2d {
                 })
             }
         }
+    }
+    tickCorrector(){
+        if(!this.isJumping) this.positionOffset.y = 0;
     }
     handleRandomGestures(){
         /* if(random(0, 100) == 1){

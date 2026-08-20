@@ -1556,10 +1556,13 @@ const App = {
                 }
 
                 if(App.isDuringChristmas()){
-                    this.christmasTree = new Object2d({
+                    // xmas tree
+                    const tree = new Object2d({
                         img: 'resources/img/misc/xmas_tree_01.png',
                         x: 60, y: 12, z: App.constants.CHRISTMAS_TREE_Z,
+                        parent: App.currentSceneObject,
                     });
+                    App.pet.setLocalZBasedOnSelf(tree);
                 }
 
                 App.handleFurnitureSpawn();
@@ -1572,13 +1575,14 @@ const App = {
                 App.temp.homeCurrentBackgroundDef?.onLoad?.();
 
                 // grime overlay
-                this.grimeOverlay = new Object2d({
+                new Object2d({
                     img: 'resources/img/misc/interior_grime_01.png',
                     x: 0,
                     y: 0,
                     z: 2,
                     invisible: true,
                     composite: 'source-atop',
+                    parent: App.currentSceneObject,
                     onDraw: (me) => {
                         if(App.pet.stats.has_poop_out >= 2) me.invisible = false;
                         else me.invisible = true;
@@ -1591,11 +1595,9 @@ const App = {
                 if(App.pet.sicknessOverlay){
                     App.pet.sicknessOverlay.absHidden = true;
                 }
-                this.christmasTree?.removeObject();
                 App.handleFurnitureSpawn(null, true);
                 App.handleAnimalsSpawn(false);
                 App.temp.homeCurrentBackgroundDef?.onUnload?.();
-                this.grimeOverlay?.removeObject();
             }
         }),
         kitchen: new Scene({
@@ -1982,7 +1984,11 @@ const App = {
         })
     },
     setScene(scene, noPositionChange, onLoadArg){
+        App.currentSceneObject?.removeObject();
+
         App.currentScene?.onUnload?.(scene);
+
+        App.currentSceneObject = new Object2d({});
 
         App.currentScene = scene;
         if(!noPositionChange){
