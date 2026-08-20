@@ -453,9 +453,13 @@ const App = {
         }, App.constants.ONE_SECOND * 2);
 
         // saver
-        setInterval(() => {
-            App.save(true);
-        }, App.constants.AUTO_SAVE_INTERVAL_SECS * 1000);
+        App.registerInterval(
+            () => {
+                App.save(true);
+            },
+            App.constants.AUTO_SAVE_INTERVAL_SECS * App.constants.ONE_SECOND,
+            false,
+        );
     },
     initRudderStack: function(){
         rudderanalytics.identify(App.userId, {
@@ -878,10 +882,16 @@ const App = {
         const index = typeof inp === "function" ? this.registeredDrawEvents.indexOf(inp) : inp;
         if(index !== -1) this.registeredDrawEvents[index] = null;
     },
-    registerInterval: function(fn, interval){
+    registerInterval: function(fn, interval, runInstantly = true){
         App.temp.intervalId ??= 0;
         App.temp.intervalId++;
         const key = `_frm_interval_${App.temp.intervalId}`;
+
+        if(!runInstantly) {
+            // trigger cooldown so that it doesn't run instantly
+            App.canProceed(key, interval);
+        }
+
         return App.registerOnDrawEvent(() => {
             if(!App.canProceed(key, interval)) return;
             fn?.();
