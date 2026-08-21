@@ -1594,7 +1594,7 @@ const App = {
                 App.temp.homeCurrentBackgroundDef?.onLoad?.();
 
                 // grime overlay
-                new Object2d({
+                this.grimeOverlay = new Object2d({
                     img: 'resources/img/misc/interior_grime_01.png',
                     x: 0,
                     y: 0,
