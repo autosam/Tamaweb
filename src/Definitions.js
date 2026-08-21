@@ -2250,15 +2250,17 @@ App.definitions = (() => {
                 price: 500,
                 isNew: false,
                 createFn: function (parent) {
-                    const Z = parent.z - 0.1 || 4.9;
+                    const Z = parent.z;
+                    const LOCAL_Z = -1;
                     const spritesheet = {
                         cellSize: 12,
                         rows: 5,
                         columns: 4,
                     }
                     const secretary = new Object2d({
-                        parent: parent,
-                        x: -100, y: -100,
+                        parent,
+                        x: -100, y: -100, z: Z,
+                        localZ: LOCAL_Z,
                         animationFloat: 0,
                         bodyAnimationFloat: 0,
                         movementMult: -10,
@@ -2361,6 +2363,7 @@ App.definitions = (() => {
                             parent: secretary,
                             img: App.checkResourceOverride(this.image_sprite),
                             x: 0, y: 0, z: Z,
+                            localZ: LOCAL_Z,
                             animationFloat: 0,
                             spritesheet: {
                                 ...spritesheet, cellNumber: 1,
@@ -2424,6 +2427,7 @@ App.definitions = (() => {
                             parent: secretary,
                             img: App.checkResourceOverride(this.image_sprite),
                             x: 0, y: 0, z: Z,
+                            localZ: LOCAL_Z,
                             spritesheet: {
                                 ...spritesheet, cellNumber: 3,
                             },
@@ -2437,6 +2441,7 @@ App.definitions = (() => {
                         parent: secretary,
                         img: App.checkResourceOverride(this.image_sprite),
                         x: 0, y: 0, z: Z,
+                        localZ: LOCAL_Z,
                         spritesheet: {
                             ...spritesheet, cellNumber: 2,
                         },
@@ -2452,7 +2457,8 @@ App.definitions = (() => {
                     new Object2d({
                         parent: secretary,
                         img: App.checkResourceOverride(this.image_sprite),
-                        x: 0, y: 0, z: Z - 0.1,
+                        x: 0, y: 0, z: Z,
+                        localZ: LOCAL_Z - 1,
                         spritesheet: {
                             ...spritesheet, cellNumber: 4,
                         },
@@ -2487,12 +2493,6 @@ App.definitions = (() => {
                 unlockLikes: 50,
                 unlockKey: 'unlock_cloof',
                 createFn: function (parent) {
-                    const Z = parent.z - 0.0001 || 4.9;
-                    const spritesheet = {
-                        cellSize: 12,
-                        rows: 5,
-                        columns: 4,
-                    }
                     const cloof = new Object2d({
                         img: 'resources/img/accessory/cloof_01.png',
                         parent: parent,
@@ -2511,7 +2511,7 @@ App.definitions = (() => {
                             const additionalMotionX = Math.sin(me.animationFloatX) * 2;
                             const additionalMotionY = Math.sin(me.animationFloatY) * 3;
                             me.x = parent.x + additionalMotionX;
-                            me.y = parent.y - 40 - (App.pet.spritesheet.offsetY ?? 0) + additionalMotionY;
+                            me.y = parent.y - 40 - (App.pet.spritesheet.offsetY ?? 0) + additionalMotionY + parent.positionOffset.y;
 
                             if (!App.isCompanionAllowed()) {
                                 me.x = -100;
