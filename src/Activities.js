@@ -3410,8 +3410,9 @@ class Activities {
             if(i && i % 2 == 0) npcY += 10;
             const p = new Pet(def, {
                 x: `${random(0, 100)}%`,
-                y: `${npcY}%`,
-                z: 4 + (i * 0.15),
+                y: `${npcY - i}%`,
+                z: App.constants.ACTIVE_PET_Z,
+                depthMode: Object2d.DEPTH_MODE.y,
                 opacity: 1,
             });
             p.stats.wander_max = 3;

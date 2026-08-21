@@ -235,7 +235,6 @@ class Pet extends Object2d {
                         // z: this.z,
                         localZ: accessory.front ? 0.001 : -0.001,
                         scale: 1,
-                        depthMode: Object2d.DEPTH_MODE.none,
                         spritesheet: {
                             cellNumber: 1,
                             cellSize: ACCESSORY_CELL_SIZE,
