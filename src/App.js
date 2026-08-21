@@ -540,6 +540,8 @@ const App = {
             }
 
             App.temp.gamepadDrawEvent = App.registerOnDrawEvent(() => {
+                if (!document.hasFocus()) return;
+
                 const gamepad = navigator?.getGamepads()?.find(Boolean);
                 if(!gamepad) return;
 
