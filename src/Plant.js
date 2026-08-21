@@ -6,8 +6,8 @@ class Plant {
 
     constructor(config){
         const {
-            name, 
-            age = Plant.AGE.seedling, 
+            name,
+            age = Plant.AGE.seedling,
             lastGrowthTime = Date.now(),
             lastWatered = Date.now() - this.wateredDuration - 1000,
         } = config;
@@ -75,8 +75,8 @@ class Plant {
         patch.onDraw = (me) => {
             if(App.time < nextPatchTick) return;
             nextPatchTick = App.time + 100;
-            const target = this.isWatered 
-                ? Plant.PATCH_IMG.wet 
+            const target = this.isWatered
+                ? Plant.PATCH_IMG.wet
                 : Plant.PATCH_IMG.normal;
             if(me.imageSrc.replace(location.href, '') === target) return;
             me.setImg(target);
@@ -85,7 +85,7 @@ class Plant {
         const position = {
             x: patch.x, y: patch.y - 10,
         }
-        
+
         const plant = new Object2d({
             parent: patch,
             image: App.preloadedResources[App.constants.PLANT_SPRITESHEET],
@@ -120,8 +120,8 @@ class Plant {
     }
     getCSprite(){
         return App.getGenericCSprite(
-            this.getDefinition().sprite + this.age, 
-            App.constants.PLANT_SPRITESHEET, 
+            this.getDefinition().sprite + this.age,
+            App.constants.PLANT_SPRITESHEET,
             App.constants.PLANT_SPRITESHEET_DIMENSIONS,
         );
     }
@@ -129,8 +129,8 @@ class Plant {
     getDefinition(name){
         return Plant.getDefinitionByName(name || this.name);
     }
-    _reset(){
-        this.age = Plant.AGE.seedling;
+    _reset(age = Plant.AGE.seedling){
+        this.age = age;
         this.lastGrowthTime = Date.now();
         this.lastWatered = Date.now() - this.wateredDuration;
     }
@@ -139,8 +139,8 @@ class Plant {
     }
     static getCSprite(plantName, age = Plant.AGE.grown, className){
         return App.getGenericCSprite(
-            Plant.getDefinitionByName(plantName)?.sprite + age, 
-            App.constants.PLANT_SPRITESHEET, 
+            Plant.getDefinitionByName(plantName)?.sprite + age,
+            App.constants.PLANT_SPRITESHEET,
             App.constants.PLANT_SPRITESHEET_DIMENSIONS,
             className,
             `title="${plantName.toUpperCase()}"`
@@ -164,7 +164,7 @@ class Plant {
     static AGE_LABELS = Object.fromEntries(
         Object.entries(Plant.AGE).map(([key, value]) => [value, key])
     );
-    
+
     static PATCH_IMG = {
         normal: 'resources/img/misc/garden_patch_01.png',
         wet: 'resources/img/misc/garden_patch_01_wet.png',

@@ -330,7 +330,8 @@ class Pet extends Object2d {
                 me.directInteractionInfo.x = App.mouse.x - (me.spritesheet.cellSize / 2);
                 me.directInteractionInfo.y = App.mouse.y;
                 this.x = lerp(this.x, me.directInteractionInfo.x, repositionSpeed);
-                this.y = lerp(this.y, clamp(me.directInteractionInfo.y, 0, this.directInteractionInfo.initialY), repositionSpeed);
+                const yDiff = me.directInteractionInfo.y - this.directInteractionInfo.initialY;
+                this.positionOffset.y = lerp(this.positionOffset.y, clamp(yDiff, -Infinity, 0), repositionSpeed);
                 me.inverted = this.x < me.directInteractionInfo.x;
             }
         )
@@ -354,11 +355,11 @@ class Pet extends Object2d {
             me.x = lerp(me.x, me.directInteractionInfo.x, 0.008 * App.deltaTime)
             fallSpeed += 0.0008 * App.deltaTime;
 
-            if(me.y < me.directInteractionInfo.initialY)
-                me.y += fallSpeed * App.deltaTime;
+            if(me.positionOffset.y < 0)
+                me.positionOffset.y += fallSpeed * App.deltaTime;
 
-            if(me.y >= me.directInteractionInfo.initialY){
-                me.y = me.directInteractionInfo.initialY;
+            if(me.positionOffset.y >= 0){
+                me.positionOffset.y = 0;
                 me.stopScriptedState();
             }
         }
@@ -835,7 +836,6 @@ class Pet extends Object2d {
             this.handleRandomGestures();
             this.handleWants();
             this.handleRandomSentences();
-            this.tickCorrector();
         }
     }
     handleRandomSentences(){
@@ -858,9 +858,6 @@ class Pet extends Object2d {
                 })
             }
         }
-    }
-    tickCorrector(){
-        if(!this.isJumping) this.positionOffset.y = 0;
     }
     handleRandomGestures(){
         /* if(random(0, 100) == 1){
