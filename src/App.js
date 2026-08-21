@@ -2058,7 +2058,7 @@ const App = {
                 z: furniture.z || App.constants.BACKGROUND_Z + 0.1,
                 z: App.pet.z,
                 localZ: 0,
-            def: furniture,
+                def: furniture,
                 onDraw: (me) => {
                     furnitureDef.onDraw?.(me);
 
