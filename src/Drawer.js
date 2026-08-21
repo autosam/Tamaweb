@@ -60,18 +60,7 @@ class Drawer {
         // sorting based on z
         objects = objects
             .filter(Boolean)
-            .sort((a, b) => {
-                const aZ = a.z || 0,
-                    bZ = b.z || 0;
-                const aLocalZ = a.localZ || 0,
-                    bLocalZ = b.localZ || 0;
-
-                if (aZ === bZ) {
-                    return aLocalZ - bLocalZ;
-                }
-
-                return aZ - bZ;
-            });
+            .sort(this.compareRenderOrder);
 
         objects.forEach((object) => {
             if (!object || object.hidden || object.absHidden) return;
@@ -335,6 +324,23 @@ class Drawer {
     }
     getRelativePositionY(percent) {
         return (percent / 100) * this.bounds.height;
+    }
+    compareRenderOrder(a, b) {
+        const aZ = a.z ?? 0;
+        const bZ = b.z ?? 0;
+
+        if (aZ !== bZ) {
+            return aZ - bZ;
+        }
+
+        const aDepth = a.getDepth();
+        const bDepth = b.getDepth();
+
+        if (aDepth !== bDepth) {
+            return aDepth - bDepth;
+        }
+
+        return (a.localZ ?? 0) - (b.localZ ?? 0);
     }
     addObject(object) {
         let id = this.objects.push(object);

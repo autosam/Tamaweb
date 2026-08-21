@@ -4,12 +4,16 @@ class Object2d {
 
     x = '50%';
     y = '50%';
+    z = App.constants.ACTIVE_PET_Z;
     rotation = 0;
     imageSrc = '';
     positionOffset = {
         x: 0,
         y: 0
     }
+
+    depthMode = Object2d.DEPTH_MODE.none;
+    depthOffset = 0;
 
     constructor(config) {
         if(config.parent?.isRemoved){
@@ -115,6 +119,16 @@ class Object2d {
         if(should('positionOffset')) this.positionOffset = this.parent.positionOffset;
 
         if(should('spritesheet')) if(this.spritesheet) this.spritesheet.cellNumber = this.parent.spritesheet.cellNumber;
+    }
+    getDepth(){
+        if(this.parent && this.depthMode !== Object2d.DEPTH_MODE.y) return this.parent.getDepth();
+
+        if (this.depthMode !== Object2d.DEPTH_MODE.y) {
+            return 0;
+        }
+
+        const bounds = this.getBoundingBox();
+        return bounds.y + bounds.height + this.depthOffset;
     }
     stopMove(){
         this.targetX = undefined;
@@ -348,4 +362,8 @@ class Object2d {
             a.y + a.height > b.y
         );
     }
+    static DEPTH_MODE = {
+        none: 'none',
+        y: 'y',
+    };
 }

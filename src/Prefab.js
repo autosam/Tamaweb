@@ -70,6 +70,7 @@ const Prefab = {
     } = {}){
         let spawnedLeaves = 0, nextSpawnMs = getNextSpawnMs();
         const controllerObject = new Object2d({
+            depthMode: Object2d.DEPTH_MODE.none,
             ...rest,
             onDraw: () => {
                 if(App.time > nextSpawnMs && spawnedLeaves < maxActiveLeaves) {

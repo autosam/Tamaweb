@@ -2,7 +2,8 @@ class Pet extends Object2d {
     // basic init
     defaultElevation = -20;
     y = '100%';
-    z = App.constants.NPC_PET_Z;
+    z = App.constants.ACTIVE_PET_Z;
+    depthMode = Object2d.DEPTH_MODE.y;
     additionalY = this.defaultElevation;
     animation = {
         currentFrame: 0,
@@ -88,9 +89,9 @@ class Pet extends Object2d {
             img: 'resources/img/misc/shadow_01.png',
             width: this.petDefinition.spritesheet.cellSize,
             height: this.petDefinition.spritesheet.cellSize,
-            // z: (this.z - 0.1) || 4.9,
             z: this.z,
-            localZ: -1,
+            localZ: -999,
+            depthMode: Object2d.DEPTH_MODE.none,
             hidden: !this.castShadow,
             onDraw: (overlay) => {
                 overlay.hidden = !this.castShadow;
@@ -231,9 +232,10 @@ class Pet extends Object2d {
                         parent: this,
                         img: accessory.image,
                         // z: accessory.front ? (this.z + 0.1) || 5.1 : (this.z - 0.1) || 4.9,
-                        z: this.z,
-                        localZ: accessory.front ? 0.1 : -0.1,
+                        // z: this.z,
+                        localZ: accessory.front ? 0.001 : -0.001,
                         scale: 1,
+                        depthMode: Object2d.DEPTH_MODE.none,
                         spritesheet: {
                             cellNumber: 1,
                             cellSize: ACCESSORY_CELL_SIZE,
@@ -1684,6 +1686,10 @@ class Pet extends Object2d {
         }, disappearDelay);
     }
     setLocalZBasedOnSelf(otherObject, matchBase = true){
+        // @deprecated
+        otherObject.depthMode = Object2d.DEPTH_MODE.y;
+        otherObject.z = this.z;
+        return;
         const currentBoundingBox = this.getBoundingBox();
         const otherBoundingBox = otherObject.getBoundingBox();
 

@@ -1716,7 +1716,7 @@ class Activities {
         const messageBubble = App.displayMessageBubble(message, deliveryMan.actor.petDefinition.getFullCSprite());
         const bag = new Object2d({
             img: 'resources/img/misc/food_bag_01.png',
-            x: '50%', y: '85%',
+            x: '50%', y: '85%', z: App.constants.ACTIVE_PET_Z + 1,
             opacity: 1,
         })
         new Object2d({
@@ -2213,6 +2213,7 @@ class Activities {
             const backgroundObject = new Object2d({
                 img: floorImage,
                 x: scenePositionX, y: 0,
+                depthMode: Object2d.DEPTH_MODE.none,
             });
             spawnedGameObjects.push(backgroundObject);
 
@@ -2610,6 +2611,7 @@ class Activities {
             },
             x: '55%', y: '47%', z: App.constants.ACTIVE_ITEM_Z
         });
+        App.pet.setLocalZBasedOnSelf(itemObject)
 
         Missions.done(Missions.TYPES.play_item);
 
@@ -4661,17 +4663,16 @@ class Activities {
             img: 'resources/img/misc/table_01.png',
             x: 28,
             y: 68,
-            z: App.constants.ACTIVE_PET_Z - 0.1
+            z: App.constants.ACTIVE_PET_Z,
+            depthMode: Object2d.DEPTH_MODE.y,
         });
         const cake = new Object2d({
+            parent: table,
+            localZ: 2,
             img: 'resources/img/misc/cake_01.png',
             x: 39,
             y: 58,
-            z: App.constants.ACTIVE_PET_Z - 0.1
         });
-
-        App.pet.setLocalZBasedOnSelf(table);
-        App.pet.setLocalZBasedOnSelf(cake);
 
         otherPets.forEach((pet, i) => {
             pet.stopMove();
@@ -4686,12 +4687,10 @@ class Activities {
                 case 1:
                     pet.targetX = 12;
                     pet.targetY = 65;
-                    // pet.z = App.constants.ACTIVE_PET_Z - 0.05;
                     break;
                 case 2:
                     pet.targetX = 5;
                     pet.targetY = 85;
-                    pet.z = App.constants.ACTIVE_PET_Z - 0.05;
                     break;
             }
             pet.triggerScriptedState('moving', App.INF, 0, true, null, (pet) => {
@@ -4711,7 +4710,6 @@ class Activities {
                 Activities.task_foam(() => {
                     otherPets.forEach(pet => pet.removeObject());
                     table.removeObject();
-                    cake.removeObject();
 
                     App.pet.ageUp();
                     App.pet.x = '50%';
@@ -4876,7 +4874,7 @@ class Activities {
 
         const dynamicBackground = new Object2d({
             img: 'resources/img/background/house/office_01.png',
-            x: 0, y: 0,
+            x: 0, y: 0, z: App.constants.BACKGROUND_OBJECT_Z,
             spritesheet: {
                 cellSize: App.drawer.bounds.width,
                 cellNumber: 2,

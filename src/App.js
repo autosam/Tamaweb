@@ -122,6 +122,7 @@ const App = {
         // z-index
         ACTIVE_PET_Z: 5,
         NPC_PET_Z: 4.6,
+        BACKGROUND_OBJECT_Z: 0,
         MAX_PLACED_FURNITURE: 6,
         POOP_POSITIONS: [
             {x: '75%', y: '78%', z: 4.59},
@@ -1733,21 +1734,22 @@ const App = {
             noShadows: true,
             image: 'resources/img/background/house/online_hub_01.png',
             onLoad: () => {
-                this.lightRays = new Object2d({
+                App.temp.lightRaysObject = new Object2d({
                     img: 'resources/img/misc/light_rays_02.png',
                     opacity: 0.6, x: '50%', y: '50%', composite: 'overlay',
+                    z: App.constants.BACKGROUND_OBJECT_Z - 1,
                     onDraw: (me) => {
                         me.rotation -= 0.005 * App.deltaTime;
                     }
                 })
-                this.platform = new Object2d({
+                App.temp.platformObject = new Object2d({
                     img: 'resources/img/misc/online_hub_01_front.png',
-                    x: 0, y: 0,
+                    x: 0, y: 0, z: App.constants.BACKGROUND_OBJECT_Z,
                 })
             },
             onUnload: () => {
-                this.platform.removeObject();
-                this.lightRays.removeObject();
+                App.temp.platformObject?.removeObject();
+                App.temp.lightRaysObject?.removeObject();
             }
         }),
         garden: new Scene({
@@ -1772,13 +1774,13 @@ const App = {
                         x: '20%',
                         y: '67%',
                         width: 22, height: 22,
-                        onLateDraw: (me) => {
-                            App.pet.setLocalZBasedOnSelf(me);
-                        }
+                        z: App.constants.ACTIVE_PET_Z,
+                        depthMode: Object2d.DEPTH_MODE.y,
                     })
 
                     if(App.animals.treat){
-                        App.temp.animalTreatObject = new Object2d({
+                        new Object2d({
+                            parent: App.temp.petBowlObject,
                             img: App.constants.FOOD_SPRITESHEET,
                             spritesheet: {
                                 ...App.constants.FOOD_SPRITESHEET_DIMENSIONS,
@@ -1786,10 +1788,7 @@ const App = {
                             },
                             x: App.temp.petBowlObject.x,
                             y: '63%',
-                            onLateDraw: (me) => {
-                                me.z = App.temp.petBowlObject.z;
-                                me.localZ = App.temp.petBowlObject.localZ + 0.001;
-                            }
+                            localZ: 2,
                         })
                     }
                 }
@@ -1825,7 +1824,6 @@ const App = {
                 App.pet.staticShadow = true;
 
                 App.temp.petBowlObject?.removeObject?.();
-                App.temp.animalTreatObject?.removeObject?.();
                 App.temp.digSpotObject?.removeObject?.();
 
                 App.handleAnimalsSpawn(false);
@@ -2060,7 +2058,7 @@ const App = {
                 z: furniture.z || App.constants.BACKGROUND_Z + 0.1,
                 z: App.pet.z,
                 localZ: 0,
-                def: furniture,
+            def: furniture,
                 onDraw: (me) => {
                     furnitureDef.onDraw?.(me);
 
@@ -2209,6 +2207,7 @@ const App = {
                 img: `resources/img/misc/garden_patch_01.png`,
                 x: position.x,
                 y: position.y + 12,
+                depthMode: Object2d.DEPTH_MODE.none,
                 // prevent patches from sharing 1 image element
                 noPreload: true,
             })
