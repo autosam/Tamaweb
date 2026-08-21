@@ -3384,9 +3384,11 @@ class Activities {
 
         App.pet.triggerScriptedState('shocked', 4000, false, true, () => {
             App.pet.targetY = undefined;
-            onEndFn(fadeOverlay);
+            App.pet.depthOffset = 0;
+            onEndFn?.(fadeOverlay);
         });
         App.pet.targetY = 50;
+        App.pet.depthOffset = 50;
     }
     static async goToOnlineHub(){
         const {hasUploadedPetDef, randomPetDefs} = App.temp.online;
