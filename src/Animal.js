@@ -77,6 +77,8 @@ class AnimalDefinition extends PetDefinition {
 
 
 class Animal extends Pet {
+    shouldDisplaySleepParticles = false;
+
     constructor(definition, additionalProps){
         super(definition, additionalProps);
 

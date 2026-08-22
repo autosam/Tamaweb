@@ -21,6 +21,7 @@ class Pet extends Object2d {
     castShadow = true;
     speedOverride = 0;
     ignoreAnimationSetObjects = false;
+    shouldDisplaySleepParticles = true;
 
     constructor(petDefinition, additionalProps){
         const image = petDefinition.spriteSkin
@@ -153,8 +154,11 @@ class Pet extends Object2d {
             parent: this,
             spawnTimerMs: Math.random(),
             onDraw: (me) => {
-                // if(me.parent.state !== 'sleeping') return;
-                if(!me.parent?.stats?.is_sleeping) return;
+                if(!me.parent.shouldDisplaySleepParticles) {
+                    me.hidden = true;
+                    return;
+                }
+                if(me.parent.state !== 'sleeping') return;
 
                 me.spawnTimerMs -= App.deltaTime;
                 if(me.spawnTimerMs > 0) return;
@@ -167,12 +171,12 @@ class Pet extends Object2d {
                 }
 
                 new Object2d({
+                    parent: me,
                     img: 'resources/img/misc/sleep_z_01.png',
                     x: me.parent.x,
                     y: me.parent.y - me.parent.spritesheet.cellSize,
                     rotation: 0,
                     opacity: 1,
-                    z: me.parent.z,
                     onDraw: (particle) => {
                         const changeFloat = particleSettings.speed * App.deltaTime;
                         particle.y -= changeFloat;
@@ -1544,7 +1548,7 @@ class Pet extends Object2d {
                 me.x = this.x;
                 me.float += 0.004 * App.deltaTime;
                 if(me.float > App.PI2) me.float = 0;
-                me.y = this.y - (this.spritesheet.cellSize * 1.5) - (this.spritesheet.offsetY * 1.8 || 0) + Math.sin(me.float);
+                me.y = this.y - (this.spritesheet.cellSize * 1.5) - (this.spritesheet.offsetY * 1.8 || 0) + this.positionOffset.y + Math.sin(me.float);
                 const opacityTarget = me.shouldFadeout ? 0 : 1;
                 me.opacity = lerp(me.opacity, opacityTarget, App.deltaTime * 0.01);
             }
