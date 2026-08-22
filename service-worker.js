@@ -37,8 +37,10 @@ const ASSETS = [
   "src/libs/moment.js",
   "src/libs/idb-keyval.js",
   "src/libs/profanity-cleaner-0.0.3.js",
-  // cdn
-  "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css",
+  // font awesome
+  "src/libs/font-awesome/css/fontawesome.min.css",
+  "src/libs/font-awesome/css/solid.min.css",
+  "src/libs/font-awesome/webfonts/fa-solid-900.woff2",
   // other
   "resources/font/PixelifySans-VariableFont_wght.ttf",
   "resources/font/PixelColeco.otf",
@@ -126,7 +128,7 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (!event.request.url.startsWith(self.location.origin)) return;
-  
+
   handleOnlineFirst(event);
 });
 
