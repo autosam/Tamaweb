@@ -1,3 +1,10 @@
+:root {
+    --shell-btn-size: 32px;
+    --shell-btn-space: 64px;
+
+    --icon-font-family: 'Font Awesome 7 Free';
+}
+
 .theme-default {
     /* vars */
     --container-background: linear-gradient(0deg, #ffddb8, #ffe5ca);
@@ -1134,11 +1141,6 @@ button {
     /* filter: sepia(1) hue-rotate(192deg) saturate(7.5) contrast(1) brightness(1); */
 }
 
-:root {
-    --shell-btn-size: 32px;
-    --shell-btn-space: 64px;
-}
-
 .dom-shell .shell-btn {
     background: linear-gradient(180deg, #f7f7f7, white);
     border-radius: 50px;
@@ -1962,11 +1964,10 @@ a.generic-btn:before {
     content: "\f08e";
     left: 10px;
     position: absolute;
-    font-family: "FontAwesome";
+    font-family: var(--icon-font-family);
     font-size: xx-small;
     padding: 2px;
     border-radius: 100%;
-
 }
 
 .generic-btn i {
@@ -2461,7 +2462,7 @@ a.generic-btn:before {
     position: absolute;
     z-index: 3;
     pointer-events: none;
-    font-family: "FontAwesome";
+    font-family: var(--icon-font-family);
     font-size: 11px;
     animation: scrollable-indicator-anim 0.55s infinite alternate-reverse ease-in-out;
     color: var(--prim-clr-b-text);
@@ -2612,7 +2613,7 @@ a.generic-btn:before {
     position: relative;
 }
 .seller-analysis:after {
-    font-family: "FontAwesome";
+    font-family: var(--icon-font-family);
     font-size: x-small;
     position: absolute;
     top: 25%;

@@ -365,6 +365,7 @@ class Pet extends Object2d {
             if(me.positionOffset.y >= 0){
                 me.positionOffset.y = 0;
                 me.stopScriptedState();
+                me.playSound('resources/sounds/ui_click_04.ogg', true);
             }
         }
         this.triggerScriptedState('jumping', 10000, false, true, handleOnEndFall, fallDriver)
