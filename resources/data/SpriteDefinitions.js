@@ -351,6 +351,8 @@ const SPRITES = [
 "ui/facing_right.png",
 "ui/flags.png",
 "ui/Front.png",
+"ui/leaf_01.png",
+"ui/leaf_02.png",
 "ui/logo_full.png",
 "ui/logo_mask.png",
 "ui/logo_trans_01.png",
