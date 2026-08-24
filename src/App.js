@@ -735,57 +735,73 @@ const App = {
             const perimeter = 2 * (horizontalLength + verticalLength);
             const position = (index / total) * perimeter;
 
-            let x, y;
+            let x, y, r, ignore = false;
 
             if (position < horizontalLength) {
-                // t: left → right
+                // t
                 x = left + position;
                 y = top;
+                r = 180;
+                ignore = false;
             } else if (position < horizontalLength + verticalLength) {
-                // r: top → bottom
+                // r
                 x = right;
                 y = top + (position - horizontalLength);
+                r = -90;
             } else if (position < 2 * horizontalLength + verticalLength) {
-                // b: right → left
+                // b
                 x = right - (position - horizontalLength - verticalLength);
                 y = bottom;
+                r = 0;
+                ignore = false;
             } else {
-                // l: bottom → top
+                // l
                 x = left;
                 y = bottom - (position - 2 * horizontalLength - verticalLength);
+                r = 90;
             }
 
-            return { x, y };
+            return { x, y, r, ignore };
         }
 
-        const TOTAL = window.innerWidth > 600 ? 75 : 30;
+        const TOTAL = window.innerWidth > 600 ? 50 : 30;
+        let currentImageIndex = 1;
         for(let i = 0; i < TOTAL; i++){
             const size = {
                 x: 256,
                 y: 256
             };
-            const scale = clamp(Math.random(), 0.4, 1);
+            // const scale = clamp(Math.random(), 0.5, 0.9);
+            const scale = clamp(Math.abs(Math.sin(i * 1)),  0.5, 0.9);
             size.x *= scale;
             size.y *= scale;
 
             const position = getEvenEdgePosition(i, TOTAL, size.x, size.y);
+            if(position.ignore) continue;
             position.x += random(-24, 24);
             position.y += random(-24, 24);
+
+            if(random(0, 4) === 0) currentImageIndex = random(2, 5);
+            // if(i % 1 === 0 || true) currentImageIndex = ((currentImageIndex + 1) % 3) + 1;
+            currentImageIndex = random(2, 5);
+            // if(random(0, 5) === 0) currentImageIndex = 1;
+            currentImageIndex = 5;
+
+            let rotation = getAngleToCenter(position.x, position.y);
+            // rotation = Math.round((rotation) / 45) * 45;
+            // rotation = position.r;
 
             UI.create({
                 parent: container,
                 componentType: 'img',
-                src: `resources/img/ui/leaf_0${random(1, 2)}.png`,
+                src: `resources/img/ui/leaf_0${currentImageIndex}.png`,
                 style: `
                     left: ${position.x}px;
                     top: ${position.y}px;
-                    rotate: ${getAngleToCenter(position.x, position.y)}deg;
-                    // animation-delay: ${-random(1, 5) + Math.random()}s;
+                    rotate: ${rotation}deg;
                     width: ${size.x}px;
                     height: ${size.y}px;
-                    // animation-duration: ${Math.random() + 2.5}s;
                     animation-delay: ${i * -150}ms;
-                    --brightness: ${1 || clamp(Math.random() * 2, 0.75, 1.25)};
                 `,
             })
         }

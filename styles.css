@@ -3276,17 +3276,19 @@ c-sprite.ghost.devil::after {
     position: absolute;
     left: 0;
     top: 0;
+    /*z-index: 10000;*/
+    pointer-events: none;
 }
 .overlay-container > img {
-    --shadow-color: #00000085;
+    --shadow-color: #00000045;
     animation: leaf-wind 3s infinite alternate ease-in-out;
     position: absolute;
-    image-rendering: pixelated;
-    filter: drop-shadow(2px 2px 2px var(--shadow-color)) brightness(var(--brightness));
+    /*image-rendering: pixelated;*/
+    filter: drop-shadow(4px -2px 2px var(--shadow-color))
 }
 @keyframes leaf-wind {
     0% {
-        transform: rotate(10deg);
+        transform: rotate(5deg);
     }
     /*30% {
         transform: rotate(-10deg);
@@ -3295,7 +3297,7 @@ c-sprite.ghost.devil::after {
         transform: rotate(-20deg);
     }*/
     50% {
-        transform: rotate(-10deg);
+        transform: rotate(-5deg);
     }
     100% {
         transform: rotate(0deg);
