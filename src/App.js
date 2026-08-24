@@ -936,6 +936,14 @@ const App = {
         // document.querySelector('.background-canvas').getContext('2d').drawImage(App.drawer.canvas, 0, 0);
     },
     onPeriodicUpdate: () => {
+        if(
+            App.pet.stats.is_egg ||
+            App.pet.stats.is_at_parents ||
+            App.pet.stats.is_at_vacation ||
+            App.pet.stats.is_dead
+        ) return;
+
+        // automatic birthday
         if(App.settings.automaticAging){
             const nextAutomaticBirthday = App.petDefinition.getNextAutomaticBirthdayDate();
             if(moment().isAfter(nextAutomaticBirthday)){
@@ -949,6 +957,70 @@ const App = {
             }
         }
 
+        // school invite
+        if(
+            App.petDefinition.lifeStage >= PetDefinition.LIFE_STAGE.child &&
+            App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.teen &&
+            !App.pet.stats.has_received_school_invite
+        ){
+            App.pet.stats.has_received_school_invite = true;
+            setTimeout(() => {
+                App.queueEvent(() => {
+                    Activities.getMail({
+                        onEndFn: () => {
+                            App.handlers.show_letter({
+                                headline: 'Official School Invitation',
+                                text: `Dear ${App.userName},<br>${App.petDefinition.name} is now old enough to start school.<br><br>Please make sure they show up to their classes every day, no skipping!`,
+                                sender: 'School Administration'
+                            })
+                        },
+                        noSceneSwitch: true
+                    });
+                }, 'get_school_invitation')
+            }, random(1000, 2000))
+            return;
+        }
+
+        // newspaper delivery
+        const newspaperDeliveryMs = App.getRecord("newspaper_delivery_ms") || 0;
+        const shouldDeliver =
+            moment().startOf("day").diff(moment(newspaperDeliveryMs), "days") >
+            0;
+        if (
+            shouldDeliver &&
+            !App.pet.stats.is_sleeping
+        ) {
+            setTimeout(
+                () => {
+                    App.queueEvent(() => {
+                        Activities.getMail();
+                        const nextMs = Date.now();
+                        App.setRecord("newspaper_delivery_ms", nextMs);
+                    }, 'newspaper_delivery');
+                },
+                random(1000, 2000),
+            );
+            return;
+        }
+
+        // getting robbed
+        if (
+            App.currentScene === App.scene.home &&
+            App.pet.stats.is_sleeping &&
+            !App.pet.isDuringScriptedState() &&
+            App.sky.name === "night" &&
+            App.canProceed('roll_rob_encounter', App.constants.ONE_MINUTE * 10) &&
+            random(0, 100) <= 10 &&
+            App.canProceed('get_robbed', App.constants.ONE_HOUR)
+        ) {
+            return Activities.getRobbed();
+        }
+
+        if(App.time < App.constants.ONE_SECOND * 30) {
+            return false;
+        }
+
+        // receive friend letters
         const friendsPendingLetterResponse = App.petDefinition.friends.filter(def => {
             if(!def.stats.player_sent_letter) return false;
             const responseTime = moment(def.stats.player_sent_letter.time).add(6, 'hours');
@@ -1015,13 +1087,9 @@ const App = {
                             },
                             noSceneSwitch: true
                         });
-                    })
+                    }, 'get_friend_letter')
                 }, random(1000, 2000))
             }
-        }
-
-        if(App.time < App.constants.ONE_SECOND * 30) {
-            return false;
         }
 
         if(App.pet.stats.is_sleeping) return;
@@ -1032,7 +1100,7 @@ const App = {
             App.petDefinition.friends.length
         ){
             if(App.canProceed('friend_call', App.constants.ONE_MINUTE * 30)) {
-                App.queueEvent(App.handlers.receive_friend_call);
+                App.queueEvent(App.handlers.receive_friend_call, 'friend_call');
                 return;
             }
         }
@@ -1045,7 +1113,7 @@ const App = {
             !App.isOnElectronClient
         ){
             if(App.canProceed('ask_to_be_petted', App.constants.ONE_HOUR * 2)) {
-                App.queueEvent(() => Activities.pet(2000));
+                App.queueEvent(() => Activities.pet(2000), 'ask_to_be_petted');
                 return;
             }
         }
@@ -1609,6 +1677,9 @@ const App = {
                         else me.invisible = true;
                     }
                 })
+
+                // random encounters
+                App.runRandomEncounters('home');
             },
             onUnload: function() {
                 App.drawer.selectObjects('poop').forEach(p => p.absHidden = true);
@@ -2577,7 +2648,7 @@ const App = {
         }
         App.registerOnDrawEvent(checkForDecentTime);
 },
-    runRandomEncounters: function(){
+    runRandomEncounters: function(source = 'initial'){
         if(
             App.pet.stats.is_egg ||
             App.pet.stats.is_at_parents ||
@@ -2585,46 +2656,26 @@ const App = {
             App.pet.stats.is_dead
         ) return;
 
-        // school invite
-        if(
-            App.petDefinition.lifeStage >= PetDefinition.LIFE_STAGE.child &&
-            App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.teen &&
-            !App.pet.stats.has_received_school_invite
-        ){
-            App.pet.stats.has_received_school_invite = true;
-            setTimeout(() => {
-                App.queueEvent(() => {
-                    Activities.getMail({
-                        onEndFn: () => {
-                            App.handlers.show_letter({
-                                headline: 'Official School Invitation',
-                                text: `Dear ${App.userName},<br>${App.petDefinition.name} is now old enough to start school.<br><br>Please make sure they show up to their classes every day, no skipping!`,
-                                sender: 'School Administration'
-                            })
-                        },
-                        noSceneSwitch: true
-                    });
-                })
-            }, random(1000, 2000))
-            return;
+        if(!App.temp.sourceRandomEncounterRan){
+            if(source !== 'initial'){
+                return;
+            }
+            App.temp.sourceRandomEncounterRan = true;
         }
 
-        // newspaper delivery
-        const newspaperDeliveryMs = App.getRecord('newspaper_delivery_ms') || 0;
-        const shouldDeliver = moment().startOf('day').diff(moment(newspaperDeliveryMs), 'days') > 0;
-        if(shouldDeliver && !App.pet.stats.is_sleeping){
-            setTimeout(() => {
-                App.queueEvent(() => {
-                    Activities.getMail();
-                    const nextMs = Date.now();
-                    App.setRecord('newspaper_delivery_ms', nextMs);
-                })
-            }, random(1000, 2000))
-            return;
+        if(!this.canProceed('random_encounters', App.constants.ONE_MINUTE)) return;
+
+        const canRunEncounter = (targetSource) => {
+            if(source === 'initial') return true;
+            return source === targetSource;
         }
 
         // revived encounter
-        if(App.pet.stats.is_revived_once && random(0, 1300) === 13){
+        if (
+            canRunEncounter("initial") &&
+            App.pet.stats.is_revived_once &&
+            random(0, 1300) === 13
+        ) {
             return Activities.reckoning();
         }
 
@@ -2632,13 +2683,8 @@ const App = {
         const encounterChance = App.pet.stats.is_revived_once
             ? random(0, 128)
             : random(0, 256);
-        if(encounterChance === 1){
+        if(canRunEncounter('home') && encounterChance === 1){
             return Activities.encounter();
-        }
-
-        // getting robbed
-        if(random(0, 100) <= 10 && App.pet.stats.is_sleeping && App.sky.name === 'night'){
-            return Activities.getRobbed();
         }
     },
     handlers: {
