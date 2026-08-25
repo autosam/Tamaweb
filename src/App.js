@@ -712,17 +712,22 @@ const App = {
         const { decorationOverlay: overlayKey } = App.settings;
         const currentDecorationDef = App.definitions.decoration_overlay[overlayKey];
 
-        if(!overlayKey || !currentDecorationDef) return;
+        if (
+            !overlayKey ||
+            !currentDecorationDef ||
+            window.innerWidth <= 300 ||
+            window.innerHeight <= 420
+        )
+            return;
 
-        function getAngleToCenter(objectX, objectY) {
+        const getAngleToCenter = (objectX, objectY) => {
             const centerX = window.innerWidth / 2;
             const centerY = window.innerHeight / 2;
             const angleRad = Math.atan2(centerY - objectY, centerX - objectX);
             const angleDeg = angleRad * (180 / Math.PI);
             return angleDeg + 90;
         }
-
-        function getEvenEdgePosition(index, total, objectWidth, objectHeight) {
+        const getEvenEdgePosition = (index, total, objectWidth, objectHeight) => {
             const width = window.innerWidth;
             const height = window.innerHeight;
 
