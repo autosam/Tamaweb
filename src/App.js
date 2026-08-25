@@ -4833,7 +4833,7 @@ const App = {
                 {
                     // _ignore: !App.isTester(),
                     _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.baby,
-                    name: `cook ${App.getBadge()}`,
+                    name: `cook`,
                     onclick: () => {
                         return App.displayList([
                             {
@@ -4853,7 +4853,7 @@ const App = {
                                 }
                             },
                             {
-                                name: `harvests ${App.getBadge()}`,
+                                name: `harvests`,
                                 onclick: () => {
                                     let allPlants = [];
                                     const getIngredients = (name) => {
@@ -4920,7 +4920,7 @@ const App = {
                                                         {
                                                             type: 'text',
                                                             name: `
-                                                                <div>How many? ${App.getBadge()}</div>
+                                                                <div>How many?</div>
                                                                 <div class="mt-4"></div>
                                                                 ${
                                                                     App.createRangeSlider({
@@ -6521,7 +6521,7 @@ const App = {
                             },
                             {
                                 _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child,
-                                name: `gift ${App.getBadge()}`,
+                                name: `gift`,
                                 onclick: () => {
                                     const handleOpenFoodMenu = (type) => {
                                         return App.handlers.open_food_list({
@@ -6547,7 +6547,7 @@ const App = {
                                             }
                                         },
                                         {
-                                            name: `Accessories ${App.getBadge()}`,
+                                            name: `Accessories`,
                                             onclick: () => {
                                                 return App.handlers.open_accessory_list({
                                                     useMode: (item) => {
@@ -6571,11 +6571,11 @@ const App = {
                                             }
                                         },
                                         {
-                                            name: `Food ${App.getBadge()}`,
+                                            name: `Food`,
                                             onclick: () => handleOpenFoodMenu('food')
                                         },
                                         {
-                                            name: `Snacks ${App.getBadge()}`,
+                                            name: `Snacks`,
                                             onclick: () => handleOpenFoodMenu('treat')
                                         },
                                     ])
@@ -6832,7 +6832,7 @@ const App = {
                 {
                     name: `friends`,
                     icon: 'children',
-                    isNew: true,
+                    isNew: false,
                     onclick: () => {
                         App.handlers.open_friends_list(null, null, [
                             {
@@ -6872,7 +6872,7 @@ const App = {
                     _disable: App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child,
                     name: `social`,
                     icon: 'users',
-                    isNew: true,
+                    isNew: false,
                     onclick: () => {
                         App.handlers.open_social_media();
                         return true;
@@ -7230,7 +7230,7 @@ const App = {
                     }
                 },
                 {
-                    name: `send message ${App.getBadge()}`,
+                    name: `send message`,
                     onclick: () => {
                         App.handlers.open_friends_list((friendDef) => {
                             if(friendDef.sentMessage){

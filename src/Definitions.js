@@ -126,7 +126,7 @@ App.definitions = (() => {
                 name: "Mall",
                 image: 'resources/img/misc/activity_building_mall.png',
                 onEnter: () => Activities.goToMall(),
-                isNew: true,
+                isNew: false,
             },
             {
                 name: "Market",
