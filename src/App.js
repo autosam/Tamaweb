@@ -39,6 +39,7 @@ const App = {
         skillsAffectingEvolution: true,
         season: 'auto',
         tapEffect: true,
+        decorationOverlay: 'leaves_01',
     },
     constants: {
         ONE_HOUR: 1000 * 60 * 60,
@@ -594,7 +595,6 @@ const App = {
         }
         document.addEventListener('DOMContentLoaded', function(event) {
             initializeRenderer();
-            App.initDecorationOverlay();
         });
         window.onbeforeunload = function(){
             App.sendSessionEvent(false);
@@ -709,6 +709,11 @@ const App = {
         const container = document.querySelector('.overlay-container');
         container.innerHTML = '';
 
+        const { decorationOverlay: overlayKey } = App.settings;
+        const currentDecorationDef = App.definitions.decoration_overlay[overlayKey];
+
+        if(!overlayKey || !currentDecorationDef) return;
+
         function getAngleToCenter(objectX, objectY) {
             const centerX = window.innerWidth / 2;
             const centerY = window.innerHeight / 2;
@@ -767,13 +772,12 @@ const App = {
         }
 
         const TOTAL = window.innerWidth > 600 ? 50 : 30;
-        let currentImageIndex = 1;
         for(let i = 0; i < TOTAL; i++){
             const size = {
                 x: 256,
                 y: 256
             };
-            // const scale = clamp(Math.random(), 0.5, 0.9);
+
             const scale = clamp(Math.abs(Math.sin(i * 1)),  0.5, 0.9);
             size.x *= scale;
             size.y *= scale;
@@ -783,16 +787,15 @@ const App = {
             position.x += random(-24, 24);
             position.y += random(-24, 24);
 
-            currentImageIndex = randomFromArray([2, 4]);
-            if (random(0, 1)) currentImageIndex = 5;
+            let currentAsset = randomFromArray(currentDecorationDef.assets.slice(1));
+            if (random(0, 1)) currentAsset = currentDecorationDef.assets[0];
 
             let rotation = getAngleToCenter(position.x, position.y);
-            // rotation = position.r;
 
             UI.create({
                 parent: container,
                 componentType: 'img',
-                src: `resources/img/ui/leaf_0${currentImageIndex}.png`,
+                src: App.checkResourceOverride(currentAsset),
                 style: `
                     left: ${position.x}px;
                     top: ${position.y}px;
@@ -863,6 +866,12 @@ const App = {
             } else {
                 UI.hide(bgPattern);
             }
+        }
+
+        // decoration overlay
+        if(!App.temp.decorationOverlayFirstInit){
+            App.temp.decorationOverlayFirstInit = true;
+            this.initDecorationOverlay();
         }
 
         // screen / shell size
@@ -4132,6 +4141,24 @@ const App = {
                                 }
                             },
                             {
+                                _mount: (btn) => {
+                                    const hasNew = Object.keys(
+                                        App.definitions.decoration_overlay,
+                                    )
+                                        .map(
+                                            (key) =>
+                                                App.definitions
+                                                    .decoration_overlay[key],
+                                        )
+                                        .some((def) => def.isNew);
+                                    btn.innerHTML = `<span class="overflow-hidden ellipsis">decoration overlay</span> ${hasNew ? App.getBadge('new!') : ''}`
+                                },
+                                onclick: () => {
+                                    App.handlers.open_decoration_overlay_list();
+                                    return true;
+                                }
+                            },
+                            {
                                 name: '+ view size',
                                 onclick: () => {
                                     App.settings.screenSize += 0.1;
@@ -5765,6 +5792,33 @@ const App = {
                         if(App.settings.backgroundPattern === current.image) App.settings.backgroundPattern = false;
                         else App.settings.backgroundPattern = current.image;
                         App.applySettings();
+                        App.save();
+                        return true;
+                    }
+                }
+            })
+
+            sliderInstance = App.displaySlider(list, null, {accept: 'Toggle'});
+            return sliderInstance;
+        },
+        open_decoration_overlay_list: function(){
+            let sliderInstance;
+            const list = Object.keys(App.definitions.decoration_overlay)
+            .map(key => ({ ...App.definitions.decoration_overlay[key], key }))
+            .sort((a, b) => b.isNew - a.isNew)
+            .map(current => {
+                return {
+                    name: `
+                        <img style="box-shadow: inset 0 0 0 100vw #0000009e;" src="${App.checkResourceOverride(current.assets[0])}"></img>
+                        ${current.isNew ? App.getBadge('new!') : ''}
+                        <div>
+                            ${current.name}
+                        </div>
+                    `,
+                    onclick: () => {
+                        if(App.settings.decorationOverlay === current.key) App.settings.decorationOverlay = false;
+                        else App.settings.decorationOverlay = current.key;
+                        App.initDecorationOverlay();
                         App.save();
                         return true;
                     }
