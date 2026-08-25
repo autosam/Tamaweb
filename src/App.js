@@ -783,8 +783,8 @@ const App = {
             position.x += random(-24, 24);
             position.y += random(-24, 24);
 
-            currentImageIndex = randomFromArray([ 2, 4]);
-            if(random(0, 1)) currentImageIndex = 5;
+            currentImageIndex = randomFromArray([2, 4]);
+            if (random(0, 1)) currentImageIndex = 5;
 
             let rotation = getAngleToCenter(position.x, position.y);
             // rotation = position.r;
