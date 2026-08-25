@@ -594,7 +594,7 @@ const App = {
         }
         document.addEventListener('DOMContentLoaded', function(event) {
             initializeRenderer();
-            App.initOverlay();
+            App.initDecorationOverlay();
         });
         window.onbeforeunload = function(){
             App.sendSessionEvent(false);
@@ -607,7 +607,7 @@ const App = {
             clearTimeout(resizeEventTimeout);
             resizeEventTimeout = setTimeout(() => {
                 UI.show(document.querySelector('.overlay-container'));
-                App.initOverlay();
+                App.initDecorationOverlay();
             }, App.constants.ONE_SECOND * 0.1);
         });
 
@@ -703,7 +703,9 @@ const App = {
         document.addEventListener('mouseup', touchDownHandler);
         document.addEventListener('touchend', touchDownHandler);
     },
-    initOverlay: function(){
+    initDecorationOverlay: function(){
+        if(App.isOnElectronClient) return;
+
         const container = document.querySelector('.overlay-container');
         container.innerHTML = '';
 
@@ -781,14 +783,10 @@ const App = {
             position.x += random(-24, 24);
             position.y += random(-24, 24);
 
-            if(random(0, 4) === 0) currentImageIndex = random(2, 5);
-            // if(i % 1 === 0 || true) currentImageIndex = ((currentImageIndex + 1) % 3) + 1;
-            currentImageIndex = random(2, 5);
-            // if(random(0, 5) === 0) currentImageIndex = 1;
-            currentImageIndex = 5;
+            currentImageIndex = randomFromArray([ 2, 4]);
+            if(random(0, 1)) currentImageIndex = 5;
 
             let rotation = getAngleToCenter(position.x, position.y);
-            // rotation = Math.round((rotation) / 45) * 45;
             // rotation = position.r;
 
             UI.create({
