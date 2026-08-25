@@ -961,7 +961,8 @@ const App = {
         if(
             App.petDefinition.lifeStage >= PetDefinition.LIFE_STAGE.child &&
             App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.teen &&
-            !App.pet.stats.has_received_school_invite
+            !App.pet.stats.has_received_school_invite &&
+            !App.pet.stats.is_sleeping
         ){
             App.pet.stats.has_received_school_invite = true;
             setTimeout(() => {
