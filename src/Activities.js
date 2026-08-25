@@ -4813,7 +4813,7 @@ class Activities {
 
         const gift = new Object2d({
             img: 'resources/img/misc/gift.png',
-            x: '50%', y: '80%'
+            x: '50%', y: '80%', depthMode: Object2d.DEPTH_MODE.y,
         });
 
         function task_otherPetMoveIn(){
