@@ -36,6 +36,7 @@ App.definitions = (() => {
                 color: "#ffb1ee"
             },
         },
+
         /* THEMES */
         themes: [
             'default',
@@ -53,6 +54,7 @@ App.definitions = (() => {
             'color black',
             'color slateblue',
         ],
+
         /* MAIN MENU */
         main_menu: [
             {
@@ -2220,6 +2222,28 @@ App.definitions = (() => {
                 isNew: false,
             },
         ],
+
+        /* DECORATION OVERLAY */
+        decoration_overlay: {
+            leaves_01: {
+                name: 'Patchy',
+                assets: [
+                    'resources/img/ui/decoration/leaf_05.png',
+                    'resources/img/ui/decoration/leaf_02.png',
+                    'resources/img/ui/decoration/leaf_04.png',
+                ],
+                isNew: true,
+            },
+            leaves_02: {
+                name: 'Autumn',
+                assets: [
+                    'resources/img/ui/decoration/leaf_03.png',
+                    'resources/img/ui/decoration/leaf_03.png',
+                    'resources/img/ui/decoration/leaf_02.png',
+                ],
+                isNew: true,
+            },
+        },
 
         /* ACCESSORIES */
         accessories: {
