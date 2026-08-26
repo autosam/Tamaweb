@@ -29,6 +29,8 @@ const SOUNDS = [
   "resources/sounds/ui_click_05.ogg",
   "resources/sounds/ui_click_06.ogg",
   "resources/sounds/ui_click_07.ogg",
+  "resources/sounds/ui_click_08.ogg",
+  "resources/sounds/ui_click_09.ogg",
   "resources/sounds/walk_01.ogg",
   "resources/sounds/wedding_song_01.ogg",
   "resources/sounds/online_hub_transition_01.ogg",
