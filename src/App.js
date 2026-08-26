@@ -1341,7 +1341,7 @@ const App = {
             if(App.disableGameplayControls && Boolean(App.gameplayControlsOverwrite))
                 App.playSound('resources/sounds/ui_click_01.ogg', true);
             else
-                App.playSound('resources/sounds/shell_button_down.ogg');
+                App.playSound('resources/sounds/ui_click_09.ogg');
         }
 
         if(!currentDisplay) return handleNoDisplay();
