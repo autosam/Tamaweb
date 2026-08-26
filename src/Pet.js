@@ -93,9 +93,11 @@ class Pet extends Object2d {
             z: this.z,
             localZ: -999,
             depthMode: Object2d.DEPTH_MODE.none,
-            hidden: !this.castShadow,
+            invisible: !this.castShadow,
             onDraw: (overlay) => {
-                overlay.hidden = !this.castShadow;
+                overlay.invisible = !this.castShadow;
+
+                if(overlay.invisible) return;
 
                 overlay.x = this.x;
 
@@ -1690,7 +1692,7 @@ class Pet extends Object2d {
     setLocalZBasedOnSelf(otherObject, matchBase = true){
         // @deprecated
         otherObject.depthMode = Object2d.DEPTH_MODE.y;
-        otherObject.z = this.z;
+        otherObject.z = App.constants.ACTIVE_PET_Z;
         return;
         const currentBoundingBox = this.getBoundingBox();
         const otherBoundingBox = otherObject.getBoundingBox();

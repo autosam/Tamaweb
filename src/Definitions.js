@@ -2520,7 +2520,7 @@ App.definitions = (() => {
                     const cloof = new Object2d({
                         img: 'resources/img/accessory/cloof_01.png',
                         parent: parent,
-                        x: 0, y: -999,
+                        x: 0, y: -999, localZ: -1,
                         animationFloatX: 0,
                         animationFloatY: Math.PI,
                         currentPosition: {

@@ -4715,11 +4715,13 @@ class Activities {
                     table.removeObject();
 
                     App.pet.ageUp();
+                    App.pet.z += 1;
+                    App.pet.y = '60%';
                     App.pet.x = '50%';
-                    App.pet.y = 60;
                     App.pet.stopMove();
 
                     App.pet.triggerScriptedState('blush', 3000, 0, true, () => {
+                        App.pet.z -= 1;
                         App.setScene(App.scene.home);
                         App.toggleGameplayControls(true);
                         App.pet.playCheeringAnimation();

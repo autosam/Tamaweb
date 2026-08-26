@@ -112,6 +112,7 @@ class Object2d {
 
         if(should('x')) this.x = this.parent.x;
         if(should('y')) this.y = this.parent.y + this.parent.additionalY;
+        if(should('z')) this.z = this.parent.z;
         if(should('inverted')) this.inverted = this.parent.inverted;
         if(should('upperHalfOffsetY')) this.upperHalfOffsetY = this.parent.upperHalfOffsetY;
         if(should('scale')) this.scale = this.parent.scale;
