@@ -345,29 +345,28 @@ class Pet extends Object2d {
     handleDirectInteractionEnd(){
         this.stopScriptedState();
 
-        const me = this;
-
         // falling
-        let fallSpeed = 0.008;
+        const fallSpeed = this.stats.is_ghost ? 0.0003 : 0.0008;
+        let currentFallOffset = 0.008;
         const handleOnEndFall = () => {
-            me.triggerScriptedState('sitting', 500, false, true);
+            this.triggerScriptedState('sitting', 500, false, true);
         }
         const fallDriver = () => {
-            if(me.directInteractionInfo.x == null){
-                me.stopScriptedState()
+            if(this.directInteractionInfo.x == null){
+                this.stopScriptedState()
                 return;
             }
 
-            me.x = lerp(me.x, me.directInteractionInfo.x, 0.008 * App.deltaTime)
-            fallSpeed += 0.0008 * App.deltaTime;
+            this.x = lerp(this.x, this.directInteractionInfo.x, 0.008 * App.deltaTime)
+            currentFallOffset += fallSpeed * App.deltaTime;
 
-            if(me.positionOffset.y < 0)
-                me.positionOffset.y += fallSpeed * App.deltaTime;
+            if(this.positionOffset.y < 0)
+                this.positionOffset.y += currentFallOffset * App.deltaTime;
 
-            if(me.positionOffset.y >= 0){
-                me.positionOffset.y = 0;
-                me.stopScriptedState();
-                me.playSound('resources/sounds/ui_click_04.ogg', true);
+            if(this.positionOffset.y >= 0){
+                this.positionOffset.y = 0;
+                this.stopScriptedState();
+                this.playSound('resources/sounds/ui_click_04.ogg', true);
                 App.vibrate();
             }
         }
