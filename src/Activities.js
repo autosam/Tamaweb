@@ -5904,17 +5904,7 @@ class Activities {
         })
 
         const spawnSmoke = (x, y) => {
-            new Object2d({
-                img: 'resources/img/misc/foam_single.png',
-                x, y, z: 6, opacity: 1, scale: 1.2,
-                onDraw: (me) => {
-                    me.rotation += 0.1 * App.deltaTime;
-                    me.opacity -= 0.001 * App.deltaTime;
-                    me.scale -= 0.001 * App.deltaTime;
-                    me.y -= 0.01 * App.deltaTime;
-                    if(me.opacity <= 0.1 || me.scale <= 0.1) me.removeObject();
-                }
-            })
+            Prefab.fadingSmoke({x, y});
         }
 
         const screen = UI.empty();
@@ -6288,19 +6278,12 @@ class Activities {
                 }
             }
             const spawnImpactEffect = (color = {r: 0, g: 255, b: 0}) => {
-                new Object2d({
-                    ...App.drawer.bounds,
-                    solidColor: color,
-                    x: 0, y: 0,
-                    opacity: 0.6,
-                    composite: 'additive',
-                    z: 999,
-                    onDraw: (me) => {
-                        me.opacity -= 0.0015 * App.deltaTime;
-                        if(me.opacity <= 0) {
-                            me.removeObject();
-                        }
-                    }
+                const bb = App.pet.getBoundingBox();
+                Prefab.fadingSmoke({
+                    x: bb.centerX,
+                    y: bb.centerY,
+                    horizontalMovementSpeed: activeSpeed * -0.02,
+                    spawnScale: 1,
                 })
             }
             const progress = (isScoring) => {

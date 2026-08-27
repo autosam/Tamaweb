@@ -1744,18 +1744,6 @@ const App = {
             ]);
             App.sendAnalytics('discord_02_notice_shown');
         })) return;
-
-        /* if(App.isSalesDay()){
-            if(addEvent(`sales_day_${dayId}_notice`, () => {
-                App.displayConfirm(`<b>discount day!</b><br>Shops are selling their products at a discounted rate! Check them out and pile up on them!`, [
-                    {
-                        name: 'ok',
-                        class: 'solid primary',
-                        onclick: () => {},
-                    }
-                ]);
-            })) return;
-        } */
     },
     scene: {
         home: new Scene({

@@ -132,5 +132,36 @@ const Prefab = {
             });
         })
         return parent;
+    },
+    fadingSmoke({
+        rotateSpeed = 0.1,
+        fadeOutSpeed = 0.001,
+        scaleDownSpeed = 0.001,
+        parent = App.currentSceneObject,
+        spawnScale = 1.2,
+        verticalMovementSpeed = 0.01,
+        horizontalMovementSpeed = 0,
+        x,
+        y,
+        z = App.constants.ACTIVE_PET_Z
+    } = {}){
+        const ASSET_SIZE = 25;
+        return new Object2d({
+            parent,
+            img: 'resources/img/misc/foam_single.png',
+            x: x - (ASSET_SIZE/2),
+            y: y - (ASSET_SIZE/2),
+            z,
+            opacity: 1,
+            scale: spawnScale,
+            onLateDraw: (me) => {
+                me.rotation += rotateSpeed * App.deltaTime;
+                me.opacity -= fadeOutSpeed * App.deltaTime;
+                me.scale -= scaleDownSpeed * App.deltaTime;
+                me.y -= verticalMovementSpeed * App.deltaTime;
+                me.x -= horizontalMovementSpeed * App.deltaTime;
+                if(me.opacity <= 0.05 || me.scale <= 0.05) me.removeObject();
+            }
+        })
     }
 }

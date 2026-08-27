@@ -220,7 +220,14 @@ class Object2d {
         const x = (this.x + (this.additionalX || 0)) - (width - (baseWidth - shrinkX * 2)) / 2;
         const y = (this.y + (this.additionalY || 0)) - (height - (baseHeight - shrinkY * 2)) / 2;
 
-        return { x, y, width, height };
+        return {
+            x,
+            y,
+            width,
+            height,
+            centerX: x + (width / 2),
+            centerY: y + (width / 2)
+        };
     }
     isColliding(otherBoundingBox){
         const currentBoundingBox = this.getBoundingBox();
