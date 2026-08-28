@@ -535,28 +535,6 @@ class Pet extends Object2d {
             })
         }
     }
-    _switchScene(scene){
-        // todo: not hardcode these values,
-        // instead it should be defined on the scene
-        // so that every scene can have it's own values
-        this.y = '100%';
-        this.x = '50%';
-        switch(scene){
-            case 'house':
-                App.background.setImg('resources/img/background/house/01.jpg');
-                break;
-            case 'kitchen':
-                App.background.setImg('resources/img/background/house/kitchen_01.png');
-                App.foods.x = 40;
-                App.foods.y = 58;
-                this.x = 62;
-                this.y = 74;
-                break;
-            case 'park':
-                App.background.setImg('resources/img/background/outside/park_01.png');
-                break;
-        }
-    }
     sleep(){
         if(this.stats.is_sleeping || App.currentScene !== App.scene.home) return;
         this.stopMove();
