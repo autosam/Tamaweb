@@ -4784,14 +4784,18 @@ class Activities {
             otherPet.targetX = 120;
             App.pet.inverted = true;
             App.pet.triggerScriptedState('idle_side', 3000, null, true, () => {
-                otherPet.stopScriptedState();
-                App.pet.x = '50%';
-                App.pet.stats.current_fun += 55;
-                App.pet.statsManager();
-                App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => App.setScene(App.scene.home));
-                App.drawer.removeObject(otherPet);
-                App.toggleGameplayControls(true);
-                callbackFn?.();
+                App.fadeScreen({middleFn: () => {
+                    otherPet.stopScriptedState();
+                    App.pet.x = '50%';
+                    App.pet.stats.current_fun += 55;
+                    App.pet.statsManager();
+                    App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => {
+                        App.setScene(App.scene.home)
+                        App.toggleGameplayControls(true);
+                        callbackFn?.();
+                    });
+                    App.drawer.removeObject(otherPet);
+                }})
             });
         }
 

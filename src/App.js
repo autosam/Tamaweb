@@ -5737,8 +5737,8 @@ const App = {
                         if(!App.pay(price)) return true;
 
                         App.closeAllDisplays();
-                        App.setScene(scene, true);
                         Activities.redecorRoom();
+                        App.setScene(scene, true);
                         scene.image = current.image;
 
                         App.sendAnalytics('home_background_change', scene.image);
