@@ -1051,7 +1051,7 @@ App.definitions = (() => {
                     Activities.task_foam(() => {
                         App.pet.ageUp();
                         App.pet.x = '50%';
-                        App.pet.y = 60;
+                        App.pet.positionOffset.y = -30;
                         App.pet.stopMove();
                         App.pet.triggerScriptedState('blush', 3000, 0, true, () => {
                             App.setScene(App.scene.home);
@@ -1090,7 +1090,7 @@ App.definitions = (() => {
                         App.pet.triggerScriptedState('shocked', 10000, 0, true);
                         App.pet.stopMove();
                         App.pet.x = '50%';
-                        App.pet.y = 60;
+                        App.pet.positionOffset.y = -30;
                         App.pet.triggerScriptedState('blush', 3000, 0, true, () => {
                         App.setScene(App.scene.home);
                         App.pet.playCheeringAnimationIfTrue(wasGhost, () => {
@@ -2534,7 +2534,7 @@ App.definitions = (() => {
                             me.animationFloatY = (me.animationFloatY + 0.0025 * App.deltaTime) % App.PI2;
                             const additionalMotionX = Math.sin(me.animationFloatX) * 2;
                             const additionalMotionY = Math.sin(me.animationFloatY) * 3;
-                            me.x = parent.x + additionalMotionX;
+                            me.x = parent.getBoundingBox().centerX - (me.getBoundingBox().width / 2) + additionalMotionX;
                             me.y = parent.y - 40 - (App.pet.spritesheet.offsetY ?? 0) + additionalMotionY + parent.positionOffset.y;
 
                             if (!App.isCompanionAllowed()) {

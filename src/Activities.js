@@ -3775,6 +3775,7 @@ class Activities {
             castShadow: false,
             z: App.constants.ACTIVE_PET_Z + 1,
             isDespawning: false,
+            parent: App.currentSceneObject,
             onDraw: (me) => {
                 if(me.isDespawning){
                     me.opacity -= 0.001 * App.deltaTime;
@@ -7915,7 +7916,7 @@ class TimelineDirector {
         return new Promise(resolve => {
             if(!this.actor) return resolve();
 
-            const defaultY = this.actor.y;
+            const defaultY = this.actor.positionOffset.y;
             const actor = this.actor;
 
             let animationFloat = 0,
@@ -7938,12 +7939,12 @@ class TimelineDirector {
                     }
                     actor.setState(landAnimation);
                     if(currentCycles >= maxCycles){
-                        actor.y = defaultY;
+                        actor.positionOffset.y = defaultY;
                         App.unregisterOnDrawEvent(drawEvent);
                         resolve();
                     }
                 }
-                actor.y = defaultY - (finalAnimationFloat * strength);
+                actor.positionOffset.y = defaultY - (finalAnimationFloat * strength);
             })
 
             this.registeredDrawEvents.push(drawEvent);

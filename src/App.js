@@ -2199,7 +2199,10 @@ const App = {
         if(!noPositionChange){
             App.pet.x = scene.petX || '50%';
             App.pet.y = scene.petY || '100%';
+            App.pet.positionOffset.x = 0;
+            App.pet.positionOffset.y = 0;
         }
+        // todo: get rid of this
         if(scene.foodsX) App.foods.x = scene.foodsX;
         if(scene.foodsY) App.foods.y = scene.foodsY;
         App.background.setImg(scene.image, true);

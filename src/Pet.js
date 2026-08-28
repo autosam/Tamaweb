@@ -116,7 +116,10 @@ class Pet extends Object2d {
                     return;
                 }
 
-                overlay.y = 96 + this.additionalY + (App.currentScene.shadowOffset || 0) + (this.shadowOffset || 0);
+                overlay.y =
+                    this.y + this.additionalY + Math.ceil(this.spritesheet.cellSize / 2.1) +
+                    (App.currentScene.shadowOffset || 0) +
+                    (this.shadowOffset || 0);
                 const distanceToCaster = overlay.y - this.y - this.positionOffset.y;
                 overlay.scale = 1 - ((distanceToCaster + 4) * 0.01);
             }
@@ -1831,7 +1834,7 @@ class Pet extends Object2d {
 
                     this.itemObject.x = this.pet.x;
                     this.itemObject.y = ((App.drawer.getRelativePositionY(92) - App.constants.ITEM_SPRITESHEET_DIMENSIONS.cellSize));
-                    this.itemObject.z = this.pet.z + 0.1;
+                    this.itemObject.z = this.pet.z;
                     this.itemObject.inverted = this.pet.inverted;
 
                     this.itemObject.onDraw = function() {
@@ -1926,6 +1929,7 @@ class Pet extends Object2d {
                     const possibleItemPositions = ['25%', '50%', '75%'];
                     this.itemObject.x = randomFromArray(possibleItemPositions);
                     this.itemObject.y = randomFromArray(possibleItemPositions);
+                    this.itemObject.z = this.pet.z + 1;
                     this.itemObject.inverted = !this.itemObject.inverted;
                     break;
                 case "robotty":
