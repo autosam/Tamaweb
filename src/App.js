@@ -1123,8 +1123,7 @@ const App = {
                 () => {
                     App.queueEvent(() => {
                         Activities.getMail();
-                        const nextMs = Date.now();
-                        App.setRecord("newspaper_delivery_ms", nextMs);
+                        App.setRecord("newspaper_delivery_ms", Date.now());
                     }, 'newspaper_delivery');
                 },
                 random(1000, 2000),
