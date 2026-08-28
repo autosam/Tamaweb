@@ -1116,7 +1116,8 @@ const App = {
             0;
         if (
             shouldDeliver &&
-            !App.pet.stats.is_sleeping
+            !App.pet.stats.is_sleeping &&
+            App.canProceed('newspaper_delivery', App.constants.ONE_MINUTE * 20)
         ) {
             setTimeout(
                 () => {
