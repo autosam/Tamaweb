@@ -1553,7 +1553,7 @@ class Pet extends Object2d {
                 x: 0,
                 y: 0,
                 opacity: 0,
-                z: 10.01,
+                z: App.constants.ACTIVE_PET_Z + 0.101,
                 shouldFadeout: false,
                 float: 0,
                 onDraw: (me) => {
@@ -1564,8 +1564,7 @@ class Pet extends Object2d {
             })
         }
 
-        const scale = 1 || 0.62;
-
+        const THOUGHT_ITEM_Z = App.constants.ACTIVE_PET_Z + 0.10;
         switch(type){
             case App.constants.WANT_TYPES.food:
                 const foodSpriteIndex = App.definitions.food[item]?.sprite;
@@ -1573,7 +1572,7 @@ class Pet extends Object2d {
                 new Object2d({
                     parent: bubble,
                     image: App.preloadedResources[App.constants.FOOD_SPRITESHEET],
-                    x: 10, y: 10, z: 10,
+                    x: 10, y: 10, z: THOUGHT_ITEM_Z,
                     scale: 0.62,
                     spritesheet: {
                         cellNumber: foodSpriteIndex,
@@ -1596,7 +1595,7 @@ class Pet extends Object2d {
                 new Object2d({
                     parent: bubble,
                     image: App.preloadedResources[friendDef.sprite],
-                    x: 10, y: 10, z: 10,
+                    x: 10, y: 10, z: THOUGHT_ITEM_Z,
                     scale: 0.62,
                     spritesheet: friendDef.spritesheet,
                     onDraw: (me) => {
@@ -1612,7 +1611,7 @@ class Pet extends Object2d {
                 new Object2d({
                     parent: bubble,
                     image: App.preloadedResources["resources/img/item/items.png"],
-                    x: 10, y: 10, z: 10,
+                    x: 10, y: 10, z: THOUGHT_ITEM_Z,
                     scale: 0.7,
                     spritesheet: {
                         cellNumber: itemSpriteIndex,
@@ -1631,7 +1630,7 @@ class Pet extends Object2d {
                 new Object2d({
                     parent: bubble,
                     image: App.preloadedResources["resources/img/misc/minigames.png"],
-                    x: 10, y: 10, z: 10,
+                    x: 10, y: 10, z: THOUGHT_ITEM_Z,
                     onDraw: (me) => {
                         me.opacity = bubble.opacity;
                         me.x = bubble.x;
@@ -1643,7 +1642,7 @@ class Pet extends Object2d {
                 new Object2d({
                     parent: bubble,
                     image: App.preloadedResources["resources/img/misc/want_fulfilled.png"],
-                    x: 10, y: 10, z: 10,
+                    x: 10, y: 10, z: THOUGHT_ITEM_Z,
                     onDraw: (me) => {
                         me.opacity = bubble.opacity;
                         me.x = bubble.x;
@@ -1655,7 +1654,7 @@ class Pet extends Object2d {
                 new Object2d({
                     parent: bubble,
                     image: App.preloadedResources[`resources/img/misc/${type}.png`],
-                    x: 10, y: 10, z: 10,
+                    x: 10, y: 10, z: THOUGHT_ITEM_Z,
                     onDraw: (me) => {
                         me.opacity = bubble.opacity;
                         me.x = bubble.x;

@@ -4486,6 +4486,7 @@ class Activities {
 
         const bathClippedObject = new Object2d({
             img: App.scene.bathroom.image,
+            img: 'resources/img/background/house/galaxy_01.png',
             x: 0, y: 0, z: 19,
             clip: [
                 [38, 51],
@@ -4912,6 +4913,109 @@ class Activities {
             if(random(0, 50)) return;
             me.setState( randomFromArray(['eating', 'sitting']) );
         })
+    }
+    static teacherClassroomWork(){
+        App.closeAllDisplays();
+        App.setScene(App.scene.classroom);
+
+        const initialPetZ = App.pet.z;
+        App.pet.triggerScriptedState(
+            "idle",
+            App.INF,
+            false,
+            true,
+            null,
+            (me) => {
+                if (
+                    App.time - (me.lastAnimationChangeMs ?? 0) <
+                    random(
+                        App.constants.ONE_SECOND * 1,
+                        App.constants.ONE_SECOND * 20,
+                    )
+                )
+                    return;
+                me.lastAnimationChangeMs = App.time
+
+                if(random(0, 1)){
+                    App.pet.x = randomFromArray(['20%', '50%', '80%']);
+                    App.pet.y = '90%';
+                    App.pet.z = App.constants.ACTIVE_PET_Z + 0.05;
+                } else {
+                    App.pet.x = '50%';
+                    App.pet.y = '65%';
+                    App.pet.z = initialPetZ;
+                }
+
+                me.setState(randomFromArray([
+                    'idle',
+                    'idle_side',
+                    'talking',
+                    'jumping',
+                    'cheering',
+                    'shocked',
+                    'mild_uncomfortable',
+                ]))
+                me.inverted = Boolean(random(0, 1));
+            },
+        );
+
+        const deskClippedObject = new Object2d({
+            parent: App.currentSceneObject,
+            img: App.scene.classroom.image,
+            x: 0, y: 0, z: App.constants.ACTIVE_PET_Z,
+            depthMode: Object2d.DEPTH_MODE.y,
+            clip: [
+                [21, 51],
+                [21, 82],
+                [74, 82],
+                [74, 51],
+            ]
+        })
+
+        const STUDENT_COUNT = random(3, 5);
+
+        const students = new Array(STUDENT_COUNT)
+            .fill(null)
+            .map(() => App.getRandomPetDef(PetDefinition.LIFE_STAGE.child))
+            .map((def) => new Pet(def));
+
+        const spacing = 100 / STUDENT_COUNT;
+
+        students.forEach((student, i) => {
+            student.parent = App.currentSceneObject;
+            student.z = App.constants.ACTIVE_PET_Z + 1;
+            student.x = `${i * spacing + (spacing / 2)}%`;
+            student.triggerScriptedState(
+                "idle",
+                App.INF,
+                false,
+                true,
+                null,
+                (me) => {
+                    if(App.time - (me.lastAnimationChangeMs ?? 0) < random(500, 2000)) return;
+                    me.lastAnimationChangeMs = App.time
+
+                    if(!random(0, 20)){
+                        me.showThought(randomFromArray([
+                            'thought_question',
+                            'thought_exclaim',
+                            'thought_talk',
+                            'thought_scribble',
+                        ]), null, App.constants.ONE_SECOND);
+                    }
+
+                    me.setState(randomFromArray([
+                        'idle',
+                        'idle_side',
+                        'talking',
+                        'jumping',
+                        'cheering',
+                    ]))
+                    me.inverted = Boolean(random(0, 1));
+                },
+            );
+        })
+
     }
     static inviteDoctorVisit(){
         App.setScene(App.scene.home);
@@ -7867,7 +7971,14 @@ class TimelineDirector {
     registeredDrawEvents = [];
     constructor(actor, config = {}){
         this.actor = actor;
-        this.actor.triggerScriptedState('idle', App.INF, false, true, config.onEnd, config.driverFn);
+        this.actor.triggerScriptedState(
+            "idle",
+            App.INF,
+            false,
+            true,
+            config.onEnd,
+            config.driverFn,
+        );
         this.actor.stopMove();
     }
     moveTo = ({x, y, speed = 0.15, endState = 'idle', disableMoveAnimation}) => {

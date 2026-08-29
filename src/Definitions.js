@@ -3389,6 +3389,8 @@ App.definitions = (() => {
                     App.pet.stats.current_sleep -= 50;
                 }
             },
+
+            // jobs
             {
                 name: 'Stand Work',
                 duration: App.constants.ONE_HOUR * 1,
@@ -3407,6 +3409,18 @@ App.definitions = (() => {
                 type: 'job',
                 payAmount: 100,
                 onVisualize: Activities.officeWork,
+                onEnd: function(){
+                    App.handlers.finalize_work(this);
+                }
+            },
+            {
+                name: `School Teacher Work`,
+                skill: 'expression',
+                duration: App.constants.ONE_HOUR * 2.5,
+                isNew: true,
+                type: 'job',
+                payAmount: 200,
+                onVisualize: Activities.teacherClassroomWork,
                 onEnd: function(){
                     App.handlers.finalize_work(this);
                 }
