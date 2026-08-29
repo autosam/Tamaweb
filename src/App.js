@@ -1224,10 +1224,12 @@ const App = {
 
         // random friend call
         if(
+            !App.haveAnyDisplays() &&
+            App.currentScene === App.scene.home &&
             random(0, 100) < 4 &&
             App.petDefinition.friends.length
         ){
-            if(App.canProceed('friend_call', App.constants.ONE_MINUTE * 30)) {
+            if(App.canProceed('friend_call', App.constants.ONE_HOUR * 1)) {
                 App.queueEvent(App.handlers.receive_friend_call, 'friend_call');
                 return;
             }
@@ -1235,6 +1237,8 @@ const App = {
 
         // ask to be petted
         if(
+            !App.haveAnyDisplays() &&
+            App.currentScene === App.scene.home &&
             random(0, 100) < 3 &&
             App.pet.stats.current_care >= 2 &&
             App.playTime > App.constants.ONE_MINUTE * 30 &&
