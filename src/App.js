@@ -2421,7 +2421,10 @@ const App = {
         const getSpawnableAnimals = () => {
             switch(App.currentScene){
                 case App.scene.home:
-                    return App.animals.list?.filter(animalDef => animalDef.spawnIndoors);
+                    return App.animals.list?.filter(
+                        (animalDef) =>
+                            animalDef.spawnIndoors && !animalDef.shouldLeave(),
+                    );
             }
 
             return App.animals.list;
