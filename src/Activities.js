@@ -435,9 +435,16 @@ class Activities {
                 me.rotation = lerp(me.rotation, 0, 0.01 * App.deltaTime);
             }
         })
-        // App.pet.setLocalZBasedOnSelf(chestObject);
+        App.pet.setLocalZBasedOnSelf(chestObject);
         await TimelineDirector.wait(10);
-        await main.jumpTo({x: '80%', speed: 0.0015, curve: 0.5, y: main.getPosition('y'), endState: 'shocked_without_sound', animation: 'shocked_without_sound'});
+        await main.jumpTo({
+            x: "80%",
+            speed: 0.0015,
+            curve: 0.5,
+            y: main.getPosition("y"),
+            endState: "shocked_without_sound",
+            animation: "shocked_without_sound",
+        });
         App.pet.playSound('resources/sounds/shock.ogg', true);
         main.actor.stopMove();
         await TimelineDirector.wait(500);
@@ -8012,6 +8019,7 @@ class TimelineDirector {
             const actor = this.actor;
             const startX = actor.x;
             const startY = actor.y;
+            const initialPositionOffset = actor.positionOffset.y;
 
             if (typeof x === 'string') {
                 const percent = parseFloat(x);
@@ -8036,6 +8044,7 @@ class TimelineDirector {
                 if (progress >= 1) {
                     actor.x = x;
                     actor.y = y;
+                    actor.positionOffset.y = initialPositionOffset;
                     actor.setState(endState);
                     App.unregisterOnDrawEvent(drawEvent);
                     resolve();
@@ -8047,7 +8056,8 @@ class TimelineDirector {
 
                 const arc = Math.sin(progress * Math.PI) * curve * this.getSize();
                 actor.x = nx;
-                actor.y = ny - arc;
+                actor.y = ny;
+                actor.positionOffset.y = -arc;
 
                 actor.setState(animation);
             });

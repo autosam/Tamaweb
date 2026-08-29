@@ -1948,7 +1948,6 @@ const App = {
         garden: new Scene({
             image: 'resources/img/background/outside/garden_01.png',
             petY: '95%',
-            shadowOffset: -5,
             onLoad: function(args) {
                 this.grassFieldObject = Prefab.grassField({ height: 30 });
                 this.treeBunchObject = Prefab.treeBunch({
