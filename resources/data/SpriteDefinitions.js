@@ -350,6 +350,8 @@ const SPRITES = [
 "ui/decoration/leaf_03.png",
 "ui/decoration/leaf_04.png",
 "ui/decoration/leaf_05.png",
+"ui/decoration/leaf_08.png",
+"ui/decoration/leaf_09.png",
 "ui/facing_center.png",
 "ui/facing_left.png",
 "ui/facing_right.png",

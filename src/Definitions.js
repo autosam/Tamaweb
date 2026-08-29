@@ -2243,6 +2243,15 @@ App.definitions = (() => {
                 ],
                 isNew: true,
             },
+            leaves_03: {
+                name: 'Winter',
+                assets: [
+                    'resources/img/ui/decoration/leaf_08.png',
+                    'resources/img/ui/decoration/leaf_08.png',
+                    'resources/img/ui/decoration/leaf_09.png',
+                ],
+                isNew: true,
+            },
         },
 
         /* ACCESSORIES */
