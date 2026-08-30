@@ -2464,6 +2464,15 @@ class Activities {
         }
 
         const driverFn = () => {
+            if(App.pet.stats.is_dead){
+                // abort if pet is dead
+                setTimeout(() => {
+                    App.pet.stopScriptedState();
+                }, 1)
+                App.pet.stats.current_rabbit_hole.name = false;
+                App.unregisterOnDrawEvent(driverFrameEvent);
+            }
+
             const remainingTime = currentRabbitHole.endTime - Date.now();
             if(remainingTime <= 0){
                 onEndFn();
@@ -4118,12 +4127,14 @@ class Activities {
             volume: 0.5,
         });
 
-        let standObject = new Object2d({
+        const standObject = new Object2d({
             img: 'resources/img/misc/stand_01_booth.png',
-            x: 0, y: 0, z: 19
+            x: 0, y: 0, z: 19,
+            parent: App.currentSceneObject,
+            onRemove: () => {
+                setTimeout(() => backgroundMusic.stop());
+            }
         })
-        //     App.pet.stopScriptedState();
-        // });
 
         function spawnCustomer() {
             const standDuration = random(2000, 5000);
@@ -4173,10 +4184,7 @@ class Activities {
         App.pet.y = '70%';
         App.pet.inverted = false;
         let nextCustomerSpawnTime = Date.now() + random(0, 8000);
-        App.pet.triggerScriptedState('idle', App.INF, 0, true, () => {
-            backgroundMusic.stop();
-            standObject.removeObject();
-        }, () => {
+        App.pet.triggerScriptedState('idle', App.INF, 0, true, null, () => {
             if(Date.now() > nextCustomerSpawnTime){
                 nextCustomerSpawnTime = Date.now() + random(8000, 45000);
                 spawnCustomer();
@@ -5023,6 +5031,79 @@ class Activities {
                     ]))
                     me.inverted = Boolean(random(0, 1));
                 },
+            );
+        })
+
+    }
+    static bodyBuilderWork(){
+        App.closeAllDisplays();
+        App.setScene(App.scene.gym);
+
+        const possiblePositions = [
+            {y: '70%'},
+            {y: '80%'},
+            {y: '90%'},
+            {y: '100%'},
+        ]
+
+        const stateDriver = (me) => {
+            if (
+                App.time - (me.lastAnimationChangeMs ?? 0) <
+                random(
+                    App.constants.ONE_SECOND * 3,
+                    App.constants.ONE_SECOND * 20,
+                )
+            )
+                return;
+            me.lastAnimationChangeMs = App.time
+
+            const newPosition = randomFromArray(possiblePositions);
+            me.x = newPosition.x || me.x;
+            me.y = newPosition.y || me.y;
+
+            me.setState(randomFromArray([
+                'idle',
+                'idle_side',
+                'talking',
+                'jumping',
+                'shocked',
+                'mild_uncomfortable',
+                'mild_uncomfortable',
+                'mild_uncomfortable',
+                'uncomfortable',
+            ]))
+            me.inverted = Boolean(random(0, 1));
+        }
+
+        App.pet.stopMove();
+        App.pet.triggerScriptedState(
+            "idle",
+            App.INF,
+            false,
+            true,
+            null,
+            stateDriver,
+        );
+
+        const STUDENT_COUNT = 2;
+
+        const students = new Array(STUDENT_COUNT)
+            .fill(null)
+            .map(() => App.getRandomPetDef(PetDefinition.LIFE_STAGE.ADULT))
+            .map((def) => new Pet(def));
+
+        const spacing = 100 / STUDENT_COUNT;
+        students.forEach((student, i) => {
+            student.parent = App.currentSceneObject;
+            student.z = App.constants.ACTIVE_PET_Z;
+            student.x = `${i * spacing + (spacing / 2)}%`;
+            student.triggerScriptedState(
+                "idle",
+                App.INF,
+                false,
+                true,
+                null,
+                stateDriver,
             );
         })
 

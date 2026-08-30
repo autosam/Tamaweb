@@ -2100,6 +2100,9 @@ const App = {
         music_classroom: new Scene({
             image: 'resources/img/background/house/music_classroom_01.png',
         }),
+        gym: new Scene({
+            image: 'resources/img/background/house/gym_01.png',
+        }),
         homeworld_getaways: new Scene({
             image: 'resources/img/background/house/homeworld_getaways_01.png',
             noShadows: true,

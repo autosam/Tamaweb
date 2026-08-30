@@ -390,6 +390,8 @@ class Pet extends Object2d {
         }
     }
     handleDead(){
+        App.setScene(App.scene.graveyard);
+
         const me = this;
         this.x = -600;
 
@@ -450,8 +452,6 @@ class Pet extends Object2d {
                     }
                 }
             });
-
-            App.setScene(App.scene.graveyard);
         }
     }
     handleEgg(){

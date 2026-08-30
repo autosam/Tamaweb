@@ -3362,16 +3362,31 @@ App.definitions = (() => {
                 }
             },
             {
-                name: 'school_teacher_logic',
+                name: 'school_teacher',
                 label: 'School Teacher',
                 condition: () => App.pet.stats.current_logic > 85,
-                duration: App.constants.ONE_HOUR * 2.25,
+                duration: App.constants.ONE_HOUR * 2.5,
                 icons: ['special:logic'],
                 skillDescription: 'Requires high <b>Logic</b> skill',
                 isNew: true,
                 type: 'job',
-                payAmount: 200,
+                payAmount: 225,
                 onVisualize: Activities.teacherClassroomWork,
+                onEnd: function(){
+                    App.handlers.finalize_work(this);
+                }
+            },
+            {
+                name: 'body_builder',
+                label: 'Body Builder',
+                condition: () => App.pet.stats.current_endurance > 85,
+                duration: App.constants.ONE_HOUR * 2.25,
+                icons: ['special:endurance'],
+                skillDescription: 'Requires high <b>Endurance</b> skill',
+                isNew: true,
+                type: 'job',
+                payAmount: 200,
+                onVisualize: Activities.bodyBuilderWork,
                 onEnd: function(){
                     App.handlers.finalize_work(this);
                 }
