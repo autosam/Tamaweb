@@ -4935,6 +4935,12 @@ class Activities {
         App.closeAllDisplays();
         App.setScene(App.scene.classroom);
 
+        const backgroundMusic = App.playAdvancedSound({
+            loop: true,
+            src: 'resources/sounds/work_track_01.ogg',
+            volume: 0.5,
+        });
+
         const initialPetZ = App.pet.z;
         App.pet.stopMove();
         App.pet.triggerScriptedState(
@@ -4942,7 +4948,9 @@ class Activities {
             App.INF,
             false,
             true,
-            null,
+            () => {
+                backgroundMusic.stop();
+            },
             (me) => {
                 if (
                     App.time - (me.lastAnimationChangeMs ?? 0) <
@@ -5039,6 +5047,12 @@ class Activities {
         App.closeAllDisplays();
         App.setScene(App.scene.gym);
 
+        const backgroundMusic = App.playAdvancedSound({
+            loop: true,
+            src: 'resources/sounds/work_track_01.ogg',
+            volume: 0.5,
+        });
+
         const possiblePositions = [
             {y: '70%'},
             {y: '80%'},
@@ -5081,7 +5095,9 @@ class Activities {
             App.INF,
             false,
             true,
-            null,
+            () => {
+                backgroundMusic.stop();
+            },
             stateDriver,
         );
 
