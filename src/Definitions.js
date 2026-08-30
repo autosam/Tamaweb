@@ -3144,7 +3144,7 @@ App.definitions = (() => {
                 ],
                 [
                     "Forecast: Bright future awaits you!",
-                    "You don't remember what you were anxios about that day 3 years ago, you won't remember what you are anxios about now either."
+                    "You don't remember what you were anxious about that day 3 years ago, you won't remember what you are anxious about now either."
                 ]
             ],
         },
