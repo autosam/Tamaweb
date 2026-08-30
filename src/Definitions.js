@@ -3393,6 +3393,7 @@ App.definitions = (() => {
             // jobs
             {
                 name: 'Stand Work',
+                label: 'Stand Worker',
                 duration: App.constants.ONE_HOUR * 1,
                 isNew: false,
                 type: 'job',
@@ -3404,6 +3405,7 @@ App.definitions = (() => {
             },
             {
                 name: 'Office Work',
+                label: 'Office Worker',
                 duration: App.constants.ONE_HOUR * 2.5,
                 isNew: false,
                 type: 'job',
@@ -3414,9 +3416,12 @@ App.definitions = (() => {
                 }
             },
             {
-                name: `School Teacher Work`,
-                skill: 'expression',
-                duration: App.constants.ONE_HOUR * 2.5,
+                name: 'school_teacher_logic',
+                label: 'School Teacher',
+                condition: () => App.pet.stats.current_logic > 85,
+                duration: App.constants.ONE_HOUR * 2.25,
+                icons: ['special:logic'],
+                skillDescription: 'Requires high <b>Logic</b> skill',
                 isNew: true,
                 type: 'job',
                 payAmount: 200,

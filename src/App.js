@@ -379,7 +379,6 @@ const App = {
             let awaySeconds = Math.round(elapsedTime / 1000);
             let awayMinutes = Math.round(awaySeconds / 60);
             let awayHours = Math.round(awayMinutes / 60);
-            // console.log({awayHours, awayMinutes, awaySeconds})
 
             let message;
             if(awaySeconds < 60) message = `${awaySeconds} seconds`;
@@ -2839,32 +2838,44 @@ const App = {
 
             const list = App.definitions.rabbit_hole_activities
                 .filter(hole => hole.type === 'job')
+                .sort((a, b) => Boolean(b.isNew) - Boolean(a.isNew))
+                .sort((a, b) => Boolean(b.condition && b.condition?.()) - Boolean(a.condition && a.condition?.()))
                 .map(hole => ({
                     name: `
                         <div
-                            style="max-width: 100%; align-items: center;"
-                            class="flex-between width-full pointer-events-none"
+                            style="max-width: 100%;"
+                            class="flex-between flex-dir-col align-start width-full pointer-events-none overflow-hidden"
                         >
-                            <span class="overflow-hidden" style="margin-right: 10px">
-                                <div style="width: fit-content" class="${hole.name.length > 10 ? 'marquee' : ''}">
-                                    ${hole.name}
-                                </div>
-                            </span>
+                            <div class="flex-between align-center width-full pointer-events-none">
+                                <span class="overflow-hidden" style="margin-right: 10px">
+                                    <div style="width: fit-content" class="${hole.label.length > 10 ? 'marquee' : ''}">
+                                        ${hole.icons ? `<span class="outlined-icon">${hole.icons.map(icon => App.getIcon(icon, true)).join('')}</span>` : ''}
+                                        ${hole.label}
+                                    </div>
+                                </span>
 
-                            <span style="padding: 2px; margin: 0" class="flex flex-dir-col flex-gap-025 font-small">
-                                <span class="flex flex-gap-025 align-center">${App.getIcon('clock', true)}${Math.ceil(hole.duration / 1000 / 60)}</span>
-                                <span class="flex flex-gap-025 align-center">${App.getIcon('special:gold', true)}${hole.payAmount}</span>
-                            </span>
+                                ${hole.isNew ? App.getBadge('new', 'left red') : ''}
+
+                                <span style="padding: 2px; margin: 0" class="flex flex-dir-col flex-gap-025 font-small">
+                                    <span class="flex flex-gap-025 align-center">${App.getIcon('clock', true)}${Math.ceil(hole.duration / 1000 / 60)}</span>
+                                    <span class="flex flex-gap-025 align-center">${App.getIcon('special:gold', true)}${hole.payAmount}</span>
+                                </span>
+                            </div>
+
+                            ${hole.skillDescription ?
+                                `<small class="marquee opacity-07 font-small">${hole.skillDescription}</small>` :
+                                ''}
                         </div>
                     `,
                     class: 'large',
+                    _disable: hole.condition && !hole.condition(),
                     onclick: () => {
                         return App.displayConfirm(...GenericUIDef.binaryConfirm({
                             text: `
-                            ${App.petDefinition.name} will do
-                            <b>${hole.name}</b>
+                            ${App.petDefinition.name} will work as
+                            <b>${hole.label}</b>
                             for
-                            <b>${moment(hole.duration + Date.now()).fromNow(true)}</b>
+                            <b>${humanizeExactDuration(hole.duration)}</b>
                             and gets paid
                             <b>${App.getIcon('special:gold', true)} ${hole.payAmount}</b>
                             `,

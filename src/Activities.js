@@ -2418,7 +2418,10 @@ class Activities {
     }
     static async goToCurrentRabbitHole() {
         const { current_rabbit_hole: currentRabbitHole } = App.pet.stats;
-        const rabbitHoleDefinition = App.definitions.rabbit_hole_activities.find(activity => activity.name === currentRabbitHole.name);
+        const rabbitHoleDefinition =
+            App.definitions.rabbit_hole_activities.find(
+                (activity) => activity.name === currentRabbitHole.name,
+            );
         const hasVisualizer = Boolean(rabbitHoleDefinition?.onVisualize);
 
         const outOverlay = new Object2d({
@@ -2427,12 +2430,14 @@ class Activities {
             invisible: hasVisualizer,
         });
 
+        const rabbitHoleLabel = rabbitHoleDefinition?.label || App.pet.stats.current_rabbit_hole.name;
+
         const onEndFn = (isInterrupted) => {
             App.unregisterOnDrawEvent(driverFrameEvent);
 
             if(!isInterrupted){
                 rabbitHoleDefinition?.onEnd?.();
-                App.displayConfirm(`<b>"${App.pet.stats.current_rabbit_hole.name}"</b> activity has ended and ${App.petDefinition.name} is back home!`, [
+                App.displayConfirm(`<b>"${rabbitHoleLabel}"</b> activity has ended and ${App.petDefinition.name} is back home!`, [
                     {
                         name: 'ok',
                         onclick: () => {}
@@ -2475,9 +2480,14 @@ class Activities {
             App.displayConfirm(`
                 <div style="font-size: x-small;" class="solid-surface-stylized b-radius-10">
                     <i  class="fa-solid fa-clock" style="margin-right: 2px;"></i>
-                    <span>${currentRabbitHole.name}</span>
+                    <span>${rabbitHoleLabel}</span>
                 </div>
-                ${App.petDefinition.name} will be ${hasVisualizer ? 'done' : 'back'} <b>${moment(currentRabbitHole.endTime).fromNow()}</b>
+                ${App.petDefinition.name}
+                will be ${hasVisualizer ? "done" : "back"}
+                <b>in ${humanizeExactDuration(
+                    moment(currentRabbitHole.endTime)
+                        .diff(moment())
+                )}</b>
                 `, [
                 {
                     name: 'end early',
@@ -4486,7 +4496,6 @@ class Activities {
 
         const bathClippedObject = new Object2d({
             img: App.scene.bathroom.image,
-            img: 'resources/img/background/house/galaxy_01.png',
             x: 0, y: 0, z: 19,
             clip: [
                 [38, 51],
@@ -4919,6 +4928,7 @@ class Activities {
         App.setScene(App.scene.classroom);
 
         const initialPetZ = App.pet.z;
+        App.pet.stopMove();
         App.pet.triggerScriptedState(
             "idle",
             App.INF,
