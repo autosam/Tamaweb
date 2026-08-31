@@ -775,7 +775,7 @@ const App = {
             return { x, y, r, ignore };
         }
 
-        const TOTAL = window.innerWidth > 600 ? 50 : 30;
+        const TOTAL = clamp(Math.floor(window.innerWidth / 26), 20, 100);
         for(let i = 0; i < TOTAL; i++){
             const size = {
                 x: 256,
@@ -788,8 +788,8 @@ const App = {
 
             const position = getEvenEdgePosition(i, TOTAL, size.x, size.y);
             if(position.ignore) continue;
-            position.x += random(-24, 24);
-            position.y += random(-24, 24);
+            position.x += random(-20, 20);
+            position.y += random(-20, 20);
 
             let currentAsset = randomFromArray(currentDecorationDef.assets.slice(1));
             if (random(0, 1)) currentAsset = currentDecorationDef.assets[0];
@@ -3641,7 +3641,7 @@ const App = {
                     _ignore: App.isStoragePersistent,
                     name: `
                         <span>
-                            <b class="blink" style="color: red;">Your save data is at risk.</b><br> Your browser may <b>delete</b> it unexpectedly.
+                            Make sure to backup your progress regularly to prevent progress loses.
                         </span>
                         <div class="flex flex-dir-col mt-2">
                             <button id="emergency-backup" class="generic-btn stylized primary solid"> ${App.getIcon('download')} Backup </button>
