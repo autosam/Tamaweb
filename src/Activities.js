@@ -4061,9 +4061,11 @@ class Activities {
     }
     static async pet(engageTimer){
         App.sendAnalytics('petting');
+        const initialZ = App.pet.z;
         App.pet.stopMove();
         App.pet.x = '50%';
         App.pet.targetY = 132;
+        App.pet.z = App.constants.ACTIVE_PET_Z + 5;
         App.pet.shadowOffset = 999;
         App.toggleGameplayControls(false);
         App.canProceed('ask_to_be_petted', 0); // trigger autonomous asking cooldown
@@ -4082,6 +4084,7 @@ class Activities {
             App.toggleGameplayControls(true);
             App.pet.shadowOffset = 0;
             App.pet.scale = 1;
+            App.pet.z = initialZ;
             App.pet.playCheeringAnimationIfTrue(patCount);
             App.pet.stats.current_expression += 1;
             App.pet.stats.current_endurance += 1;
@@ -4226,11 +4229,11 @@ class Activities {
 
         App.toggleGameplayControls(false);
 
-        const EGG_TARGET_Y = 72;
-
         const egg = App.pet.eggObject;
-        egg.y = -50;
         egg.opacity = 0;
+        egg.positionOffset.y = -120;
+
+        window.egg = egg;
 
         App.playSound('resources/sounds/cute.ogg', true);
         setTimeout(() => App.playSound('resources/sounds/cute.ogg', true), 200);
@@ -4242,10 +4245,10 @@ class Activities {
             opacity: 0,
             targetOpacity: 1,
             onDraw: (me) => {
-                egg.y = clamp(egg.y + 0.055 * App.deltaTime, -100, EGG_TARGET_Y);
-                if(egg.y > 0) egg.opacity = clamp(egg.opacity + 0.002 * App.deltaTime, 0, 1);
+                egg.positionOffset.y = clamp(egg.positionOffset.y + 0.055 * App.deltaTime, -100, 0);
+                if(egg.positionOffset.y > -70) egg.opacity = clamp(egg.opacity + 0.002 * App.deltaTime, 0, 1);
 
-                if(egg.y >= EGG_TARGET_Y && me.targetOpacity !== 0){
+                if(egg.positionOffset.y >= 0 && me.targetOpacity !== 0){
                     App.playSound('resources/sounds/task_complete.ogg', true);
                     me.targetOpacity = 0;
                     setTimeout(() => {
