@@ -360,7 +360,7 @@ class Drawer {
 
         this.objects[object.drawerId] = null;
         object.isRemoved = true;
-        object.onRemove?.();
+        object.onRemove?.(object);
 
         // fixme: very poor performance over large active objects,
         // every object loops over the entire objects list on removal

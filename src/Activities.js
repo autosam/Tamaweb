@@ -6513,8 +6513,8 @@ class Activities {
                     me?.removeObject();
                 }
             }
-            const spawnImpactEffect = (color = {r: 0, g: 255, b: 0}) => {
-                const bb = App.pet.getBoundingBox();
+            const spawnImpactEffect = (me) => {
+                const bb = me.getBoundingBox();
                 Prefab.fadingSmoke({
                     x: bb.centerX,
                     y: bb.centerY,
@@ -6525,11 +6525,9 @@ class Activities {
             const progress = (isScoring) => {
                 if(isScoring) {
                     score++;
-                    spawnImpactEffect({r: 0, g: 255, b: 0});
                     App.playSound(`resources/sounds/cute.ogg`, true)
                 } else {
                     lives--
-                    spawnImpactEffect({r: 255, g: 0, b: 0});
                     App.playSound(`resources/sounds/sad.ogg`, true)
                 }
                 updateUI();
@@ -6580,6 +6578,7 @@ class Activities {
                             progress(false);
                         }
                     },
+                    onRemove: spawnImpactEffect,
                 })
                 bat.showOutline('red');
                 return;
@@ -6610,6 +6609,7 @@ class Activities {
                                 progress(true);
                             }
                         },
+                        onRemove: spawnImpactEffect,
                     })
                     treat.showOutline();
                     // treat.showBoundingBox();
