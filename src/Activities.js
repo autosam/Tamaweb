@@ -3886,6 +3886,7 @@ class Activities {
         skipCamera,
         resultFoodName,
         resultFoodAmount,
+        ingredientObjects,
     } = {}){
         App.closeAllDisplays();
         App.pet.triggerScriptedState('idle', App.INF, 0, false);
@@ -3923,14 +3924,26 @@ class Activities {
 
         const starObjects = [];
         for(let i = 0; i < 3; i++){
-            const img = new Object2d({
-                img: 'resources/img/misc/star_01.png',
-                width: 22, height: 22, y: '50%', x: '50%', z: 30.5,
-                _current: 2.0944 * i, pulseScaleFloat: i,
-                clipCircle: true, parent: potObject,
-                noPreload: true,
-                onDraw: starLogicHandler,
-            })
+            let img;
+
+            if(ingredientObjects && ingredientObjects[i]) {
+                img = ingredientObjects[i];
+            } else {
+                img = new Object2d({
+                    img: 'resources/img/misc/star_01.png',
+                })
+            }
+            img.width = 22;
+            img.height = 22;
+            img.y = '50%';
+            img.x = '50%';
+            img.z = 30.5;
+            img.clipCircle = true;
+            img._current = 2.0944 * i;
+            img.pulseScaleFloat = i;
+            img.onDraw = starLogicHandler;
+            img.parent = potObject;
+
             starObjects.push(img);
         }
 
@@ -3940,11 +3953,8 @@ class Activities {
             if(currentTargetImgIndex < starObjects.length && !skipCamera){
                 App.useWebcam((imgData) => {
                     if((!imgData || imgData == -1)){
-                        // potObject.removeObject();
-                        // App.pet.stopScriptedState();
-                        // App.toggleGameplayControls(true);
                         imgData = 'resources/img/misc/exclam_01.png';
-                        failChance += 35;
+                        failChance += 25;
                     }
                     starObjects[currentTargetImgIndex].setImg(imgData);
                     currentTargetImgIndex++;

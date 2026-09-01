@@ -5162,6 +5162,15 @@ const App = {
                                                                                 resultFoodName: food.name,
                                                                                 resultFoodAmount: currentCookAmount,
                                                                                 stirringSpeed: 0.0095,
+                                                                                ingredientObjects: food.ingredients.map(name => (
+                                                                                    new Object2d({
+                                                                                        img: App.constants.PLANT_SPRITESHEET,
+                                                                                        spritesheet: {
+                                                                                            ...App.constants.PLANT_SPRITESHEET_DIMENSIONS,
+                                                                                            cellNumber: App.definitions.plant[name].sprite + 2,
+                                                                                        },
+                                                                                    })
+                                                                                )),
                                                                             });
                                                                         },
                                                                     },
