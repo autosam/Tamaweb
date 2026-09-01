@@ -236,8 +236,8 @@ class Pet extends Object2d {
                         parent: this,
                         img: accessory.image,
                         // z: accessory.front ? (this.z + 0.1) || 5.1 : (this.z - 0.1) || 4.9,
-                        // z: this.z,
-                        localZ: accessory.front ? 0.001 : -0.001,
+                        z: this.z,
+                        localZ: accessory.front ? 0.0001 : -0.0001,
                         scale: 1,
                         spritesheet: {
                             cellNumber: 1,
