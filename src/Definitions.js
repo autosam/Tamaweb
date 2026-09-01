@@ -180,7 +180,7 @@ App.definitions = (() => {
                 name: 'Work',
                 image: 'resources/img/misc/activity_building_work.png',
                 onEnter: () => App.handlers.open_works_list(),
-                isNew: false,
+                isNew: true,
             },
             {
                 name: `Underworld Entrance`,
@@ -3364,7 +3364,7 @@ App.definitions = (() => {
             {
                 name: 'school_teacher',
                 label: 'School Teacher',
-                condition: () => App.pet.stats.current_logic > 85,
+                condition: () => App.pet.stats.current_logic >= 80,
                 duration: App.constants.ONE_HOUR * 2.5,
                 icons: ['special:logic'],
                 skillDescription: 'Requires high <b>Logic</b> skill',
@@ -3379,7 +3379,7 @@ App.definitions = (() => {
             {
                 name: 'body_builder',
                 label: 'Body Builder',
-                condition: () => App.pet.stats.current_endurance > 85,
+                condition: () => App.pet.stats.current_endurance >= 80,
                 duration: App.constants.ONE_HOUR * 2.25,
                 icons: ['special:endurance'],
                 skillDescription: 'Requires high <b>Endurance</b> skill',
