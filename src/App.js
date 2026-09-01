@@ -3271,7 +3271,7 @@ const App = {
                         const addResourceChar = (resource, index) => {
                             chars.push({
                                 def: new PetDefinition({
-                                    sprite: resource.sprite,
+                                    sprite: resource.resId || resource.sprite,
                                 }),
                                 name: resource.name || `#${index}`,
                                 src: resource.resId,
