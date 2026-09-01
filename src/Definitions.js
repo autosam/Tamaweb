@@ -971,7 +971,7 @@ App.definitions = (() => {
             },
             "expression skill potion": {
                 sprite: 1053,
-                expression_increase: 40,
+                expression_increase: 20,
                 price: 250,
                 type: 'med',
                 unbuyable: true,
@@ -980,7 +980,7 @@ App.definitions = (() => {
             },
             "logic skill potion": {
                 sprite: 1053,
-                logic_increase: 40,
+                logic_increase: 20,
                 price: 250,
                 type: 'med',
                 unbuyable: true,
@@ -989,7 +989,7 @@ App.definitions = (() => {
             },
             "endurance skill potion": {
                 sprite: 1053,
-                endurance_increase: 40,
+                endurance_increase: 20,
                 price: 250,
                 type: 'med',
                 unbuyable: true,
