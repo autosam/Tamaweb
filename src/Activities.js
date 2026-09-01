@@ -3908,7 +3908,7 @@ class Activities {
         });
         const potTopObject = new Object2d({
             img: 'resources/img/misc/cooking_pot_p03.png',
-            z: 30.4, x: 0, y: 0, parent: potObject,
+            z: 31, x: 0, y: 0, parent: potObject,
         });
 
         const starLogicHandler = (me) => {
