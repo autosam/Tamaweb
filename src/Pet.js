@@ -1,7 +1,6 @@
 class Pet extends Object2d {
     // basic init
     defaultElevation = -20;
-    y = '100%';
     z = App.constants.ACTIVE_PET_Z;
     depthMode = Object2d.DEPTH_MODE.y;
     additionalY = this.defaultElevation;
@@ -32,8 +31,10 @@ class Pet extends Object2d {
             image,
             spritesheet: petDefinition.spritesheet,
         };
+
         super(config);
 
+        this.y = '100%';
         this.petDefinition = petDefinition;
         this.stats = this.petDefinition.stats;
         this.inventory = this.petDefinition.inventory;

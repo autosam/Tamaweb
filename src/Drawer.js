@@ -88,29 +88,8 @@ class Drawer {
                 }
             }
 
-            if (object.x?.toString().indexOf("%") >= 0) {
-                let width = object.spritesheet
-                    ? object.spritesheet.cellSize
-                    : object.width || object.image.width;
-                object.x =
-                    this.getRelativePositionX(
-                        Number(
-                            object.x
-                                .toString()
-                                .slice(0, object.x.toString().length - 1),
-                        ),
-                    ) -
-                    width / 2;
-            }
-            if (object.y?.toString().indexOf("%") >= 0) {
-                let height = object.spritesheet
-                    ? object.spritesheet.cellSize
-                    : object.height || object.image.height;
-                object.y =
-                    this.getRelativePositionY(
-                        Number(object.y.slice(0, object.y.length - 1)),
-                    ) -
-                    height / 2;
+            if(object.y?.toString().indexOf("%") >= 0 && object instanceof Pet){
+                console.log('how', object, object.x, object.y)
             }
 
             let x = object.x + (object.static ? 0 : this.cameraPosition.x),

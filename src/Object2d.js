@@ -2,8 +2,8 @@ class Object2d {
     static defaultDrawer;
     static colorOverrides;
 
-    x = '50%';
-    y = '50%';
+    #x = '50%';
+    #y = '50%';
     z = App.constants.ACTIVE_PET_Z;
     rotation = 0;
     imageSrc = '';
@@ -37,6 +37,9 @@ class Object2d {
         }
 
         this.config = config;
+
+        this.x = this.config.x;
+        this.y = this.config.y;
 
         if(this.config.onClick){
             this.onClick = () => {
@@ -247,6 +250,43 @@ class Object2d {
     hideOutline(){
         this.filter = this._initialFilter != null ? this._initialFilter : this.filter;
         this._initialFilter = this.filter;
+    }
+
+    set x(value){
+        this.#x = value;
+        if(typeof value === 'string') {
+            if (value?.toString().indexOf("%") >= 0) {
+                const percentageValue = Number(value.slice(0, value.indexOf("%")));
+                const width = this.spritesheet
+                    ? this.spritesheet.cellSize
+                    : this.width || this.image?.width;
+                this.#x =
+                    this.drawer?.getRelativePositionX(
+                        percentageValue,
+                    ) - width / 2;
+            }
+        }
+    }
+    get x(){
+        return this.#x;
+    }
+    set y(value){
+        this.#y = value;
+        if(typeof value === 'string') {
+            if (value?.toString().indexOf("%") >= 0) {
+                const percentageValue = Number(value.slice(0, value.indexOf("%")));
+                const height = this.spritesheet
+                    ? this.spritesheet.cellSize
+                    : this.height || this.image?.height;
+                this.#y =
+                    this.drawer?.getRelativePositionY(
+                        percentageValue,
+                    ) - height / 2;
+            }
+        }
+    }
+    get y(){
+        return this.#y;
     }
     static setColorOverrides(colors){
         Object2d.colorOverrides = colors;
