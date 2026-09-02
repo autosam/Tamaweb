@@ -917,7 +917,7 @@ class Activities {
             pet.lookAt(false);
             pet.setState('eating');
 
-            App.pet.stats.current_hunger += hunger_replenish * 1.25;
+            App.pet.stats.current_hunger += hunger_replenish * 1.5;
             App.pet.stats.current_fun += random(15, 30);
 
             const wantedFoodItem = App.definitions.food[App.pet.stats.current_want.item];
