@@ -611,9 +611,16 @@ const App = {
         });
 
         if (navigator.storage && "persist" in navigator.storage) {
-            navigator.storage.persist().then((persistent) => {
-                App.isStoragePersistent = persistent;
-            });
+            if(App.playTime <= App.constants.ONE_MINUTE * 30) {
+                navigator.storage.persist();
+                // do not bother new users with storage persistence
+                // and backup reminders
+                App.isStoragePersistent = true;
+            } else {
+                navigator.storage.persist().then((persistent) => {
+                    App.isStoragePersistent = persistent;
+                });
+            }
         }
 
         const observer = new MutationObserver((mutationsList) => {
