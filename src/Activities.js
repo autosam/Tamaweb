@@ -2434,6 +2434,7 @@ class Activities {
 
         const onEndFn = (isInterrupted) => {
             App.unregisterOnDrawEvent(driverFrameEvent);
+            App.toggleGameplayControls(false);
 
             if(!isInterrupted){
                 rabbitHoleDefinition?.onEnd?.();
@@ -4963,6 +4964,7 @@ class Activities {
             true,
             () => {
                 backgroundMusic.stop();
+                App.pet.z = initialPetZ;
             },
             (me) => {
                 if (
