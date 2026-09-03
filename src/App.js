@@ -1477,11 +1477,11 @@ const App = {
                 })) return showAlreadyUsed();
                 break;
             // update specific
-            case "LUCKY":
-            case "FAVORITE":
-            case "GIVEGIFT":
+            case "TEACHER":
+            case "PATCHY":
+            case "BODYBUILDER":
                 if(!addEvent(codeEventId, () => {
-                    const goldAmount = 200, missionPtsAmount = 50;
+                    const goldAmount = 150, missionPtsAmount = 50;
                     App.pet.stats.gold += goldAmount;
                     Missions.currentPts += missionPtsAmount;
                     App.displayPopup(`You've redeemed <b>$${goldAmount}</b>, <b>${missionPtsAmount} Mission pts</b>!`, 4000);
