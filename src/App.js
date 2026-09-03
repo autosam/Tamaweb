@@ -1479,7 +1479,7 @@ const App = {
             // update specific
             case "TEACHER":
             case "PATCHY":
-            case "BODYBUILDER":
+            case "BODYBUILD":
                 if(!addEvent(codeEventId, () => {
                     const goldAmount = 150, missionPtsAmount = 50;
                     App.pet.stats.gold += goldAmount;
