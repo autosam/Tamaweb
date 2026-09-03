@@ -5075,6 +5075,32 @@ class Activities {
             {y: '100%'},
         ]
 
+        const attachDumbleToActor = (parent) => {
+            return Prefab.item(App.definitions.item.dumble, {
+                parent: parent,
+                x: 4,
+                y: 0,
+                z: parent.z,
+                isRelative: true,
+                opacity: 1,
+                _float: Math.random() * Math.PI,
+                onDraw: (me) => {
+                    if(!me.parent.isDuringScriptedState()) {
+                        return me.removeObject();
+                    }
+
+                    me._float += 0.009 * App.deltaTime;
+                    const float = Math.sin(me._float);
+                    me.y = -3 - (float * 2);
+
+                    const isTargetState = ['uncomfortable', 'shocked'].includes(me.parent.state);
+                    me.opacity = isTargetState ? 1 : 0;
+
+                    me.localZ = me.parent.localZ;
+                }
+            });
+        }
+
         const stateDriver = (me) => {
             if (
                 App.time - (me.lastAnimationChangeMs ?? 0) <
@@ -5098,13 +5124,15 @@ class Activities {
                 'shocked',
                 'mild_uncomfortable',
                 'mild_uncomfortable',
-                'mild_uncomfortable',
+                'uncomfortable',
+                'uncomfortable',
                 'uncomfortable',
             ]))
             me.inverted = Boolean(random(0, 1));
         }
 
         App.pet.stopMove();
+        attachDumbleToActor(App.pet);
         App.pet.triggerScriptedState(
             "idle",
             App.INF,
@@ -5116,19 +5144,19 @@ class Activities {
             stateDriver,
         );
 
-        const STUDENT_COUNT = 2;
-
-        const students = new Array(STUDENT_COUNT)
+        const NPC_COUNT = 2;
+        const npcActors = new Array(NPC_COUNT)
             .fill(null)
             .map(() => App.getRandomPetDef(PetDefinition.LIFE_STAGE.ADULT))
             .map((def) => new Pet(def));
 
-        const spacing = 100 / STUDENT_COUNT;
-        students.forEach((student, i) => {
-            student.parent = App.currentSceneObject;
-            student.z = App.constants.ACTIVE_PET_Z;
-            student.x = `${i * spacing + (spacing / 2)}%`;
-            student.triggerScriptedState(
+        const spacing = 100 / NPC_COUNT;
+        npcActors.forEach((npc, i) => {
+            npc.parent = App.currentSceneObject;
+            npc.z = App.constants.ACTIVE_PET_Z;
+            npc.x = `${i * spacing + (spacing / 2)}%`;
+            attachDumbleToActor(npc);
+            npc.triggerScriptedState(
                 "idle",
                 App.INF,
                 false,

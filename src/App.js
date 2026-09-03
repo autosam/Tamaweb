@@ -2205,7 +2205,7 @@ const App = {
 
         App.currentScene?.onUnload?.(scene);
 
-        App.currentSceneObject = new Object2d({});
+        App.currentSceneObject = new Object2d({ x: 0, y: 0 });
 
         App.currentScene = scene;
         if(!noPositionChange){

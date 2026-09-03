@@ -398,6 +398,7 @@ hr {
     flex-direction: column;
     background: var(--bg-color, black);
     transition: background 0.2s ease;
+    /*background: linear-gradient(180deg, var(--bg-color, black), color-mix(in srgb, var(--bg-color, black) 50%, #ffb362));*/
 }
 .loading-text #loading-error {
     color: rgb(70, 55, 55);

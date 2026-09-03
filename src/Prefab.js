@@ -163,5 +163,21 @@ const Prefab = {
                 if(me.opacity <= 0.05 || me.scale <= 0.05) me.removeObject();
             }
         })
+    },
+    item(def, {
+        x,
+        y,
+        z = App.constants.ACTIVE_ITEM_Z,
+        ...rest
+    } = {}) {
+        return new Object2d({
+            img: App.constants.ITEM_SPRITESHEET,
+            spritesheet: {
+                ...App.constants.ITEM_SPRITESHEET_DIMENSIONS,
+                cellNumber: def.sprite,
+            },
+            x, y, z,
+            ...rest
+        });
     }
 }
