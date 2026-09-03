@@ -226,7 +226,7 @@ class Object2d {
             width,
             height,
             centerX: x + (width / 2),
-            centerY: y + (width / 2)
+            centerY: y + (height / 2)
         };
     }
     isColliding(otherBoundingBox){
