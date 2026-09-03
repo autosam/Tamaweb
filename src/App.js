@@ -1619,6 +1619,15 @@ const App = {
                     case 'activity:reckoning':
                         Activities.reckoning(true);
                         break;
+                    case 'give_food_once':
+                        const [foodKey, amount] = commandPayload.split('|');
+                        const foodDef = App.definitions.food[foodKey];
+                        if(!foodDef) return showInvalidError();
+                        if(!addEvent(codeEventId, () => {
+                            App.addNumToObject(App.pet.inventory.food, foodKey, Number(amount));
+                            App.displayPopup(`You've redeemed <b>x${amount} ${foodKey}</b>`, 4000);
+                        })) return showAlreadyUsed();
+                        break;
                     default: showInvalidError();
                 }
         }
