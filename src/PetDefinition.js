@@ -99,10 +99,11 @@ class PetDefinition {
                     img: 'resources/img/misc/thought_exclaim.png',
                     x: 0, y: 0,
                     onDraw: (me) => {
-                        me.mimicParent(['scale']);
+                        me.mimicParent();
                         const halfCellSize = me.parent.spritesheet.cellSize / 2;
-                        me.x += halfCellSize - me.image.naturalWidth / 2;
-                        me.y -= halfCellSize + 4 + (me.parent.spritesheet.offsetY || 0);
+                        const scale = me.scale || 1;
+                        me.x += (halfCellSize - me.image.naturalWidth / 2) * scale;
+                        me.y -= (halfCellSize + 4 + (me.parent.spritesheet.offsetY || 0)) * scale;
                         me.z = me.parent.z + 0.1;
                     },
                     interval: 2,
@@ -135,7 +136,6 @@ class PetDefinition {
                                 img: `resources/img/misc/heart_particle_0${random(1, 2)}.png`,
                                 x: 0,
                                 y: 0,
-                                z: me.parent.z + 0.1,
                                 scale: 3,
                                 opacity: 1,
 

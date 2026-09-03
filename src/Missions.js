@@ -72,10 +72,7 @@ const Missions = {
         if(data?.currentPts) this.currentPts = data?.currentPts;
         if(data?.currentStep) this.currentStep = data?.currentStep;
         if(data?.refreshTime) this.refreshTime = data?.refreshTime;
-
-        if(this.refreshTime < Date.now()){
-            this.refresh();
-        }
+        this.refreshIfNeeded();
     },
     done: function(type, attribute0) {
         if(!this.current?.length) return;
@@ -92,6 +89,11 @@ const Missions = {
     },
     setAllAsDone: function(){
         this.currentStep = this.MAX_STEPS;
+    },
+    refreshIfNeeded: function(){
+        if(this.refreshTime <= Date.now()) {
+            this.refresh();
+        }
     },
     refresh: function(){
         const oneDayInMs = 1000 * 60 * 60 * 24;
@@ -257,6 +259,8 @@ const Missions = {
         return this.current.filter(m => m.isDone && !m.isClaimed).length;
     },
     openMenu: function(){
+        this.refreshIfNeeded();
+
         if(!this.current?.length) return;
 
         const SHOW_REWARDS_BADGE = false;

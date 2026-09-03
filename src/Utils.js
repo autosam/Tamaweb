@@ -103,6 +103,34 @@ const ellipsis = (str, length = 15) => {
     }
     return str;
 }
+function humanizeExactDuration(dur) {
+    const duration = moment.duration(dur);
+    const diff = duration.asMilliseconds();
+
+    const days = Math.floor(duration.asDays());
+    const hours = Math.floor(duration.asHours()) % 24;
+    const minutes = Math.floor(duration.asMinutes()) % 60;
+    const seconds = Math.floor(duration.asSeconds()) % 60;
+
+    const parts = [];
+
+    if (days > 0) {
+        parts.push(`${days}d`);
+    }
+    if (hours > 0) {
+        parts.push(`${hours}h`);
+    }
+    if (minutes > 0 || hours <= 0) {
+        parts.push(`${minutes}m`);
+    }
+    if (seconds > 0 && hours === 0) {
+        parts.push(`${seconds}s`);
+    }
+
+    if (parts.length === 0) return 'Less than a second';
+
+    return parts.join(' ');
+}
 
 function sanitize (string) {
     // var entityMap = {

@@ -24,6 +24,9 @@ class AnimalDefinition extends PetDefinition {
     increaseHappiness(amt){
         return this.feed(amt);
     }
+    shouldLeave(){
+        return this.stats.current_happiness <= 0;
+    }
     serialize(){
         return {
             ...App.minimalizePetDef(this.serializeStats(true)),
@@ -78,6 +81,7 @@ class AnimalDefinition extends PetDefinition {
 
 class Animal extends Pet {
     shouldDisplaySleepParticles = false;
+    ignoreAnimationSetObjects = true;
 
     constructor(definition, additionalProps){
         super(definition, additionalProps);
@@ -86,8 +90,6 @@ class Animal extends Pet {
 
         this.z = App.constants.ACTIVE_PET_Z;
         this.animalDefinition = this.petDefinition;
-
-        this.ignoreAnimationSetObjects = true;
     }
     async interactWith(other, interactionConfig = {
         animation: randomFromArray(['cheering', 'shocked', 'blush', 'sitting', 'angry', 'kissing']),

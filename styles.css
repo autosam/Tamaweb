@@ -398,6 +398,7 @@ hr {
     flex-direction: column;
     background: var(--bg-color, black);
     transition: background 0.2s ease;
+    /*background: linear-gradient(180deg, var(--bg-color, black), color-mix(in srgb, var(--bg-color, black) 50%, #ffb362));*/
 }
 .loading-text #loading-error {
     color: rgb(70, 55, 55);
@@ -1017,6 +1018,9 @@ button {
 .align-end {
     align-items: end;
 }
+.align-start {
+    align-items: start;
+}
 
 .justify-center {
     justify-content: center;
@@ -1393,6 +1397,10 @@ input#background-color-picker {
 }
 .badge.transparent {
     background: transparent;
+}
+.badge.left {
+    left: 0;
+    right: unset;
 }
 
 .screen-wrapper {
@@ -3269,5 +3277,29 @@ c-sprite.ghost.devil::after {
     }
     50% {
         transform: scale(1);
+    }
+}
+
+.overlay-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    pointer-events: none;
+}
+.overlay-container > img {
+    --shadow-color: #00000045;
+    animation: leaf-wind 3s infinite alternate ease-in-out;
+    position: absolute;
+    filter: drop-shadow(4px -2px 2px var(--shadow-color))
+}
+@keyframes leaf-wind {
+    0% {
+        transform: rotate(5deg);
+    }
+    50% {
+        transform: rotate(-5deg);
+    }
+    100% {
+        transform: rotate(0deg);
     }
 }

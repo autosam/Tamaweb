@@ -39,6 +39,7 @@ const App = {
         skillsAffectingEvolution: true,
         season: 'auto',
         tapEffect: true,
+        decorationOverlay: 'leaves_01',
     },
     constants: {
         ONE_HOUR: 1000 * 60 * 60,
@@ -378,7 +379,6 @@ const App = {
             let awaySeconds = Math.round(elapsedTime / 1000);
             let awayMinutes = Math.round(awaySeconds / 60);
             let awayHours = Math.round(awayMinutes / 60);
-            // console.log({awayHours, awayMinutes, awaySeconds})
 
             let message;
             if(awaySeconds < 60) message = `${awaySeconds} seconds`;
@@ -600,10 +600,27 @@ const App = {
             // App.save();
         }
 
+        let resizeEventTimeout;
+        window.addEventListener('resize', () => {
+            UI.hide(document.querySelector('.overlay-container'));
+            clearTimeout(resizeEventTimeout);
+            resizeEventTimeout = setTimeout(() => {
+                UI.show(document.querySelector('.overlay-container'));
+                App.initDecorationOverlay();
+            }, App.constants.ONE_SECOND * 0.1);
+        });
+
         if (navigator.storage && "persist" in navigator.storage) {
-            navigator.storage.persist().then((persistent) => {
-                App.isStoragePersistent = persistent;
-            });
+            if(App.playTime <= App.constants.ONE_MINUTE * 30) {
+                navigator.storage.persist();
+                // do not bother new users with storage persistence
+                // and backup reminders
+                App.isStoragePersistent = true;
+            } else {
+                navigator.storage.persist().then((persistent) => {
+                    App.isStoragePersistent = persistent;
+                });
+            }
         }
 
         const observer = new MutationObserver((mutationsList) => {
@@ -692,6 +709,116 @@ const App = {
         document.addEventListener('mouseup', touchDownHandler);
         document.addEventListener('touchend', touchDownHandler);
     },
+    initDecorationOverlay: function(){
+        if(App.isOnElectronClient) return;
+
+        const container = document.querySelector('.overlay-container');
+        container.innerHTML = '';
+
+        const { decorationOverlay: overlayKey } = App.settings;
+        const currentDecorationDef = App.definitions.decoration_overlay[overlayKey];
+
+        if (
+            !overlayKey ||
+            !currentDecorationDef ||
+            window.innerWidth <= 300 ||
+            window.innerHeight <= 420
+        )
+            return;
+
+        const getAngleToCenter = (objectX, objectY) => {
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            const angleRad = Math.atan2(centerY - objectY, centerX - objectX);
+            const angleDeg = angleRad * (180 / Math.PI);
+            return angleDeg + 90;
+        }
+        const getEvenEdgePosition = (index, total, objectWidth, objectHeight) => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            const halfWidth = objectWidth / 2;
+            const halfHeight = objectHeight / 2;
+
+            // the center travels around a rectangle expanded by half the
+            // object's dimensions so that the object's edges touch the viewport.
+            const left = -halfWidth;
+            const right = width - halfWidth;
+            const top = -halfHeight;
+            const bottom = height - halfHeight;
+
+            const horizontalLength = right - left;
+            const verticalLength = bottom - top;
+
+            const perimeter = 2 * (horizontalLength + verticalLength);
+            const position = (index / total) * perimeter;
+
+            let x, y, r, ignore = false;
+
+            if (position < horizontalLength) {
+                // t
+                x = left + position;
+                y = top;
+                r = 180;
+                ignore = false;
+            } else if (position < horizontalLength + verticalLength) {
+                // r
+                x = right;
+                y = top + (position - horizontalLength);
+                r = -90;
+            } else if (position < 2 * horizontalLength + verticalLength) {
+                // b
+                x = right - (position - horizontalLength - verticalLength);
+                y = bottom;
+                r = 0;
+                ignore = false;
+            } else {
+                // l
+                x = left;
+                y = bottom - (position - 2 * horizontalLength - verticalLength);
+                r = 90;
+            }
+
+            return { x, y, r, ignore };
+        }
+
+        const TOTAL = clamp(Math.floor(window.innerWidth / 26), 20, 100);
+        for(let i = 0; i < TOTAL; i++){
+            const size = {
+                x: 256,
+                y: 256
+            };
+
+            const scale = clamp(Math.abs(Math.sin(i * 1)),  0.5, 0.9);
+            size.x *= scale;
+            size.y *= scale;
+
+            const position = getEvenEdgePosition(i, TOTAL, size.x, size.y);
+            if(position.ignore) continue;
+            position.x += random(-20, 20);
+            position.y += random(-20, 20);
+
+            let currentAsset = randomFromArray(currentDecorationDef.assets.slice(1));
+            if (random(0, 1)) currentAsset = currentDecorationDef.assets[0];
+
+            let rotation = getAngleToCenter(position.x, position.y);
+
+            UI.create({
+                parent: container,
+                componentType: 'img',
+                src: App.checkResourceOverride(currentAsset),
+                style: `
+                    left: ${position.x}px;
+                    top: ${position.y}px;
+                    rotate: ${rotation}deg;
+                    width: ${size.x}px;
+                    height: ${size.y}px;
+                    animation-delay: ${i * -150}ms;
+                `,
+            })
+        }
+
+    },
     sendSessionEvent: function(login){
         if(login){
             const analyticsData = {
@@ -750,6 +877,12 @@ const App = {
             } else {
                 UI.hide(bgPattern);
             }
+        }
+
+        // decoration overlay
+        if(!App.temp.decorationOverlayFirstInit){
+            App.temp.decorationOverlayFirstInit = true;
+            this.initDecorationOverlay();
         }
 
         // screen / shell size
@@ -936,6 +1069,14 @@ const App = {
         // document.querySelector('.background-canvas').getContext('2d').drawImage(App.drawer.canvas, 0, 0);
     },
     onPeriodicUpdate: () => {
+        if(
+            App.pet.stats.is_egg ||
+            App.pet.stats.is_at_parents ||
+            App.pet.stats.is_at_vacation ||
+            App.pet.stats.is_dead
+        ) return;
+
+        // automatic birthday
         if(App.settings.automaticAging){
             const nextAutomaticBirthday = App.petDefinition.getNextAutomaticBirthdayDate();
             if(moment().isAfter(nextAutomaticBirthday)){
@@ -949,6 +1090,71 @@ const App = {
             }
         }
 
+        // school invite
+        if(
+            App.petDefinition.lifeStage >= PetDefinition.LIFE_STAGE.child &&
+            App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.teen &&
+            !App.pet.stats.has_received_school_invite &&
+            !App.pet.stats.is_sleeping
+        ){
+            App.pet.stats.has_received_school_invite = true;
+            setTimeout(() => {
+                App.queueEvent(() => {
+                    Activities.getMail({
+                        onEndFn: () => {
+                            App.handlers.show_letter({
+                                headline: 'Official School Invitation',
+                                text: `Dear ${App.userName},<br>${App.petDefinition.name} is now old enough to start school.<br><br>Please make sure they show up to their classes every day, no skipping!`,
+                                sender: 'School Administration'
+                            })
+                        },
+                        noSceneSwitch: true
+                    });
+                }, 'get_school_invitation')
+            }, random(1000, 2000))
+            return;
+        }
+
+        // newspaper delivery
+        const newspaperDeliveryMs = App.getRecord("newspaper_delivery_ms") || 0;
+        const shouldDeliver =
+            moment().startOf("day").diff(moment(newspaperDeliveryMs), "days") >
+            0;
+        if (
+            shouldDeliver &&
+            !App.pet.stats.is_sleeping &&
+            App.canProceed('newspaper_delivery', App.constants.ONE_MINUTE * 20)
+        ) {
+            setTimeout(
+                () => {
+                    App.queueEvent(() => {
+                        Activities.getMail();
+                        App.setRecord("newspaper_delivery_ms", Date.now());
+                    }, 'newspaper_delivery');
+                },
+                random(1000, 2000),
+            );
+            return;
+        }
+
+        // getting robbed
+        if (
+            App.currentScene === App.scene.home &&
+            App.pet.stats.is_sleeping &&
+            !App.pet.isDuringScriptedState() &&
+            App.sky.name === "night" &&
+            App.canProceed('roll_rob_encounter', App.constants.ONE_MINUTE * 10) &&
+            random(0, 100) <= 10 &&
+            App.canProceed('get_robbed', App.constants.ONE_HOUR)
+        ) {
+            return Activities.getRobbed();
+        }
+
+        if(App.time < App.constants.ONE_SECOND * 30) {
+            return false;
+        }
+
+        // receive friend letters
         const friendsPendingLetterResponse = App.petDefinition.friends.filter(def => {
             if(!def.stats.player_sent_letter) return false;
             const responseTime = moment(def.stats.player_sent_letter.time).add(6, 'hours');
@@ -1015,37 +1221,37 @@ const App = {
                             },
                             noSceneSwitch: true
                         });
-                    })
+                    }, 'get_friend_letter')
                 }, random(1000, 2000))
             }
-        }
-
-        if(App.time < App.constants.ONE_SECOND * 30) {
-            return false;
         }
 
         if(App.pet.stats.is_sleeping) return;
 
         // random friend call
         if(
+            !App.haveAnyDisplays() &&
+            App.currentScene === App.scene.home &&
             random(0, 100) < 4 &&
             App.petDefinition.friends.length
         ){
-            if(App.canProceed('friend_call', App.constants.ONE_MINUTE * 30)) {
-                App.queueEvent(App.handlers.receive_friend_call);
+            if(App.canProceed('friend_call', App.constants.ONE_HOUR * 1)) {
+                App.queueEvent(App.handlers.receive_friend_call, 'friend_call');
                 return;
             }
         }
 
         // ask to be petted
         if(
+            !App.haveAnyDisplays() &&
+            App.currentScene === App.scene.home &&
             random(0, 100) < 3 &&
             App.pet.stats.current_care >= 2 &&
             App.playTime > App.constants.ONE_MINUTE * 30 &&
             !App.isOnElectronClient
         ){
             if(App.canProceed('ask_to_be_petted', App.constants.ONE_HOUR * 2)) {
-                App.queueEvent(() => Activities.pet(2000));
+                App.queueEvent(() => Activities.pet(2000), 'ask_to_be_petted');
                 return;
             }
         }
@@ -1145,7 +1351,7 @@ const App = {
             if(App.disableGameplayControls && Boolean(App.gameplayControlsOverwrite))
                 App.playSound('resources/sounds/ui_click_01.ogg', true);
             else
-                App.playSound('resources/sounds/shell_button_down.ogg');
+                App.playSound('resources/sounds/ui_click_09.ogg');
         }
 
         if(!currentDisplay) return handleNoDisplay();
@@ -1271,11 +1477,11 @@ const App = {
                 })) return showAlreadyUsed();
                 break;
             // update specific
-            case "LUCKY":
-            case "FAVORITE":
-            case "GIVEGIFT":
+            case "TEACHER":
+            case "PATCHY":
+            case "BODYBUILD":
                 if(!addEvent(codeEventId, () => {
-                    const goldAmount = 200, missionPtsAmount = 50;
+                    const goldAmount = 150, missionPtsAmount = 50;
                     App.pet.stats.gold += goldAmount;
                     Missions.currentPts += missionPtsAmount;
                     App.displayPopup(`You've redeemed <b>$${goldAmount}</b>, <b>${missionPtsAmount} Mission pts</b>!`, 4000);
@@ -1443,7 +1649,7 @@ const App = {
         //     ])
         // })) return;
 
-        if(addEvent(`update_28_notice`, () => {
+        if(addEvent(`update_29_notice`, () => {
             App.displayList([
                 {
                     name: `New update is available!<b> <div><small>${VERSION}</small></div> ${App.getBadge('new!')}`,
@@ -1458,11 +1664,10 @@ const App = {
                         <div>
                             Check out the new:
                             <ul style="margin: 6px 0px 6px -22px;" class="bold">
-                                <li>Favorites</li>
-                                <li>Lucky Tickets</li>
-                                <li>Visual Overhauls</li>
-                                <li>Social Media Messaging</li>
-                                <li>Lots of quality of life improvements</li>
+                                <li>School Teacher Job</li>
+                                <li>Bodybuilder Job</li>
+                                <li>Overlay Decorations</li>
+                                <li>Lots of improvements and rebalances</li>
                             </ul>
                             and more!
                         </div>
@@ -1548,18 +1753,6 @@ const App = {
             ]);
             App.sendAnalytics('discord_02_notice_shown');
         })) return;
-
-        /* if(App.isSalesDay()){
-            if(addEvent(`sales_day_${dayId}_notice`, () => {
-                App.displayConfirm(`<b>discount day!</b><br>Shops are selling their products at a discounted rate! Check them out and pile up on them!`, [
-                    {
-                        name: 'ok',
-                        class: 'solid primary',
-                        onclick: () => {},
-                    }
-                ]);
-            })) return;
-        } */
     },
     scene: {
         home: new Scene({
@@ -1609,6 +1802,9 @@ const App = {
                         else me.invisible = true;
                     }
                 })
+
+                // random encounters
+                App.runRandomEncounters('home');
             },
             onUnload: function() {
                 App.drawer.selectObjects('poop').forEach(p => p.absHidden = true);
@@ -1757,7 +1953,6 @@ const App = {
         garden: new Scene({
             image: 'resources/img/background/outside/garden_01.png',
             petY: '95%',
-            shadowOffset: -5,
             onLoad: function(args) {
                 this.grassFieldObject = Prefab.grassField({ height: 30 });
                 this.treeBunchObject = Prefab.treeBunch({
@@ -1798,7 +1993,7 @@ const App = {
                 App.handleAnimalsSpawn(true);
 
                 // handle dig spot spawn
-                if(!App.temp.hasActiveDigSpot && App.canProceed('backyardDigSpot', App.constants.ONE_MINUTE * random(30, 60))) {
+                if(!App.temp.hasActiveDigSpot && App.canProceed('backyardDigSpot', App.constants.ONE_MINUTE * random(30, 120))) {
                     const chance = (App.animals?.list?.length || 0) + (App.petDefinition.hasTrait('lucky') ? 4 : 0);
                     App.temp.hasActiveDigSpot = clamp(chance, 0, 9) >= random(0, 18);
                 }
@@ -1911,6 +2106,9 @@ const App = {
         music_classroom: new Scene({
             image: 'resources/img/background/house/music_classroom_01.png',
         }),
+        gym: new Scene({
+            image: 'resources/img/background/house/gym_01.png',
+        }),
         homeworld_getaways: new Scene({
             image: 'resources/img/background/house/homeworld_getaways_01.png',
             noShadows: true,
@@ -2006,13 +2204,16 @@ const App = {
 
         App.currentScene?.onUnload?.(scene);
 
-        App.currentSceneObject = new Object2d({});
+        App.currentSceneObject = new Object2d({ x: 0, y: 0 });
 
         App.currentScene = scene;
         if(!noPositionChange){
             App.pet.x = scene.petX || '50%';
             App.pet.y = scene.petY || '100%';
+            App.pet.positionOffset.x = 0;
+            App.pet.positionOffset.y = 0;
         }
+        // todo: get rid of this
         if(scene.foodsX) App.foods.x = scene.foodsX;
         if(scene.foodsY) App.foods.y = scene.foodsY;
         App.background.setImg(scene.image, true);
@@ -2227,7 +2428,10 @@ const App = {
         const getSpawnableAnimals = () => {
             switch(App.currentScene){
                 case App.scene.home:
-                    return App.animals.list?.filter(animalDef => animalDef.spawnIndoors);
+                    return App.animals.list?.filter(
+                        (animalDef) =>
+                            animalDef.spawnIndoors && !animalDef.shouldLeave(),
+                    );
             }
 
             return App.animals.list;
@@ -2577,7 +2781,7 @@ const App = {
         }
         App.registerOnDrawEvent(checkForDecentTime);
 },
-    runRandomEncounters: function(){
+    runRandomEncounters: function(source = 'initial'){
         if(
             App.pet.stats.is_egg ||
             App.pet.stats.is_at_parents ||
@@ -2585,46 +2789,26 @@ const App = {
             App.pet.stats.is_dead
         ) return;
 
-        // school invite
-        if(
-            App.petDefinition.lifeStage >= PetDefinition.LIFE_STAGE.child &&
-            App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.teen &&
-            !App.pet.stats.has_received_school_invite
-        ){
-            App.pet.stats.has_received_school_invite = true;
-            setTimeout(() => {
-                App.queueEvent(() => {
-                    Activities.getMail({
-                        onEndFn: () => {
-                            App.handlers.show_letter({
-                                headline: 'Official School Invitation',
-                                text: `Dear ${App.userName},<br>${App.petDefinition.name} is now old enough to start school.<br><br>Please make sure they show up to their classes every day, no skipping!`,
-                                sender: 'School Administration'
-                            })
-                        },
-                        noSceneSwitch: true
-                    });
-                })
-            }, random(1000, 2000))
-            return;
+        if(!App.temp.sourceRandomEncounterRan){
+            if(source !== 'initial'){
+                return;
+            }
+            App.temp.sourceRandomEncounterRan = true;
         }
 
-        // newspaper delivery
-        const newspaperDeliveryMs = App.getRecord('newspaper_delivery_ms') || 0;
-        const shouldDeliver = moment().startOf('day').diff(moment(newspaperDeliveryMs), 'days') > 0;
-        if(shouldDeliver && !App.pet.stats.is_sleeping){
-            setTimeout(() => {
-                App.queueEvent(() => {
-                    Activities.getMail();
-                    const nextMs = Date.now();
-                    App.setRecord('newspaper_delivery_ms', nextMs);
-                })
-            }, random(1000, 2000))
-            return;
+        if(!this.canProceed('random_encounters', App.constants.ONE_MINUTE)) return;
+
+        const canRunEncounter = (targetSource) => {
+            if(source === 'initial') return true;
+            return source === targetSource;
         }
 
         // revived encounter
-        if(App.pet.stats.is_revived_once && random(0, 1300) === 13){
+        if (
+            canRunEncounter("initial") &&
+            App.pet.stats.is_revived_once &&
+            random(0, 1300) === 13
+        ) {
             return Activities.reckoning();
         }
 
@@ -2632,13 +2816,8 @@ const App = {
         const encounterChance = App.pet.stats.is_revived_once
             ? random(0, 128)
             : random(0, 256);
-        if(encounterChance === 1){
+        if(canRunEncounter('home') && encounterChance === 1){
             return Activities.encounter();
-        }
-
-        // getting robbed
-        if(random(0, 100) <= 10 && App.pet.stats.is_sleeping && App.sky.name === 'night'){
-            return Activities.getRobbed();
         }
     },
     handlers: {
@@ -2668,32 +2847,44 @@ const App = {
 
             const list = App.definitions.rabbit_hole_activities
                 .filter(hole => hole.type === 'job')
+                .sort((a, b) => Boolean(b.isNew) - Boolean(a.isNew))
+                .sort((a, b) => Boolean(b.condition && b.condition?.()) - Boolean(a.condition && a.condition?.()))
                 .map(hole => ({
                     name: `
                         <div
-                            style="max-width: 100%; align-items: center;"
-                            class="flex-between width-full pointer-events-none"
+                            style="max-width: 100%;"
+                            class="flex-between flex-dir-col align-start width-full pointer-events-none overflow-hidden"
                         >
-                            <span class="overflow-hidden" style="margin-right: 10px">
-                                <div style="width: fit-content" class="${hole.name.length > 10 ? 'marquee' : ''}">
-                                    ${hole.name}
-                                </div>
-                            </span>
+                            <div class="flex-between align-center width-full pointer-events-none">
+                                <span class="overflow-hidden" style="margin-right: 10px">
+                                    <div style="width: fit-content" class="${hole.label.length > 10 ? 'marquee' : ''}">
+                                        ${hole.icons ? `<span class="outlined-icon">${hole.icons.map(icon => App.getIcon(icon, true)).join('')}</span>` : ''}
+                                        ${hole.label}
+                                    </div>
+                                </span>
 
-                            <span style="padding: 2px; margin: 0" class="flex flex-dir-col flex-gap-025 font-small">
-                                <span class="flex flex-gap-025 align-center">${App.getIcon('clock', true)}${Math.ceil(hole.duration / 1000 / 60)}</span>
-                                <span class="flex flex-gap-025 align-center">${App.getIcon('special:gold', true)}${hole.payAmount}</span>
-                            </span>
+                                ${hole.isNew ? App.getBadge('new', 'left red') : ''}
+
+                                <span style="padding: 2px; margin: 0" class="flex flex-dir-col flex-gap-025 font-small">
+                                    <span class="flex flex-gap-025 align-center">${App.getIcon('clock', true)}${Math.ceil(hole.duration / 1000 / 60)}</span>
+                                    <span class="flex flex-gap-025 align-center">${App.getIcon('special:gold', true)}${hole.payAmount}</span>
+                                </span>
+                            </div>
+
+                            ${hole.skillDescription ?
+                                `<small class="marquee opacity-07 font-small">${hole.skillDescription}</small>` :
+                                ''}
                         </div>
                     `,
                     class: 'large',
+                    _disable: hole.condition && !hole.condition(),
                     onclick: () => {
                         return App.displayConfirm(...GenericUIDef.binaryConfirm({
                             text: `
-                            ${App.petDefinition.name} will do
-                            <b>${hole.name}</b>
+                            ${App.petDefinition.name} will work as
+                            <b>${hole.label}</b>
                             for
-                            <b>${moment(hole.duration + Date.now()).fromNow(true)}</b>
+                            <b>${humanizeExactDuration(hole.duration)}</b>
                             and gets paid
                             <b>${App.getIcon('special:gold', true)} ${hole.payAmount}</b>
                             `,
@@ -3456,7 +3647,7 @@ const App = {
                     _ignore: App.isStoragePersistent,
                     name: `
                         <span>
-                            <b class="blink" style="color: red;">Your save data is at risk.</b><br> Your browser may <b>delete</b> it unexpectedly.
+                            Make sure to backup your progress regularly to prevent progress loses.
                         </span>
                         <div class="flex flex-dir-col mt-2">
                             <button id="emergency-backup" class="generic-btn stylized primary solid"> ${App.getIcon('download')} Backup </button>
@@ -3883,7 +4074,7 @@ const App = {
                     }
                 },
                 {
-                    name: `system settings`,
+                    name: `system settings ${App.getBadge()}`,
                     onclick: () => {
                         App.displayList([
                             {
@@ -3968,6 +4159,24 @@ const App = {
                                 },
                                 onclick: () => {
                                     App.handlers.open_background_pattern_list();
+                                    return true;
+                                }
+                            },
+                            {
+                                _mount: (btn) => {
+                                    const hasNew = Object.keys(
+                                        App.definitions.decoration_overlay,
+                                    )
+                                        .map(
+                                            (key) =>
+                                                App.definitions
+                                                    .decoration_overlay[key],
+                                        )
+                                        .some((def) => def.isNew);
+                                    btn.innerHTML = `<span class="overflow-hidden ellipsis">decoration overlay</span> ${hasNew ? App.getBadge('new!') : ''}`
+                                },
+                                onclick: () => {
+                                    App.handlers.open_decoration_overlay_list();
                                     return true;
                                 }
                             },
@@ -4959,6 +5168,15 @@ const App = {
                                                                                 resultFoodName: food.name,
                                                                                 resultFoodAmount: currentCookAmount,
                                                                                 stirringSpeed: 0.0095,
+                                                                                ingredientObjects: food.ingredients.map(name => (
+                                                                                    new Object2d({
+                                                                                        img: App.constants.PLANT_SPRITESHEET,
+                                                                                        spritesheet: {
+                                                                                            ...App.constants.PLANT_SPRITESHEET_DIMENSIONS,
+                                                                                            cellNumber: App.definitions.plant[name].sprite + 2,
+                                                                                        },
+                                                                                    })
+                                                                                )),
                                                                             });
                                                                         },
                                                                     },
@@ -5554,8 +5772,8 @@ const App = {
                         if(!App.pay(price)) return true;
 
                         App.closeAllDisplays();
-                        App.setScene(scene, true);
                         Activities.redecorRoom();
+                        App.setScene(scene, true);
                         scene.image = current.image;
 
                         App.sendAnalytics('home_background_change', scene.image);
@@ -5605,6 +5823,33 @@ const App = {
                         if(App.settings.backgroundPattern === current.image) App.settings.backgroundPattern = false;
                         else App.settings.backgroundPattern = current.image;
                         App.applySettings();
+                        App.save();
+                        return true;
+                    }
+                }
+            })
+
+            sliderInstance = App.displaySlider(list, null, {accept: 'Toggle'});
+            return sliderInstance;
+        },
+        open_decoration_overlay_list: function(){
+            let sliderInstance;
+            const list = Object.keys(App.definitions.decoration_overlay)
+            .map(key => ({ ...App.definitions.decoration_overlay[key], key }))
+            .sort((a, b) => b.isNew - a.isNew)
+            .map(current => {
+                return {
+                    name: `
+                        <img style="box-shadow: inset 0 0 0 100vw #0000009e;" src="${App.checkResourceOverride(current.assets[0])}"></img>
+                        ${current.isNew ? App.getBadge('new!') : ''}
+                        <div>
+                            ${current.name}
+                        </div>
+                    `,
+                    onclick: () => {
+                        if(App.settings.decorationOverlay === current.key) App.settings.decorationOverlay = false;
+                        else App.settings.decorationOverlay = current.key;
+                        App.initDecorationOverlay();
                         App.save();
                         return true;
                     }

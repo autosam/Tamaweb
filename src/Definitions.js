@@ -36,6 +36,7 @@ App.definitions = (() => {
                 color: "#ffb1ee"
             },
         },
+
         /* THEMES */
         themes: [
             'default',
@@ -53,6 +54,7 @@ App.definitions = (() => {
             'color black',
             'color slateblue',
         ],
+
         /* MAIN MENU */
         main_menu: [
             {
@@ -178,7 +180,7 @@ App.definitions = (() => {
                 name: 'Work',
                 image: 'resources/img/misc/activity_building_work.png',
                 onEnter: () => App.handlers.open_works_list(),
-                isNew: false,
+                isNew: true,
             },
             {
                 name: `Underworld Entrance`,
@@ -969,7 +971,7 @@ App.definitions = (() => {
             },
             "expression skill potion": {
                 sprite: 1053,
-                expression_increase: 40,
+                expression_increase: 20,
                 price: 250,
                 type: 'med',
                 unbuyable: true,
@@ -978,7 +980,7 @@ App.definitions = (() => {
             },
             "logic skill potion": {
                 sprite: 1053,
-                logic_increase: 40,
+                logic_increase: 20,
                 price: 250,
                 type: 'med',
                 unbuyable: true,
@@ -987,7 +989,7 @@ App.definitions = (() => {
             },
             "endurance skill potion": {
                 sprite: 1053,
-                endurance_increase: 40,
+                endurance_increase: 20,
                 price: 250,
                 type: 'med',
                 unbuyable: true,
@@ -1049,7 +1051,7 @@ App.definitions = (() => {
                     Activities.task_foam(() => {
                         App.pet.ageUp();
                         App.pet.x = '50%';
-                        App.pet.y = 60;
+                        App.pet.positionOffset.y = -30;
                         App.pet.stopMove();
                         App.pet.triggerScriptedState('blush', 3000, 0, true, () => {
                             App.setScene(App.scene.home);
@@ -1088,7 +1090,7 @@ App.definitions = (() => {
                         App.pet.triggerScriptedState('shocked', 10000, 0, true);
                         App.pet.stopMove();
                         App.pet.x = '50%';
-                        App.pet.y = 60;
+                        App.pet.positionOffset.y = -30;
                         App.pet.triggerScriptedState('blush', 3000, 0, true, () => {
                         App.setScene(App.scene.home);
                         App.pet.playCheeringAnimationIfTrue(wasGhost, () => {
@@ -2221,6 +2223,37 @@ App.definitions = (() => {
             },
         ],
 
+        /* DECORATION OVERLAY */
+        decoration_overlay: {
+            leaves_01: {
+                name: 'Patchy',
+                assets: [
+                    'resources/img/ui/decoration/leaf_05.png',
+                    'resources/img/ui/decoration/leaf_02.png',
+                    'resources/img/ui/decoration/leaf_04.png',
+                ],
+                isNew: true,
+            },
+            leaves_02: {
+                name: 'Autumn',
+                assets: [
+                    'resources/img/ui/decoration/leaf_03.png',
+                    'resources/img/ui/decoration/leaf_03.png',
+                    'resources/img/ui/decoration/leaf_02.png',
+                ],
+                isNew: true,
+            },
+            leaves_03: {
+                name: 'Winter',
+                assets: [
+                    'resources/img/ui/decoration/leaf_08.png',
+                    'resources/img/ui/decoration/leaf_08.png',
+                    'resources/img/ui/decoration/leaf_09.png',
+                ],
+                isNew: true,
+            },
+        },
+
         /* ACCESSORIES */
         accessories: {
             "crown": {
@@ -2496,7 +2529,7 @@ App.definitions = (() => {
                     const cloof = new Object2d({
                         img: 'resources/img/accessory/cloof_01.png',
                         parent: parent,
-                        x: 0, y: -999,
+                        x: 0, y: -999, localZ: -1,
                         animationFloatX: 0,
                         animationFloatY: Math.PI,
                         currentPosition: {
@@ -2510,7 +2543,7 @@ App.definitions = (() => {
                             me.animationFloatY = (me.animationFloatY + 0.0025 * App.deltaTime) % App.PI2;
                             const additionalMotionX = Math.sin(me.animationFloatX) * 2;
                             const additionalMotionY = Math.sin(me.animationFloatY) * 3;
-                            me.x = parent.x + additionalMotionX;
+                            me.x = parent.getBoundingBox().centerX - (me.getBoundingBox().width / 2) + additionalMotionX;
                             me.y = parent.y - 40 - (App.pet.spritesheet.offsetY ?? 0) + additionalMotionY + parent.positionOffset.y;
 
                             if (!App.isCompanionAllowed()) {
@@ -2975,23 +3008,23 @@ App.definitions = (() => {
             affirmations: [
                 [
                     "Breaking News: Local Hero Spreads Happiness with Every Step!",
-                    "Our sources confirm that someone very special (hint: it’s you!) is making the world a better place just by being themselves.",
+                    "Our sources confirm that someone very special (you!) is making the world a better place just by being themselves.",
                 ],
                 [
                     "Forecast: Bright Days Ahead!",
                     "The future looks sunny and full of joy for our favorite reader! Keep smiling, good things are coming.",
                 ],
                 [
-                    "Exclusive Interview: Experts Agree - You’re Doing Great!",
+                    "Exclusive Interview: Experts Agree, You’re Doing Great!",
                     "According to experts, small steps lead to big success, and you’re right on track!",
                 ],
                 [
-                    "Front Page Scoop: You’re Stronger Than You Think!",
+                    "Front Page: You’re Stronger Than You Think!",
                     "Recent studies reveal that strength and courage shine brightly in our favorite reader. Keep going!",
                 ],
                 [
                     "Community Spotlight: Heart of Gold Found Right Here!",
-                    "In a heartwarming story, we’ve discovered a true gem (that’s you!) spreading kindness everywhere!",
+                    "In a heartwarming story, we’ve discovered a true gem (you!) spreading kindness everywhere!",
                 ],
                 [
                     "Public Notice: Bravery and Kindness Recognized!",
@@ -3006,15 +3039,15 @@ App.definitions = (() => {
                     "Joy is all around, and it’s all thanks to our reader’s incredible attitude. Keep shining!",
                 ],
                 [
-                    "You Heard it Here First: Your Journey is Full of Promise!",
+                    "News: Your Journey is Full of Promise!",
                     "With every step, you’re creating an amazing story. Stay tuned for more greatness!",
                 ],
                 [
-                    "Breaking Headlines: Best Version of You Making Waves!",
+                    "Breaking Headlines: You are the best!",
                     "Readers report sightings of you achieving amazing things! The community is cheering you on!",
                 ],
                 [
-                    "Breaking News: Kindness Levels at an All-Time High!",
+                    "Breaking News: Positivity Levels at an All-Time High!",
                     "Reports indicate that your actions are filling the world with kindness and positivity. Keep it up!",
                 ],
                 [
@@ -3103,71 +3136,17 @@ App.definitions = (() => {
                 ],
                 [
                     "Headline Scoop: You Have a Light That Guides Others!",
-                    "Even when you don’t see it, your kindness and warmth inspire those around you. Keep shining, it’s beautiful.",
+                    "Even when you don’t see it, your kindness and warmth inspire those around you. Keep shining!",
                 ],
                 [
                     "Forecast: Healing and Happiness Are On the Horizon!",
                     "Take it one day at a time. The tough moments are only temporary, and better days are just around the corner.",
                 ],
+                [
+                    "Forecast: Bright future awaits you!",
+                    "You don't remember what you were anxious about that day 3 years ago, you won't remember what you are anxious about now either."
+                ]
             ],
-            news: [
-                [
-                    "Breaking News: The Sunflower Festival is in Full Bloom!",
-                    "Local critters are buzzing with excitement as fields of sunflowers paint the horizon golden. Perfect for a picnic today!",
-                ],
-                [
-                    "Local Hero: Sparky the Squirrel Finds Missing Acorn Stash!",
-                    "After a week-long search, Sparky proudly declared the missing acorns found. 'I knew they were in the flower pot!' he said.",
-                ],
-                [
-                    "Weather Update: Slight Chance of Marshmallow Showers!",
-                    "Residents are advised to carry cocoa mugs just in case. Experts say it’ll be the sweetest storm of the season.",
-                ],
-                [
-                    "Community Spotlight: Mr. Whiskers Wins Pie-Eating Contest!",
-                    "In a record-breaking feat, Mr. Whiskers devoured 12 strawberry pies. 'I just couldn’t stop!' he shared, covered in crumbs.",
-                ],
-                [
-                    "Exclusive: The Glowbugs Host a Nightly Light Show!",
-                    "Every evening this week, the glowbugs will illuminate the skies with dazzling patterns. Don’t forget to look up!",
-                ],
-                [
-                    "Breaking: A New Bakery Opens in Muffin Meadow!",
-                    "Locals are raving about the honeyberry tarts and freshly baked cinnamon buns. Free samples available all week!",
-                ],
-                [
-                    "Headline: Baby Ducks Take Their First Swim!",
-                    "A group of adorable ducklings paddled across Lilypad Lake today, cheered on by their proud parents. Quack-tastic!",
-                ],
-                [
-                    "Public Alert: The Rainbow Bridge Appeared Overnight!",
-                    "Adventurers report that the rare rainbow bridge is back, connecting Blossom Woods to Starry Hills for a limited time.",
-                ],
-                [
-                    "Daily Scoop: Fluffy the Cloud Found in Fun Shapes!",
-                    "Residents spotted Fluffy resembling a bunny, a heart, and even a teacup. The cloud promises more surprises tomorrow.",
-                ],
-                [
-                    "Special Report: Berry Harvest Bigger Than Ever!",
-                    "Farmers report record-breaking yields of blueberries and raspberries this season. Get your baskets ready for a berry bonanza!",
-                ],
-                [
-                    "Top Story: Fuzzy Caterpillar Parade Marches Through Town!",
-                    "Dozens of fuzzy caterpillars lined up for a parade, waving tiny flags and wiggling with joy. Adorable chaos ensued.",
-                ],
-                [
-                    "Exclusive: Moonlight Sparkles Seen in Crystal Cavern!",
-                    "Night owls exploring Crystal Cavern were treated to a rare light show as moonlight danced on the glittering walls.",
-                ],
-                [
-                    "Alert: Bunny Burrow Cafe Hosts Tea Party Today!",
-                    "A charming tea party featuring carrot cake and dandelion tea is happening at Bunny Burrow Cafe. All critters invited!",
-                ],
-                [
-                    "Forecast: Shooting Stars Expected Tonight!",
-                    "Skywatchers are in for a treat as dozens of shooting stars light up the skies. Make your wishes ready!",
-                ],
-            ]
         },
 
         /* TWEETS */
@@ -3356,8 +3335,11 @@ App.definitions = (() => {
                     App.pet.stats.current_sleep -= 50;
                 }
             },
+
+            // jobs
             {
                 name: 'Stand Work',
+                label: 'Stand Worker',
                 duration: App.constants.ONE_HOUR * 1,
                 isNew: false,
                 type: 'job',
@@ -3369,11 +3351,42 @@ App.definitions = (() => {
             },
             {
                 name: 'Office Work',
+                label: 'Office Worker',
                 duration: App.constants.ONE_HOUR * 2.5,
                 isNew: false,
                 type: 'job',
                 payAmount: 100,
                 onVisualize: Activities.officeWork,
+                onEnd: function(){
+                    App.handlers.finalize_work(this);
+                }
+            },
+            {
+                name: 'school_teacher',
+                label: 'School Teacher',
+                condition: () => App.pet.stats.current_logic >= 80,
+                duration: App.constants.ONE_HOUR * 2.5,
+                icons: ['special:logic'],
+                skillDescription: 'Requires high <b>Logic</b> skill',
+                isNew: true,
+                type: 'job',
+                payAmount: 225,
+                onVisualize: Activities.teacherClassroomWork,
+                onEnd: function(){
+                    App.handlers.finalize_work(this);
+                }
+            },
+            {
+                name: 'body_builder',
+                label: 'Body Builder',
+                condition: () => App.pet.stats.current_endurance >= 80,
+                duration: App.constants.ONE_HOUR * 2.25,
+                icons: ['special:endurance'],
+                skillDescription: 'Requires high <b>Endurance</b> skill',
+                isNew: true,
+                type: 'job',
+                payAmount: 200,
+                onVisualize: Activities.bodyBuilderWork,
                 onEnd: function(){
                     App.handlers.finalize_work(this);
                 }

@@ -93,9 +93,11 @@ class Pet extends Object2d {
             z: this.z,
             localZ: -999,
             depthMode: Object2d.DEPTH_MODE.none,
-            hidden: !this.castShadow,
+            invisible: !this.castShadow,
             onDraw: (overlay) => {
-                overlay.hidden = !this.castShadow;
+                overlay.invisible = !this.castShadow;
+
+                if(overlay.invisible) return;
 
                 overlay.x = this.x;
 
@@ -114,7 +116,10 @@ class Pet extends Object2d {
                     return;
                 }
 
-                overlay.y = 96 + this.additionalY + (App.currentScene.shadowOffset || 0) + (this.shadowOffset || 0);
+                overlay.y =
+                    this.y + this.additionalY + Math.ceil(this.spritesheet.cellSize / 2.1) +
+                    (App.currentScene.shadowOffset || 0) +
+                    (this.shadowOffset || 0);
                 const distanceToCaster = overlay.y - this.y - this.positionOffset.y;
                 overlay.scale = 1 - ((distanceToCaster + 4) * 0.01);
             }
@@ -343,29 +348,29 @@ class Pet extends Object2d {
     handleDirectInteractionEnd(){
         this.stopScriptedState();
 
-        const me = this;
-
         // falling
-        let fallSpeed = 0.008;
+        const fallSpeed = this.stats.is_ghost ? 0.0003 : 0.0008;
+        let currentFallOffset = 0.008;
         const handleOnEndFall = () => {
-            me.triggerScriptedState('sitting', 500, false, true);
+            this.triggerScriptedState('sitting', 500, false, true);
         }
         const fallDriver = () => {
-            if(me.directInteractionInfo.x == null){
-                me.stopScriptedState()
+            if(this.directInteractionInfo.x == null){
+                this.stopScriptedState()
                 return;
             }
 
-            me.x = lerp(me.x, me.directInteractionInfo.x, 0.008 * App.deltaTime)
-            fallSpeed += 0.0008 * App.deltaTime;
+            this.x = lerp(this.x, this.directInteractionInfo.x, 0.008 * App.deltaTime)
+            currentFallOffset += fallSpeed * App.deltaTime;
 
-            if(me.positionOffset.y < 0)
-                me.positionOffset.y += fallSpeed * App.deltaTime;
+            if(this.positionOffset.y < 0)
+                this.positionOffset.y += currentFallOffset * App.deltaTime;
 
-            if(me.positionOffset.y >= 0){
-                me.positionOffset.y = 0;
-                me.stopScriptedState();
-                me.playSound('resources/sounds/ui_click_04.ogg', true);
+            if(this.positionOffset.y >= 0){
+                this.positionOffset.y = 0;
+                this.stopScriptedState();
+                this.playSound('resources/sounds/ui_click_04.ogg', true);
+                App.vibrate();
             }
         }
         this.triggerScriptedState('jumping', 10000, false, true, handleOnEndFall, fallDriver)
@@ -385,6 +390,8 @@ class Pet extends Object2d {
         }
     }
     handleDead(){
+        App.setScene(App.scene.graveyard);
+
         const me = this;
         this.x = -600;
 
@@ -445,8 +452,6 @@ class Pet extends Object2d {
                     }
                 }
             });
-
-            App.setScene(App.scene.graveyard);
         }
     }
     handleEgg(){
@@ -528,28 +533,6 @@ class Pet extends Object2d {
                 y: '80%',
                 despawnTime: 500,
             })
-        }
-    }
-    _switchScene(scene){
-        // todo: not hardcode these values,
-        // instead it should be defined on the scene
-        // so that every scene can have it's own values
-        this.y = '100%';
-        this.x = '50%';
-        switch(scene){
-            case 'house':
-                App.background.setImg('resources/img/background/house/01.jpg');
-                break;
-            case 'kitchen':
-                App.background.setImg('resources/img/background/house/kitchen_01.png');
-                App.foods.x = 40;
-                App.foods.y = 58;
-                this.x = 62;
-                this.y = 74;
-                break;
-            case 'park':
-                App.background.setImg('resources/img/background/outside/park_01.png');
-                break;
         }
     }
     sleep(){
@@ -1570,7 +1553,7 @@ class Pet extends Object2d {
                 x: 0,
                 y: 0,
                 opacity: 0,
-                z: 10.01,
+                z: App.constants.ACTIVE_PET_Z + 0.101,
                 shouldFadeout: false,
                 float: 0,
                 onDraw: (me) => {
@@ -1581,8 +1564,7 @@ class Pet extends Object2d {
             })
         }
 
-        const scale = 1 || 0.62;
-
+        const THOUGHT_ITEM_Z = App.constants.ACTIVE_PET_Z + 0.10;
         switch(type){
             case App.constants.WANT_TYPES.food:
                 const foodSpriteIndex = App.definitions.food[item]?.sprite;
@@ -1590,7 +1572,7 @@ class Pet extends Object2d {
                 new Object2d({
                     parent: bubble,
                     image: App.preloadedResources[App.constants.FOOD_SPRITESHEET],
-                    x: 10, y: 10, z: 10,
+                    x: 10, y: 10, z: THOUGHT_ITEM_Z,
                     scale: 0.62,
                     spritesheet: {
                         cellNumber: foodSpriteIndex,
@@ -1613,7 +1595,7 @@ class Pet extends Object2d {
                 new Object2d({
                     parent: bubble,
                     image: App.preloadedResources[friendDef.sprite],
-                    x: 10, y: 10, z: 10,
+                    x: 10, y: 10, z: THOUGHT_ITEM_Z,
                     scale: 0.62,
                     spritesheet: friendDef.spritesheet,
                     onDraw: (me) => {
@@ -1629,7 +1611,7 @@ class Pet extends Object2d {
                 new Object2d({
                     parent: bubble,
                     image: App.preloadedResources["resources/img/item/items.png"],
-                    x: 10, y: 10, z: 10,
+                    x: 10, y: 10, z: THOUGHT_ITEM_Z,
                     scale: 0.7,
                     spritesheet: {
                         cellNumber: itemSpriteIndex,
@@ -1648,7 +1630,7 @@ class Pet extends Object2d {
                 new Object2d({
                     parent: bubble,
                     image: App.preloadedResources["resources/img/misc/minigames.png"],
-                    x: 10, y: 10, z: 10,
+                    x: 10, y: 10, z: THOUGHT_ITEM_Z,
                     onDraw: (me) => {
                         me.opacity = bubble.opacity;
                         me.x = bubble.x;
@@ -1660,7 +1642,7 @@ class Pet extends Object2d {
                 new Object2d({
                     parent: bubble,
                     image: App.preloadedResources["resources/img/misc/want_fulfilled.png"],
-                    x: 10, y: 10, z: 10,
+                    x: 10, y: 10, z: THOUGHT_ITEM_Z,
                     onDraw: (me) => {
                         me.opacity = bubble.opacity;
                         me.x = bubble.x;
@@ -1672,7 +1654,7 @@ class Pet extends Object2d {
                 new Object2d({
                     parent: bubble,
                     image: App.preloadedResources[`resources/img/misc/${type}.png`],
-                    x: 10, y: 10, z: 10,
+                    x: 10, y: 10, z: THOUGHT_ITEM_Z,
                     onDraw: (me) => {
                         me.opacity = bubble.opacity;
                         me.x = bubble.x;
@@ -1689,7 +1671,7 @@ class Pet extends Object2d {
     setLocalZBasedOnSelf(otherObject, matchBase = true){
         // @deprecated
         otherObject.depthMode = Object2d.DEPTH_MODE.y;
-        otherObject.z = this.z;
+        otherObject.z = App.constants.ACTIVE_PET_Z;
         return;
         const currentBoundingBox = this.getBoundingBox();
         const otherBoundingBox = otherObject.getBoundingBox();
@@ -1829,7 +1811,7 @@ class Pet extends Object2d {
 
                     this.itemObject.x = this.pet.x;
                     this.itemObject.y = ((App.drawer.getRelativePositionY(92) - App.constants.ITEM_SPRITESHEET_DIMENSIONS.cellSize));
-                    this.itemObject.z = this.pet.z + 0.1;
+                    this.itemObject.z = this.pet.z;
                     this.itemObject.inverted = this.pet.inverted;
 
                     this.itemObject.onDraw = function() {
@@ -1924,6 +1906,7 @@ class Pet extends Object2d {
                     const possibleItemPositions = ['25%', '50%', '75%'];
                     this.itemObject.x = randomFromArray(possibleItemPositions);
                     this.itemObject.y = randomFromArray(possibleItemPositions);
+                    this.itemObject.z = this.pet.z + 1;
                     this.itemObject.inverted = !this.itemObject.inverted;
                     break;
                 case "robotty":

@@ -435,9 +435,16 @@ class Activities {
                 me.rotation = lerp(me.rotation, 0, 0.01 * App.deltaTime);
             }
         })
-        // App.pet.setLocalZBasedOnSelf(chestObject);
+        App.pet.setLocalZBasedOnSelf(chestObject);
         await TimelineDirector.wait(10);
-        await main.jumpTo({x: '80%', speed: 0.0015, curve: 0.5, y: main.getPosition('y'), endState: 'shocked_without_sound', animation: 'shocked_without_sound'});
+        await main.jumpTo({
+            x: "80%",
+            speed: 0.0015,
+            curve: 0.5,
+            y: main.getPosition("y"),
+            endState: "shocked_without_sound",
+            animation: "shocked_without_sound",
+        });
         App.pet.playSound('resources/sounds/shock.ogg', true);
         main.actor.stopMove();
         await TimelineDirector.wait(500);
@@ -910,7 +917,7 @@ class Activities {
             pet.lookAt(false);
             pet.setState('eating');
 
-            App.pet.stats.current_hunger += hunger_replenish * 1.25;
+            App.pet.stats.current_hunger += hunger_replenish * 1.5;
             App.pet.stats.current_fun += random(15, 30);
 
             const wantedFoodItem = App.definitions.food[App.pet.stats.current_want.item];
@@ -2411,7 +2418,10 @@ class Activities {
     }
     static async goToCurrentRabbitHole() {
         const { current_rabbit_hole: currentRabbitHole } = App.pet.stats;
-        const rabbitHoleDefinition = App.definitions.rabbit_hole_activities.find(activity => activity.name === currentRabbitHole.name);
+        const rabbitHoleDefinition =
+            App.definitions.rabbit_hole_activities.find(
+                (activity) => activity.name === currentRabbitHole.name,
+            );
         const hasVisualizer = Boolean(rabbitHoleDefinition?.onVisualize);
 
         const outOverlay = new Object2d({
@@ -2420,12 +2430,15 @@ class Activities {
             invisible: hasVisualizer,
         });
 
+        const rabbitHoleLabel = rabbitHoleDefinition?.label || App.pet.stats.current_rabbit_hole.name;
+
         const onEndFn = (isInterrupted) => {
             App.unregisterOnDrawEvent(driverFrameEvent);
+            App.toggleGameplayControls(false);
 
             if(!isInterrupted){
                 rabbitHoleDefinition?.onEnd?.();
-                App.displayConfirm(`<b>"${App.pet.stats.current_rabbit_hole.name}"</b> activity has ended and ${App.petDefinition.name} is back home!`, [
+                App.displayConfirm(`<b>"${rabbitHoleLabel}"</b> activity has ended and ${App.petDefinition.name} is back home!`, [
                     {
                         name: 'ok',
                         onclick: () => {}
@@ -2452,6 +2465,15 @@ class Activities {
         }
 
         const driverFn = () => {
+            if(App.pet.stats.is_dead){
+                // abort if pet is dead
+                setTimeout(() => {
+                    App.pet.stopScriptedState();
+                }, 1)
+                App.pet.stats.current_rabbit_hole.name = false;
+                App.unregisterOnDrawEvent(driverFrameEvent);
+            }
+
             const remainingTime = currentRabbitHole.endTime - Date.now();
             if(remainingTime <= 0){
                 onEndFn();
@@ -2468,9 +2490,14 @@ class Activities {
             App.displayConfirm(`
                 <div style="font-size: x-small;" class="solid-surface-stylized b-radius-10">
                     <i  class="fa-solid fa-clock" style="margin-right: 2px;"></i>
-                    <span>${currentRabbitHole.name}</span>
+                    <span>${rabbitHoleLabel}</span>
                 </div>
-                ${App.petDefinition.name} will be ${hasVisualizer ? 'done' : 'back'} <b>${moment(currentRabbitHole.endTime).fromNow()}</b>
+                ${App.petDefinition.name}
+                will be ${hasVisualizer ? "done" : "back"}
+                <b>in ${humanizeExactDuration(
+                    moment(currentRabbitHole.endTime)
+                        .diff(moment())
+                )}</b>
                 `, [
                 {
                     name: 'end early',
@@ -3775,6 +3802,7 @@ class Activities {
             castShadow: false,
             z: App.constants.ACTIVE_PET_Z + 1,
             isDespawning: false,
+            parent: App.currentSceneObject,
             onDraw: (me) => {
                 if(me.isDespawning){
                     me.opacity -= 0.001 * App.deltaTime;
@@ -3859,6 +3887,7 @@ class Activities {
         skipCamera,
         resultFoodName,
         resultFoodAmount,
+        ingredientObjects,
     } = {}){
         App.closeAllDisplays();
         App.pet.triggerScriptedState('idle', App.INF, 0, false);
@@ -3880,7 +3909,7 @@ class Activities {
         });
         const potTopObject = new Object2d({
             img: 'resources/img/misc/cooking_pot_p03.png',
-            z: 30.4, x: 0, y: 0, parent: potObject,
+            z: 31, x: 0, y: 0, parent: potObject,
         });
 
         const starLogicHandler = (me) => {
@@ -3896,14 +3925,26 @@ class Activities {
 
         const starObjects = [];
         for(let i = 0; i < 3; i++){
-            const img = new Object2d({
-                img: 'resources/img/misc/star_01.png',
-                width: 22, height: 22, y: '50%', x: '50%', z: 30.5,
-                _current: 2.0944 * i, pulseScaleFloat: i,
-                clipCircle: true, parent: potObject,
-                noPreload: true,
-                onDraw: starLogicHandler,
-            })
+            let img;
+
+            if(ingredientObjects && ingredientObjects[i]) {
+                img = ingredientObjects[i];
+            } else {
+                img = new Object2d({
+                    img: 'resources/img/misc/star_01.png',
+                })
+            }
+            img.width = 22;
+            img.height = 22;
+            img.y = '50%';
+            img.x = '50%';
+            img.z = 30.5;
+            img.clipCircle = true;
+            img._current = 2.0944 * i;
+            img.pulseScaleFloat = i;
+            img.onDraw = starLogicHandler;
+            img.parent = potObject;
+
             starObjects.push(img);
         }
 
@@ -3913,11 +3954,8 @@ class Activities {
             if(currentTargetImgIndex < starObjects.length && !skipCamera){
                 App.useWebcam((imgData) => {
                     if((!imgData || imgData == -1)){
-                        // potObject.removeObject();
-                        // App.pet.stopScriptedState();
-                        // App.toggleGameplayControls(true);
                         imgData = 'resources/img/misc/exclam_01.png';
-                        failChance += 35;
+                        failChance += 25;
                     }
                     starObjects[currentTargetImgIndex].setImg(imgData);
                     currentTargetImgIndex++;
@@ -4034,9 +4072,11 @@ class Activities {
     }
     static async pet(engageTimer){
         App.sendAnalytics('petting');
+        const initialZ = App.pet.z;
         App.pet.stopMove();
         App.pet.x = '50%';
         App.pet.targetY = 132;
+        App.pet.z = App.constants.ACTIVE_PET_Z + 5;
         App.pet.shadowOffset = 999;
         App.toggleGameplayControls(false);
         App.canProceed('ask_to_be_petted', 0); // trigger autonomous asking cooldown
@@ -4055,6 +4095,7 @@ class Activities {
             App.toggleGameplayControls(true);
             App.pet.shadowOffset = 0;
             App.pet.scale = 1;
+            App.pet.z = initialZ;
             App.pet.playCheeringAnimationIfTrue(patCount);
             App.pet.stats.current_expression += 1;
             App.pet.stats.current_endurance += 1;
@@ -4100,12 +4141,14 @@ class Activities {
             volume: 0.5,
         });
 
-        let standObject = new Object2d({
+        const standObject = new Object2d({
             img: 'resources/img/misc/stand_01_booth.png',
-            x: 0, y: 0, z: 19
+            x: 0, y: 0, z: 19,
+            parent: App.currentSceneObject,
+            onRemove: () => {
+                setTimeout(() => backgroundMusic.stop());
+            }
         })
-        //     App.pet.stopScriptedState();
-        // });
 
         function spawnCustomer() {
             const standDuration = random(2000, 5000);
@@ -4155,10 +4198,7 @@ class Activities {
         App.pet.y = '70%';
         App.pet.inverted = false;
         let nextCustomerSpawnTime = Date.now() + random(0, 8000);
-        App.pet.triggerScriptedState('idle', App.INF, 0, true, () => {
-            backgroundMusic.stop();
-            standObject.removeObject();
-        }, () => {
+        App.pet.triggerScriptedState('idle', App.INF, 0, true, null, () => {
             if(Date.now() > nextCustomerSpawnTime){
                 nextCustomerSpawnTime = Date.now() + random(8000, 45000);
                 spawnCustomer();
@@ -4200,11 +4240,11 @@ class Activities {
 
         App.toggleGameplayControls(false);
 
-        const EGG_TARGET_Y = 72;
-
         const egg = App.pet.eggObject;
-        egg.y = -50;
         egg.opacity = 0;
+        egg.positionOffset.y = -120;
+
+        window.egg = egg;
 
         App.playSound('resources/sounds/cute.ogg', true);
         setTimeout(() => App.playSound('resources/sounds/cute.ogg', true), 200);
@@ -4216,10 +4256,10 @@ class Activities {
             opacity: 0,
             targetOpacity: 1,
             onDraw: (me) => {
-                egg.y = clamp(egg.y + 0.055 * App.deltaTime, -100, EGG_TARGET_Y);
-                if(egg.y > 0) egg.opacity = clamp(egg.opacity + 0.002 * App.deltaTime, 0, 1);
+                egg.positionOffset.y = clamp(egg.positionOffset.y + 0.055 * App.deltaTime, -100, 0);
+                if(egg.positionOffset.y > -70) egg.opacity = clamp(egg.opacity + 0.002 * App.deltaTime, 0, 1);
 
-                if(egg.y >= EGG_TARGET_Y && me.targetOpacity !== 0){
+                if(egg.positionOffset.y >= 0 && me.targetOpacity !== 0){
                     App.playSound('resources/sounds/task_complete.ogg', true);
                     me.targetOpacity = 0;
                     setTimeout(() => {
@@ -4715,11 +4755,13 @@ class Activities {
                     table.removeObject();
 
                     App.pet.ageUp();
+                    App.pet.z += 1;
+                    App.pet.y = '60%';
                     App.pet.x = '50%';
-                    App.pet.y = 60;
                     App.pet.stopMove();
 
                     App.pet.triggerScriptedState('blush', 3000, 0, true, () => {
+                        App.pet.z -= 1;
                         App.setScene(App.scene.home);
                         App.toggleGameplayControls(true);
                         App.pet.playCheeringAnimation();
@@ -4781,14 +4823,18 @@ class Activities {
             otherPet.targetX = 120;
             App.pet.inverted = true;
             App.pet.triggerScriptedState('idle_side', 3000, null, true, () => {
-                otherPet.stopScriptedState();
-                App.pet.x = '50%';
-                App.pet.stats.current_fun += 55;
-                App.pet.statsManager();
-                App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => App.setScene(App.scene.home));
-                App.drawer.removeObject(otherPet);
-                App.toggleGameplayControls(true);
-                callbackFn?.();
+                App.fadeScreen({middleFn: () => {
+                    otherPet.stopScriptedState();
+                    App.pet.x = '50%';
+                    App.pet.stats.current_fun += 55;
+                    App.pet.statsManager();
+                    App.pet.playCheeringAnimationIfTrue(App.pet.hasMoodlet('amused'), () => {
+                        App.setScene(App.scene.home)
+                        App.toggleGameplayControls(true);
+                        callbackFn?.();
+                    });
+                    App.drawer.removeObject(otherPet);
+                }})
             });
         }
 
@@ -4898,6 +4944,228 @@ class Activities {
             if(random(0, 50)) return;
             me.setState( randomFromArray(['eating', 'sitting']) );
         })
+    }
+    static teacherClassroomWork(){
+        App.closeAllDisplays();
+        App.setScene(App.scene.classroom);
+
+        const backgroundMusic = App.playAdvancedSound({
+            loop: true,
+            src: 'resources/sounds/work_track_01.ogg',
+            volume: 0.5,
+        });
+
+        const initialPetZ = App.pet.z;
+        App.pet.stopMove();
+        App.pet.triggerScriptedState(
+            "idle",
+            App.INF,
+            false,
+            true,
+            () => {
+                backgroundMusic.stop();
+                App.pet.z = initialPetZ;
+            },
+            (me) => {
+                if (
+                    App.time - (me.lastAnimationChangeMs ?? 0) <
+                    random(
+                        App.constants.ONE_SECOND * 1,
+                        App.constants.ONE_SECOND * 20,
+                    )
+                )
+                    return;
+                me.lastAnimationChangeMs = App.time
+
+                if(random(0, 1)){
+                    App.pet.x = randomFromArray(['20%', '50%', '80%']);
+                    App.pet.y = '90%';
+                    App.pet.z = App.constants.ACTIVE_PET_Z + 0.05;
+                } else {
+                    App.pet.x = '50%';
+                    App.pet.y = '65%';
+                    App.pet.z = initialPetZ;
+                }
+
+                me.setState(randomFromArray([
+                    'idle',
+                    'idle_side',
+                    'talking',
+                    'jumping',
+                    'cheering',
+                    'shocked',
+                    'mild_uncomfortable',
+                ]))
+                me.inverted = Boolean(random(0, 1));
+            },
+        );
+
+        const deskClippedObject = new Object2d({
+            parent: App.currentSceneObject,
+            img: App.scene.classroom.image,
+            x: 0, y: 0, z: App.constants.ACTIVE_PET_Z,
+            depthMode: Object2d.DEPTH_MODE.y,
+            clip: [
+                [21, 51],
+                [21, 82],
+                [74, 82],
+                [74, 51],
+            ]
+        })
+
+        const STUDENT_COUNT = random(3, 5);
+
+        const students = new Array(STUDENT_COUNT)
+            .fill(null)
+            .map(() => App.getRandomPetDef(PetDefinition.LIFE_STAGE.child))
+            .map((def) => new Pet(def));
+
+        const spacing = 100 / STUDENT_COUNT;
+
+        students.forEach((student, i) => {
+            student.parent = App.currentSceneObject;
+            student.z = App.constants.ACTIVE_PET_Z + 1;
+            student.x = `${i * spacing + (spacing / 2)}%`;
+            student.triggerScriptedState(
+                "idle",
+                App.INF,
+                false,
+                true,
+                null,
+                (me) => {
+                    if(App.time - (me.lastAnimationChangeMs ?? 0) < random(500, 2000)) return;
+                    me.lastAnimationChangeMs = App.time
+
+                    if(!random(0, 20)){
+                        me.showThought(randomFromArray([
+                            'thought_question',
+                            'thought_exclaim',
+                            'thought_talk',
+                            'thought_scribble',
+                        ]), null, App.constants.ONE_SECOND);
+                    }
+
+                    me.setState(randomFromArray([
+                        'idle',
+                        'idle_side',
+                        'talking',
+                        'jumping',
+                        'cheering',
+                    ]))
+                    me.inverted = Boolean(random(0, 1));
+                },
+            );
+        })
+
+    }
+    static bodyBuilderWork(){
+        App.closeAllDisplays();
+        App.setScene(App.scene.gym);
+
+        const backgroundMusic = App.playAdvancedSound({
+            loop: true,
+            src: 'resources/sounds/work_track_01.ogg',
+            volume: 0.5,
+        });
+
+        const possiblePositions = [
+            {y: '70%'},
+            {y: '80%'},
+            {y: '90%'},
+            {y: '100%'},
+        ]
+
+        const attachDumbleToActor = (parent) => {
+            return Prefab.item(App.definitions.item.dumble, {
+                parent: parent,
+                x: 4,
+                y: 0,
+                z: parent.z,
+                isRelative: true,
+                opacity: 1,
+                _float: Math.random() * Math.PI,
+                onDraw: (me) => {
+                    if(!me.parent.isDuringScriptedState()) {
+                        return me.removeObject();
+                    }
+
+                    me._float += 0.009 * App.deltaTime;
+                    const float = Math.sin(me._float);
+                    me.y = -3 - (float * 2);
+
+                    const isTargetState = ['uncomfortable', 'shocked'].includes(me.parent.state);
+                    me.opacity = isTargetState ? 1 : 0;
+
+                    me.localZ = me.parent.localZ;
+                }
+            });
+        }
+
+        const stateDriver = (me) => {
+            if (
+                App.time - (me.lastAnimationChangeMs ?? 0) <
+                random(
+                    App.constants.ONE_SECOND * 3,
+                    App.constants.ONE_SECOND * 20,
+                )
+            )
+                return;
+            me.lastAnimationChangeMs = App.time
+
+            const newPosition = randomFromArray(possiblePositions);
+            me.x = newPosition.x || me.x;
+            me.y = newPosition.y || me.y;
+
+            me.setState(randomFromArray([
+                'idle',
+                'idle_side',
+                'talking',
+                'jumping',
+                'shocked',
+                'mild_uncomfortable',
+                'mild_uncomfortable',
+                'uncomfortable',
+                'uncomfortable',
+                'uncomfortable',
+            ]))
+            me.inverted = Boolean(random(0, 1));
+        }
+
+        App.pet.stopMove();
+        attachDumbleToActor(App.pet);
+        App.pet.triggerScriptedState(
+            "idle",
+            App.INF,
+            false,
+            true,
+            () => {
+                backgroundMusic.stop();
+            },
+            stateDriver,
+        );
+
+        const NPC_COUNT = 2;
+        const npcActors = new Array(NPC_COUNT)
+            .fill(null)
+            .map(() => App.getRandomPetDef(PetDefinition.LIFE_STAGE.ADULT))
+            .map((def) => new Pet(def));
+
+        const spacing = 100 / NPC_COUNT;
+        npcActors.forEach((npc, i) => {
+            npc.parent = App.currentSceneObject;
+            npc.z = App.constants.ACTIVE_PET_Z;
+            npc.x = `${i * spacing + (spacing / 2)}%`;
+            attachDumbleToActor(npc);
+            npc.triggerScriptedState(
+                "idle",
+                App.INF,
+                false,
+                true,
+                null,
+                stateDriver,
+            );
+        })
+
     }
     static inviteDoctorVisit(){
         App.setScene(App.scene.home);
@@ -5902,17 +6170,7 @@ class Activities {
         })
 
         const spawnSmoke = (x, y) => {
-            new Object2d({
-                img: 'resources/img/misc/foam_single.png',
-                x, y, z: 6, opacity: 1, scale: 1.2,
-                onDraw: (me) => {
-                    me.rotation += 0.1 * App.deltaTime;
-                    me.opacity -= 0.001 * App.deltaTime;
-                    me.scale -= 0.001 * App.deltaTime;
-                    me.y -= 0.01 * App.deltaTime;
-                    if(me.opacity <= 0.1 || me.scale <= 0.1) me.removeObject();
-                }
-            })
+            Prefab.fadingSmoke({x, y});
         }
 
         const screen = UI.empty();
@@ -6285,30 +6543,21 @@ class Activities {
                     me?.removeObject();
                 }
             }
-            const spawnImpactEffect = (color = {r: 0, g: 255, b: 0}) => {
-                new Object2d({
-                    ...App.drawer.bounds,
-                    solidColor: color,
-                    x: 0, y: 0,
-                    opacity: 0.6,
-                    composite: 'additive',
-                    z: 999,
-                    onDraw: (me) => {
-                        me.opacity -= 0.0015 * App.deltaTime;
-                        if(me.opacity <= 0) {
-                            me.removeObject();
-                        }
-                    }
+            const spawnImpactEffect = (me) => {
+                const bb = me.getBoundingBox();
+                Prefab.fadingSmoke({
+                    x: bb.centerX,
+                    y: bb.centerY,
+                    horizontalMovementSpeed: activeSpeed * -0.02,
+                    spawnScale: 1,
                 })
             }
             const progress = (isScoring) => {
                 if(isScoring) {
                     score++;
-                    spawnImpactEffect({r: 0, g: 255, b: 0});
                     App.playSound(`resources/sounds/cute.ogg`, true)
                 } else {
                     lives--
-                    spawnImpactEffect({r: 255, g: 0, b: 0});
                     App.playSound(`resources/sounds/sad.ogg`, true)
                 }
                 updateUI();
@@ -6359,6 +6608,7 @@ class Activities {
                             progress(false);
                         }
                     },
+                    onRemove: spawnImpactEffect,
                 })
                 bat.showOutline('red');
                 return;
@@ -6389,6 +6639,7 @@ class Activities {
                                 progress(true);
                             }
                         },
+                        onRemove: spawnImpactEffect,
                     })
                     treat.showOutline();
                     // treat.showBoundingBox();
@@ -7722,7 +7973,7 @@ class Activities {
     }
     static task_handleLeavingAnimals(){
         App.animals.list?.forEach(a => a?.handleStatsUpdate?.());
-        const leavingAnimals = App.animals.list.filter(a => a.stats.current_happiness <= 0);
+        const leavingAnimals = App.animals.list.filter(a => a.shouldLeave());
         if(leavingAnimals.length){
             App.displayList([
                 {
@@ -7870,7 +8121,14 @@ class TimelineDirector {
     registeredDrawEvents = [];
     constructor(actor, config = {}){
         this.actor = actor;
-        this.actor.triggerScriptedState('idle', App.INF, false, true, config.onEnd, config.driverFn);
+        this.actor.triggerScriptedState(
+            "idle",
+            App.INF,
+            false,
+            true,
+            config.onEnd,
+            config.driverFn,
+        );
         this.actor.stopMove();
     }
     moveTo = ({x, y, speed = 0.15, endState = 'idle', disableMoveAnimation}) => {
@@ -7930,7 +8188,7 @@ class TimelineDirector {
         return new Promise(resolve => {
             if(!this.actor) return resolve();
 
-            const defaultY = this.actor.y;
+            const defaultY = this.actor.positionOffset.y;
             const actor = this.actor;
 
             let animationFloat = 0,
@@ -7953,12 +8211,12 @@ class TimelineDirector {
                     }
                     actor.setState(landAnimation);
                     if(currentCycles >= maxCycles){
-                        actor.y = defaultY;
+                        actor.positionOffset.y = defaultY;
                         App.unregisterOnDrawEvent(drawEvent);
                         resolve();
                     }
                 }
-                actor.y = defaultY - (finalAnimationFloat * strength);
+                actor.positionOffset.y = defaultY - (finalAnimationFloat * strength);
             })
 
             this.registeredDrawEvents.push(drawEvent);
@@ -8022,6 +8280,7 @@ class TimelineDirector {
             const actor = this.actor;
             const startX = actor.x;
             const startY = actor.y;
+            const initialPositionOffset = actor.positionOffset.y;
 
             if (typeof x === 'string') {
                 const percent = parseFloat(x);
@@ -8046,6 +8305,7 @@ class TimelineDirector {
                 if (progress >= 1) {
                     actor.x = x;
                     actor.y = y;
+                    actor.positionOffset.y = initialPositionOffset;
                     actor.setState(endState);
                     App.unregisterOnDrawEvent(drawEvent);
                     resolve();
@@ -8057,7 +8317,8 @@ class TimelineDirector {
 
                 const arc = Math.sin(progress * Math.PI) * curve * this.getSize();
                 actor.x = nx;
-                actor.y = ny - arc;
+                actor.y = ny;
+                actor.positionOffset.y = -arc;
 
                 actor.setState(animation);
             });

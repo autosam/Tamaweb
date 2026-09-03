@@ -112,6 +112,7 @@ class Object2d {
 
         if(should('x')) this.x = this.parent.x;
         if(should('y')) this.y = this.parent.y + this.parent.additionalY;
+        if(should('z')) this.z = this.parent.z;
         if(should('inverted')) this.inverted = this.parent.inverted;
         if(should('upperHalfOffsetY')) this.upperHalfOffsetY = this.parent.upperHalfOffsetY;
         if(should('scale')) this.scale = this.parent.scale;
@@ -219,7 +220,14 @@ class Object2d {
         const x = (this.x + (this.additionalX || 0)) - (width - (baseWidth - shrinkX * 2)) / 2;
         const y = (this.y + (this.additionalY || 0)) - (height - (baseHeight - shrinkY * 2)) / 2;
 
-        return { x, y, width, height };
+        return {
+            x,
+            y,
+            width,
+            height,
+            centerX: x + (width / 2),
+            centerY: y + (height / 2)
+        };
     }
     isColliding(otherBoundingBox){
         const currentBoundingBox = this.getBoundingBox();
