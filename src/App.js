@@ -488,8 +488,8 @@ const App = {
                 x < canvas.width &&
                 y < canvas.height;
 
-            App.mouse.absX = x;
-            App.mouse.absY = y;
+            App.mouse.absX = x - (canvas.width / 2);
+            App.mouse.absY = y - (canvas.height / 2);
 
             App.mouse.x = Math.max(0, Math.min(x, canvas.width));
             App.mouse.y = Math.max(0, Math.min(y, canvas.height));

@@ -410,6 +410,7 @@ const multVector = (a, mult) => ({
     x: a.x * mult,
     y: a.y * mult
 })
+const lengthVector = ({ x, y }) => Math.sqrt(x * x + y * y);
 
 
 const wordBank = {

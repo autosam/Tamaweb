@@ -10,7 +10,7 @@ class Activities {
             img: 'resources/img/background/outside/map_island_01.png',
             x: '50%',
             y: '50%',
-            width: 960, height: 960,
+            width: 960, height: 960, z: -10,
         })
 
         const getRandomValidPosition = () => {
@@ -46,14 +46,14 @@ class Activities {
 
             const wanderDriver = (me) => {
                 switch(state){
-                    case 'wait': 
+                    case 'wait':
                         bucket.waitingMs -= App.accurateDeltaTime
                         if(bucket.waitingMs <= 0){
                             state = 'idle';
                             bucket.waitingMs = 10000;
                         }
                         break;
-                    case 'looking_for_npc_interaction': 
+                    case 'looking_for_npc_interaction':
                         const randomTargetNpc = randomFromArray(spawnedNpcs);
                         randomTargetNpc.ai.setState('wait');
                         // randomTargetNpc.showThought();
@@ -96,26 +96,51 @@ class Activities {
 
         App.pet.stopMove();
         App.pet.speedOverride = 0.04;
+        let cameraTargetZ = 0;
+        let directionCameraMovementVector = {x: 0, y: 0};
 
-        const mainAi = wanderDriverFactory();
-        App.pet.ai = mainAi;
+        // const mainAi = wanderDriverFactory();
+        // App.pet.ai = mainAi;
         App.pet.triggerScriptedState('idle', App.INF, false, true, () => {}, (me) => {
-            mainAi.wanderDriver(me);
+            // mainAi.wanderDriver(me);
+
+            const direction = normalizeVector({
+                x: App.mouse.absX || 0,
+                y: App.mouse.absY || 0,
+            })
+
+            if(App.mouse.isDown){
+                const movementVector = multVector(direction, 0.75);
+
+                me.x += movementVector.x * 0.1 * App.deltaTime;
+                me.y += movementVector.y * 0.1 * App.deltaTime;
+
+                me.setState('moving');
+                me.inverted = direction.x > 0;
+                cameraTargetZ = -1;
+            } else {
+                me.setState('idle');
+                direction.x = 0;
+                direction.y = 0;
+                cameraTargetZ = 0;
+            }
 
             const cameraTargetCenter = {
                 x: -me.x + App.drawer.bounds.width/2 - me.spritesheet.cellSize/2,
                 y: -me.y + App.drawer.bounds.height/2
             }
+            directionCameraMovementVector = multVector(direction, 50)
             App.drawer.setCameraPosition(
-                cameraTargetCenter.x, 
-                cameraTargetCenter.y, 
-                // 0.002 * App.deltaTime
+                cameraTargetCenter.x - directionCameraMovementVector.x,
+                cameraTargetCenter.y - directionCameraMovementVector.y,
+                0.003 * App.deltaTime
             );
+            // App.drawer.cameraPosition.z = lerp(App.drawer.cameraPosition.z, cameraTargetZ, 0.005 * App.deltaTime);
         });
 
         // decoration spawning
         for(let i = 0; i < 100; i++){
-            const spawnPosition = getRandomValidPosition(); 
+            const spawnPosition = getRandomValidPosition();
             new Object2d({
                 parent,
                 img: 'resources/img/misc/tree_01.png',
