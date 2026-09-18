@@ -8666,7 +8666,7 @@ const App = {
 
         return list;
     },
-    displayMessageBubble: function(content, icon = ''){
+    displayMessageBubble: function(content, icon = '', pitch){
         let splitContent = content;
         if(!containsHtmlTags(content)){
             splitContent = content.split('')
@@ -8684,7 +8684,7 @@ const App = {
             if(speechIndex++ >= content.length){
                 return clearInterval(speechSoundInterval);
             }
-            if(icon) App.playSpeechSound(content[speechIndex]);
+            if(icon) App.playSpeechSound(content[speechIndex], pitch);
         }, 50)
 
         const iconContent = !icon ? '' : `<div class="message-bubble_icon">${icon}</div>`;
@@ -8844,9 +8844,6 @@ const App = {
         try {
             this.audioChannel = new AudioChannel({
                 preloadList: SOUNDS
-            });
-            this.speechAudioChannel = new AudioChannel({
-                preloadList: SPEECH_SOUNDS
             });
         } catch(e) {}
 
@@ -9242,14 +9239,18 @@ const App = {
             }
         };
     },
-    playSpeechSound: function(letter = 'a'){
+    playSpeechSound: function(letter = 'a', pitch = 1){
         if(!App.settings.playSound) return;
 
         const muteLetters = [' ', '.', ',', '-'];
         if(muteLetters.includes(letter)) return;
 
         const maxSamples = 6;
-        this.speechAudioChannel?.play(`resources/sounds/speech/${random(1, maxSamples)}.mp3`, true);
+        App.playAdvancedSound({
+            src: `resources/sounds/speech/${random(1, maxSamples)}.mp3`,
+            playbackRate: pitch,
+            preservesPitch: false,
+        })
     },
     takeScreenshot: () => {
         if(!App.isTester() && App.haveAnyDisplays()) return;
