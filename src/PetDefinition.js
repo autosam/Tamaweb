@@ -136,6 +136,8 @@ class PetDefinition {
                                 img: `resources/img/misc/heart_particle_0${random(1, 2)}.png`,
                                 x: 0,
                                 y: 0,
+                                z: me.parent.z,
+                                localZ: 2,
                                 scale: 3,
                                 opacity: 1,
 
