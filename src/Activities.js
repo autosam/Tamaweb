@@ -31,8 +31,8 @@ class Activities {
                         App.pet.stopScriptedState();
 
                         Activities.task_winMoney({
-                            amount: Math.round(percentCollected * 0.75),
-                            hasWon: percentCollected > 50,
+                            amount: percentCollected >= 25 ? Math.round(percentCollected * 0.75) : 0,
+                            hasWon: percentCollected > 60,
                         })
                     }
                 })
@@ -134,19 +134,20 @@ class Activities {
                         y: y - (mapObject.height / 2) + random(-16, 16),
                     };
                     new Object2d({
-                    parent: App.currentSceneObject,
-                    img: 'resources/img/misc/apples_01.png',
-                    spritesheet: {
-                        cellSize: 8,
-                        cellNumber: random(1, 4),
-                        columns: 4,
-                        rows: 1,
-                    },
-                    ...spawnPosition,
-                    depthMode: Object2d.DEPTH_MODE.y,
+                        parent: App.currentSceneObject,
+                        img: 'resources/img/misc/apples_01.png',
+                        spritesheet: {
+                            cellSize: 8,
+                            cellNumber: random(1, 4),
+                            columns: 4,
+                            rows: 1,
+                        },
+                        ...spawnPosition,
+                        depthMode: Object2d.DEPTH_MODE.y,
+                        z: App.constants.ACTIVE_PET_Z,
 
-                    PICKUP_RANGE: 45,
-                    onDraw: (me) => {
+                        PICKUP_RANGE: 45,
+                        onDraw: (me) => {
                         const bb = me.getBoundingBox();
 
                         const distanceX = Math.abs(bb.centerX - targetBoundingBox.centerX);
@@ -161,6 +162,13 @@ class Activities {
                         if(manhattanDist <= 20) {
                             increaseScore();
                             me.removeObject();
+                            App.playAdvancedSound({
+                                src: `resources/sounds/pop_01.mp3`,
+                                loop: false,
+                                volume: 1,
+                                playbackRate: 1 + (Math.random() * 0.5 * randomFromArray([-1, 1])),
+                                preservesPitch: false,
+                            });
                             Prefab.fadingSmoke({
                                 x: bb.centerX,
                                 y: bb.centerY,
@@ -169,7 +177,7 @@ class Activities {
                             })
                         }
                     }
-                })
+                    })
                 }
             }
     }
