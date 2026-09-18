@@ -180,7 +180,7 @@ App.definitions = (() => {
                 name: 'Work',
                 image: 'resources/img/misc/activity_building_work.png',
                 onEnter: () => App.handlers.open_works_list(),
-                isNew: true,
+                isNew: false,
             },
             {
                 name: `Underworld Entrance`,
@@ -2232,7 +2232,7 @@ App.definitions = (() => {
                     'resources/img/ui/decoration/leaf_02.png',
                     'resources/img/ui/decoration/leaf_04.png',
                 ],
-                isNew: true,
+                isNew: false,
             },
             leaves_02: {
                 name: 'Autumn',
@@ -2241,7 +2241,7 @@ App.definitions = (() => {
                     'resources/img/ui/decoration/leaf_03.png',
                     'resources/img/ui/decoration/leaf_02.png',
                 ],
-                isNew: true,
+                isNew: false,
             },
             leaves_03: {
                 name: 'Winter',
@@ -2250,7 +2250,7 @@ App.definitions = (() => {
                     'resources/img/ui/decoration/leaf_08.png',
                     'resources/img/ui/decoration/leaf_09.png',
                 ],
-                isNew: true,
+                isNew: false,
             },
         },
 
@@ -3368,7 +3368,7 @@ App.definitions = (() => {
                 duration: App.constants.ONE_HOUR * 2.5,
                 icons: ['special:logic'],
                 skillDescription: 'Requires high <b>Logic</b> skill',
-                isNew: true,
+                isNew: false,
                 type: 'job',
                 payAmount: 225,
                 onVisualize: Activities.teacherClassroomWork,
@@ -3383,7 +3383,7 @@ App.definitions = (() => {
                 duration: App.constants.ONE_HOUR * 2.25,
                 icons: ['special:endurance'],
                 skillDescription: 'Requires high <b>Endurance</b> skill',
-                isNew: true,
+                isNew: false,
                 type: 'job',
                 payAmount: 200,
                 onVisualize: Activities.bodyBuilderWork,

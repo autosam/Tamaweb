@@ -4083,7 +4083,7 @@ const App = {
                     }
                 },
                 {
-                    name: `system settings ${App.getBadge()}`,
+                    name: `system settings`,
                     onclick: () => {
                         App.displayList([
                             {
