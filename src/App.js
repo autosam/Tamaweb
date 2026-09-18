@@ -7926,6 +7926,14 @@ const App = {
 
             const list = [
                 {
+                    _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.teen,
+                    name: `fruit collector ${App.getBadge()}`,
+                    onclick: () => {
+                        App.displayPopup(`Pickup as many fruits as you can before the timer runs out!`, tutorialDisplayTime, () => Activities.islandCollectionGame())
+                        return false;
+                    }
+                },
+                {
                     _disable: App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.child,
                     name: `food knowledge`,
                     onclick: () => {

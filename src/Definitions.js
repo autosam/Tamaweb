@@ -140,7 +140,7 @@ App.definitions = (() => {
                 name: `Game Center`,
                 image: 'resources/img/misc/activity_building_arcade.png',
                 onEnter: () => Activities.goToArcade(),
-                isNew: false,
+                isNew: true,
             },
             {
                 isDisabled: () => App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child,
