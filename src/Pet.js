@@ -1682,7 +1682,8 @@ class Pet extends Object2d {
         otherObject.localZ = localZ;
     }
     say(sentence, ms = 6000){
-        const message = App.displayMessageBubble(sentence, this.petDefinition.getFullCSprite());
+        const pitch = 2 - (this.petDefinition.lifeStage * 0.5);
+        const message = App.displayMessageBubble(sentence, this.petDefinition.getFullCSprite(), pitch);
         setTimeout(() => message?.close(), ms);
     }
 
