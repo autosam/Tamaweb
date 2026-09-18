@@ -4,6 +4,8 @@ class Activities {
         App.setScene(App.scene.emptyOutside);
         const parent = new Object2d({});
 
+        const GRID_SIZE = App.drawer.bounds.width;
+
         const spawnedNpcs = []
 
         const mapObject = new Object2d({
@@ -104,6 +106,14 @@ class Activities {
         App.pet.triggerScriptedState('idle', App.INF, false, true, () => {}, (me) => {
             // mainAi.wanderDriver(me);
 
+            const bb = me.getBoundingBox()
+
+            const gridPosition = {
+                x: Math.round(bb.centerX / GRID_SIZE),
+                y: Math.round(bb.centerY / GRID_SIZE),
+            }
+            console.log('grid', gridPosition)
+
             const direction = normalizeVector({
                 x: App.mouse.absX || 0,
                 y: App.mouse.absY || 0,
@@ -130,10 +140,15 @@ class Activities {
                 y: -me.y + App.drawer.bounds.height/2
             }
             directionCameraMovementVector = multVector(direction, 50)
+            // App.drawer.setCameraPosition(
+            //     cameraTargetCenter.x - directionCameraMovementVector.x,
+            //     cameraTargetCenter.y - directionCameraMovementVector.y,
+            //     0.003 * App.deltaTime
+            // );
             App.drawer.setCameraPosition(
-                cameraTargetCenter.x - directionCameraMovementVector.x,
-                cameraTargetCenter.y - directionCameraMovementVector.y,
-                0.003 * App.deltaTime
+                ((gridPosition.x + 0.5) - 1) * -GRID_SIZE,
+                ((gridPosition.y + 0.5) - 1) * -GRID_SIZE,
+                0.005 * App.deltaTime
             );
             // App.drawer.cameraPosition.z = lerp(App.drawer.cameraPosition.z, cameraTargetZ, 0.005 * App.deltaTime);
         });
