@@ -1,115 +1,75 @@
 class Activities {
-    static async enterIsland(){
+    static async islandCollectionGame(){
+        App.closeAllDisplays();
         App.toggleGameplayControls(false);
         App.setScene(App.scene.emptyOutside);
-        const parent = new Object2d({});
 
-        const spawnedNpcs = []
+        // scoring and game loop
+        const MAP_SIZE = 960;
+        const PADDING = 150;
+        const MAX_TIME = App.constants.ONE_SECOND * 30;
+        let maxScore = 0, currentScore = 0, allowMovement = true;
+        const increaseScore = (amt = 1) => {
+            currentScore += amt;
+        }
+
+        const onEnd = () => {
+            const percentCollected = Math.round(currentScore * 100 / maxScore);
+
+            timerBar.abort();
+            screen.remove();
+            allowMovement = false;
+            setTimeout(() => {
+                App.pet.say(`${percentCollected}/${100}`, App.constants.ONE_SECOND * 2);
+            }, App.constants.ONE_SECOND * 0.5);
+            setTimeout(() => {
+                App.fadeScreen({
+                    middleFn: () => {
+                        App.toggleGameplayControls(true);
+                        App.drawer.setCameraPosition(0, 0);
+                        App.setScene(App.scene.full_grass);
+                        App.pet.stopScriptedState();
+
+                        Activities.task_winMoney({
+                            amount: Math.round(percentCollected * 0.75),
+                            hasWon: percentCollected > 50,
+                        })
+                    }
+                })
+            }, App.constants.ONE_SECOND * 3);
+        }
+
+        const screen = UI.empty();
+        screen.className = 'absolute-fullscreen'
+        document.querySelector('.screen-wrapper').appendChild(screen);
+        const timerBar = App.createTimerBar(MAX_TIME, onEnd);
+        screen.appendChild(timerBar.node);
 
         const mapObject = new Object2d({
-            img: 'resources/img/background/outside/map_island_01.png',
-            x: '50%',
-            y: '50%',
-            width: 960, height: 960, z: -10,
+            parent: App.currentSceneObject,
+            img: 'resources/img/background/outside/map_island_02.png',
+            x: -(MAP_SIZE / 2),
+            y: -(MAP_SIZE / 2),
+            width: MAP_SIZE, height: MAP_SIZE, z: -10,
         })
-
-        const getRandomValidPosition = () => {
-            const center = {
-                x: App.drawer.getRelativePositionX(50),
-                y: App.drawer.getRelativePositionY(50),
-            }
-
-            const mapHalfBounds = {
-                x: mapObject.width / 2,
-                y: mapObject.height / 2,
-            }
-
-            return {
-                x: center.x + random(-mapHalfBounds.x, mapHalfBounds.x),
-                y: center.x + random(-mapHalfBounds.y, mapHalfBounds.y),
-            }
+        window.mapObj = mapObject
+        const mapHalfBounds = {
+            x: mapObject.width / 2,
+            y: mapObject.height / 2,
         }
 
-        const wanderDriverFactory = () => {
-            const WANDER_MS = {
-                min: App.constants.ONE_SECOND * 1,
-                max: App.constants.ONE_SECOND * 15
-            }
-
-            const bucket = {
-                lastNpcInteractionMs: App.constants.ONE_SECOND * 1,
-                lastWanderMs: 0,
-                waitingMs: 10000,
-            };
-
-            let state = 'idle';
-
-            const wanderDriver = (me) => {
-                switch(state){
-                    case 'wait':
-                        bucket.waitingMs -= App.accurateDeltaTime
-                        if(bucket.waitingMs <= 0){
-                            state = 'idle';
-                            bucket.waitingMs = 10000;
-                        }
-                        break;
-                    case 'looking_for_npc_interaction':
-                        const randomTargetNpc = randomFromArray(spawnedNpcs);
-                        randomTargetNpc.ai.setState('wait');
-                        // randomTargetNpc.showThought();
-                        me.showThought(App.constants.WANT_TYPES.playdate, randomTargetNpc.petDefinition);
-                        me.targetX = randomTargetNpc.x;
-                        me.targetY = randomTargetNpc.y;
-                        state = 'waiting';
-                        break;
-                    case 'wander':
-                        if(!me.isMoving){
-                            const randomPosition = getRandomValidPosition();
-                            me.targetX = randomPosition.x;
-                            me.targetY = randomPosition.y;
-                        } else {
-                            me.stopMove();
-                        }
-                        state = 'idle';
-                        break;
-                    default:
-                        if(bucket.lastNpcInteractionMs + random(App.constants.ONE_SECOND * 10, App.constants.ONE_SECOND * 60) <= App.time){
-                            bucket.lastNpcInteractionMs = App.time;
-                            state = 'looking_for_npc_interaction';
-                            me.stopMove();
-                        }
-
-                        if(bucket.lastWanderMs + random(WANDER_MS.min, WANDER_MS.max) <= App.time) {
-                            bucket.lastWanderMs = App.time;
-                            state = 'wander';
-                        }
-                }
-
-                me.setState(me.isMoving ? 'moving' : 'idle');
-            }
-
-            return {
-                wanderDriver,
-                setState: (newState) => state = state
-            };
-        }
+        let targetBoundingBox;
 
         App.pet.stopMove();
-        App.pet.speedOverride = 0.04;
-        let cameraTargetZ = 0;
-        let directionCameraMovementVector = {x: 0, y: 0};
-
-        // const mainAi = wanderDriverFactory();
-        // App.pet.ai = mainAi;
         App.pet.triggerScriptedState('idle', App.INF, false, true, () => {}, (me) => {
-            // mainAi.wanderDriver(me);
+            targetBoundingBox = me.getBoundingBox();
 
             const direction = normalizeVector({
                 x: App.mouse.absX || 0,
                 y: App.mouse.absY || 0,
             })
 
-            if(App.mouse.isDown){
+            if(App.mouse.isDown && allowMovement){
                 const movementVector = multVector(direction, 0.75);
 
                 me.x += movementVector.x * 0.1 * App.deltaTime;
@@ -117,59 +77,101 @@ class Activities {
 
                 me.setState('moving');
                 me.inverted = direction.x > 0;
-                cameraTargetZ = -1;
             } else {
                 me.setState('idle');
                 direction.x = 0;
                 direction.y = 0;
-                cameraTargetZ = 0;
             }
+
+            me.x = clamp(me.x, -mapHalfBounds.x + PADDING, mapHalfBounds.x - PADDING - targetBoundingBox.width);
+            me.y = clamp(me.y, -mapHalfBounds.y + PADDING, mapHalfBounds.y - PADDING - targetBoundingBox.height);
 
             const cameraTargetCenter = {
                 x: -me.x + App.drawer.bounds.width/2 - me.spritesheet.cellSize/2,
                 y: -me.y + App.drawer.bounds.height/2
             }
-            directionCameraMovementVector = multVector(direction, 50)
+            const directionCameraMovementVector = multVector(direction, 50)
             App.drawer.setCameraPosition(
                 cameraTargetCenter.x - directionCameraMovementVector.x,
                 cameraTargetCenter.y - directionCameraMovementVector.y,
                 0.003 * App.deltaTime
             );
-            // App.drawer.cameraPosition.z = lerp(App.drawer.cameraPosition.z, cameraTargetZ, 0.005 * App.deltaTime);
         });
 
-        // decoration spawning
-        for(let i = 0; i < 100; i++){
-            const spawnPosition = getRandomValidPosition();
-            new Object2d({
-                parent,
-                img: 'resources/img/misc/tree_01.png',
-                ...spawnPosition,
-                onDraw: (me) => {
-                    App.pet.setLocalZBasedOnSelf(me);
+
+        // spawning
+        for(let x = 0; x < mapObject.width; x += 20)
+            for(let y = 0; y < mapObject.width; y += 20) {
+                const PICKUP_SPAWN_PADDING = PADDING + 50;
+
+                const NOISE_SCALE = 0.01;
+                const noise = window.noise.simplex2(x * NOISE_SCALE, y * NOISE_SCALE, 0);
+
+                if(
+                    x < PICKUP_SPAWN_PADDING ||
+                    x > mapObject.width - PICKUP_SPAWN_PADDING ||
+                    y < PICKUP_SPAWN_PADDING ||
+                    y > mapObject.height - PICKUP_SPAWN_PADDING
+                )
+                    continue
+
+                if(noise > 0.7) {
+                    new Object2d({
+                        parent: App.currentSceneObject,
+                        img: 'resources/img/misc/tree_01.png',
+                        x: x - (mapObject.width / 2)  + random(-4, 4),
+                        y: y - (mapObject.height / 2) + random(-4, 4) - 32,
+                        z: App.pet.z,
+                        depthMode: Object2d.DEPTH_MODE.y,
+                    })
                 }
-            })
-        }
 
-        // npc spawning
-        for(let i = 0; i < 10; i++){
-            const pet = new Pet(App.getRandomPetDef())
-            pet.parent = parent;
-            pet.speedOverride = 0.04;
-            const spawnPosition = getRandomValidPosition();
-            setTimeout(() => {
-                pet.x = spawnPosition.x;
-                pet.y = spawnPosition.y;
-            })
-            const petAi = wanderDriverFactory();
-            pet.triggerScriptedState('idle', App.INF, false, true, false, (me) => {
-                petAi.wanderDriver(me);
-                App.pet.setLocalZBasedOnSelf(me);
-            });
-            pet.ai = petAi;
+                if(random(0, 20)) continue;
+                for(let i = 0; i < random(5, 10); i++) {
+                    maxScore += 1;
+                    const spawnPosition = {
+                        x: x - (mapObject.width / 2) + random(-16, 16),
+                        y: y - (mapObject.height / 2) + random(-16, 16),
+                    };
+                    new Object2d({
+                    parent: App.currentSceneObject,
+                    img: 'resources/img/misc/apples_01.png',
+                    spritesheet: {
+                        cellSize: 8,
+                        cellNumber: random(1, 4),
+                        columns: 4,
+                        rows: 1,
+                    },
+                    ...spawnPosition,
+                    depthMode: Object2d.DEPTH_MODE.y,
 
-            spawnedNpcs.push(pet);
-        }
+                    PICKUP_RANGE: 45,
+                    onDraw: (me) => {
+                        const bb = me.getBoundingBox();
+
+                        const distanceX = Math.abs(bb.centerX - targetBoundingBox.centerX);
+                        const distanceY = Math.abs(bb.centerY - targetBoundingBox.centerY);
+                        const manhattanDist = distanceX + distanceY;
+
+                        if(manhattanDist < me.PICKUP_RANGE) {
+                            me.x = lerp(me.x, targetBoundingBox.centerX - bb.width/2, 0.0075 * App.deltaTime);
+                            me.y = lerp(me.y, targetBoundingBox.centerY - bb.height/2, 0.0075 * App.deltaTime);
+                        }
+
+                        if(manhattanDist <= 20) {
+                            increaseScore();
+                            me.removeObject();
+                            Prefab.fadingSmoke({
+                                x: bb.centerX,
+                                y: bb.centerY,
+                                z: App.constants.ACTIVE_PET_Z - 1,
+                                spawnScale: 0.75,
+                            })
+                        }
+                    }
+                })
+                }
+            }
     }
     static async openScratchCard({
         npc = "resources/img/character/mall_npc_01.png",

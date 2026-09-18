@@ -8279,6 +8279,47 @@ const App = {
 
         return {node: element}
     },
+    createTimerBar: function(time, onEnd){
+        const TICK = 100;
+        let remainingMs = time;
+
+        const element = UI.create({
+            className: 'timer-bar__container',
+            children: [
+                {
+                    id: 'progress',
+                    className: 'timer-bar__progress'
+                }
+            ]
+        })
+        const progressElement = element.querySelector('#progress');
+        progressElement.style.transitionDuration = `${TICK}ms`;
+
+        const interval = setInterval(() => {
+            if(remainingMs <= 0) handleOnEnd();
+
+            const percent = remainingMs * 100 / time;
+            progressElement.style.width = `${percent}%`;
+
+            remainingMs -= TICK;
+        }, TICK);
+
+        const handleOnEnd = () => {
+            onEnd?.();
+            element?.remove?.();
+            clearInterval(interval);
+        };
+
+        const abort = () => {
+            element?.remove?.();
+            clearInterval(interval);
+        };
+
+        return {
+            node: element,
+            abort
+        }
+    },
     createRangeSlider: function ({ min = 0, max = 100, dataList, _disable, ...rest } = {}) {
         const listId = hashCode(Math.random().toString());
 
@@ -9743,7 +9784,9 @@ const App = {
         new Object2d({
             image: App.getPreloadedResource('resources/img/misc/black_overlay_01.png'),
             opacity: 0,
-            x: 0, y: 0, z: 1000,
+            x: 0, y: 0, z: App.INF,
+            depthMode: Object2d.DEPTH_MODE.none,
+            static: true,
             onDraw: (me) => {
                 const step = speed * App.deltaTime;
 

@@ -34,6 +34,7 @@ const ASSETS = [
   "src/Animal.js",
   "src/Prefab.js",
   // libs
+  "src/libs/noise.js",
   "src/libs/moment.js",
   "src/libs/idb-keyval.js",
   "src/libs/profanity-cleaner-0.0.3.js",

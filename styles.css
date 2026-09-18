@@ -3303,3 +3303,16 @@ c-sprite.ghost.devil::after {
         transform: rotate(0deg);
     }
 }
+
+/* timer bar */
+.timer-bar__container {
+    width: 100%;
+    height: 5px;
+    background: #ffffff;
+}
+.timer-bar__progress {
+    height: 100%;
+    background-color: #3d00ff;
+    transition: width;
+    transition-timing-function: linear;
+}
