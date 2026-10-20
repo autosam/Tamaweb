@@ -9221,7 +9221,6 @@ const App = {
             if(stopped) return;
             stopped = true;
             if(fadeOutEvent) App.unregisterOnDrawEvent(fadeOutEvent);
-            if(loopHandler) audioElement.removeEventListener('timeupdate', loopHandler);
             audioElement.loop = false;
             audioElement.muted = true;
             audioElement.pause();
