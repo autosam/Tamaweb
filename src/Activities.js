@@ -5563,6 +5563,12 @@ class Activities {
             currentScore += amt;
         }
 
+        App.playAdvancedSound({
+            loop: false,
+            src: 'resources/sounds/island_collector_bm_01.mp3',
+            volume: 0.3,
+        });
+
         const onEnd = () => {
             const percentCollected = Math.round(currentScore * 100 / maxScore);
 

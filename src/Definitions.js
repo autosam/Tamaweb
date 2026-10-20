@@ -2329,8 +2329,8 @@ App.definitions = (() => {
                                 me.currentPosition.y = -40;
                             }
                             if (!App.isCompanionAllowed()) {
-                                me.x = -100;
-                                me.y = -100;
+                                me.x = -App.INF;
+                                me.y = -App.INF;
                                 return;
                             }
 
@@ -2547,8 +2547,8 @@ App.definitions = (() => {
                             me.y = parent.y - 40 - (App.pet.spritesheet.offsetY ?? 0) + additionalMotionY + parent.positionOffset.y;
 
                             if (!App.isCompanionAllowed()) {
-                                me.x = -100;
-                                me.y = -100;
+                                me.x = -App.INF;
+                                me.y = -App.INF;
                                 return;
                             }
                         }
