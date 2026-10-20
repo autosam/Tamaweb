@@ -9214,6 +9214,11 @@ const App = {
         audioElement.muted = !App.settings.playSound || !App.settings.playMusic;
         audioElement.play();
 
+        if(isIOS){
+            // disable looping on iOS due to issue of not being able to stop the sound
+            audioElement.loop = false;
+        }
+
         if(config.loopTime){
             audioElement.addEventListener('timeupdate', () => {
                 if (audioElement.currentTime >= config.loopTime) {
