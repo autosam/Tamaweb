@@ -5551,6 +5551,8 @@ class Activities {
     // games
     static async islandCollectionGame(){
         App.closeAllDisplays();
+        App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.sendAnalytics('minigame_island_collector');
         App.toggleGameplayControls(false);
         App.setScene(App.scene.emptyOutside);
 
@@ -5585,6 +5587,10 @@ class Activities {
                         App.drawer.setCameraPosition(0, 0);
                         App.setScene(App.scene.full_grass);
                         App.pet.stopScriptedState();
+
+                        if(percentCollected > 90){
+                            App.definitions.achievements.perfect_minigame_islandcollector_win_x_times.advance();
+                        }
 
                         Activities.task_winMoney({
                             amount: percentCollected >= 25 ? Math.round(percentCollected * 0.75) : 0,

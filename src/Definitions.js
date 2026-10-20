@@ -3001,6 +3001,16 @@ App.definitions = (() => {
                     App.displayPopup(`You've received $500!`);
                 }
             },
+            perfect_minigame_islandcollector_win_x_times: {
+                name: 'Fruit Sweeper',
+                description: 'Finish with more than 90% collection in the Fruit Collector game 5 times!',
+                checkProgress: () => App.getRecord('times_perfected_islandcollector_minigame') >= 5,
+                advance: (amount) => App.addRecord('times_perfected_islandcollector_minigame', amount),
+                getReward: () => {
+                    App.pet.stats.gold += 500;
+                    App.displayPopup(`You've received $500!`);
+                }
+            },
         },
 
         /* MAIL */
