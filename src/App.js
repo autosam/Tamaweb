@@ -9210,37 +9210,40 @@ const App = {
     },
     playAdvancedSound: function(config){
         const audioElement = new Audio();
-        Object.keys(config).map(key => audioElement[key] = config[key]);
+        Object.keys(config).forEach(key => audioElement[key] = config[key]);
         audioElement.muted = !App.settings.playSound || !App.settings.playMusic;
         audioElement.play();
 
-        if(isIOS){
-            // disable looping on iOS due to issue of not being able to stop the sound
-            audioElement.loop = false;
-        }
+        let fadeOutEvent = null;
+        let stopped = false;
 
-        if(config.loopTime){
-            audioElement.addEventListener('timeupdate', () => {
-                if (audioElement.currentTime >= config.loopTime) {
-                    audioElement.currentTime = 0;
-                    audioElement.play();
-                }
-            })
-        }
+        const cleanup = () => {
+            if(stopped) return;
+            stopped = true;
+            if(fadeOutEvent) App.unregisterOnDrawEvent(fadeOutEvent);
+            if(loopHandler) audioElement.removeEventListener('timeupdate', loopHandler);
+            audioElement.loop = false;
+            audioElement.muted = true;
+            audioElement.pause();
+            audioElement.currentTime = 0;
+            audioElement.src = '';
+            audioElement.load();
+        };
 
         return {
             element: audioElement,
             stop: (fadeSpeed = 0.0005) => {
-                const fadeOutEvent = App.registerOnDrawEvent(() => {
-                    const volume = audioElement.volume - (fadeSpeed * App.deltaTime)
+                // iOS ignores programmatic volume changes, so fade-out never completes
+                if(isIOS()){
+                    cleanup();
+                    return;
+                }
+
+                fadeOutEvent = App.registerOnDrawEvent(() => {
+                    const volume = audioElement.volume - (fadeSpeed * App.deltaTime);
                     audioElement.volume = clamp(volume, 0, 1);
-                    if(audioElement.volume <= 0){
-                        audioElement.pause();
-                        audioElement.src = "";
-                        audioElement.load();
-                        App.unregisterOnDrawEvent(fadeOutEvent);
-                    }
-                })
+                    if(audioElement.volume <= 0) cleanup();
+                });
             }
         };
     },
