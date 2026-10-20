@@ -27,7 +27,6 @@ const ASSETS = [
   "src/Object2d.js",
   "src/Pet.js",
   "src/PetDefinition.js",
-  "src/Scene.js",
   "src/Definitions.js",
   "src/Utils.js",
   "src/Missions.js",

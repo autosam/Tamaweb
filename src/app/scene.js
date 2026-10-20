@@ -1,3 +1,9 @@
+class Scene {
+    constructor(data) {
+        Object.assign(this, data);
+    }
+}
+
 App.scene = {
     home: new Scene({
         image: "resources/img/background/house/02.png",
