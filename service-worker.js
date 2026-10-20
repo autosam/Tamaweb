@@ -21,6 +21,8 @@ const ASSETS = [
   "src/Main.js",
   "src/Activities.js",
   "src/App.js",
+  "src/app/scene.js",
+  "src/app/handlers.js",
   "src/Drawer.js",
   "src/Object2d.js",
   "src/Pet.js",
