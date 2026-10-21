@@ -3904,7 +3904,7 @@ const App = {
         const cleanup = () => {
             if (stopped) return;
             stopped = true;
-            if (fadeOutEvent) App.unregisterOnDrawEvent(fadeOutEvent);
+            if(fadeOutEvent) App.unregisterOnDrawEvent(fadeOutEvent);
             audioElement.loop = false;
             audioElement.muted = true;
             audioElement.pause();
