@@ -5568,7 +5568,7 @@ class Activities {
         App.playAdvancedSound({
             loop: false,
             src: 'resources/sounds/island_collector_bm_01.mp3',
-            volume: 0.3,
+            volume: 0.4,
         });
 
         const onEnd = () => {
