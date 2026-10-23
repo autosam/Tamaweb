@@ -505,6 +505,15 @@ App.definitions = (() => {
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 isNew: false,
             },
+            "bowl of ramen": {
+                sprite: 590,
+                hunger_replenish: 16,
+                fun_replenish: 5,
+                health_replenish: 2,
+                price: 18,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                isNew: true,
+            },
 
             // cookable only
             "sky bread": {
@@ -916,6 +925,15 @@ App.definitions = (() => {
                 price: 12,
                 type: 'treat',
                 isNew: false,
+            },
+            "quiche": {
+                sprite: 680,
+                hunger_replenish: 15,
+                fun_replenish: 6,
+                price: 12,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                type: 'treat',
+                isNew: true,
             },
 
 
