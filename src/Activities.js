@@ -8264,10 +8264,16 @@ class Activities {
         if(App.petDefinition.hasTrait('lucky'))
             amount = Math.round(amount * (1 + random(0, 5) * 0.1));
 
+        let funGain = happiness ?? (amount / 5);
+        if(App.petDefinition.hasTrait('gamer')) {
+            funGain *= 1.5;
+            amount *= 1.1;
+        }
+
         amount = Math.floor(amount);
 
         App.pet.stats.gold += amount;
-        App.pet.stats.current_fun += happiness ?? (amount / 5);
+        App.pet.stats.current_fun += funGain;
         if(hasWon) Missions.done(Missions.TYPES.win_game);
 
         const petMain = new TimelineDirector(App.pet);

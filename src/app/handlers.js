@@ -54,7 +54,7 @@ App.handlers = {
 
                                 <span style="padding: 2px; margin: 0" class="flex flex-dir-col flex-gap-025 font-small">
                                     <span class="flex flex-gap-025 align-center">${App.getIcon("clock", true)}${Math.ceil(hole.duration / 1000 / 60)}</span>
-                                    <span class="flex flex-gap-025 align-center">${App.getIcon("special:gold", true)}${hole.payAmount}</span>
+                                    <span class="flex flex-gap-025 align-center">${App.getIcon("special:gold", true)}${App.handlers.getJobPay(hole)}</span>
                                 </span>
                             </div>
 
@@ -76,7 +76,7 @@ App.handlers = {
                             for
                             <b>${humanizeExactDuration(hole.duration)}</b>
                             and gets paid
-                            <b>${App.getIcon("special:gold", true)} ${hole.payAmount}</b>
+                            <b>${App.getIcon("special:gold", true)} ${App.handlers.getJobPay(hole)}</b>
                             `,
                             acceptLabel: "Accept",
                             declineLabel: "Cancel",
@@ -494,12 +494,28 @@ App.handlers = {
             (btn) => (btn.onclick = container.close),
         );
     },
+    getJobPay: function (definition) {
+        const base = definition.payAmount || 0;
+        const isSkillJob = definition.keywords?.includes("skill-job");
+        if (isSkillJob && App.petDefinition.hasTrait("ambitious")) {
+            return Math.round(base * 1.35);
+        }
+        return base;
+    },
     finalize_work: function (definition) {
-        App.pet.stats.gold += definition.payAmount;
-        App.pet.stats.current_fun -= random(25, 45);
+        const payAmount = App.handlers.getJobPay(definition);
+        let funLoss = random(25, 45);
+        if (
+            definition.keywords?.includes("skill-job") &&
+            App.petDefinition.hasTrait("ambitious")
+        ) {
+            funLoss = Math.round(funLoss * 0.5);
+        }
+        App.pet.stats.gold += payAmount;
+        App.pet.stats.current_fun -= funLoss;
         App.displayConfirm(
             ...GenericUIDef.singleConfirm(
-                `${App.petDefinition.getAvatar()} made $${definition.payAmount}!`,
+                `${App.petDefinition.getAvatar()} made $${payAmount}!`,
             ),
         );
     },
@@ -2428,13 +2444,17 @@ App.handlers = {
                 currentType !== "med";
 
             // 50% off on sales day
-            let price = current.price * priceMult;
+            const actualPrice = current.price * priceMult;
+            let price = actualPrice;
             if (sellMode) {
                 if (isFree) continue;
-                price = current.cookableOnly
-                    ? Math.floor(price * 1.5)
-                    : Math.floor(price * 0.75);
+                let sellRate = current.cookableOnly ? 1.5 : 0.75;
+                if (App.petDefinition.hasTrait("haggler")) sellRate *= 1.25;
+                let sellPrice = Math.floor(actualPrice * sellRate);
+                if (!current.cookableOnly && sellPrice > actualPrice) sellPrice = actualPrice - 1;
+                price = sellPrice;
             }
+            const sellTone = current.cookableOnly ? "positive" : "negative";
             if (salesDay) price = Math.round(price / 2);
 
             const foodIcon = App.getFoodCSprite(current.sprite);
@@ -2465,7 +2485,7 @@ App.handlers = {
                                     buyMode || sellMode
                                         ? `
                                     ${sellMode ? `<span class="opacity-half">$${current.price} <i class="fa-solid fa-angle-right"></i> </span>` : ""}
-                                    <span class="${sellMode ? `seller-analysis ${current.cookableOnly ? "positive" : "negative"}` : ""}">
+                                    <span class="${sellMode ? `seller-analysis ${sellTone}` : ""}">
                                         $${price}
                                     </span>
                                 `

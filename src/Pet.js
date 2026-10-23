@@ -919,6 +919,9 @@ class Pet extends Object2d {
                 offlineAndIsNight = true;
                 depletion_mult = 0.05;
             }
+
+            if(hasTrait('independent')) depletion_mult *= 0.8;
+            if(hasTrait('clingy')) depletion_mult *= 1.2;
         } else {
             this.attemptMisbehave();
         }
