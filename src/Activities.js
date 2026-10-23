@@ -4092,11 +4092,11 @@ class Activities {
         let patCount = 0;
         await App.pet.triggerScriptedState('idle', App.INF, null, true, () => {
             App.reloadScene();
-            App.toggleGameplayControls(true);
             App.pet.shadowOffset = 0;
             App.pet.scale = 1;
             App.pet.z = initialZ;
             App.pet.playCheeringAnimationIfTrue(patCount);
+            App.toggleGameplayControls(true);
             App.pet.stats.current_expression += 1;
             App.pet.stats.current_endurance += 1;
             App.pet.stats.current_logic += 1;
@@ -5549,6 +5549,200 @@ class Activities {
 
 
     // games
+    static async islandCollectionGame(){
+        App.closeAllDisplays();
+        App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
+        App.sendAnalytics('minigame_island_collector');
+        App.toggleGameplayControls(false);
+        App.setScene(App.scene.emptyOutside);
+
+        // scoring and game loop
+        const MAP_SIZE = 960;
+        const PADDING = 150;
+        const MAX_TIME = App.constants.ONE_SECOND * 30;
+        let maxScore = 0, currentScore = 0, allowMovement = true;
+        const increaseScore = (amt = 1) => {
+            currentScore += amt;
+        }
+
+        App.playAdvancedSound({
+            loop: false,
+            src: 'resources/sounds/island_collector_bm_01.mp3',
+            volume: 0.4,
+        });
+
+        const onEnd = () => {
+            const percentCollected = Math.round(currentScore * 100 / maxScore);
+
+            timerBar.abort();
+            screen.remove();
+            allowMovement = false;
+            setTimeout(() => {
+                App.pet.say(`${percentCollected}/${100}`, App.constants.ONE_SECOND * 2);
+            }, App.constants.ONE_SECOND * 0.5);
+            setTimeout(() => {
+                App.fadeScreen({
+                    middleFn: () => {
+                        App.toggleGameplayControls(true);
+                        App.drawer.setCameraPosition(0, 0);
+                        App.setScene(App.scene.full_grass);
+                        App.pet.stopScriptedState();
+
+                        if(percentCollected > 90){
+                            App.definitions.achievements.perfect_minigame_islandcollector_win_x_times.advance();
+                        }
+
+                        Activities.task_winMoney({
+                            amount: percentCollected >= 25 ? Math.round(percentCollected * 0.75) : 0,
+                            hasWon: percentCollected > 60,
+                        })
+                    }
+                })
+            }, App.constants.ONE_SECOND * 3);
+        }
+
+        const screen = UI.empty();
+        screen.className = 'absolute-fullscreen'
+        document.querySelector('.screen-wrapper').appendChild(screen);
+        const timerBar = App.createTimerBar(MAX_TIME, onEnd);
+        screen.appendChild(timerBar.node);
+
+        const mapObject = new Object2d({
+            parent: App.currentSceneObject,
+            img: 'resources/img/background/outside/map_island_02.png',
+            x: -(MAP_SIZE / 2),
+            y: -(MAP_SIZE / 2),
+            width: MAP_SIZE, height: MAP_SIZE, z: -10,
+        })
+        window.mapObj = mapObject
+        const mapHalfBounds = {
+            x: mapObject.width / 2,
+            y: mapObject.height / 2,
+        }
+
+        let targetBoundingBox;
+
+        App.pet.stopMove();
+        App.pet.triggerScriptedState('idle', App.INF, false, true, () => {}, (me) => {
+            targetBoundingBox = me.getBoundingBox();
+
+            const direction = normalizeVector({
+                x: App.mouse.absX || 0,
+                y: App.mouse.absY || 0,
+            })
+
+            if(App.mouse.isDown && allowMovement){
+                const movementVector = multVector(direction, 0.75);
+
+                me.x += movementVector.x * 0.1 * App.deltaTime;
+                me.y += movementVector.y * 0.1 * App.deltaTime;
+
+                me.setState('moving');
+                me.inverted = direction.x > 0;
+            } else {
+                me.setState('idle');
+                direction.x = 0;
+                direction.y = 0;
+            }
+
+            me.x = clamp(me.x, -mapHalfBounds.x + PADDING, mapHalfBounds.x - PADDING - targetBoundingBox.width);
+            me.y = clamp(me.y, -mapHalfBounds.y + PADDING, mapHalfBounds.y - PADDING - targetBoundingBox.height);
+
+            const cameraTargetCenter = {
+                x: -me.x + App.drawer.bounds.width/2 - me.spritesheet.cellSize/2,
+                y: -me.y + App.drawer.bounds.height/2
+            }
+            const directionCameraMovementVector = multVector(direction, 50)
+            App.drawer.setCameraPosition(
+                cameraTargetCenter.x - directionCameraMovementVector.x,
+                cameraTargetCenter.y - directionCameraMovementVector.y,
+                0.003 * App.deltaTime
+            );
+        });
+
+
+        // spawning
+        for(let x = 0; x < mapObject.width; x += 20)
+            for(let y = 0; y < mapObject.width; y += 20) {
+                const PICKUP_SPAWN_PADDING = PADDING + 50;
+
+                const NOISE_SCALE = 0.01;
+                const noise = window.noise.simplex2(x * NOISE_SCALE, y * NOISE_SCALE, 0);
+
+                if(
+                    x < PICKUP_SPAWN_PADDING ||
+                    x > mapObject.width - PICKUP_SPAWN_PADDING ||
+                    y < PICKUP_SPAWN_PADDING ||
+                    y > mapObject.height - PICKUP_SPAWN_PADDING
+                )
+                    continue
+
+                if(noise > 0.7) {
+                    new Object2d({
+                        parent: App.currentSceneObject,
+                        img: 'resources/img/misc/tree_01.png',
+                        x: x - (mapObject.width / 2)  + random(-4, 4),
+                        y: y - (mapObject.height / 2) + random(-4, 4) - 32,
+                        z: App.pet.z,
+                        depthMode: Object2d.DEPTH_MODE.y,
+                    })
+                }
+
+                if(random(0, 20)) continue;
+                for(let i = 0; i < random(5, 10); i++) {
+                    maxScore += 1;
+                    const spawnPosition = {
+                        x: x - (mapObject.width / 2) + random(-16, 16),
+                        y: y - (mapObject.height / 2) + random(-16, 16),
+                    };
+                    new Object2d({
+                        parent: App.currentSceneObject,
+                        img: 'resources/img/misc/apples_01.png',
+                        spritesheet: {
+                            cellSize: 8,
+                            cellNumber: random(1, 4),
+                            columns: 4,
+                            rows: 1,
+                        },
+                        ...spawnPosition,
+                        depthMode: Object2d.DEPTH_MODE.y,
+                        z: App.constants.ACTIVE_PET_Z,
+
+                        PICKUP_RANGE: 45,
+                        onDraw: (me) => {
+                        const bb = me.getBoundingBox();
+
+                        const distanceX = Math.abs(bb.centerX - targetBoundingBox.centerX);
+                        const distanceY = Math.abs(bb.centerY - targetBoundingBox.centerY);
+                        const manhattanDist = distanceX + distanceY;
+
+                        if(manhattanDist < me.PICKUP_RANGE) {
+                            me.x = lerp(me.x, targetBoundingBox.centerX - bb.width/2, 0.0075 * App.deltaTime);
+                            me.y = lerp(me.y, targetBoundingBox.centerY - bb.height/2, 0.0075 * App.deltaTime);
+                        }
+
+                        if(manhattanDist <= 20) {
+                            increaseScore();
+                            me.removeObject();
+                            App.playAdvancedSound({
+                                src: `resources/sounds/pop_01.mp3`,
+                                loop: false,
+                                volume: 1,
+                                playbackRate: 1 + (Math.random() * 0.5 * randomFromArray([-1, 1])),
+                                preservesPitch: false,
+                            });
+                            Prefab.fadingSmoke({
+                                x: bb.centerX,
+                                y: bb.centerY,
+                                z: App.constants.ACTIVE_PET_Z - 1,
+                                spawnScale: 0.75,
+                            })
+                        }
+                    }
+                    })
+                }
+            }
+    }
     static guessTheNumberGame(){
         App.closeAllDisplays();
         App.petDefinition.checkWant(true, App.constants.WANT_TYPES.minigame);
@@ -8070,10 +8264,16 @@ class Activities {
         if(App.petDefinition.hasTrait('lucky'))
             amount = Math.round(amount * (1 + random(0, 5) * 0.1));
 
+        let funGain = happiness ?? (amount / 5);
+        if(App.petDefinition.hasTrait('gamer')) {
+            funGain *= 1.5;
+            amount *= 1.1;
+        }
+
         amount = Math.floor(amount);
 
         App.pet.stats.gold += amount;
-        App.pet.stats.current_fun += happiness ?? (amount / 5);
+        App.pet.stats.current_fun += funGain;
         if(hasWon) Missions.done(Missions.TYPES.win_game);
 
         const petMain = new TimelineDirector(App.pet);

@@ -140,7 +140,7 @@ App.definitions = (() => {
                 name: `Game Center`,
                 image: 'resources/img/misc/activity_building_arcade.png',
                 onEnter: () => Activities.goToArcade(),
-                isNew: false,
+                isNew: true,
             },
             {
                 isDisabled: () => App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child,
@@ -504,6 +504,15 @@ App.definitions = (() => {
                 price: 20,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 isNew: false,
+            },
+            "bowl of ramen": {
+                sprite: 590,
+                hunger_replenish: 16,
+                fun_replenish: 5,
+                health_replenish: 2,
+                price: 18,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                isNew: true,
             },
 
             // cookable only
@@ -916,6 +925,15 @@ App.definitions = (() => {
                 price: 12,
                 type: 'treat',
                 isNew: false,
+            },
+            "quiche": {
+                sprite: 680,
+                hunger_replenish: 15,
+                fun_replenish: 6,
+                price: 12,
+                age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
+                type: 'treat',
+                isNew: true,
             },
 
 
@@ -2329,8 +2347,8 @@ App.definitions = (() => {
                                 me.currentPosition.y = -40;
                             }
                             if (!App.isCompanionAllowed()) {
-                                me.x = -100;
-                                me.y = -100;
+                                me.x = -App.INF;
+                                me.y = -App.INF;
                                 return;
                             }
 
@@ -2547,8 +2565,8 @@ App.definitions = (() => {
                             me.y = parent.y - 40 - (App.pet.spritesheet.offsetY ?? 0) + additionalMotionY + parent.positionOffset.y;
 
                             if (!App.isCompanionAllowed()) {
-                                me.x = -100;
-                                me.y = -100;
+                                me.x = -App.INF;
+                                me.y = -App.INF;
                                 return;
                             }
                         }
@@ -3001,6 +3019,16 @@ App.definitions = (() => {
                     App.displayPopup(`You've received $500!`);
                 }
             },
+            perfect_minigame_islandcollector_win_x_times: {
+                name: 'Fruit Sweeper',
+                description: 'Finish with more than 90% collection in the Fruit Collector game 5 times!',
+                checkProgress: () => App.getRecord('times_perfected_islandcollector_minigame') >= 5,
+                advance: (amount) => App.addRecord('times_perfected_islandcollector_minigame', amount),
+                getReward: () => {
+                    App.pet.stats.gold += 500;
+                    App.displayPopup(`You've received $500!`);
+                }
+            },
         },
 
         /* MAIL */
@@ -3367,6 +3395,7 @@ App.definitions = (() => {
                 condition: () => App.pet.stats.current_logic >= 80,
                 duration: App.constants.ONE_HOUR * 2.5,
                 icons: ['special:logic'],
+                keywords: ['skill-job'],
                 skillDescription: 'Requires high <b>Logic</b> skill',
                 isNew: false,
                 type: 'job',
@@ -3382,6 +3411,7 @@ App.definitions = (() => {
                 condition: () => App.pet.stats.current_endurance >= 80,
                 duration: App.constants.ONE_HOUR * 2.25,
                 icons: ['special:endurance'],
+                keywords: ['skill-job'],
                 skillDescription: 'Requires high <b>Endurance</b> skill',
                 isNew: false,
                 type: 'job',
@@ -3585,6 +3615,33 @@ App.definitions = (() => {
                 description: 'Cleanliness need drops slower.',
                 opposite: ['dustMagnet'],
                 icon: 26,
+            },
+            ambitious: {
+                name: 'Ambitious',
+                description: 'Earns more from skill jobs and loses less fun from them.',
+                icon: 28,
+            },
+            haggler: {
+                name: 'Haggler',
+                description: 'Sells food for more money.',
+                icon: 29,
+            },
+            gamer: {
+                name: 'Gamer',
+                description: 'Wants to play mini-games more often and gets more fun from them.',
+                icon: 30,
+            },
+            independent: {
+                name: 'Independent',
+                description: `Needs drop slower while you are away.`,
+                opposite: ['clingy'],
+                icon: 31,
+            },
+            clingy: {
+                name: 'Clingy',
+                description: `Needs drop faster while you are away.`,
+                opposite: ['independent'],
+                icon: 32,
             },
         },
 

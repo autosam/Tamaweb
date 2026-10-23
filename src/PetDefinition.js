@@ -752,6 +752,9 @@ class PetDefinition {
         if(App.petDefinition.hasTrait('treasurer')){
             possibleCategories.push('item', 'item', 'item');
         }
+        if(App.petDefinition.hasTrait('gamer')){
+            possibleCategories.push('minigame', 'minigame', 'minigame');
+        }
 
         const currentCategory = /* 'minigame' ||  */existingCurrentCategory || randomFromArray(possibleCategories);
 
@@ -882,6 +885,13 @@ class PetDefinition {
         this.traits.push(traitKey || randomTrait);
 
         console.log(this, 'Developed new trait:', traitKey || randomTrait);
+    }
+    removeTrait(traitName){
+        const traitIndex = this.traits?.indexOf(traitName);
+        const hasTrait = traitIndex !== -1;
+        if(!hasTrait) return console.warn(`Doesn't have ${traitName} trait.`);
+        this.traits?.splice(traitIndex, 1);
+        return true;
     }
     checkFavorite(key, type){
         // babies can't develop favorites
