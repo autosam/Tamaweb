@@ -74,6 +74,9 @@ App.scene = {
             App.handleFurnitureSpawn(null, true);
             App.handleAnimalsSpawn(false);
             App.temp.homeCurrentBackgroundDef?.onUnload?.();
+
+            // reset pet scale
+            App.pet.scale = 1;
         },
     }),
     kitchen: new Scene({

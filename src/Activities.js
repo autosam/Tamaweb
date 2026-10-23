@@ -4092,11 +4092,11 @@ class Activities {
         let patCount = 0;
         await App.pet.triggerScriptedState('idle', App.INF, null, true, () => {
             App.reloadScene();
-            App.toggleGameplayControls(true);
             App.pet.shadowOffset = 0;
             App.pet.scale = 1;
             App.pet.z = initialZ;
             App.pet.playCheeringAnimationIfTrue(patCount);
+            App.toggleGameplayControls(true);
             App.pet.stats.current_expression += 1;
             App.pet.stats.current_endurance += 1;
             App.pet.stats.current_logic += 1;
