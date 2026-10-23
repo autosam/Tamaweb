@@ -1955,10 +1955,10 @@ const App = {
                         <div>
                             Check out the new:
                             <ul style="margin: 6px 0px 6px -22px;" class="bold">
-                                <li>School Teacher Job</li>
-                                <li>Bodybuilder Job</li>
-                                <li>Overlay Decorations</li>
-                                <li>Lots of improvements and rebalances</li>
+                                <li>Fruit Collector Mini-game</li>
+                                <li>5 New Personality Traits</li>
+                                <li>New Food and Snack</li>
+                                <li>Improvements and bugfixes</li>
                             </ul>
                             and more!
                         </div>
