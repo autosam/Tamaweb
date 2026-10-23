@@ -1675,9 +1675,9 @@ const App = {
                     return showAlreadyUsed();
                 break;
             // update specific
-            case "TEACHER":
-            case "PATCHY":
-            case "BODYBUILD":
+            case "FRUITCOL":
+            case "QUICHE":
+            case "HAGGLER":
                 if (
                     !addEvent(codeEventId, () => {
                         const goldAmount = 150,
@@ -1720,7 +1720,7 @@ const App = {
                 )
                     return showAlreadyUsed();
                 break;
-            case "DISCORD7K":
+            case "DISCORD8K":
                 if (
                     !addEvent(codeEventId, () => {
                         const goldAmount = 3000,
