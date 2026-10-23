@@ -3316,3 +3316,28 @@ c-sprite.ghost.devil::after {
     transition: width;
     transition-timing-function: linear;
 }
+
+/* toggle */
+.toggle__container {
+    color: var(--prim-clr-b-text-shadow);
+    background: white;
+    width: 30px;
+    height: 20px;
+    border-radius: 4px;
+    border: 2px solid;
+    display: inline-flex;
+    align-items: center;
+    padding: 1px;
+    box-sizing: border-box;
+}
+.toggle__inner {
+    width: 50%;
+    height: 100%;
+    background-color: currentColor;
+    border-radius: 2px;
+}
+.toggle__container[toggle-state="true"]{
+    color: var(--prim-clr-b-text);
+    justify-content: end;
+    background-color: var(--prim-clr-c-text);
+}

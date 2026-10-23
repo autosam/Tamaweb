@@ -2904,6 +2904,17 @@ const App = {
         });
         return element;
     },
+    createToggle: function(state = false){
+        return UI.create({
+            className: 'toggle__container',
+            attributes: [
+                ['toggle-state', Boolean(state)]
+            ],
+            children: [
+                { className: 'toggle__inner' },
+            ],
+        });
+    },
     closeAllDisplays: function () {
         [...document.querySelectorAll(".display")].forEach((display) => {
             if (!display.closest(".cloneables")) {
