@@ -6942,4 +6942,54 @@ App.handlers = {
             App.constants.ONE_SECOND * (random(9, 14) - 0.5),
         );
     },
+    take_selfie: () => {
+        const {
+            videoElement,
+            videoContainer
+        } = App.useWebcam(() => {
+            downloadUpscaledCanvasAsImage(drawer.canvas);
+        });
+        videoElement.style.opacity = 0;
+
+        const drawer = new Drawer(null, App.drawer.bounds.width, App.drawer.bounds.height);
+        videoContainer.appendChild(drawer.canvas);
+        drawer.canvas.classList.add('top-0', 'left-0', 'absolute-fullscreen', 'image-pixelated');
+        drawer.canvas.style.zIndex = -1;
+        const petDef = new PetDefinition({
+            sprite: App.petDefinition.sprite,
+        })
+        const pet = new Pet(petDef, {
+            x: -999,
+            y: 50,
+            castShadow: false,
+        }, { drawer });
+        videoElement.onclick = () => {
+            const states = [
+                'idle',
+                'idle_side',
+                'kissing',
+                'cheering',
+                'idle_uncomfortable',
+                'talking',
+                'uncomfortable',
+                'shocked',
+                'blush'
+            ];
+            pet.setState(randomFromArray(states))
+            pet.x = `${random(20, 80)}%`;
+            pet.y = randomFromArray(['65%', '35%', '100%']);
+            pet.inverted = Boolean(random(0, 1));
+        }
+        pet.triggerScriptedState('idle', App.INF, false, true, null, () => {
+            // if(!App.canProceed('selfie_pet_change_state', 1000)) return;
+            if(!App.mouse.isDown) return;
+            App.mouse.isDown = false;
+
+
+        })
+        App.registerOnDrawEvent(() => {
+            drawer.context.drawImage(videoElement, 0, 0, App.drawer.bounds.width, App.drawer.bounds.height);
+            drawer.draw(drawer.objects, true);
+        })
+    }
 };

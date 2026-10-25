@@ -4485,6 +4485,11 @@ const App = {
                 videoContainer.remove();
                 showError();
             });
+
+        return {
+            videoElement,
+            videoContainer
+        }
     },
     createNotification: function (title, body) {
         if (!App.settings.notifications) return false;

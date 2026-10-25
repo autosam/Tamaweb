@@ -1552,6 +1552,10 @@ input#background-color-picker {
 
 .whitespace-no-wrap { white-space: nowrap; }
 
+.image-pixelated {
+    image-rendering: pixelated;
+}
+
 .m {
     margin: 6px;
 }

@@ -23,7 +23,7 @@ class Pet extends Object2d {
     ignoreAnimationSetObjects = false;
     shouldDisplaySleepParticles = true;
 
-    constructor(petDefinition, additionalProps){
+    constructor(petDefinition, additionalProps, baseConfig = {}){
         const image = petDefinition.spriteSkin
             ? App.getPreloadedResource(petDefinition.spriteSkin)
             : App.getPreloadedResource(petDefinition.sprite);
@@ -31,6 +31,7 @@ class Pet extends Object2d {
         const config = {
             image,
             spritesheet: petDefinition.spritesheet,
+            ...baseConfig
         };
         super(config);
 
@@ -39,6 +40,7 @@ class Pet extends Object2d {
         this.inventory = this.petDefinition.inventory;
         this.animations = this.petDefinition.animations;
         this.additionalY += this.petDefinition.spritesheet.offsetY || 0;
+        this.baseConfig = baseConfig;
 
         if(App?.currentScene?.petY){
             this.y = App.currentScene.petY;
@@ -64,6 +66,7 @@ class Pet extends Object2d {
             z: this.z,
             width: this.petDefinition.spritesheet.cellSize, height: this.petDefinition.spritesheet.cellSize,
             hidden: true,
+            ...this.baseConfig,
             onDraw: (overlay) => {
                 overlay.mimicParent(['inverted', 'upperHalfOffsetY']);
                 Object2d.animations.flip(overlay, 250);
@@ -79,6 +82,7 @@ class Pet extends Object2d {
             localZ: -0.001,
             width: this.petDefinition.spritesheet.cellSize, height: this.petDefinition.spritesheet.cellSize,
             hidden: true,
+            ...this.baseConfig,
             onDraw: (overlay) => {
                 overlay.mimicParent(['inverted', 'upperHalfOffsetY']);
                 Object2d.animations.flip(overlay, 300);
@@ -94,6 +98,7 @@ class Pet extends Object2d {
             localZ: -999,
             depthMode: Object2d.DEPTH_MODE.none,
             invisible: !this.castShadow,
+            ...this.baseConfig,
             onDraw: (overlay) => {
                 overlay.invisible = !this.castShadow;
 
@@ -133,6 +138,7 @@ class Pet extends Object2d {
             hidden: true,
             z: this.z,
             localZ: 2,
+            ...this.baseConfig,
             onDraw: (overlay) => {
                 Object2d.animations.flip(overlay, 750);
             }
@@ -146,6 +152,7 @@ class Pet extends Object2d {
             invisible: true,
             z: this.z,
             localZ: 1,
+            ...this.baseConfig,
             // width: this.petDefinition.spritesheet.cellSize, height: this.petDefinition.spritesheet.cellSize,
             onDraw: (overlay) => {
                 overlay.invisible = !overlay.parent?.stats?.is_misbehaving;
@@ -158,6 +165,7 @@ class Pet extends Object2d {
         this.sleepParticles = new Object2d({
             parent: this,
             spawnTimerMs: Math.random(),
+            ...this.baseConfig,
             onDraw: (me) => {
                 if(!me.parent.shouldDisplaySleepParticles) {
                     me.hidden = true;
@@ -182,6 +190,7 @@ class Pet extends Object2d {
                     y: me.parent.y - me.parent.spritesheet.cellSize,
                     rotation: 0,
                     opacity: 1,
+                    ...this.baseConfig,
                     onDraw: (particle) => {
                         const changeFloat = particleSettings.speed * App.deltaTime;
                         particle.y -= changeFloat;
@@ -244,6 +253,7 @@ class Pet extends Object2d {
                         z: this.z,
                         localZ: accessory.front ? 0.0001 : -0.0001,
                         scale: 1,
+                        ...this.baseConfig,
                         spritesheet: {
                             cellNumber: 1,
                             cellSize: ACCESSORY_CELL_SIZE,
@@ -442,6 +452,7 @@ class Pet extends Object2d {
                 img: 'resources/img/misc/ghost_01.png',
                 x: 0,
                 y: -5,
+                ...this.baseConfig,
                 onDraw: (ghostObject) => {
                     Object2d.animations.bob(ghostObject, 0.001, 0.1);
                     Object2d.animations.flip(ghostObject, 1500);
@@ -484,6 +495,7 @@ class Pet extends Object2d {
                 },
                 x: '50%',
                 y: '80%',
+                ...this.baseConfig,
             });
             this.eggMotionFloat = 0;
             this.eggMotionFloatSpeed = 0.001;
@@ -516,6 +528,7 @@ class Pet extends Object2d {
             App.playSound('resources/sounds/task_complete_02.ogg', true);
             new Object2d({
                 ...App.drawer.bounds,
+                ...this.baseConfig,
                 x: 0, y: 0, z: App.constants.ACTIVE_PET_Z + 5,
                 solidColor: {
                     r: 255,
@@ -1052,6 +1065,7 @@ class Pet extends Object2d {
                 const poopObject = new Object2d({
                     image: App.preloadedResources["resources/img/misc/poop.png"],
                     ...position,
+                    ...this.baseConfig,
                     selector: 'poop',
                     onDraw: (me) => {
                         Object2d.animations.flip(me, 300);
@@ -1369,6 +1383,7 @@ class Pet extends Object2d {
                         objectDef._counter = 0;
                         const object = new Object2d({
                             parent: me,
+                            ...this.baseConfig,
                             ...objectDef,
                         });
                         me.animObjectsQueue.push(object);
@@ -1531,6 +1546,7 @@ class Pet extends Object2d {
             z: App.constants.ACTIVE_PET_Z + 0.1,
             shouldFadeout: false,
             float: 0,
+            ...this.baseConfig,
             onDraw: (me) => {
                 me.x = this.x;
                 me.float += 0.004 * App.deltaTime;
@@ -1559,6 +1575,7 @@ class Pet extends Object2d {
                 z: App.constants.ACTIVE_PET_Z + 0.101,
                 shouldFadeout: false,
                 float: 0,
+                ...this.baseConfig,
                 onDraw: (me) => {
                     me.opacity = bubble.opacity;
                     me.x = bubble.x;
@@ -1577,6 +1594,7 @@ class Pet extends Object2d {
                     image: App.preloadedResources[App.constants.FOOD_SPRITESHEET],
                     x: 10, y: 10, z: THOUGHT_ITEM_Z,
                     scale: 0.62,
+                    ...this.baseConfig,
                     spritesheet: {
                         cellNumber: foodSpriteIndex,
                         cellSize: 24,
@@ -1601,6 +1619,7 @@ class Pet extends Object2d {
                     x: 10, y: 10, z: THOUGHT_ITEM_Z,
                     scale: 0.62,
                     spritesheet: friendDef.spritesheet,
+                    ...this.baseConfig,
                     onDraw: (me) => {
                         me.opacity = bubble.opacity;
                         me.x = bubble.x + (friendDef.spritesheet.offsetY ?? 0);
@@ -1622,6 +1641,7 @@ class Pet extends Object2d {
                         rows: 10,
                         columns: 10
                     },
+                    ...this.baseConfig,
                     onDraw: (me) => {
                         me.opacity = bubble.opacity;
                         me.x = bubble.x + 5;
@@ -1634,6 +1654,7 @@ class Pet extends Object2d {
                     parent: bubble,
                     image: App.preloadedResources["resources/img/misc/minigames.png"],
                     x: 10, y: 10, z: THOUGHT_ITEM_Z,
+                    ...this.baseConfig,
                     onDraw: (me) => {
                         me.opacity = bubble.opacity;
                         me.x = bubble.x;
@@ -1646,6 +1667,7 @@ class Pet extends Object2d {
                     parent: bubble,
                     image: App.preloadedResources["resources/img/misc/want_fulfilled.png"],
                     x: 10, y: 10, z: THOUGHT_ITEM_Z,
+                    ...this.baseConfig,
                     onDraw: (me) => {
                         me.opacity = bubble.opacity;
                         me.x = bubble.x;
