@@ -919,6 +919,9 @@ class Pet extends Object2d {
                 offlineAndIsNight = true;
                 depletion_mult = 0.05;
             }
+
+            if(hasTrait('independent')) depletion_mult *= 0.8;
+            if(hasTrait('clingy')) depletion_mult *= 1.2;
         } else {
             this.attemptMisbehave();
         }
@@ -1682,7 +1685,8 @@ class Pet extends Object2d {
         otherObject.localZ = localZ;
     }
     say(sentence, ms = 6000){
-        const message = App.displayMessageBubble(sentence, this.petDefinition.getFullCSprite());
+        const pitch = 2 - (this.petDefinition.lifeStage * 0.5);
+        const message = App.displayMessageBubble(sentence, this.petDefinition.getFullCSprite(), pitch);
         setTimeout(() => message?.close(), ms);
     }
 
