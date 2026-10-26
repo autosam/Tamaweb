@@ -1939,7 +1939,7 @@ const App = {
 
         if (
             addEvent(
-                `update_29_notice`,
+                `update_30_notice`,
                 () => {
                     App.displayList([
                         {
