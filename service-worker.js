@@ -123,45 +123,59 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+const notFoundResponse = () => new Response("", { status: 404 });
+
+const respond = (event, promise) => {
+  event.respondWith(
+    Promise.resolve(promise).catch(() => notFoundResponse())
+  );
+};
+
+const matchCache = (request) =>
+  caches.match(request).then((cached) => cached || notFoundResponse());
+
 self.addEventListener("fetch", (event) => {
+  if (!event.request.url.startsWith(self.location.origin)) return;
+
   if (event.request.headers.get("range")) {
-    event.respondWith(fetch(event.request));
+    respond(
+      event,
+      fetch(event.request).catch(() => matchCache(event.request))
+    );
     return;
   }
 
-  if (!event.request.url.startsWith(self.location.origin)) return;
-
-  handleOnlineFirst(event);
+  handleOfflineFirst(event);
 });
 
 const handleOfflineFirst = (event) => {
-  event.respondWith(
+  respond(
+    event,
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
         return cachedResponse;
       }
 
-      return caches.open(CACHE_NAME).then((cache) => {
-        return fetch(event.request)
-          .then((response) => {
-            if (
-              !response ||
-              response.status !== 200 ||
-              response.type !== "basic"
-            ) {
-              return response;
-            }
-            cache.put(event.request, response.clone());
+      return caches.open(CACHE_NAME).then((cache) =>
+        fetch(event.request).then((response) => {
+          if (
+            !response ||
+            response.status !== 200 ||
+            response.type !== "basic"
+          ) {
             return response;
-          })
-          .catch(() => new Response("", { status: 404 }));
-      });
+          }
+          cache.put(event.request, response.clone());
+          return response;
+        })
+      );
     })
   );
 };
 
 const handleOnlineFirst = (event) => {
-  event.respondWith(
+  respond(
+    event,
     fetch(event.request)
       .then((response) => {
         if (!response || response.status !== 200 || response.type !== "basic") {
@@ -173,9 +187,7 @@ const handleOnlineFirst = (event) => {
           return response;
         });
       })
-      .catch(() => {
-        return caches.match(event.request);
-      })
+      .catch(() => matchCache(event.request))
   );
 };
 
