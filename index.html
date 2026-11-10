@@ -13,7 +13,7 @@
     <!-- Sentry -->
     <script src="https://js-de.sentry-cdn.com/c23629fb79e43e3e8361e1775451f6c0.min.js" crossorigin="anonymous"></script>
     <script>
-        Sentry.onLoad(() => {
+        Sentry?.onLoad?.(() => {
             Sentry.init({
                 sampleRate: 0.05,
                 ignoreErrors: [
