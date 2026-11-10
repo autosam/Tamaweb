@@ -6567,7 +6567,7 @@ App.handlers = {
             {
                 _disable:
                     App.petDefinition.lifeStage < PetDefinition.LIFE_STAGE.teen,
-                name: `fruit collector ${App.getBadge()}`,
+                name: `fruit collector`,
                 onclick: () => {
                     App.displayPopup(
                         `Pickup as many fruits as you can before the timer runs out!`,

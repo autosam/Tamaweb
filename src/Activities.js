@@ -5626,6 +5626,8 @@ class Activities {
         App.pet.triggerScriptedState('idle', App.INF, false, true, () => {}, (me) => {
             targetBoundingBox = me.getBoundingBox();
 
+            if(!targetBoundingBox) return;
+
             const direction = normalizeVector({
                 x: App.mouse.absX || 0,
                 y: App.mouse.absY || 0,
@@ -5710,18 +5712,18 @@ class Activities {
 
                         PICKUP_RANGE: 45,
                         onDraw: (me) => {
-                        const bb = me.getBoundingBox();
+                            const bb = me.getBoundingBox();
 
-                        const distanceX = Math.abs(bb.centerX - targetBoundingBox.centerX);
-                        const distanceY = Math.abs(bb.centerY - targetBoundingBox.centerY);
-                        const manhattanDist = distanceX + distanceY;
+                            const distanceX = Math.abs(bb?.centerX - targetBoundingBox?.centerX);
+                            const distanceY = Math.abs(bb?.centerY - targetBoundingBox?.centerY);
+                            const manhattanDist = distanceX + distanceY;
 
-                        if(manhattanDist < me.PICKUP_RANGE) {
-                            me.x = lerp(me.x, targetBoundingBox.centerX - bb.width/2, 0.0075 * App.deltaTime);
-                            me.y = lerp(me.y, targetBoundingBox.centerY - bb.height/2, 0.0075 * App.deltaTime);
-                        }
+                            if(manhattanDist < me.PICKUP_RANGE) {
+                                me.x = lerp(me.x, targetBoundingBox?.centerX - bb.width/2, 0.0075 * App.deltaTime);
+                                me.y = lerp(me.y, targetBoundingBox?.centerY - bb.height/2, 0.0075 * App.deltaTime);
+                            }
 
-                        if(manhattanDist <= 20) {
+                            if(manhattanDist <= 20) {
                             increaseScore();
                             me.removeObject();
                             App.playAdvancedSound({
@@ -5738,7 +5740,7 @@ class Activities {
                                 spawnScale: 0.75,
                             })
                         }
-                    }
+                        }
                     })
                 }
             }

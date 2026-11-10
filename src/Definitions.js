@@ -134,13 +134,13 @@ App.definitions = (() => {
                 name: "Market",
                 image: 'resources/img/misc/activity_building_market.png',
                 onEnter: () => Activities.goToMarket(),
-                isNew: true,
+                isNew: false,
             },
             {
                 name: `Game Center`,
                 image: 'resources/img/misc/activity_building_arcade.png',
                 onEnter: () => Activities.goToArcade(),
-                isNew: true,
+                isNew: false,
             },
             {
                 isDisabled: () => App.petDefinition.lifeStage <= PetDefinition.LIFE_STAGE.child,
@@ -512,7 +512,7 @@ App.definitions = (() => {
                 health_replenish: 2,
                 price: 18,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
-                isNew: true,
+                isNew: false,
             },
 
             // cookable only
@@ -933,7 +933,7 @@ App.definitions = (() => {
                 price: 12,
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
                 type: 'treat',
-                isNew: true,
+                isNew: false,
             },
 
 
