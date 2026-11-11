@@ -1119,7 +1119,7 @@ class Activities {
         const wantedFoodDef = App.definitions.food[wantedFood];
 
         otherPet.setState('mild_uncomfortable');
-        otherPet.actor.showThought('food', wantedFood, 1500);
+        otherPet.actor?.showThought?.('food', wantedFood, 1500);
         await TimelineDirector.wait(1000);
 
         otherPet.setState('idle');

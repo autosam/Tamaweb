@@ -1258,8 +1258,10 @@ class Pet extends Object2d {
     stopScriptedState(){
         this.stopMove();
         this.scriptedEventTime = null;
-        if(this.scriptedEventOnEndFn) {
-            this.scriptedEventOnEndFn();
+        const onEnd = this.scriptedEventOnEndFn;
+        this.scriptedEventOnEndFn = null;
+        if(onEnd) {
+            onEnd();
             return true;
         }
         return false;

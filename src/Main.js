@@ -63,16 +63,21 @@ class AudioChannel {
 
     }
     async load(path){
-        const response = await fetch(path);
-        const arrayBuffer = await response.arrayBuffer();
-        const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
-        this.audioBufferCache.set(path, audioBuffer);
-        return audioBuffer;
+        try {
+            const response = await fetch(path);
+            const arrayBuffer = await response.arrayBuffer();
+            const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+            this.audioBufferCache.set(path, audioBuffer);
+            return audioBuffer;
+        } catch (e) {
+            return null;
+        }
     }
     async play(path, force) {
         if (this.isBusy && !force) return;
 
         const buffer = this.audioBufferCache.get(path) ?? await this.load(path);
+        if (!buffer) return;
 
         if (force && this.currentSource) {
             try {
@@ -146,6 +151,8 @@ window.onunhandledrejection = (event) => {
     const reason = event?.reason;
     const message = typeof reason === 'string' ? reason : reason?.message || 'Unknown rejection';
     const stack = reason?.stack || false;
+
+    if (/Failed to fetch|Load failed|NetworkError/i.test(message)) return;
 
     showError(event?.reason, event?.reason?.stack);
     if(stack) App.sendErrorLog(`${message} - ${stack}`);
