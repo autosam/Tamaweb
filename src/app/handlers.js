@@ -3119,11 +3119,11 @@ App.handlers = {
                     },
                 },
                 {
-                    _disable: !App.petDefinition.deceasedPredecessors?.length,
+                    _disable: !App.petDefinition?.deceasedPredecessors?.length,
                     name: `past generations`,
                     onclick: () => {
                         const generations =
-                            App.petDefinition.deceasedPredecessors.map(
+                            App.petDefinition?.deceasedPredecessors?.map(
                                 (def) => {
                                     const petDefinition = new PetDefinition(
                                         def,

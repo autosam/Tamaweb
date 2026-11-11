@@ -2652,7 +2652,7 @@ const App = {
         App.petDefinition.inventory = lastPet.inventory;
         App.petDefinition.stats.gold = lastPet.stats.gold;
         App.petDefinition.deceasedPredecessors = [
-            ...lastPet.deceasedPredecessors,
+            ...(lastPet?.deceasedPredecessors ?? []),
         ];
         if (addToPredecessors) {
             App.petDefinition.deceasedPredecessors.push({
@@ -3896,7 +3896,7 @@ const App = {
         const audioElement = new Audio();
         Object.keys(config).forEach((key) => (audioElement[key] = config[key]));
         audioElement.muted = !App.settings.playSound || !App.settings.playMusic;
-        audioElement.play();
+        audioElement.play()?.catch?.(() => {});
 
         let fadeOutEvent = null;
         let stopped = false;
@@ -4312,11 +4312,6 @@ const App = {
             return;
         }
         App.temp.lastErrorSent = App.fullTime;
-
-        window?.Sentry?.captureException(error, {
-            username: App.userName,
-            userId: App.userId,
-        });
 
         const versionInfo = `[game:${VERSION}-pl:${App.isOnItch ? "itch" : "web"}]`;
         const user = (App.userName ? App.userName + "-" : "") + App.userId;
