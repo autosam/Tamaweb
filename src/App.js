@@ -1188,22 +1188,35 @@ const App = {
             return;
 
         const date = new Date();
-        const hour = date.getHours(), minute = date.getMinutes();
 
         // the reminder
-        const isDuringReminderTime = hour === 3 && minute <= 13;
-        if (App.pet.stats.is_revived_once && isDuringReminderTime && !App.getRecord("thereminder")){
-            App.queueEvent(() => {
-                const d = new Date();
-                if (d.getHours() !== 3 || d.getMinutes() > 13) return;
-
-                App.setRecord("thereminder", Date.now());
-                App.handlers.show_letter({
-                    headline: "Be aware of visitors!",
-                    text: `w 43337.<br>s 666666666664`,
-                    sender: "Your's truly",
-                });
-            }, "thereminder");
+        if (
+            App.pet.stats.is_revived_once &&
+            date.getHours() === 3 &&
+            App.currentScene === App.scene.home &&
+            App.pet.stats.is_sleeping &&
+            !App.haveAnyDisplays() &&
+            !App.pet.isDuringScriptedState() &&
+            !App.getRecord("thereminder")
+        ) {
+            App.setRecord("thereminder", Date.now());
+            const toLetters = (text) => text
+            .split("")
+            .map(letter =>
+                `<span
+                    class="random-letter-bounce"
+                    style="
+                        animation-delay: -${Math.random() * 1250}ms;
+                        --direction: ${100 * randomFromArray([-1, 1])};
+                        opacity: 1 !important;
+                    "
+                >${letter}</span>`)
+            .join("");
+            App.handlers.show_letter({
+                headline: `${toLetters("Beware. Visitor. and one who remains.")}`,
+                text: `<div>${toLetters("w░43337")}.<br>${toLetters("s░666666666664")}</div>`,
+                sender: `${toLetters("Your's truly, th░. ..igi▓.l")}`,
+            });
         }
 
         // automatic birthday
