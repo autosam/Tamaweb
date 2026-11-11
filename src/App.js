@@ -313,7 +313,7 @@ const App = {
             isVisible: false,
             onDraw: (me) => {
                 const targetOpacity =
-                    App.pet.stats.is_sleeping && App.pet.state === "sleeping"
+                    App.pet?.stats?.is_sleeping && App.pet?.state === "sleeping"
                         ? 1
                         : 0;
                 const currentOpacity = lerp(
