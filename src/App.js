@@ -1187,6 +1187,25 @@ const App = {
         )
             return;
 
+        const date = new Date();
+        const hour = date.getHours(), minute = date.getMinutes();
+
+        // the reminder
+        const isDuringReminderTime = hour === 3 && minute <= 13;
+        if (App.pet.stats.is_revived_once && isDuringReminderTime && !App.getRecord("thereminder")){
+            App.queueEvent(() => {
+                const d = new Date();
+                if (d.getHours() !== 3 || d.getMinutes() > 13) return;
+
+                App.setRecord("thereminder", Date.now());
+                App.handlers.show_letter({
+                    headline: "Be aware of visitors!",
+                    text: `w 43337.<br>s 666666666664`,
+                    sender: "Your's truly",
+                });
+            }, "thereminder");
+        }
+
         // automatic birthday
         if (App.settings.automaticAging) {
             const nextAutomaticBirthday =
