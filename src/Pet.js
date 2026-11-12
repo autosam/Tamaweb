@@ -1285,7 +1285,6 @@ class Pet extends Object2d {
             replacableStates.forEach(([originalState, replacementState]) => {
                 if(this.state === originalState){
                     this.setState(replacementState);
-                    console.log(`changed state from ${originalState} to ${replacementState}`);
                 }
             })
         }
