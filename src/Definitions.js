@@ -3643,6 +3643,12 @@ App.definitions = (() => {
                 opposite: ['independent'],
                 icon: 32,
             },
+            depressed: {
+                name: 'Depressed',
+                description: 'Perpetually sad.',
+                icon: 33,
+                noRandomDevelopment: true,
+            }
         },
 
         /* POOLS */

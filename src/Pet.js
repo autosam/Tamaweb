@@ -1025,6 +1025,9 @@ class Pet extends Object2d {
             stats.current_fun = 0;
             // console.log('All my friends no fun?');
         }
+        if(hasTrait('depressed')){
+            stats.current_fun = 0;
+        }
         stats.current_bladder -= bladder_depletion_rate;
         if(stats.current_bladder <= 0){
             stats.current_bladder = stats.max_bladder;
@@ -1258,8 +1261,10 @@ class Pet extends Object2d {
     stopScriptedState(){
         this.stopMove();
         this.scriptedEventTime = null;
-        if(this.scriptedEventOnEndFn) {
-            this.scriptedEventOnEndFn();
+        const onEnd = this.scriptedEventOnEndFn;
+        this.scriptedEventOnEndFn = null;
+        if(onEnd) {
+            onEnd();
             return true;
         }
         return false;
@@ -1267,12 +1272,32 @@ class Pet extends Object2d {
     isDuringScriptedState(){
         return !!this.scriptedEventTime;
     }
+    handleAnimationStateReplacement(){
+        if(this.petDefinition.hasTrait('depressed')) {
+            const replacableStates = [
+                ['idle', 'idle_uncomfortable'],
+                ['idle_side', 'idle_side_uncomfortable'],
+                ['cheering', 'mild_uncomfortable'],
+                ['cheering_with_icon', 'mild_uncomfortable'],
+                ['blush', 'idle'],
+                ['kissing', 'idle_side_uncomfortable'],
+            ]
+            replacableStates.forEach(([originalState, replacementState]) => {
+                if(this.state === originalState){
+                    this.setState(replacementState);
+                }
+            })
+        }
+    }
     stateManager(){
+        this.handleAnimationStateReplacement();
+
         if(this.scriptedEventTime){
             if(this.scriptedEventTime < App.lastTime){ // ending scripted event time
                 if(this.stopScriptedState()) return;
             } else { // during scripted event
                 if(this.scriptedEventDriverFn) this.scriptedEventDriverFn(this);
+                this.handleAnimationStateReplacement();
                 return;
             }
         }

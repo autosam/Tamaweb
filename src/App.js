@@ -313,7 +313,7 @@ const App = {
             isVisible: false,
             onDraw: (me) => {
                 const targetOpacity =
-                    App.pet.stats.is_sleeping && App.pet.state === "sleeping"
+                    App.pet?.stats?.is_sleeping && App.pet?.state === "sleeping"
                         ? 1
                         : 0;
                 const currentOpacity = lerp(
@@ -1186,6 +1186,38 @@ const App = {
             App.pet.stats.is_dead
         )
             return;
+
+        const date = new Date();
+
+        // the reminder
+        if (
+            App.pet.stats.is_revived_once &&
+            date.getHours() === 3 &&
+            App.currentScene === App.scene.home &&
+            App.pet.stats.is_sleeping &&
+            !App.haveAnyDisplays() &&
+            !App.pet.isDuringScriptedState() &&
+            !App.getRecord("thereminder")
+        ) {
+            App.setRecord("thereminder", Date.now());
+            const toLetters = (text) => text
+            .split("")
+            .map(letter =>
+                `<span
+                    class="random-letter-bounce"
+                    style="
+                        animation-delay: -${Math.random() * 1250}ms;
+                        --direction: ${100 * randomFromArray([-1, 1])};
+                        opacity: 1 !important;
+                    "
+                >${letter}</span>`)
+            .join("");
+            App.handlers.show_letter({
+                headline: `${toLetters("Beware. Visitor. and one who remains.")}`,
+                text: `<div>${toLetters("w░43337")}.<br>${toLetters("s░666666666664")}</div>`,
+                sender: `${toLetters("Your's truly, th░. ..igi▓.l")}`,
+            });
+        }
 
         // automatic birthday
         if (App.settings.automaticAging) {
@@ -2652,7 +2684,7 @@ const App = {
         App.petDefinition.inventory = lastPet.inventory;
         App.petDefinition.stats.gold = lastPet.stats.gold;
         App.petDefinition.deceasedPredecessors = [
-            ...lastPet.deceasedPredecessors,
+            ...(lastPet?.deceasedPredecessors ?? []),
         ];
         if (addToPredecessors) {
             App.petDefinition.deceasedPredecessors.push({
@@ -3896,7 +3928,7 @@ const App = {
         const audioElement = new Audio();
         Object.keys(config).forEach((key) => (audioElement[key] = config[key]));
         audioElement.muted = !App.settings.playSound || !App.settings.playMusic;
-        audioElement.play();
+        audioElement.play()?.catch?.(() => {});
 
         let fadeOutEvent = null;
         let stopped = false;
@@ -4312,11 +4344,6 @@ const App = {
             return;
         }
         App.temp.lastErrorSent = App.fullTime;
-
-        window?.Sentry?.captureException(error, {
-            username: App.userName,
-            userId: App.userId,
-        });
 
         const versionInfo = `[game:${VERSION}-pl:${App.isOnItch ? "itch" : "web"}]`;
         const user = (App.userName ? App.userName + "-" : "") + App.userId;
