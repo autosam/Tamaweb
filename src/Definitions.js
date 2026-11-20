@@ -1377,6 +1377,71 @@ App.definitions = (() => {
             },
         },
 
+        /* FISH */
+        fish: {
+            "sil": {
+                sprite: 1,
+                price: 0,
+                obtainable: false,
+            },
+            "melrosian": {
+                sprite: 2,
+                price: 2,
+            },
+            "flatgill": {
+                sprite: 3,
+                price: 5,
+            },
+            "orange carp": {
+                sprite: 4,
+                price: 2,
+            },
+            "sweet percula": {
+                sprite: 5,
+                price: 10,
+            },
+            "antenna fish": {
+                sprite: 6,
+                price: 3,
+            },
+            "square fish": {
+                sprite: 7,
+                price: 8,
+            },
+            "punkfish": {
+                sprite: 8,
+                price: 5,
+            },
+            "spotted gill": {
+                sprite: 9,
+                price: 5,
+            },
+            "golden fish": {
+                sprite: 10,
+                price: 4,
+            },
+            "polfish": {
+                sprite: 11,
+                price: 6,
+            },
+            "eggfish": {
+                sprite: 12,
+                price: 3,
+            },
+            "toad fish": {
+                sprite: 13,
+                price: 3,
+            },
+            "bunny fish": {
+                sprite: 14,
+                price: 10,
+            },
+            "angry bunny fish": {
+                sprite: 15,
+                price: 12,
+            },
+        },
+
         /* ROOM BACKGROUNDS */
         room_background: {
             "blue": {
@@ -3725,7 +3790,17 @@ App.definitions = (() => {
                 onClaim: (amt) => {
                     App.pet.stats.gold += amt || 50;
                 }
-            })
+        }),
+            allObtainableFish: () => Object.keys(App.definitions.fish)
+                .filter(key => App.definitions.fish[key]?.obtainable !== false)
+                .map(key => {
+                    const def = App.definitions.fish[key];
+                    return {
+                        name: key,
+                        icon: '',
+                        ...def,
+                    }
+                }),
         }
     }
 })()

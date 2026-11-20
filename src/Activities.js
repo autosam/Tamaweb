@@ -7,11 +7,14 @@ class Activities {
         App.pet.x = '50%';
         App.pet.y = '40%';
 
+        const OBTAINABLE_FISH_POOL = App.definitions.pools.allObtainableFish();
+
         // game state
         let nextCatchWindowTime = -1,
             catchWindowDuration = 0,
             fishHealth = 0,
-            castPositionY = -1;
+            castPositionY = -1,
+            currentFishDef;
         const isDuringCatchingWindow = () => {
             if(!isHookCast()) return false;
 
@@ -31,7 +34,7 @@ class Activities {
                 random(App.constants.ONE_SECOND * 2, App.constants.ONE_SECOND * 20);
             catchWindowDuration = random(750, 3000); // time to react
             fishHealth = random(8, 15); // taps needed
-            nibblingFish.spritesheet.cellNumber = random(2, 6); // change fish type
+            currentFishDef = randomFromArray(OBTAINABLE_FISH_POOL);  // change fish type
         }
 
         const castHook = () => {
@@ -66,8 +69,12 @@ class Activities {
                         })
                     })
                 }, 300);
-
-                console.log('CATCHED!');
+                App.addNumToObject(
+                    App.pet.inventory.fish,
+                    currentFishDef.name,
+                    1
+                );
+                App.save();
                 const { state, onclick } = App.getGameplayControlsState();
                 App.toggleGameplayControls(false);
                 setTimeout(() => {
@@ -111,9 +118,22 @@ class Activities {
         new Object2d({
             parent,
             img: 'resources/img/misc/fishing_hook_01.png',
+            spritesheet: {
+                cellSize: 13,
+                columns: 2,
+                rows: 1,
+                cellNumber: 1,
+            },
             onDraw: (me) => {
-                me.x = hookLineObject.currentPosition.x - 2;
-                me.y = hookLineObject.currentPosition.y + Math.sin(waveObject.waveFloat);
+                const shouldRender = isHookCast();
+                me.opacity = shouldRender ? 1 : 0;
+
+                if(!shouldRender) return;
+
+                const float = Math.sin(waveObject.waveFloat);
+                me.spritesheet.cellNumber = float < 0 ? 1 : 2;
+                me.x = hookLineObject.currentPosition.x - 6;
+                me.y = hookLineObject.currentPosition.y - 4 + float;
             }
         })
         const hookLineObject = new Object2d({
@@ -225,6 +245,8 @@ class Activities {
 
                 if(me.targetOpacity === 0) return;
 
+                me.spritesheet.cellNumber = currentFishDef?.sprite || 0;
+
                 me.x = hookLineObject.targetPosition.x + 2;
                 me.y = hookLineObject.targetPosition.y - 6;
                 me.additionalX = -Math.sin(waveObject.waveFloat);
@@ -253,8 +275,7 @@ class Activities {
                 x: random(0, App.drawer.bounds.width),
                 y: 45 + (i * 16),
                 z: 2,
-                sprite: random(1, 5),
-                sprite: 1,
+                sprite: App.definitions.fish.sil.sprite,
                 parent,
 
                 targetOpacity: 0,

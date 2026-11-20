@@ -246,8 +246,8 @@ class Fish extends Object2d {
             y,
             spritesheet: {
                 cellSize: 16,
-                rows: 20,
-                columns: 20,
+                rows: 12,
+                columns: 12,
                 cellNumber: sprite,
             },
             ...rest
