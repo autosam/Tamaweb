@@ -193,7 +193,15 @@ App.definitions = (() => {
                 image: 'resources/img/misc/activity_building_post_office.png',
                 onEnter: () => App.handlers.go_to_post_office(),
                 isNew: false,
-            }
+            },
+            {
+                isDisabled: () => App.petDefinition.lifeStage === PetDefinition.LIFE_STAGE.baby,
+                name: `Fishing Pond`,
+                image: 'resources/img/misc/activity_building_fishing_pond.png',
+                onEnter: () => App.handlers.go_fishing(),
+                isNew: true,
+            },
+
         ],
 
         /* FOOD AND SNACKS */

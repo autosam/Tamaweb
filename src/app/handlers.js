@@ -13,6 +13,9 @@ App.handlers = {
     go_to_post_office: function () {
         Activities.goToPostOffice(() => App.handlers.open_activity_list(true));
     },
+    go_fishing: function () {
+        Activities.goFishing(() => App.handlers.open_activity_list(true))
+    },
     show_attended_school_limit_message: function () {
         const formattedResetTime = moment(
             App.constants.SCHOOL.resetTime,

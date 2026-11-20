@@ -500,4 +500,7 @@ App.scene = {
     post_office: new Scene({
         image: "resources/img/background/house/post_office_01.png",
     }),
+    fishing_deck: new Scene({
+        image: 'resources/img/background/outside/fishing_deck_01.png',
+    })
 };

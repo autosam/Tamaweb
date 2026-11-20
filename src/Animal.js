@@ -77,8 +77,6 @@ class AnimalDefinition extends PetDefinition {
     }
 }
 
-
-
 class Animal extends Pet {
     shouldDisplaySleepParticles = false;
     ignoreAnimationSetObjects = true;
@@ -231,4 +229,100 @@ class Animal extends Pet {
     }
     handleWants(){}
     sleep(){}
+}
+
+class Fish extends Object2d {
+    currentSpeed = 0.1;
+    currentDirection = random(0, 1) || -1;
+    currentFloatValue = Math.random();
+
+    constructor({
+        sprite = 1,
+        y = '50%',
+        ...rest
+    } = {}){
+        super({
+            img: 'resources/img/misc/fish_sheet_01.png',
+            y,
+            spritesheet: {
+                cellSize: 16,
+                rows: 20,
+                columns: 20,
+                cellNumber: sprite,
+            },
+            ...rest
+        });
+    }
+    onLateDraw(){
+        this.handleAnimation();
+        this.handleMovement();
+    }
+    handleMovement(){
+        const lastDirection = this.currentDirection;
+
+        this.inverted = this.currentDirection === 1;
+
+        this.currentSpeed = lerp(this.currentSpeed, 1, App.deltaTime * 0.005);
+
+        this.x += 0.01 * this.currentSpeed * App.deltaTime * this.currentDirection;
+
+        if(this.x > App.drawer.bounds.width - this.spritesheet.cellSize) {
+            this.currentDirection = -1;
+            this.currentSpeed = Math.random() * 10;
+        } else if(this.x < 0) {
+            this.currentDirection = 1;
+            this.currentSpeed = Math.random() * 10;
+        }
+
+        // random speed increase
+        this.dashTimer ||= random(0, 1000);
+        this.dashTimer -= App.deltaTime;
+        if (this.dashTimer < 0) {
+            this.dashTimer = random(App.constants.ONE_SECOND, App.constants.ONE_SECOND * 4);
+            this.currentSpeed = Math.random() * 10;
+            this.currentDirection = random(0, 1) || -1;
+        }
+
+        if(lastDirection !== this.currentDirection) {
+            this.spawnBubble();
+        }
+    }
+    handleAnimation(){
+        this.currentFloatValue = (this.currentFloatValue + ((this.currentSpeed / 2) * 0.015 * App.deltaTime)) % App.PI2;
+        const floatValue = Math.sin(this.currentFloatValue);
+        this.additionalY = floatValue;
+    }
+    spawnBubble({ xOffset = 0, yOffset = 0 } = {}){
+        return new Object2d({
+            img: 'resources/img/misc/bubbles_01.png',
+            spritesheet: {
+                cellSize: 6,
+                rows: 1,
+                columns: 6,
+                cellNumber: 0,
+            },
+            x: this.x + xOffset,
+            y: this.y + yOffset,
+            z: App.constants.ACTIVE_PET_Z + 0.1,
+            additionalY: 6,
+            // composite: 'overlay',
+
+            animationFloat: 0,
+            onDraw: (me) => {
+                me.spriteUpdateTimer ||= 0;
+                me.spriteUpdateTimer -= App.deltaTime;
+                if(me.spriteUpdateTimer < 0) {
+                    me.spriteUpdateTimer = random(100, 200);
+                    me.spritesheet.cellNumber += 1;
+                    if(me.spritesheet.cellNumber > 6) {
+                        me.removeObject();
+                    }
+                }
+
+                me.animationFloat += 0.01 * App.deltaTime;
+                me.additionalX = Math.sin(me.animationFloat) * 1;
+                me.y -= 0.01 * App.deltaTime;
+            }
+        })
+    }
 }
