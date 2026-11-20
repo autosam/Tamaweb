@@ -3797,7 +3797,7 @@ App.definitions = (() => {
                     const def = App.definitions.fish[key];
                     return {
                         name: key,
-                        icon: '',
+                        icon: App.getFishCSprite(def.sprite),
                         ...def,
                     }
                 }),

@@ -242,12 +242,10 @@ class Fish extends Object2d {
         ...rest
     } = {}){
         super({
-            img: 'resources/img/misc/fish_sheet_01.png',
             y,
+            img: App.constants.FISH_SPRITESHEET,
             spritesheet: {
-                cellSize: 16,
-                rows: 12,
-                columns: 12,
+                ...App.constants.FISH_SPRITESHEET_DIMENSIONS,
                 cellNumber: sprite,
             },
             ...rest

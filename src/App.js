@@ -85,6 +85,13 @@ const App = {
             rows: 33,
             columns: 33,
         },
+        FISH_SPRITESHEET: "resources/img/misc/fish_sheet_01.png",
+        FISH_SPRITESHEET_DIMENSIONS: {
+            cellNumber: 1,
+            cellSize: 16,
+            rows: 12,
+            columns: 12,
+        },
         MAX_ANIMALS: 16,
         MAX_PLANTS: 8,
         MIN_REVIVE_GOLDS: 250,
@@ -3663,6 +3670,13 @@ const App = {
             index="${index - 1}"
             src="${ITEM_SPRITESHEET}"></c-sprite>`;
     },
+    getFishCSprite: function (index) {
+        return App.getGenericCSprite(
+            index,
+            App.constants.FISH_SPRITESHEET,
+            App.constants.FISH_SPRITESHEET_DIMENSIONS,
+        );
+    },
     getAccessoryCSprite: function (name) {
         const current = App.definitions.accessories[name];
         const image = App.checkResourceOverride(current.icon || current.image);
@@ -3749,6 +3763,29 @@ const App = {
             )
             .join("")}
         `;
+    },
+    getFishInventoryUI: function ({ onlyOwned = true } = {}) {
+        const fishToShow = Object.keys(App.definitions.fish)
+            .filter(
+                (fishName) =>
+                    !onlyOwned || App.pet.inventory.fish[fishName],
+            )
+            .map((fishName) => ({
+                amount: App.pet.inventory.fish[fishName] || 0,
+                name: fishName,
+                def: App.definitions.fish[fishName],
+            }));
+
+        if (!fishToShow.length) {
+            return App.getEmptyStateUI("Empty inventory");
+        }
+
+        return fishToShow
+            .map(
+                (item) =>
+                    `<div onclick="App.displayPopup('${item.name} <div><b>x${item.amount}</b></div>')" class="flex align-center flex-gap-05">${App.getFishCSprite(item.def.sprite)} <span><small>x</small>${item.amount}</span></div>`,
+            )
+            .join("");
     },
     getEmptyStateUI: function (text, icon = "fa-ghost") {
         return `<small class="flex-center width-full flex-gap-05 opacity-half">

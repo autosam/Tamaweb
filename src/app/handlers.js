@@ -771,6 +771,13 @@ App.handlers = {
                     },
                 },
                 {
+                    name: `fish collection ${App.getBadge()}`,
+                    onclick: () => {
+                        App.handlers.open_fish_list();
+                        return true;
+                    },
+                },
+                {
                     name: `craft`,
                     onclick: () => {
                         App.handlers.open_craftables_list();
@@ -3536,6 +3543,20 @@ App.handlers = {
         );
         return sliderInstance;
         return App.displayList(list);
+    },
+    open_fish_list: function ({
+        onlyOwned = true,
+    } = {}) {
+        return App.displayList([
+            {
+                name: `
+                <div class="flex-between flex-wrap" style="row-gap: 4px">
+                    ${App.getFishInventoryUI({ onlyOwned })}
+                </div>
+                `,
+                type: "text",
+            },
+        ]);
     },
     open_craftables_list: function () {
         let sliderInstance;
