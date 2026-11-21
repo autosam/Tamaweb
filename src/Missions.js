@@ -33,6 +33,7 @@ const Missions = {
         go_to_restaurant: 'go_to_restaurant',
         go_to_rabbithole: 'go_to_rabbithole',
         scratch_lucky_ticket: 'scratch_lucky_ticket',
+        catch_fish: 'catch_fish',
     },
     TYPE_DESCRIPTIONS: {
         food: 'Eat food',
@@ -63,6 +64,7 @@ const Missions = {
         go_to_restaurant: 'Go to the restaurant',
         go_to_rabbithole: 'Do a Homeworld Getaways activity',
         scratch_lucky_ticket: 'Scratch a lucky ticket',
+        catch_fish: 'Catch a fish',
     },
     MAX_TARGET_COUNTS: {
         scratch_lucky_ticket: 1,

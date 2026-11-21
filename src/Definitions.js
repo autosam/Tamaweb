@@ -134,7 +134,7 @@ App.definitions = (() => {
                 name: "Market",
                 image: 'resources/img/misc/activity_building_market.png',
                 onEnter: () => Activities.goToMarket(),
-                isNew: false,
+                isNew: true,
             },
             {
                 name: `Game Center`,

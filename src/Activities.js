@@ -74,6 +74,8 @@ class Activities {
                     currentFishDef.name,
                     1
                 );
+                const isNewFish = App.handlers.add_fish_to_collection(currentFishDef.name);
+                Missions.done(Missions.TYPES.catch_fish);
                 App.save();
                 const { state, onclick } = App.getGameplayControlsState();
                 App.toggleGameplayControls(false);
@@ -81,7 +83,27 @@ class Activities {
                     App.toggleGameplayControls(state, onclick);
                     App.pet.setState('idle');
                     closeRevealer?.();
-                }, App.constants.ONE_SECOND * 4);
+
+                    if (isNewFish) {
+                        setTimeout(
+                            () => App.playSound("resources/sounds/task_complete_02.ogg", true),
+                            450,
+                        );
+                        App.displayPopup(
+                            `
+                            <div class="x3">
+                                <div class="pulse">
+                                    ${currentFishDef.icon}
+                                </div>
+                            </div>
+                            <b>${currentFishDef.name}</b>
+                            <br>
+                            ${App.getBadge('new!')}
+                            `,
+                            5000, null, true,
+                        );
+                    }
+                }, App.constants.ONE_SECOND * 2.5);
                 setTimeout(() => retractHook());
             }
 

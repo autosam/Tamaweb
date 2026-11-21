@@ -771,13 +771,6 @@ App.handlers = {
                     },
                 },
                 {
-                    name: `fish collection ${App.getBadge()}`,
-                    onclick: () => {
-                        App.handlers.open_fish_list();
-                        return true;
-                    },
-                },
-                {
                     name: `craft`,
                     onclick: () => {
                         App.handlers.open_craftables_list();
@@ -2259,17 +2252,29 @@ App.handlers = {
         const eventId = `${App.constants.CHAR_UNLOCK_PREFIX}_${PetDefinition.getCharCode(char)}`;
         App.addEvent(eventId);
     },
-    open_character_collection: function () {
+    get_fish_collection_event_id: function (fishName) {
+        return `${App.constants.FISH_UNLOCK_PREFIX}_${hashCode(fishName)}`;
+    },
+    add_fish_to_collection: function (fishName) {
+        return App.addEvent(App.handlers.get_fish_collection_event_id(fishName));
+    },
+    open_collections: function () {
+        // adding active pet to collection
         App.handlers.add_active_pet_to_collection();
 
-        let unlockedCount = 0;
+        // adding owned fish to collection
+        Object.keys(App.pet.inventory.fish).forEach((fishName) => {
+            App.handlers.add_fish_to_collection(fishName);
+        });
+
+        let unlockedCharCount = 0;
         const allCharacters = ALL_PLAYABLE_CHARACTERS;
         const charactersDef = allCharacters.map((char) => {
             const charCode = PetDefinition.getCharCode(char);
             const isUnlocked = App.getEvent(
                 `${App.constants.CHAR_UNLOCK_PREFIX}_${charCode}`,
             );
-            if (isUnlocked) unlockedCount++;
+            if (isUnlocked) unlockedCharCount++;
             return {
                 componentType: "div",
                 className: `collection__char ${!isUnlocked ? "locked" : ""}`,
@@ -2290,16 +2295,80 @@ App.handlers = {
             };
         });
 
-        const list = UI.genericListContainer(
-            null,
-            `(${unlockedCount}/${allCharacters.length})`,
+        let unlockedFishCount = 0;
+        const allFish = Object.keys(App.definitions.fish).filter(
+            (fishName) => App.definitions.fish[fishName]?.obtainable !== false,
         );
-        const content = UI.empty();
-        content.classList.add("collection__container");
-        list.appendChild(content);
-        charactersDef.forEach((def) => UI.create({ ...def, parent: content }));
+        const fishDef = allFish.map((fishName) => {
+            const def = App.definitions.fish[fishName];
+            const isUnlocked = App.getEvent(
+                App.handlers.get_fish_collection_event_id(fishName),
+            );
+            if (isUnlocked) unlockedFishCount++;
+            return {
+                className: `collection__char ${!isUnlocked ? "locked" : ""}`,
+                innerHTML: App.getFishCSprite(def.sprite),
+                onclick: () => {
+                    if(!isUnlocked) return;
+                    return App.displayPopup(
+                        `
+                            <div class="x2"> ${App.getFishCSprite(def.sprite)} </div>
+                            <div> ${fishName} </div>
+                            <div> x${App.pet.inventory.fish[fishName] || 0} </div>
+                        `,
+                    );
+                }
+            };
+        });
 
-        App.sendAnalytics("opened_character_collection");
+        const list = UI.genericListContainer(null, "Collections");
+        const content = UI.empty();
+        content.innerHTML = `
+            <div class="tabs">
+                <div class="tab-titles">
+                    <button for="tab-characters" class="tab-title">${App.getIcon("user", true)}</button>
+                    <button for="tab-fish" class="tab-title">${App.getIcon("fish", true)}</button>
+                </div>
+                <div class="tab-contents">
+                    <div id="tab-characters" class="tab">
+                        <div class="tab-content">
+                            <div class="inner-padding-sm">
+                                <small class="opacity-09">(${unlockedCharCount}/${allCharacters.length})</small>
+                                <div class="collection__container" id="collection-characters"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="tab-fish" class="tab">
+                        <div class="tab-content">
+                            <div class="inner-padding-sm">
+                                <small class="opacity-09">(${unlockedFishCount}/${allFish.length})</small>
+                                <div class="collection__container" id="collection-fish"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        App.initTab(content);
+
+        charactersDef.forEach((def) =>
+            UI.create({
+                ...def,
+                parent: content.querySelector("#collection-characters"),
+            }),
+        );
+        fishDef.forEach((def) =>
+            UI.create({
+                ...def,
+                parent: content.querySelector("#collection-fish"),
+            }),
+        );
+
+        list.appendChild(content);
+        App.sendAnalytics("opened_collections");
+    },
+    open_character_collection: function () {
+        App.handlers.open_collections();
     },
     open_family_tree: function (petDefinition, usePastTense) {
         if (!petDefinition) petDefinition = App.petDefinition;
@@ -3103,9 +3172,9 @@ App.handlers = {
                     },
                 },
                 {
-                    name: `collection`,
+                    name: `collections ${App.getBadge()}`,
                     onclick: () => {
-                        App.handlers.open_character_collection();
+                        App.handlers.open_collections();
                         return true;
                     },
                 },
@@ -3544,19 +3613,58 @@ App.handlers = {
         return sliderInstance;
         return App.displayList(list);
     },
-    open_fish_list: function ({
-        onlyOwned = true,
-    } = {}) {
-        return App.displayList([
-            {
+    open_fish_sell_list: function ({ activeIndex } = {}) {
+        let list = [];
+        let sliderInstance;
+
+        for (const fishName of Object.keys(App.definitions.fish)) {
+            const current = App.definitions.fish[fishName];
+            const ownedAmount = App.pet.inventory.fish[fishName] || 0;
+
+            if (!current.price || !ownedAmount) continue;
+
+            const price = current.price;
+            const fishIcon = App.getFishCSprite(current.sprite);
+
+            list.push({
+                current,
+                fishName,
+                price,
+                icon: fishIcon,
+                shortName: `<div class="icon">${fishIcon}</div> <span class="ellipsis">${fishName.toUpperCase()}</span>`,
                 name: `
-                <div class="flex-between flex-wrap" style="row-gap: 4px">
-                    ${App.getFishInventoryUI({ onlyOwned })}
-                </div>
+                    ${fishIcon}
+                    ${fishName.toUpperCase()}
+                    (x${ownedAmount})
+                    <b>$${price}</b>
                 `,
-                type: "text",
-            },
-        ]);
+                onclick: () => {
+                    App.pet.stats.gold += price;
+                    App.addNumToObject(App.pet.inventory.fish, fishName, -1);
+                    App.handlers.open_fish_sell_list({
+                        activeIndex: sliderInstance?.getCurrentIndex(),
+                    });
+                    return false;
+                },
+            });
+        }
+
+        if (!list.length) {
+            App.displayPopup(
+                `You don't have any fish, catch some at the fishing pond`,
+                2000,
+            );
+            return;
+        }
+
+        sliderInstance = App.displaySlider(
+            list,
+            activeIndex,
+            { accept: "Sell" },
+            `$${Math.floor(App.pet.stats.gold)}`,
+        );
+
+        return sliderInstance;
     },
     open_craftables_list: function () {
         let sliderInstance;
@@ -6552,7 +6660,7 @@ App.handlers = {
                     },
                 },
                 {
-                    name: `sell`,
+                    name: `sell ${App.getBadge()}`,
                     onclick: () => {
                         App.handlers.open_sell_list();
                         return true;
@@ -6572,6 +6680,13 @@ App.handlers = {
                 name: "food",
                 onclick: () => {
                     App.handlers.open_food_list({ sellMode: true });
+                    return true;
+                },
+            },
+            {
+                name: `fish ${App.getBadge()}`,
+                onclick: () => {
+                    App.handlers.open_fish_sell_list();
                     return true;
                 },
             },

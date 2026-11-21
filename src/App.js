@@ -133,6 +133,7 @@ const App = {
             fulfilled: "fulfilled",
         },
         CHAR_UNLOCK_PREFIX: "ch_unl",
+        FISH_UNLOCK_PREFIX: "fish_unl",
         FEEDING_PICKINESS: {
             refeedingTolerance: 10,
             bufferSize: 16,
