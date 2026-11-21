@@ -2989,6 +2989,18 @@ App.definitions = (() => {
                     App.displayPopup(`You've received $500!`);
                 }
             },
+            catch_all_fish: {
+                name: 'Legendary Fisherman',
+                description: 'Catch every type of fish!',
+                checkProgress: () => Object.keys(App.definitions.fish)
+                    .filter((fishName) => App.definitions.fish[fishName]?.obtainable !== false)
+                    .every((fishName) => App.getEvent(`${App.constants.FISH_UNLOCK_PREFIX}_${hashCode(fishName)}`)),
+                advance: () => null,
+                getReward: () => {
+                    App.pet.stats.gold += 500;
+                    App.displayPopup(`You've received $500!`);
+                }
+            },
 
             // minigames
             perfect_minigame_rodrush_win_x_times: {
