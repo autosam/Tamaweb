@@ -2733,13 +2733,14 @@ App.handlers = {
                 Plant.AGE.grown,
                 "seed-pack",
             );
+            const seedLabel = current.seedLabel || "seeds";
 
             list.push({
                 disabled: isOutOfStock,
                 shortName: `<div class="icon">${Plant.getCSprite(plant, Plant.AGE.grown)}</div> <span class="ellipsis">${plant.toUpperCase()}</span>`,
                 name: `
                         ${plantIcon}
-                        ${plant.toUpperCase()} seeds
+                        ${plant.toUpperCase()} ${seedLabel}
                         (x${App.pet.inventory.seeds[plant] > 0 ? App.pet.inventory.seeds[plant] : !current.price ? "∞" : 0})
                         ${
                             isOutOfStock
@@ -3612,6 +3613,74 @@ App.handlers = {
         );
         return sliderInstance;
         return App.displayList(list);
+    },
+    open_ingredient_list: function ({ buyMode = true, activeIndex } = {}) {
+        App.pet.inventory.ingredients ||= {};
+
+        let list = [];
+        let sliderInstance;
+        const salesDay = App.isSalesDay();
+
+        for (const ingredient of Object.keys(App.definitions.ingredients)) {
+            const current = App.definitions.ingredients[ingredient];
+            const ownedAmount = App.pet.inventory.ingredients[ingredient] || 0;
+
+            if (buyMode && !current.price) continue;
+            if (!buyMode && !ownedAmount) continue;
+
+            let price = current.price;
+            if (salesDay) price = Math.round(price / 2);
+
+            const ingredientIcon = App.getIngredientCSprite(ingredient);
+
+            list.push({
+                shortName: `<div class="icon">${ingredientIcon}</div> <span class="ellipsis">${ingredient.toUpperCase()}</span>`,
+                name: `
+                    ${ingredientIcon}
+                    ${ingredient.toUpperCase()}
+                    (x${ownedAmount})
+                    <b>${buyMode ? `$${price}` : ""}</b>
+                `,
+                onclick: () => {
+                    if (buyMode) {
+                        if (!App.pay(price)) return true;
+                        App.addNumToObject(
+                            App.pet.inventory.ingredients,
+                            ingredient,
+                            1,
+                        );
+                        App.handlers.open_ingredient_list({
+                            buyMode: true,
+                            activeIndex: sliderInstance?.getCurrentIndex(),
+                        });
+                        return false;
+                    }
+                },
+            });
+        }
+
+        if (!list.length) {
+            App.displayPopup(
+                buyMode
+                    ? `No ingredients available`
+                    : `You don't have any ingredients, purchase some from the market`,
+                2000,
+            );
+            return;
+        }
+
+        if (buyMode) list.push(list.shift());
+
+        sliderInstance = App.displaySlider(
+            list,
+            activeIndex,
+            { accept: buyMode ? "Purchase" : "Use" },
+            buyMode
+                ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : "")}`
+                : null,
+        );
+
+        return sliderInstance;
     },
     open_fish_sell_list: function ({ activeIndex } = {}) {
         let list = [];
@@ -6623,7 +6692,7 @@ App.handlers = {
         App.displayList(
             [
                 {
-                    name: `purchase food ${hasNewFood ? App.getBadge("new!") : ""}`,
+                    name: `buy food ${hasNewFood ? App.getBadge("new!") : ""}`,
                     onclick: () => {
                         App.handlers.open_food_list({
                             buyMode: true,
@@ -6633,7 +6702,7 @@ App.handlers = {
                     },
                 },
                 {
-                    name: `purchase snacks ${hasNewTreat ? App.getBadge("new!") : ""}`,
+                    name: `buy snacks ${hasNewTreat ? App.getBadge("new!") : ""}`,
                     onclick: () => {
                         App.handlers.open_food_list({
                             buyMode: true,
@@ -6643,7 +6712,7 @@ App.handlers = {
                     },
                 },
                 {
-                    name: `purchase meds ${hasNewMed ? App.getBadge("new!") : ""}`,
+                    name: `buy meds ${hasNewMed ? App.getBadge("new!") : ""}`,
                     onclick: () => {
                         App.handlers.open_food_list({
                             buyMode: true,
@@ -6653,9 +6722,16 @@ App.handlers = {
                     },
                 },
                 {
-                    name: `purchase seeds`,
+                    name: `buy seeds`,
                     onclick: () => {
                         App.handlers.open_seed_list(true);
+                        return true;
+                    },
+                },
+                {
+                    name: `<span class="ellipsis">buy ingredients</span> ${App.getBadge()}`,
+                    onclick: () => {
+                        App.handlers.open_ingredient_list({ buyMode: true });
                         return true;
                     },
                 },

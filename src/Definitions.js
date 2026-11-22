@@ -1312,6 +1312,11 @@ App.definitions = (() => {
                 price: 5,
                 // wateredDuration: 0.5,
             },
+            "mushroom": {
+                sprite: 81,
+                price: 6,
+                seedLabel: "spawn",
+            },
             // inedibles
             "bamboo": {
                 sprite: 77,
@@ -1374,6 +1379,38 @@ App.definitions = (() => {
                 sprite: 73,
                 price: 15,
                 inedible: true,
+            },
+        },
+
+        /* INGREDIENTS */
+        ingredients: {
+            flour: {
+                sprite: 1,
+                price: 3,
+            },
+            sugar: {
+                sprite: 2,
+                price: 2,
+            },
+            meat: {
+                sprite: 3,
+                price: 8,
+            },
+            rice: {
+                sprite: 4,
+                price: 3,
+            },
+            cheese: {
+                sprite: 5,
+                price: 5,
+            },
+            egg: {
+                sprite: 6,
+                price: 2,
+            },
+            butter: {
+                sprite: 7,
+                price: 4,
             },
         },
 

@@ -92,6 +92,13 @@ const App = {
             rows: 12,
             columns: 12,
         },
+        INGREDIENT_SPRITESHEET: "resources/img/item/ingredients.png",
+        INGREDIENT_SPRITESHEET_DIMENSIONS: {
+            cellNumber: 1,
+            cellSize: 24,
+            rows: 10,
+            columns: 10,
+        },
         MAX_ANIMALS: 16,
         MAX_PLANTS: 8,
         MIN_REVIVE_GOLDS: 250,
@@ -3676,6 +3683,18 @@ const App = {
             index,
             App.constants.FISH_SPRITESHEET,
             App.constants.FISH_SPRITESHEET_DIMENSIONS,
+        );
+    },
+    getIngredientCSprite: function (nameOrSprite) {
+        const sprite =
+            typeof nameOrSprite === "string"
+                ? App.definitions.ingredients[nameOrSprite]?.sprite
+                : nameOrSprite;
+        if (!sprite) return "";
+        return App.getGenericCSprite(
+            sprite,
+            App.constants.INGREDIENT_SPRITESHEET,
+            App.constants.INGREDIENT_SPRITESHEET_DIMENSIONS,
         );
     },
     getAccessoryCSprite: function (name) {

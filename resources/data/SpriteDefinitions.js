@@ -209,6 +209,7 @@ const SPRITES = [
 "furniture/vintage_plant.png",
 "item/foods.png",
 "item/foods_on.png",
+"item/ingredients.png",
 "item/items.png",
 "item/misc.png",
 "item/plants.png",
