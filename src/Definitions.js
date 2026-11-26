@@ -1444,6 +1444,7 @@ App.definitions = (() => {
                 sprite: 81,
                 price: 6,
                 seedLabel: "spawn",
+                isNew: true,
             },
             // inedibles
             "bamboo": {

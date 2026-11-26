@@ -2737,6 +2737,7 @@ App.handlers = {
 
             list.push({
                 disabled: isOutOfStock,
+                isNew: current.isNew,
                 shortName: `<div class="icon">${Plant.getCSprite(plant, Plant.AGE.grown)}</div> <span class="ellipsis">${plant.toUpperCase()}</span>`,
                 name: `
                         ${plantIcon}
@@ -2747,6 +2748,7 @@ App.handlers = {
                                 ? `<b class="red-label">OUT OF STOCK</b>`
                                 : `<b>${buyMode ? `$${price}` : ""}</b>`
                         }
+                        ${current.isNew ? App.getBadge("new!") : ""}
                     `,
                 onclick: (btn, list) => {
                     // buy mode
@@ -2780,7 +2782,7 @@ App.handlers = {
         if (buyMode) list.push(list.shift());
 
         sliderInstance = App.displaySlider(
-            list,
+            list.sort((a, b) => (b?.isNew || 0) - (a?.isNew || 0)),
             activeIndex,
             { accept: buyMode ? "Purchase" : "Plant" },
             buyMode
@@ -6636,6 +6638,11 @@ App.handlers = {
             if (definition.type !== "med") return;
             return definition.isNew;
         });
+        const hasNewSeed = Object.keys(App.definitions.plant).some((key) => {
+            const definition = App.definitions.plant[key];
+            if (!definition.price) return;
+            return definition.isNew;
+        });
 
         App.displayList(
             [
@@ -6670,7 +6677,7 @@ App.handlers = {
                     },
                 },
                 {
-                    name: `buy seeds`,
+                    name: `buy seeds ${hasNewSeed ? App.getBadge("new!") : ""}`,
                     onclick: () => {
                         App.handlers.open_seed_list(true);
                         return true;
