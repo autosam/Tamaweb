@@ -2897,14 +2897,47 @@ App.handlers = {
                                                     a.hasAllIngredients,
                                             )
                                             .map((food) => ({
-                                                _disable:
-                                                    !food.hasAllIngredients,
+                                                // _disable:
+                                                //     !food.hasAllIngredients,
                                                 class: "flex-between",
                                                 name: `
                                                     ${App.getFoodCSprite(food.sprite)} = ${App.getRecipeIcons(food.ingredients, " + ", "opacity-half")}
                                                     ${food.cookableOnly ? App.getBadge("★", "gold") : ""}
                                                 `,
                                                 onclick: () => {
+                                                    if (!food.hasAllIngredients) {
+                                                        const missingIngredients =
+                                                            food.ingredients.filter(
+                                                                (entry) =>
+                                                                    !App.getRecipeIngredientCount(
+                                                                        entry,
+                                                                    ),
+                                                            );
+                                                        return App.displayList([
+                                                            {
+                                                                name: `<small>You are missing the following ingredient(s):</small>
+                                                                <div class="flex flex-wrap flex-gap-1 mt-6">
+                                                                ${missingIngredients
+                                                                    .map(entry => {
+                                                                            const { name } = App.parseRecipeIngredient(entry);
+                                                                            return `<div class="flex align-center flex-dir-col flex-gap-025">
+                                                                                ${App.getRecipeIngredientIcon(entry)}
+                                                                                <small>${name}</small>
+                                                                            </div>`;
+                                                                        },
+                                                                    )
+                                                                    .join("")}
+                                                                </div>
+                                                                `,
+                                                                type: 'text',
+                                                            },
+                                                            {
+                                                                name: 'Get ingredients via <b>gardening</b>, <b>fishing</b>, and <b>market</b> shopping.',
+                                                                type: 'info',
+                                                            }
+                                                        ], null, food.name)
+                                                    }
+
                                                     const maxBatchCookingAmount =
                                                         App.getMinOwnedRecipeIngredients(
                                                             food.ingredients,
