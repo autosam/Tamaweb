@@ -338,7 +338,7 @@ App.definitions = (() => {
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "forest fungi stew": {
-                recipe: ["plant:mushroom", "plant:potato", "plant:carrot"],
+                recipe: ["plant:mushroom", "plant:potato", "plant:cabbage"],
 
                 sprite: 638,
                 hunger_replenish: 10,
@@ -418,7 +418,7 @@ App.definitions = (() => {
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "drumstick": {
-                recipe: ["ingredient:meat", "plant:carrot", "plant:potato"],
+                recipe: ["ingredient:meat", "plant:potato", "plant:lettuce"],
 
                 sprite: 460,
                 hunger_replenish: 20,
@@ -447,7 +447,7 @@ App.definitions = (() => {
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "breadrolls": {
-                recipe: ["ingredient:flour", "ingredient:butter", "ingredient:egg"],
+                recipe: ["ingredient:flour", "ingredient:butter", "ingredient:cheese"],
 
                 sprite: 554,
                 hunger_replenish: 20,
@@ -477,7 +477,7 @@ App.definitions = (() => {
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "xiao long bao": {
-                recipe: ["ingredient:flour", "ingredient:meat", "plant:cabbage"],
+                recipe: ["ingredient:flour", "ingredient:meat", "plant:carrot"],
 
                 sprite: 602,
                 hunger_replenish: 10,
@@ -507,7 +507,7 @@ App.definitions = (() => {
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "s-special dish": {
-                recipe: ["ingredient:rice", "ingredient:meat", "plant:carrot"],
+                recipe: ["ingredient:rice", "ingredient:meat", "plant:tomato"],
 
                 sprite: 506,
                 hunger_replenish: 28,
@@ -517,7 +517,7 @@ App.definitions = (() => {
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "bunny burger": {
-                recipe: ["ingredient:meat", "plant:lettuce", "ingredient:cheese"],
+                recipe: ["ingredient:meat", "plant:lettuce", "ingredient:rice"],
 
                 sprite: 770,
                 hunger_replenish: 30,
@@ -529,7 +529,7 @@ App.definitions = (() => {
                 isNew: false,
             },
             "pancakes": {
-                recipe: ["ingredient:flour", "ingredient:egg", "ingredient:butter"],
+                recipe: ["ingredient:flour", "ingredient:egg", "plant:sweet potato"],
 
                 sprite: 806,
                 hunger_replenish: 25,
@@ -551,7 +551,7 @@ App.definitions = (() => {
                 isNew: false,
             },
             "mushroom soup": {
-                recipe: ["plant:mushroom", "plant:carrot", "plant:potato"],
+                recipe: ["plant:mushroom", "plant:carrot", "ingredient:rice"],
 
                 sprite: 779,
                 hunger_replenish: 15,
@@ -581,7 +581,7 @@ App.definitions = (() => {
                 isNew: false,
             },
             "stuffed pumpkin": {
-                recipe: ["plant:potato", "ingredient:meat", "plant:carrot"],
+                recipe: ["ingredient:meat", "plant:potato", "plant:cabbage"],
 
                 sprite: 299,
                 hunger_replenish: 17,
@@ -624,7 +624,7 @@ App.definitions = (() => {
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "puzzlewich": {
-                recipe: ["ingredient:flour", "ingredient:cheese", "plant:tomato"],
+                recipe: ["ingredient:flour", "ingredient:cheese", "plant:lettuce"],
 
                 sprite: 175,
                 hunger_replenish: 20,
@@ -634,7 +634,7 @@ App.definitions = (() => {
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "lunchbox": {
-                recipe: ["ingredient:rice", "ingredient:meat", "plant:carrot"],
+                recipe: ["ingredient:rice", "ingredient:meat", "plant:cabbage"],
 
                 sprite: 186,
                 hunger_replenish: 50,
@@ -655,7 +655,7 @@ App.definitions = (() => {
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "veggies basket": {
-                recipe: ["plant:lettuce", "plant:cabbage", "plant:carrot"],
+                recipe: ["plant:lettuce", "plant:carrot", "plant:cabbage"],
 
                 sprite: 195,
                 hunger_replenish: 15,
@@ -665,7 +665,7 @@ App.definitions = (() => {
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "veggies stew": {
-                recipe: ["plant:potato", "plant:carrot", "plant:cabbage"],
+                recipe: ["plant:potato", "plant:cabbage", "plant:tomato"],
 
                 sprite: 222,
                 hunger_replenish: 50,
@@ -685,7 +685,7 @@ App.definitions = (() => {
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "melodywich": {
-                recipe: ["ingredient:flour", "ingredient:cheese", "plant:lettuce"],
+                recipe: ["ingredient:flour", "ingredient:cheese", "plant:cabbage"],
 
                 sprite: 668,
                 hunger_replenish: 20,
@@ -754,7 +754,7 @@ App.definitions = (() => {
                 age: [_ls.child, _ls.teen, _ls.adult, _ls.elder],
             },
             "vegetables cut": {
-                recipe: ["plant:carrot", "plant:lettuce", "plant:cabbage"],
+                recipe: ["plant:carrot", "plant:lettuce", "plant:potato"],
 
                 sprite: 617,
                 hunger_replenish: 10,
@@ -786,8 +786,7 @@ App.definitions = (() => {
 
             // treats
             "koluche": {
-                recipe: ["ingredient:flour", "ingredient:sugar", "ingredient:egg"],
-
+                recipe: ["ingredient:flour", "ingredient:butter", "plant:carrot"],
                 sprite: 1030,
                 hunger_replenish: 25,
                 fun_replenish: 5,
@@ -797,8 +796,7 @@ App.definitions = (() => {
                 type: 'treat',
             },
             "jelly": {
-                recipe: ["ingredient:sugar", "plant:peach", "plant:watermelon"],
-
+                recipe: ["ingredient:sugar", "ingredient:egg", "plant:peach"],
                 sprite: 1013,
                 hunger_replenish: 8,
                 fun_replenish: 20,
@@ -808,8 +806,7 @@ App.definitions = (() => {
                 type: 'treat',
             },
             "chocolate pie": {
-                recipe: ["ingredient:flour", "ingredient:sugar", "ingredient:butter"],
-
+                recipe: ["ingredient:flour", "ingredient:butter", "plant:peach"],
                 sprite: 1010,
                 hunger_replenish: 10,
                 fun_replenish: 8,
@@ -819,8 +816,7 @@ App.definitions = (() => {
                 type: 'treat',
             },
             "lollipop": {
-                recipe: ["ingredient:sugar", "ingredient:egg", "ingredient:flour"],
-
+                recipe: ["ingredient:sugar", "ingredient:egg", "plant:carrot"],
                 sprite: 1033,
                 hunger_replenish: 5,
                 fun_replenish: 35,
@@ -830,7 +826,6 @@ App.definitions = (() => {
             },
             "vanilla icecream": {
                 recipe: ["ingredient:sugar", "ingredient:butter", "ingredient:egg"],
-
                 sprite: 1024,
                 hunger_replenish: 10,
                 fun_replenish: 30,
@@ -840,7 +835,6 @@ App.definitions = (() => {
             },
             "strawberry icecream": {
                 recipe: ["ingredient:sugar", "plant:peach", "ingredient:butter"],
-
                 sprite: 902,
                 hunger_replenish: 10,
                 fun_replenish: 30,
@@ -850,7 +844,6 @@ App.definitions = (() => {
             },
             "scoped icecream": {
                 recipe: ["ingredient:sugar", "plant:watermelon", "ingredient:butter"],
-
                 sprite: 1007,
                 hunger_replenish: 15,
                 fun_replenish: 30,
@@ -859,8 +852,7 @@ App.definitions = (() => {
                 type: 'treat',
             },
             "snacks and bits": {
-                recipe: ["ingredient:flour", "ingredient:sugar", "ingredient:egg"],
-
+                recipe: ["ingredient:flour", "ingredient:egg", "plant:peach"],
                 sprite: 1001,
                 hunger_replenish: 15,
                 fun_replenish: 20,
@@ -870,8 +862,7 @@ App.definitions = (() => {
                 type: 'treat',
             },
             "lemonade": {
-                recipe: ["ingredient:sugar", "plant:peach", "plant:watermelon"],
-
+                recipe: ["ingredient:sugar", "plant:watermelon", "ingredient:peach"],
                 sprite: 971,
                 hunger_replenish: 5,
                 fun_replenish: 25,
@@ -881,8 +872,7 @@ App.definitions = (() => {
                 type: 'treat',
             },
             "cupcake": {
-                recipe: ["ingredient:flour", "ingredient:sugar", "ingredient:egg"],
-
+                recipe: ["ingredient:flour", "ingredient:egg", "plant:peach"],
                 sprite: 974,
                 hunger_replenish: 15,
                 fun_replenish: 30,
@@ -891,8 +881,6 @@ App.definitions = (() => {
                 type: 'treat',
             },
             "cappuccino": {
-                recipe: ["ingredient:sugar", "ingredient:rice", "ingredient:egg"],
-
                 sprite: 878,
                 hunger_replenish: 2,
                 fun_replenish: 25,
@@ -902,8 +890,7 @@ App.definitions = (() => {
                 type: 'treat',
             },
             "strawberry donut": {
-                recipe: ["ingredient:flour", "ingredient:sugar", "plant:peach"],
-
+                recipe: ["ingredient:watermelon", "ingredient:butter", "plant:peach"],
                 sprite: 954,
                 hunger_replenish: 10,
                 fun_replenish: 15,
@@ -912,8 +899,7 @@ App.definitions = (() => {
                 type: 'treat',
             },
             "choco cake slice": {
-                recipe: ["ingredient:flour", "ingredient:sugar", "ingredient:butter"],
-
+                recipe: ["ingredient:flour", "ingredient:sugar", "ingredient:cheese"],
                 sprite: 998,
                 hunger_replenish: 10,
                 fun_replenish: 10,
@@ -923,8 +909,7 @@ App.definitions = (() => {
                 type: 'treat',
             },
             "cotton candy": {
-                recipe: ["ingredient:sugar", "ingredient:egg", "ingredient:flour"],
-
+                recipe: ["ingredient:sugar", "plant:sweet potato", "plant:peach"],
                 sprite: 995,
                 hunger_replenish: 15,
                 fun_replenish: 25,
@@ -933,8 +918,7 @@ App.definitions = (() => {
                 type: 'treat',
             },
             "cream icepack": {
-                recipe: ["ingredient:sugar", "ingredient:butter", "plant:peach"],
-
+                recipe: ["ingredient:sugar", "ingredient:egg", "plant:watermelon"],
                 sprite: 488,
                 hunger_replenish: 10,
                 fun_replenish: 25,
@@ -944,8 +928,7 @@ App.definitions = (() => {
                 type: 'treat',
             },
             "bunny mooko": {
-                recipe: ["ingredient:sugar", "ingredient:flour", "ingredient:egg"],
-
+                recipe: ["ingredient:sugar", "ingredient:butter", "plant:carrot"],
                 sprite: 450,
                 hunger_replenish: 20,
                 fun_replenish: 30,
@@ -954,8 +937,7 @@ App.definitions = (() => {
                 type: 'treat',
             },
             "paloodeh": {
-                recipe: ["ingredient:sugar", "plant:peach", "plant:watermelon"],
-
+                recipe: ["plant:peach", "plant:watermelon", "ingredient:flour"],
                 sprite: 378,
                 hunger_replenish: 5,
                 fun_replenish: 25,
@@ -965,8 +947,7 @@ App.definitions = (() => {
                 type: 'treat',
             },
             "toasted marshmallows": {
-                recipe: ["ingredient:sugar", "ingredient:butter", "ingredient:egg"],
-
+                recipe: ["ingredient:sugar", "ingredient:butter", "plant:sweet potato"],
                 sprite: 937,
                 hunger_replenish: 5,
                 fun_replenish: 20,
@@ -977,8 +958,6 @@ App.definitions = (() => {
                 isNew: false,
             },
             "watermelon": {
-                recipe: ["plant:watermelon", "ingredient:sugar", "plant:peach"],
-
                 sprite: 948,
                 hunger_replenish: 15,
                 fun_replenish: 20,
@@ -989,8 +968,6 @@ App.definitions = (() => {
                 isNew: false,
             },
             "orange juice": {
-                recipe: ["plant:peach", "plant:watermelon", "ingredient:sugar"],
-
                 sprite: 905,
                 hunger_replenish: 5,
                 fun_replenish: 15,
@@ -1002,7 +979,6 @@ App.definitions = (() => {
             },
             "snackfin": {
                 recipe: ["ingredient:flour", "fish:bunny fish", "ingredient:butter"],
-
                 sprite: 839,
                 hunger_replenish: 5,
                 fun_replenish: 15,
@@ -1013,8 +989,6 @@ App.definitions = (() => {
                 isNew: false,
             },
             "banana": {
-                recipe: ["plant:peach", "ingredient:sugar", "ingredient:flour"],
-
                 sprite: 960,
                 hunger_replenish: 20,
                 fun_replenish: 5,
@@ -1025,8 +999,6 @@ App.definitions = (() => {
                 isNew: false,
             },
             "nuts": {
-                recipe: ["ingredient:sugar", "ingredient:egg", "ingredient:flour"],
-
                 sprite: 920,
                 hunger_replenish: 5,
                 fun_replenish: 2,
@@ -1037,8 +1009,7 @@ App.definitions = (() => {
                 isNew: false,
             },
             "santa cake": {
-                recipe: ["ingredient:flour", "ingredient:sugar", "ingredient:egg"],
-
+                recipe: ["ingredient:flour", "ingredient:sugar", "plant:watermelon"],
                 sprite: 848,
                 hunger_replenish: 20,
                 fun_replenish: 10,
@@ -1049,8 +1020,7 @@ App.definitions = (() => {
                 isNew: false,
             },
             "kuchice": {
-                recipe: ["ingredient:flour", "ingredient:sugar", "ingredient:egg"],
-
+                recipe: ["ingredient:flour", "plant:watermelon", "ingredient:egg"],
                 sprite: 890,
                 hunger_replenish: 5,
                 fun_replenish: 20,
@@ -1061,8 +1031,7 @@ App.definitions = (() => {
                 isNew: false,
             },
             "spookandy": {
-                recipe: ["ingredient:sugar", "ingredient:egg", "ingredient:flour"],
-
+                recipe: ["ingredient:sugar", "ingredient:flour", "plant:watermelon"],
                 sprite: 17,
                 hunger_replenish: 2,
                 fun_replenish: 1,
@@ -1074,8 +1043,7 @@ App.definitions = (() => {
                 unbuyable: true,
             },
             "strawberry pie": {
-                recipe: ["ingredient:flour", "ingredient:sugar", "plant:peach"],
-
+                recipe: ["ingredient:flour", "ingredient:rice", "plant:carrot"],
                 sprite: 773,
                 hunger_replenish: 10,
                 fun_replenish: 15,
@@ -1085,8 +1053,7 @@ App.definitions = (() => {
                 isNew: false,
             },
             "rainbow cake": {
-                recipe: ["ingredient:flour", "ingredient:sugar", "plant:peach"],
-
+                recipe: ["ingredient:flour", "ingredient:sugar", "plant:watermelon"],
                 sprite: 453,
                 hunger_replenish: 15,
                 fun_replenish: 15,
@@ -1097,7 +1064,6 @@ App.definitions = (() => {
             },
             "takoyaki": {
                 recipe: ["ingredient:flour", "fish:punkfish", "ingredient:egg"],
-
                 sprite: 1068,
                 hunger_replenish: 15,
                 fun_replenish: 5,
@@ -1107,8 +1073,7 @@ App.definitions = (() => {
                 isNew: false,
             },
             "quiche": {
-                recipe: ["ingredient:egg", "ingredient:cheese", "ingredient:flour"],
-
+                recipe: ["ingredient:egg", "ingredient:cheese", "plant:mushroom"],
                 sprite: 680,
                 hunger_replenish: 15,
                 fun_replenish: 6,
@@ -1117,19 +1082,6 @@ App.definitions = (() => {
                 type: 'treat',
                 isNew: false,
             },
-
-
-            // groc
-            /* "broccoli": {
-                sprite: 632,
-                hunger_replenish: 15,
-                fun_replenish: 0,
-                health_replenish: 10,
-                price: 3,
-                age: [__ls.teen, __ls.adult, __ls.elder],
-            }, */
-
-
 
             // other
             "milk": {
