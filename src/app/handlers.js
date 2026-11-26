@@ -2818,7 +2818,7 @@ App.handlers = {
                     _disable:
                         App.petDefinition.lifeStage <=
                         PetDefinition.LIFE_STAGE.baby,
-                    name: `cook`,
+                    name: `cook ${App.getBadge()}`,
                     onclick: () => {
                         return App.displayList([
                             {
@@ -2842,7 +2842,7 @@ App.handlers = {
                                 },
                             },
                             {
-                                name: `ingredients`,
+                                name: `ingredients ${App.getBadge()}`,
                                 onclick: () => {
                                     return App.displayList([
                                         {
@@ -2932,7 +2932,7 @@ App.handlers = {
                                                                 type: 'text',
                                                             },
                                                             {
-                                                                name: 'Get ingredients via <b>gardening</b>, <b>fishing</b>, and <b>market</b> shopping.',
+                                                                name: 'Get ingredients via <b>gardening</b>, <b>fishing</b>, and <b>market</b> shopping',
                                                                 type: 'info',
                                                             }
                                                         ], null, food.name)

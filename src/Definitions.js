@@ -862,7 +862,7 @@ App.definitions = (() => {
                 type: 'treat',
             },
             "lemonade": {
-                recipe: ["ingredient:sugar", "plant:watermelon", "ingredient:peach"],
+                recipe: ["ingredient:sugar", "plant:watermelon", "plant:peach"],
                 sprite: 971,
                 hunger_replenish: 5,
                 fun_replenish: 25,
@@ -890,7 +890,7 @@ App.definitions = (() => {
                 type: 'treat',
             },
             "strawberry donut": {
-                recipe: ["ingredient:watermelon", "ingredient:butter", "plant:peach"],
+                recipe: ["plant:watermelon", "ingredient:butter", "plant:peach"],
                 sprite: 954,
                 hunger_replenish: 10,
                 fun_replenish: 15,
