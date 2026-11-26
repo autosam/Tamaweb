@@ -266,6 +266,7 @@ const SPRITES = [
 "misc/exclam_01.png",
 "misc/falling_poop.png",
 "misc/fishing_hook_01.png",
+"misc/fishing_rod.png",
 "misc/fish_sheet_01.png",
 "misc/flag_01.png",
 "misc/foam_01.png",

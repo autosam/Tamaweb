@@ -138,6 +138,21 @@ class Activities {
             }
         })
 
+        // fishing rod
+        new Object2d({
+            img: 'resources/img/misc/fishing_rod.png',
+            x: 0, y: 0, z: App.constants.ACTIVE_PET_Z + 1,
+            onDraw: (me) => {
+                me.invisible = !isHookCast();
+
+                if(me.invisible) return;
+
+                me.additionalY = -Math.sin(waveObject.waveFloat * 0.5);
+                me.rotation = clamp(hookLineObject.currentBendOffset, -30, 30);
+                me.inverted = Boolean(hookLineObject.targetPosition.x > App.drawer.bounds.width / 2);
+            }
+        })
+
         // hook object
         new Object2d({
             parent,
