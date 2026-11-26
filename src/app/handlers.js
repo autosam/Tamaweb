@@ -2842,74 +2842,25 @@ App.handlers = {
                                 },
                             },
                             {
-                                name: `harvests`,
+                                name: `ingredients`,
                                 onclick: () => {
-                                    let allPlants = [];
-                                    const getIngredients = (name) => {
-                                        pRandom.save();
-                                        const seed = hashCode(name);
-                                        const results = new Array(3)
-                                            .fill(null)
-                                            .map((_, i) => {
-                                                if (!allPlants.length)
-                                                    allPlants = Object.keys(
-                                                        App.definitions.plant,
-                                                    )
-                                                        .map((name) => ({
-                                                            ...App.definitions
-                                                                .plant[name],
-                                                            name,
-                                                        }))
-                                                        .filter(
-                                                            ({ inedible }) =>
-                                                                !inedible,
-                                                        )
-                                                        .map(
-                                                            ({ name }) => name,
-                                                        );
-
-                                                pRandom.seed =
-                                                    seed + (i + 1) * 321 * seed;
-                                                const item =
-                                                    pRandomFromArray(allPlants);
-                                                allPlants.splice(
-                                                    allPlants.indexOf(item),
-                                                    1,
-                                                );
-                                                return item;
-                                            });
-                                        pRandom.load();
-                                        return results;
-                                    };
-                                    const getMinOwnedIngredients = (
-                                        ingredients,
-                                    ) => {
-                                        let minOwnedIngredients = Infinity;
-                                        ingredients.forEach(
-                                            (ingredientName) => {
-                                                const ownedAmount =
-                                                    App.pet.inventory.harvests[
-                                                        ingredientName
-                                                    ];
-                                                if (
-                                                    minOwnedIngredients >
-                                                    ownedAmount
-                                                )
-                                                    minOwnedIngredients =
-                                                        ownedAmount;
-                                            },
-                                        );
-                                        return minOwnedIngredients;
-                                    };
-
                                     return App.displayList([
                                         {
-                                            name: `
-                                            <div class="flex-between flex-wrap" style="row-gap: 4px">
-                                                ${App.getHarvestInventoryUI((item) => !item.def.inedible)}
-                                            </div>
-                                            `,
-                                            type: "text",
+                                            name: `${App.getIcon('bag-shopping')} inventory`,
+                                            onclick: () => {
+                                                return App.displayList([
+                                                    {
+                                                        name: `
+                                                        <div class="ingredients__container" style="row-gap: 4px">
+                                                            ${App.getHarvestInventoryUI((item) => !item.def.inedible)}
+                                                            ${App.getIngredientInventoryUI()}
+                                                            ${App.getFishInventoryUI()}
+                                                        </div>
+                                                        `,
+                                                        type: "text",
+                                                    },
+                                                ])
+                                            }
                                         },
                                         ...Object.keys(App.definitions.food)
                                             .map((foodName) => ({
@@ -2919,18 +2870,15 @@ App.handlers = {
                                                 name: foodName,
                                             }))
                                             .filter(
-                                                (food) => !food.nonCraftable,
+                                                (food) =>
+                                                    !food.nonCraftable &&
+                                                    food.recipe,
                                             )
                                             .map((food) => {
-                                                const ingredients =
-                                                    getIngredients(food.name);
+                                                const ingredients = food.recipe;
                                                 const hasAllIngredients =
                                                     ingredients.every(
-                                                        (ingredientName) =>
-                                                            App.pet.inventory
-                                                                .harvests[
-                                                                ingredientName
-                                                            ],
+                                                        (entry) => App.getRecipeIngredientCount(entry) > 0,
                                                     );
                                                 return {
                                                     ...food,
@@ -2953,12 +2901,12 @@ App.handlers = {
                                                     !food.hasAllIngredients,
                                                 class: "flex-between",
                                                 name: `
-                                                    ${App.getFoodCSprite(food.sprite)} = ${App.getHarvestIcons(food.ingredients)}
+                                                    ${App.getFoodCSprite(food.sprite)} = ${App.getRecipeIcons(food.ingredients, " + ", "opacity-half")}
                                                     ${food.cookableOnly ? App.getBadge("★", "gold") : ""}
                                                 `,
                                                 onclick: () => {
                                                     const maxBatchCookingAmount =
-                                                        getMinOwnedIngredients(
+                                                        App.getMinOwnedRecipeIngredients(
                                                             food.ingredients,
                                                         );
                                                     let currentCookAmount = 1;
@@ -3036,24 +2984,9 @@ App.handlers = {
                                                                                             name: "yes",
                                                                                             onclick:
                                                                                                 () => {
-                                                                                                    food.ingredients.forEach(
-                                                                                                        (
-                                                                                                            ingredient,
-                                                                                                        ) => {
-                                                                                                            if (
-                                                                                                                App
-                                                                                                                    .pet
-                                                                                                                    .inventory
-                                                                                                                    .harvests[
-                                                                                                                    ingredient
-                                                                                                                ] >=
-                                                                                                                currentCookAmount
-                                                                                                            )
-                                                                                                                App.pet.inventory.harvests[
-                                                                                                                    ingredient
-                                                                                                                ] -=
-                                                                                                                    currentCookAmount;
-                                                                                                        },
+                                                                                                    App.consumeRecipeIngredients(
+                                                                                                        food.ingredients,
+                                                                                                        currentCookAmount,
                                                                                                     );
                                                                                                     Activities.cookingGame(
                                                                                                         {
@@ -3066,28 +2999,10 @@ App.handlers = {
                                                                                                             ingredientObjects:
                                                                                                                 food.ingredients.map(
                                                                                                                     (
-                                                                                                                        name,
+                                                                                                                        entry,
                                                                                                                     ) =>
-                                                                                                                        new Object2d(
-                                                                                                                            {
-                                                                                                                                img: App
-                                                                                                                                    .constants
-                                                                                                                                    .PLANT_SPRITESHEET,
-                                                                                                                                spritesheet:
-                                                                                                                                    {
-                                                                                                                                        ...App
-                                                                                                                                            .constants
-                                                                                                                                            .PLANT_SPRITESHEET_DIMENSIONS,
-                                                                                                                                        cellNumber:
-                                                                                                                                            App
-                                                                                                                                                .definitions
-                                                                                                                                                .plant[
-                                                                                                                                                name
-                                                                                                                                            ]
-                                                                                                                                                .sprite +
-                                                                                                                                            2,
-                                                                                                                                    },
-                                                                                                                            },
+                                                                                                                        App.getRecipeIngredientObject2d(
+                                                                                                                            entry,
                                                                                                                         ),
                                                                                                                 ),
                                                                                                         },

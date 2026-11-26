@@ -1215,18 +1215,21 @@ const App = {
             !App.getRecord("thereminder")
         ) {
             App.setRecord("thereminder", Date.now());
-            const toLetters = (text) => text
-            .split("")
-            .map(letter =>
-                `<span
+            const toLetters = (text) =>
+                text
+                    .split("")
+                    .map(
+                        (letter) =>
+                            `<span
                     class="random-letter-bounce"
                     style="
                         animation-delay: -${Math.random() * 1250}ms;
                         --direction: ${100 * randomFromArray([-1, 1])};
                         opacity: 1 !important;
                     "
-                >${letter}</span>`)
-            .join("");
+                >${letter}</span>`,
+                    )
+                    .join("");
             App.handlers.show_letter({
                 headline: `${toLetters("Beware. Visitor. and one who remains.")}`,
                 text: `<div>${toLetters("w░43337")}.<br>${toLetters("s░666666666664")}</div>`,
@@ -3678,23 +3681,29 @@ const App = {
             index="${index - 1}"
             src="${ITEM_SPRITESHEET}"></c-sprite>`;
     },
-    getFishCSprite: function (index) {
+    getFishCSprite: function (index, className = "", fishName = "") {
+        const title = fishName ? `title="${fishName.toUpperCase()}"` : "";
         return App.getGenericCSprite(
             index,
             App.constants.FISH_SPRITESHEET,
             App.constants.FISH_SPRITESHEET_DIMENSIONS,
+            className,
+            title,
         );
     },
-    getIngredientCSprite: function (nameOrSprite) {
-        const sprite =
-            typeof nameOrSprite === "string"
-                ? App.definitions.ingredients[nameOrSprite]?.sprite
-                : nameOrSprite;
+    getIngredientCSprite: function (nameOrSprite, className = "") {
+        const name = typeof nameOrSprite === "string" ? nameOrSprite : null;
+        const sprite = name
+            ? App.definitions.ingredients[name]?.sprite
+            : nameOrSprite;
         if (!sprite) return "";
+        const title = name ? `title="${name.toUpperCase()}"` : "";
         return App.getGenericCSprite(
             sprite,
             App.constants.INGREDIENT_SPRITESHEET,
             App.constants.INGREDIENT_SPRITESHEET_DIMENSIONS,
+            className,
+            title,
         );
     },
     getAccessoryCSprite: function (name) {
@@ -3761,6 +3770,133 @@ const App = {
             })
             .join(delimiter);
     },
+    parseRecipeIngredient: function (entry) {
+        const colonIndex = entry.indexOf(":");
+        return {
+            type: entry.slice(0, colonIndex),
+            name: entry.slice(colonIndex + 1),
+        };
+    },
+    getRecipeIngredientCount: function (entry) {
+        const { type, name } = App.parseRecipeIngredient(entry);
+        switch (type) {
+            case "plant":
+                return App.pet.inventory.harvests[name] || 0;
+            case "ingredient":
+                return App.pet.inventory.ingredients[name] || 0;
+            case "fish":
+                return App.pet.inventory.fish[name] || 0;
+            default:
+                return 0;
+        }
+    },
+    getRecipeIngredientIcon: function (entry, disabledClassName = "") {
+        const { type, name } = App.parseRecipeIngredient(entry);
+        const hasInInventory = App.getRecipeIngredientCount(entry) > 0;
+        const className = hasInInventory ? "enabled" : disabledClassName;
+        switch (type) {
+            case "plant":
+                return Plant.getCSprite(name, undefined, className);
+            case "ingredient":
+                return App.getIngredientCSprite(name, className);
+            case "fish":
+                return App.getFishCSprite(
+                    App.definitions.fish[name]?.sprite,
+                    className,
+                    name,
+                );
+            default:
+                return "";
+        }
+    },
+    getRecipeIcons: function (
+        recipe,
+        delimiter = " + ",
+        disabledClassName = "",
+    ) {
+        return recipe
+            .map((entry) =>
+                App.getRecipeIngredientIcon(entry, disabledClassName),
+            )
+            .join(delimiter);
+    },
+    getMinOwnedRecipeIngredients: function (recipe) {
+        let min = Infinity;
+        recipe.forEach((entry) => {
+            const count = App.getRecipeIngredientCount(entry);
+            if (count < min) min = count;
+        });
+        return min === Infinity ? 0 : min;
+    },
+    consumeRecipeIngredients: function (recipe, amount) {
+        recipe.forEach((entry) => {
+            const { type, name } = App.parseRecipeIngredient(entry);
+            switch (type) {
+                case "plant":
+                    if ((App.pet.inventory.harvests[name] || 0) >= amount)
+                        App.pet.inventory.harvests[name] -= amount;
+                    break;
+                case "ingredient":
+                    App.addNumToObject(
+                        App.pet.inventory.ingredients,
+                        name,
+                        -amount,
+                    );
+                    break;
+                case "fish":
+                    App.addNumToObject(App.pet.inventory.fish, name, -amount);
+                    break;
+            }
+        });
+    },
+    getRecipeIngredientObject2d: function (entry) {
+        const { type, name } = App.parseRecipeIngredient(entry);
+        switch (type) {
+            case "plant":
+                return new Object2d({
+                    img: App.constants.PLANT_SPRITESHEET,
+                    spritesheet: {
+                        ...App.constants.PLANT_SPRITESHEET_DIMENSIONS,
+                        cellNumber: App.definitions.plant[name].sprite + 2,
+                    },
+                });
+            case "ingredient":
+                return new Object2d({
+                    img: App.constants.INGREDIENT_SPRITESHEET,
+                    spritesheet: {
+                        ...App.constants.INGREDIENT_SPRITESHEET_DIMENSIONS,
+                        cellNumber: App.definitions.ingredients[name].sprite,
+                    },
+                });
+            case "fish":
+                return new Object2d({
+                    img: App.constants.FISH_SPRITESHEET,
+                    spritesheet: {
+                        ...App.constants.FISH_SPRITESHEET_DIMENSIONS,
+                        cellNumber: App.definitions.fish[name].sprite,
+                    },
+                });
+            default:
+                return null;
+        }
+    },
+    getIngredientInventoryUI: function ({ onlyOwned = true } = {}) {
+        const items = Object.keys(App.definitions.ingredients)
+            .filter((name) => !onlyOwned || App.pet.inventory.ingredients[name])
+            .map((name) => ({
+                name,
+                amount: App.pet.inventory.ingredients[name] || 0,
+            }));
+
+        if (!items.length) return "";
+
+        return items
+            .map(
+                (item) =>
+                    `<div onclick="App.displayPopup('${item.name} <div><b>x${item.amount}</b></div>')" class="flex align-center flex-gap-05">${App.getIngredientCSprite(item.name)} <span><small>x</small>${item.amount}</span></div>`,
+            )
+            .join("");
+    },
     getHarvestInventoryUI: function (filterFn = () => true) {
         const harvestsToShow = Object.keys(App.pet.inventory.harvests)
             .map((name) => ({
@@ -3787,8 +3923,7 @@ const App = {
     getFishInventoryUI: function ({ onlyOwned = true } = {}) {
         const fishToShow = Object.keys(App.definitions.fish)
             .filter(
-                (fishName) =>
-                    !onlyOwned || App.pet.inventory.fish[fishName],
+                (fishName) => !onlyOwned || App.pet.inventory.fish[fishName],
             )
             .map((fishName) => ({
                 amount: App.pet.inventory.fish[fishName] || 0,
@@ -3803,7 +3938,7 @@ const App = {
         return fishToShow
             .map(
                 (item) =>
-                    `<div onclick="App.displayPopup('${item.name} <div><b>x${item.amount}</b></div>')" class="flex align-center flex-gap-05">${App.getFishCSprite(item.def.sprite)} <span><small>x</small>${item.amount}</span></div>`,
+                    `<div onclick="App.displayPopup('${item.name} <div><b>x${item.amount}</b></div>')" class="flex align-center flex-gap-05">${App.getFishCSprite(item.def.sprite, "", item.name)} <span><small>x</small>${item.amount}</span></div>`,
             )
             .join("");
     },
@@ -3993,7 +4128,7 @@ const App = {
         const cleanup = () => {
             if (stopped) return;
             stopped = true;
-            if(fadeOutEvent) App.unregisterOnDrawEvent(fadeOutEvent);
+            if (fadeOutEvent) App.unregisterOnDrawEvent(fadeOutEvent);
             audioElement.loop = false;
             audioElement.muted = true;
             audioElement.pause();

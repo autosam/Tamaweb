@@ -186,6 +186,7 @@ const Prefab = {
        ...rest
     } = {}) {
         const shineObject = new Object2d({
+            parent: App.currentSceneObject,
             depthMode: Object2d.DEPTH_MODE.none,
             img: 'resources/img/misc/light_rays_03.png',
             x: '50%',

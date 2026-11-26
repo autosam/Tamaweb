@@ -113,7 +113,9 @@ class Activities {
         }
         App.toggleGameplayControls(false, handleClick);
 
-        const parent = new Object2d({})
+        const parent = new Object2d({
+            parent: App.currentSceneObject,
+        })
         const onEnd = () => {
             onEndCallback?.();
             parent?.removeObject();
