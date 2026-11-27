@@ -13,6 +13,9 @@ App.handlers = {
     go_to_post_office: function () {
         Activities.goToPostOffice(() => App.handlers.open_activity_list(true));
     },
+    go_fishing: function () {
+        Activities.goFishing(() => App.handlers.open_activity_list(true))
+    },
     show_attended_school_limit_message: function () {
         const formattedResetTime = moment(
             App.constants.SCHOOL.resetTime,
@@ -2249,17 +2252,29 @@ App.handlers = {
         const eventId = `${App.constants.CHAR_UNLOCK_PREFIX}_${PetDefinition.getCharCode(char)}`;
         App.addEvent(eventId);
     },
-    open_character_collection: function () {
+    get_fish_collection_event_id: function (fishName) {
+        return `${App.constants.FISH_UNLOCK_PREFIX}_${hashCode(fishName)}`;
+    },
+    add_fish_to_collection: function (fishName) {
+        return App.addEvent(App.handlers.get_fish_collection_event_id(fishName));
+    },
+    open_collections: function () {
+        // adding active pet to collection
         App.handlers.add_active_pet_to_collection();
 
-        let unlockedCount = 0;
+        // adding owned fish to collection
+        Object.keys(App.pet.inventory.fish).forEach((fishName) => {
+            App.handlers.add_fish_to_collection(fishName);
+        });
+
+        let unlockedCharCount = 0;
         const allCharacters = ALL_PLAYABLE_CHARACTERS;
         const charactersDef = allCharacters.map((char) => {
             const charCode = PetDefinition.getCharCode(char);
             const isUnlocked = App.getEvent(
                 `${App.constants.CHAR_UNLOCK_PREFIX}_${charCode}`,
             );
-            if (isUnlocked) unlockedCount++;
+            if (isUnlocked) unlockedCharCount++;
             return {
                 componentType: "div",
                 className: `collection__char ${!isUnlocked ? "locked" : ""}`,
@@ -2280,16 +2295,80 @@ App.handlers = {
             };
         });
 
-        const list = UI.genericListContainer(
-            null,
-            `(${unlockedCount}/${allCharacters.length})`,
+        let unlockedFishCount = 0;
+        const allFish = Object.keys(App.definitions.fish).filter(
+            (fishName) => App.definitions.fish[fishName]?.obtainable !== false,
         );
-        const content = UI.empty();
-        content.classList.add("collection__container");
-        list.appendChild(content);
-        charactersDef.forEach((def) => UI.create({ ...def, parent: content }));
+        const fishDef = allFish.map((fishName) => {
+            const def = App.definitions.fish[fishName];
+            const isUnlocked = App.getEvent(
+                App.handlers.get_fish_collection_event_id(fishName),
+            );
+            if (isUnlocked) unlockedFishCount++;
+            return {
+                className: `collection__char ${!isUnlocked ? "locked" : ""}`,
+                innerHTML: App.getFishCSprite(def.sprite),
+                onclick: () => {
+                    if(!isUnlocked) return;
+                    return App.displayPopup(
+                        `
+                            <div class="x2"> ${App.getFishCSprite(def.sprite)} </div>
+                            <div> ${fishName} </div>
+                            <div> x${App.pet.inventory.fish[fishName] || 0} </div>
+                        `,
+                    );
+                }
+            };
+        });
 
-        App.sendAnalytics("opened_character_collection");
+        const list = UI.genericListContainer(null, "Collections");
+        const content = UI.empty();
+        content.innerHTML = `
+            <div class="tabs">
+                <div class="tab-titles">
+                    <button for="tab-characters" class="tab-title">${App.getIcon("user", true)}</button>
+                    <button for="tab-fish" class="tab-title">${App.getIcon("fish", true)}</button>
+                </div>
+                <div class="tab-contents">
+                    <div id="tab-characters" class="tab">
+                        <div class="tab-content">
+                            <div class="inner-padding-sm">
+                                <small class="opacity-09">(${unlockedCharCount}/${allCharacters.length})</small>
+                                <div class="collection__container" id="collection-characters"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="tab-fish" class="tab">
+                        <div class="tab-content">
+                            <div class="inner-padding-sm">
+                                <small class="opacity-09">(${unlockedFishCount}/${allFish.length})</small>
+                                <div class="collection__container" id="collection-fish"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        App.initTab(content);
+
+        charactersDef.forEach((def) =>
+            UI.create({
+                ...def,
+                parent: content.querySelector("#collection-characters"),
+            }),
+        );
+        fishDef.forEach((def) =>
+            UI.create({
+                ...def,
+                parent: content.querySelector("#collection-fish"),
+            }),
+        );
+
+        list.appendChild(content);
+        App.sendAnalytics("opened_collections");
+    },
+    open_character_collection: function () {
+        App.handlers.open_collections();
     },
     open_family_tree: function (petDefinition, usePastTense) {
         if (!petDefinition) petDefinition = App.petDefinition;
@@ -2654,19 +2733,22 @@ App.handlers = {
                 Plant.AGE.grown,
                 "seed-pack",
             );
+            const seedLabel = current.seedLabel || "seeds";
 
             list.push({
                 disabled: isOutOfStock,
+                isNew: current.isNew,
                 shortName: `<div class="icon">${Plant.getCSprite(plant, Plant.AGE.grown)}</div> <span class="ellipsis">${plant.toUpperCase()}</span>`,
                 name: `
                         ${plantIcon}
-                        ${plant.toUpperCase()} seeds
+                        ${plant.toUpperCase()} ${seedLabel}
                         (x${App.pet.inventory.seeds[plant] > 0 ? App.pet.inventory.seeds[plant] : !current.price ? "∞" : 0})
                         ${
                             isOutOfStock
                                 ? `<b class="red-label">OUT OF STOCK</b>`
                                 : `<b>${buyMode ? `$${price}` : ""}</b>`
                         }
+                        ${current.isNew ? App.getBadge("new!") : ""}
                     `,
                 onclick: (btn, list) => {
                     // buy mode
@@ -2700,7 +2782,7 @@ App.handlers = {
         if (buyMode) list.push(list.shift());
 
         sliderInstance = App.displaySlider(
-            list,
+            list.sort((a, b) => (b?.isNew || 0) - (a?.isNew || 0)),
             activeIndex,
             { accept: buyMode ? "Purchase" : "Plant" },
             buyMode
@@ -2738,7 +2820,7 @@ App.handlers = {
                     _disable:
                         App.petDefinition.lifeStage <=
                         PetDefinition.LIFE_STAGE.baby,
-                    name: `cook`,
+                    name: `cook ${App.getBadge()}`,
                     onclick: () => {
                         return App.displayList([
                             {
@@ -2762,74 +2844,25 @@ App.handlers = {
                                 },
                             },
                             {
-                                name: `harvests`,
+                                name: `ingredients ${App.getBadge()}`,
                                 onclick: () => {
-                                    let allPlants = [];
-                                    const getIngredients = (name) => {
-                                        pRandom.save();
-                                        const seed = hashCode(name);
-                                        const results = new Array(3)
-                                            .fill(null)
-                                            .map((_, i) => {
-                                                if (!allPlants.length)
-                                                    allPlants = Object.keys(
-                                                        App.definitions.plant,
-                                                    )
-                                                        .map((name) => ({
-                                                            ...App.definitions
-                                                                .plant[name],
-                                                            name,
-                                                        }))
-                                                        .filter(
-                                                            ({ inedible }) =>
-                                                                !inedible,
-                                                        )
-                                                        .map(
-                                                            ({ name }) => name,
-                                                        );
-
-                                                pRandom.seed =
-                                                    seed + (i + 1) * 321 * seed;
-                                                const item =
-                                                    pRandomFromArray(allPlants);
-                                                allPlants.splice(
-                                                    allPlants.indexOf(item),
-                                                    1,
-                                                );
-                                                return item;
-                                            });
-                                        pRandom.load();
-                                        return results;
-                                    };
-                                    const getMinOwnedIngredients = (
-                                        ingredients,
-                                    ) => {
-                                        let minOwnedIngredients = Infinity;
-                                        ingredients.forEach(
-                                            (ingredientName) => {
-                                                const ownedAmount =
-                                                    App.pet.inventory.harvests[
-                                                        ingredientName
-                                                    ];
-                                                if (
-                                                    minOwnedIngredients >
-                                                    ownedAmount
-                                                )
-                                                    minOwnedIngredients =
-                                                        ownedAmount;
-                                            },
-                                        );
-                                        return minOwnedIngredients;
-                                    };
-
                                     return App.displayList([
                                         {
-                                            name: `
-                                            <div class="flex-between flex-wrap" style="row-gap: 4px">
-                                                ${App.getHarvestInventoryUI((item) => !item.def.inedible)}
-                                            </div>
-                                            `,
-                                            type: "text",
+                                            name: `${App.getIcon('bag-shopping')} inventory`,
+                                            onclick: () => {
+                                                return App.displayList([
+                                                    {
+                                                        name: `
+                                                        <div class="ingredients__container" style="row-gap: 4px">
+                                                            ${App.getHarvestInventoryUI((item) => !item.def.inedible)}
+                                                            ${App.getIngredientInventoryUI()}
+                                                            ${App.getFishInventoryUI()}
+                                                        </div>
+                                                        `,
+                                                        type: "text",
+                                                    },
+                                                ])
+                                            }
                                         },
                                         ...Object.keys(App.definitions.food)
                                             .map((foodName) => ({
@@ -2839,18 +2872,15 @@ App.handlers = {
                                                 name: foodName,
                                             }))
                                             .filter(
-                                                (food) => !food.nonCraftable,
+                                                (food) =>
+                                                    !food.nonCraftable &&
+                                                    food.recipe,
                                             )
                                             .map((food) => {
-                                                const ingredients =
-                                                    getIngredients(food.name);
+                                                const ingredients = food.recipe;
                                                 const hasAllIngredients =
                                                     ingredients.every(
-                                                        (ingredientName) =>
-                                                            App.pet.inventory
-                                                                .harvests[
-                                                                ingredientName
-                                                            ],
+                                                        (entry) => App.getRecipeIngredientCount(entry) > 0,
                                                     );
                                                 return {
                                                     ...food,
@@ -2869,16 +2899,49 @@ App.handlers = {
                                                     a.hasAllIngredients,
                                             )
                                             .map((food) => ({
-                                                _disable:
-                                                    !food.hasAllIngredients,
+                                                // _disable:
+                                                //     !food.hasAllIngredients,
                                                 class: "flex-between",
                                                 name: `
-                                                    ${App.getFoodCSprite(food.sprite)} = ${App.getHarvestIcons(food.ingredients)}
+                                                    ${App.getFoodCSprite(food.sprite)} = ${App.getRecipeIcons(food.ingredients, " + ", "opacity-half")}
                                                     ${food.cookableOnly ? App.getBadge("★", "gold") : ""}
                                                 `,
                                                 onclick: () => {
+                                                    if (!food.hasAllIngredients) {
+                                                        const missingIngredients =
+                                                            food.ingredients.filter(
+                                                                (entry) =>
+                                                                    !App.getRecipeIngredientCount(
+                                                                        entry,
+                                                                    ),
+                                                            );
+                                                        return App.displayList([
+                                                            {
+                                                                name: `<small>You are missing the following ingredient(s):</small>
+                                                                <div class="flex flex-wrap flex-gap-1 mt-6">
+                                                                ${missingIngredients
+                                                                    .map(entry => {
+                                                                            const { name } = App.parseRecipeIngredient(entry);
+                                                                            return `<div class="flex align-center flex-dir-col flex-gap-025">
+                                                                                ${App.getRecipeIngredientIcon(entry)}
+                                                                                <small>${name}</small>
+                                                                            </div>`;
+                                                                        },
+                                                                    )
+                                                                    .join("")}
+                                                                </div>
+                                                                `,
+                                                                type: 'text',
+                                                            },
+                                                            {
+                                                                name: 'Get ingredients via <b>gardening</b>, <b>fishing</b>, and <b>market</b> shopping',
+                                                                type: 'info',
+                                                            }
+                                                        ], null, food.name)
+                                                    }
+
                                                     const maxBatchCookingAmount =
-                                                        getMinOwnedIngredients(
+                                                        App.getMinOwnedRecipeIngredients(
                                                             food.ingredients,
                                                         );
                                                     let currentCookAmount = 1;
@@ -2956,24 +3019,9 @@ App.handlers = {
                                                                                             name: "yes",
                                                                                             onclick:
                                                                                                 () => {
-                                                                                                    food.ingredients.forEach(
-                                                                                                        (
-                                                                                                            ingredient,
-                                                                                                        ) => {
-                                                                                                            if (
-                                                                                                                App
-                                                                                                                    .pet
-                                                                                                                    .inventory
-                                                                                                                    .harvests[
-                                                                                                                    ingredient
-                                                                                                                ] >=
-                                                                                                                currentCookAmount
-                                                                                                            )
-                                                                                                                App.pet.inventory.harvests[
-                                                                                                                    ingredient
-                                                                                                                ] -=
-                                                                                                                    currentCookAmount;
-                                                                                                        },
+                                                                                                    App.consumeRecipeIngredients(
+                                                                                                        food.ingredients,
+                                                                                                        currentCookAmount,
                                                                                                     );
                                                                                                     Activities.cookingGame(
                                                                                                         {
@@ -2986,28 +3034,10 @@ App.handlers = {
                                                                                                             ingredientObjects:
                                                                                                                 food.ingredients.map(
                                                                                                                     (
-                                                                                                                        name,
+                                                                                                                        entry,
                                                                                                                     ) =>
-                                                                                                                        new Object2d(
-                                                                                                                            {
-                                                                                                                                img: App
-                                                                                                                                    .constants
-                                                                                                                                    .PLANT_SPRITESHEET,
-                                                                                                                                spritesheet:
-                                                                                                                                    {
-                                                                                                                                        ...App
-                                                                                                                                            .constants
-                                                                                                                                            .PLANT_SPRITESHEET_DIMENSIONS,
-                                                                                                                                        cellNumber:
-                                                                                                                                            App
-                                                                                                                                                .definitions
-                                                                                                                                                .plant[
-                                                                                                                                                name
-                                                                                                                                            ]
-                                                                                                                                                .sprite +
-                                                                                                                                            2,
-                                                                                                                                    },
-                                                                                                                            },
+                                                                                                                        App.getRecipeIngredientObject2d(
+                                                                                                                            entry,
                                                                                                                         ),
                                                                                                                 ),
                                                                                                         },
@@ -3093,9 +3123,9 @@ App.handlers = {
                     },
                 },
                 {
-                    name: `collection`,
+                    name: `collections ${App.getBadge()}`,
                     onclick: () => {
-                        App.handlers.open_character_collection();
+                        App.handlers.open_collections();
                         return true;
                     },
                 },
@@ -3533,6 +3563,127 @@ App.handlers = {
         );
         return sliderInstance;
         return App.displayList(list);
+    },
+    open_ingredient_list: function ({ buyMode = true, activeIndex } = {}) {
+        App.pet.inventory.ingredients ||= {};
+
+        let list = [];
+        let sliderInstance;
+        const salesDay = App.isSalesDay();
+
+        for (const ingredient of Object.keys(App.definitions.ingredients)) {
+            const current = App.definitions.ingredients[ingredient];
+            const ownedAmount = App.pet.inventory.ingredients[ingredient] || 0;
+
+            if (buyMode && !current.price) continue;
+            if (!buyMode && !ownedAmount) continue;
+
+            let price = current.price;
+            if (salesDay) price = Math.round(price / 2);
+
+            const ingredientIcon = App.getIngredientCSprite(ingredient);
+
+            list.push({
+                shortName: `<div class="icon">${ingredientIcon}</div> <span class="ellipsis">${ingredient.toUpperCase()}</span>`,
+                name: `
+                    ${ingredientIcon}
+                    ${ingredient.toUpperCase()}
+                    (x${ownedAmount})
+                    <b>${buyMode ? `$${price}` : ""}</b>
+                `,
+                onclick: () => {
+                    if (buyMode) {
+                        if (!App.pay(price)) return true;
+                        App.addNumToObject(
+                            App.pet.inventory.ingredients,
+                            ingredient,
+                            1,
+                        );
+                        App.handlers.open_ingredient_list({
+                            buyMode: true,
+                            activeIndex: sliderInstance?.getCurrentIndex(),
+                        });
+                        return false;
+                    }
+                },
+            });
+        }
+
+        if (!list.length) {
+            App.displayPopup(
+                buyMode
+                    ? `No ingredients available`
+                    : `You don't have any ingredients, purchase some from the market`,
+                2000,
+            );
+            return;
+        }
+
+        if (buyMode) list.push(list.shift());
+
+        sliderInstance = App.displaySlider(
+            list,
+            activeIndex,
+            { accept: buyMode ? "Purchase" : "Use" },
+            buyMode
+                ? `$${App.pet.stats.gold + (salesDay ? ` <span class="sales-notice">DISCOUNT DAY!</span>` : "")}`
+                : null,
+        );
+
+        return sliderInstance;
+    },
+    open_fish_sell_list: function ({ activeIndex } = {}) {
+        let list = [];
+        let sliderInstance;
+
+        for (const fishName of Object.keys(App.definitions.fish)) {
+            const current = App.definitions.fish[fishName];
+            const ownedAmount = App.pet.inventory.fish[fishName] || 0;
+
+            if (!current.price || !ownedAmount) continue;
+
+            const price = current.price;
+            const fishIcon = App.getFishCSprite(current.sprite);
+
+            list.push({
+                current,
+                fishName,
+                price,
+                icon: fishIcon,
+                shortName: `<div class="icon">${fishIcon}</div> <span class="ellipsis">${fishName.toUpperCase()}</span>`,
+                name: `
+                    ${fishIcon}
+                    ${fishName.toUpperCase()}
+                    (x${ownedAmount})
+                    <b>$${price}</b>
+                `,
+                onclick: () => {
+                    App.pet.stats.gold += price;
+                    App.addNumToObject(App.pet.inventory.fish, fishName, -1);
+                    App.handlers.open_fish_sell_list({
+                        activeIndex: sliderInstance?.getCurrentIndex(),
+                    });
+                    return false;
+                },
+            });
+        }
+
+        if (!list.length) {
+            App.displayPopup(
+                `You don't have any fish, catch some at the fishing pond`,
+                2000,
+            );
+            return;
+        }
+
+        sliderInstance = App.displaySlider(
+            list,
+            activeIndex,
+            { accept: "Sell" },
+            `$${Math.floor(App.pet.stats.gold)}`,
+        );
+
+        return sliderInstance;
     },
     open_craftables_list: function () {
         let sliderInstance;
@@ -6487,11 +6638,16 @@ App.handlers = {
             if (definition.type !== "med") return;
             return definition.isNew;
         });
+        const hasNewSeed = Object.keys(App.definitions.plant).some((key) => {
+            const definition = App.definitions.plant[key];
+            if (!definition.price) return;
+            return definition.isNew;
+        });
 
         App.displayList(
             [
                 {
-                    name: `purchase food ${hasNewFood ? App.getBadge("new!") : ""}`,
+                    name: `buy food ${hasNewFood ? App.getBadge("new!") : ""}`,
                     onclick: () => {
                         App.handlers.open_food_list({
                             buyMode: true,
@@ -6501,7 +6657,7 @@ App.handlers = {
                     },
                 },
                 {
-                    name: `purchase snacks ${hasNewTreat ? App.getBadge("new!") : ""}`,
+                    name: `buy snacks ${hasNewTreat ? App.getBadge("new!") : ""}`,
                     onclick: () => {
                         App.handlers.open_food_list({
                             buyMode: true,
@@ -6511,7 +6667,7 @@ App.handlers = {
                     },
                 },
                 {
-                    name: `purchase meds ${hasNewMed ? App.getBadge("new!") : ""}`,
+                    name: `buy meds ${hasNewMed ? App.getBadge("new!") : ""}`,
                     onclick: () => {
                         App.handlers.open_food_list({
                             buyMode: true,
@@ -6521,14 +6677,21 @@ App.handlers = {
                     },
                 },
                 {
-                    name: `purchase seeds`,
+                    name: `buy seeds ${hasNewSeed ? App.getBadge("new!") : ""}`,
                     onclick: () => {
                         App.handlers.open_seed_list(true);
                         return true;
                     },
                 },
                 {
-                    name: `sell`,
+                    name: `<span class="ellipsis">buy ingredients</span> ${App.getBadge()}`,
+                    onclick: () => {
+                        App.handlers.open_ingredient_list({ buyMode: true });
+                        return true;
+                    },
+                },
+                {
+                    name: `sell ${App.getBadge()}`,
                     onclick: () => {
                         App.handlers.open_sell_list();
                         return true;
@@ -6548,6 +6711,13 @@ App.handlers = {
                 name: "food",
                 onclick: () => {
                     App.handlers.open_food_list({ sellMode: true });
+                    return true;
+                },
+            },
+            {
+                name: `fish ${App.getBadge()}`,
+                onclick: () => {
+                    App.handlers.open_fish_sell_list();
                     return true;
                 },
             },

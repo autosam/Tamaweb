@@ -16,3 +16,5 @@ resources/img/item/plants.pdn
 *.pdn
 *.flp
 .zed
+scripts
+scripts/recipeIngredientUsage.js

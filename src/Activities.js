@@ -1,4 +1,390 @@
 class Activities {
+    static async goFishing(onEndCallback){
+        const FISHING_SCENE = App.scene.fishing_deck;
+        App.closeAllDisplays();
+        App.setScene(FISHING_SCENE);
+        App.pet.triggerScriptedState('idle', App.INF, false, true);
+        App.pet.stopMove();
+        App.pet.x = '50%';
+        App.pet.y = '40%';
+
+        const bgSound = App.playAdvancedSound({
+            src: 'resources/sounds/sea_waves_01.mp3',
+            loop: true,
+            volume: 0.25,
+        })
+        let bgMusic;
+        const bgMusicTimer = setTimeout(() => {
+            if(App.currentScene !== FISHING_SCENE) return;
+            bgMusic = App.playAdvancedSound({
+                src: 'resources/sounds/fishing_bm_01.mp3',
+                volume: 0.4,
+            })
+        }, random(App.constants.ONE_SECOND * 10, App.constants.ONE_SECOND * 60))
+
+        const OBTAINABLE_FISH_POOL = App.definitions.pools.allObtainableFish();
+
+        // game state
+        let nextCatchWindowTime = -1,
+            catchWindowDuration = 0,
+            fishHealth = 0,
+            castPositionY = -1,
+            currentFishDef;
+        const isDuringCatchingWindow = () => {
+            if(!isHookCast()) return false;
+
+            const isBefore =
+                App.time > nextCatchWindowTime - catchWindowDuration;
+            const isAfter = App.time > nextCatchWindowTime;
+
+            if(isAfter) generateNextCatchWindow();
+
+            return isBefore && !isAfter;
+        }
+        const isHookCast = () => hookLineObject.targetPosition.y === castPositionY;
+        const generateNextCatchWindow = () => {
+            // time until catch window appears
+            nextCatchWindowTime =
+                App.time +
+                random(App.constants.ONE_SECOND * 2, App.constants.ONE_SECOND * 16);
+            catchWindowDuration = random(750, 3000); // time to react
+            fishHealth = random(8, 15); // taps needed
+            currentFishDef = randomFromArray(OBTAINABLE_FISH_POOL);  // change fish type
+        }
+
+        const castHook = () => {
+            castPositionY = clamp(App.mouse.y, 50, App.drawer.bounds.height);
+            hookLineObject.targetPosition.y = castPositionY;
+            hookLineObject.targetPosition.x = App.mouse.x;
+            hookLineObject.bendOffset = App.mouse.x > App.drawer.bounds.width / 2 ? 200 : -200;
+            generateNextCatchWindow();
+            App.playAdvancedSound({
+                src: 'resources/sounds/fishing_rod_cast_01.mp3',
+                volume: 0.15,
+            });
+        }
+        const retractHook = () => {
+            hookLineObject.targetPosition.y = App.pet.y;
+            hookLineObject.targetPosition.x = parent.x;
+            nextCatchWindowTime = -1;
+            App.playAdvancedSound({
+                src: 'resources/sounds/fishing_rod_cast_01.mp3',
+                volume: 0.15,
+                playbackRate: 2,
+                preservesPitch: false,
+            });
+        }
+
+        const handleClick = () => {
+            if(isDuringCatchingWindow()){
+                fishHealth --;
+                nextCatchWindowTime = App.time + 500;
+                catchWindowDuration = 500;
+                hookLineObject.bendOffset += 50;
+                App.playAdvancedSound({
+                    src: 'resources/sounds/fishing_rod_cast_01.mp3',
+                    volume: 0.15,
+                    playbackRate: 6 + Math.random(),
+                });
+
+                if(fishHealth > 0) return;
+                App.pet.setState('cheering');
+
+                let closeRevealer;
+                setTimeout(() => {
+                    closeRevealer = Prefab.revealer({
+                        object: new Fish({
+                            scale: 3,
+                            sprite: nibblingFish.spritesheet.cellNumber,
+                            onLateDraw: null,
+                        })
+                    })
+                }, 300);
+                App.addNumToObject(
+                    App.pet.inventory.fish,
+                    currentFishDef.name,
+                    1
+                );
+                const isNewFish = App.handlers.add_fish_to_collection(currentFishDef.name);
+                Missions.done(Missions.TYPES.catch_fish);
+                App.save();
+                const { state, onclick, triggerFeedback } = App.getGameplayControlsState();
+                App.toggleGameplayControls(false);
+                setTimeout(() => {
+                    App.toggleGameplayControls(state, onclick, triggerFeedback);
+                    App.pet.setState('idle');
+                    closeRevealer?.();
+
+                    if (isNewFish) {
+                        setTimeout(
+                            () => App.playSound("resources/sounds/task_complete_02.ogg", true),
+                            450,
+                        );
+                        App.displayPopup(
+                            `
+                            <div class="x3">
+                                <div class="pulse">
+                                    ${currentFishDef.icon}
+                                </div>
+                            </div>
+                            <b>${currentFishDef.name}</b>
+                            <br>
+                            ${App.getBadge('new!')}
+                            `,
+                            5000, null, true,
+                        );
+                    }
+                }, App.constants.ONE_SECOND * 2.5);
+                setTimeout(() => retractHook());
+            }
+
+            const isCasted = isHookCast();
+            if(isCasted) retractHook()
+            else castHook();
+        }
+        App.toggleGameplayControls(false, handleClick, false);
+
+        const parent = new Object2d({
+            parent: App.currentSceneObject,
+        })
+        const onEnd = () => {
+            onEndCallback?.();
+            parent?.removeObject();
+            closeBtn?.remove();
+            bgSound?.stop(1);
+            bgMusic?.stop();
+            clearTimeout(bgMusicTimer);
+        }
+
+        const closeBtn = UI.create({
+            parent: document.querySelector('.screen-wrapper'),
+            componentType: 'button',
+            className: 'mini-game-ui',
+            innerHTML: App.getIcon('sign-out', true),
+            style: "position: absolute;right: 0;top: 0;padding: 2px;",
+            onclick: () => {
+                App.displayConfirm(...GenericUIDef.binaryConfirm({
+                    text: 'Stop fishing?',
+                    onAccept: () => {
+                        onEnd();
+                    }
+                }))
+            }
+        })
+
+        // fishing rod
+        new Object2d({
+            parent,
+            img: 'resources/img/misc/fishing_rod.png',
+            x: 0, y: 0, z: App.constants.ACTIVE_PET_Z + 1,
+            onDraw: (me) => {
+                me.invisible = !isHookCast();
+
+                if(me.invisible) return;
+
+                me.additionalY = -Math.sin(waveObject.waveFloat * 0.5);
+                me.rotation = clamp(hookLineObject.currentBendOffset, -30, 30);
+                me.inverted = Boolean(hookLineObject.targetPosition.x > App.drawer.bounds.width / 2);
+            }
+        })
+
+        // hook object
+        new Object2d({
+            parent,
+            img: 'resources/img/misc/fishing_hook_01.png',
+            spritesheet: {
+                cellSize: 13,
+                columns: 2,
+                rows: 1,
+                cellNumber: 1,
+            },
+            onDraw: (me) => {
+                const shouldRender = isHookCast();
+                me.opacity = shouldRender ? 1 : 0;
+
+                if(!shouldRender) return;
+
+                const float = Math.sin(waveObject.waveFloat);
+                me.spritesheet.cellNumber = float < 0 ? 1 : 2;
+                me.x = hookLineObject.currentPosition.x - 6;
+                me.y = hookLineObject.currentPosition.y - 4 + float;
+            }
+        })
+        const hookLineObject = new Object2d({
+            parent,
+            currentPosition: { x: 0, y: 0 },
+            targetPosition: false,
+            bendOffset: 1,
+            currentBendOffset: 0,
+            onLateDraw: function() {
+                if(!this.targetPosition) {
+                    this.targetPosition = {
+                        x: parent.x,
+                        y: App.pet.y,
+                    }
+                }
+
+                const { context } = App.drawer;
+
+                this.currentPosition.x = lerp(this.currentPosition.x, this.targetPosition.x, 0.01 * App.deltaTime);
+                this.currentPosition.y = lerp(this.currentPosition.y, this.targetPosition.y, 0.01 * App.deltaTime);
+                this.bendOffset = lerp(this.bendOffset, 0, 0.01 * App.deltaTime);
+                this.currentBendOffset = lerp(this.currentBendOffset, this.bendOffset, 0.008 * App.deltaTime);
+
+                const startX = this.x;
+                const startY = this.y - 15;
+                const endX = this.currentPosition.x;
+                const endY = this.currentPosition.y + Math.sin(waveObject.waveFloat);
+
+                const controlX = this.x + this.currentBendOffset;
+                const controlY = (startY + endY) / 2;
+
+                const distance = Math.hypot(endX - startX, endY - startY);
+                const steps = Math.max(Math.ceil(distance * 1.5), 1);
+
+                const points = [];
+                for (let i = 0; i <= steps; i++) {
+                    const t = i / steps;
+                    const invT = 1 - t;
+                    const px = Math.round(invT * invT * startX + 2 * invT * t * controlX + t * t * endX);
+                    const py = Math.round(invT * invT * startY + 2 * invT * t * controlY + t * t * endY);
+                    const last = points[points.length - 1];
+                    if (!last || last.x !== px || last.y !== py) {
+                        points.push({ x: px, y: py });
+                    }
+                }
+
+                // border
+                context.fillStyle = "#0000000f";
+                for (const p of points) {
+                    context.fillRect(p.x - 1, p.y, 3, 1);
+                    context.fillRect(p.x, p.y - 1, 1, 3);
+                }
+
+                // white line
+                context.fillStyle = "#FFFFFF";
+                for (const p of points) {
+                    context.fillRect(p.x, p.y, 1, 1);
+                }
+            }
+        })
+
+        // base layer
+        new Object2d({
+            parent,
+            depthMode: Object2d.DEPTH_MODE.none,
+            img: 'resources/img/background/outside/vacation_sea_l_01.png',
+            x: 0, y: 0, z: 1,
+            opacity: 1,
+            onDraw: (me) => {
+                Object2d.animations.flip(me, 700);
+                me.additionalX = Math.sin(me.waveFloat) * -2;
+                me.additionalY = Math.cos(me.waveFloat * 1) * 1;
+            }
+        })
+
+        // overlay layer
+        const waveObject = new Object2d({
+            parent,
+            depthMode: Object2d.DEPTH_MODE.none,
+            img: 'resources/img/background/outside/vacation_sea_l_01.png',
+            x: 0, y: 0, z: 3,
+            opacity: 0.3,
+            // composite: 'darken',
+
+            waveFloat: 0,
+            onDraw: (me) => {
+                me.waveFloat = (me.waveFloat + 0.005 * App.deltaTime) % App.PI2;
+                me.additionalX = Math.cos(me.waveFloat) * 2;
+                me.additionalY = Math.cos(me.waveFloat * -1) * 1;
+            }
+        })
+
+        // nibbling fish
+        const nibblingFish = new Fish({
+            parent,
+            sprite: 1,
+            x: 0, y: 0, z: 2,
+
+            attackMs: 0,
+            opacity: 0,
+            targetOpacity: 0,
+            onLateDraw: (me) => {
+                if(!isHookCast()) me.opacity = 0;
+
+                const isDuringCatchWindow = isDuringCatchingWindow();
+                if(isDuringCatchWindow && me.targetOpacity === 0) {
+                    App.playAdvancedSound({
+                        src: 'resources/sounds/shock.ogg',
+                        volume: 0.45,
+                        playbackRate: 1.2,
+                        preservesPitch: false,
+                    });
+                }
+                me.targetOpacity = isDuringCatchWindow ? 1 : 0;
+                if(nextCatchWindowTime === -1) me.targetOpacity = 0;
+
+                const speed = me.targetOpacity > 0 ? 0.001 : 0.01;
+                me.opacity = lerp(me.opacity, me.targetOpacity, speed * App.deltaTime);
+
+                if(me.targetOpacity === 0) return;
+
+                me.spritesheet.cellNumber = currentFishDef?.sprite || 0;
+
+                me.x = hookLineObject.targetPosition.x + 2;
+                me.y = hookLineObject.targetPosition.y - 6;
+                me.additionalX = -Math.sin(waveObject.waveFloat);
+                me.additionalY = -Math.sin(waveObject.waveFloat);
+
+                if(me.attackMs > 0) {
+                    me.attackMs -= App.deltaTime;
+                    me.additionalX = Math.random() * 2;
+                    me.additionalY = Math.random();
+                    me.rotation = random(-10, 10);
+                }
+
+                if(App.canProceed('fishing_nibbling_fish_attack', 650)) {
+                    me.attackMs = 150;
+                    const getRandomOffset = () => random(-4, 4);
+                    for(let i = 0; i < 5; i++){
+                        me.spawnBubble({ xOffset: getRandomOffset(), yOffset: getRandomOffset() });
+                    }
+                    App.playAdvancedSound({
+                        src: 'resources/sounds/fishing_rod_cast_01.mp3',
+                        volume: 0.15,
+                        playbackRate: 4,
+                        preservesPitch: false,
+                    });
+                    App.vibrate(10);
+                }
+            }
+        })
+
+        // background fish
+        for(let i = 0; i < 3; i++){
+            new Fish({
+                x: random(0, App.drawer.bounds.width),
+                y: 45 + (i * 16),
+                z: 2,
+                sprite: App.definitions.fish.sil.sprite,
+                parent,
+
+                targetOpacity: 0,
+                opacity: 0,
+                onDraw: (me) => {
+                    me.opacity = lerp(me.opacity, me.targetOpacity, 0.005 * App.deltaTime);
+
+                    me.opacityChangeTimer ||= random(1000, 4000);
+                    me.opacityChangeTimer -= App.deltaTime;
+                    if(me.opacityChangeTimer < 0) {
+                        const isVisible = me.opacity > 0;
+                        me.opacityChangeTimer = isVisible ? 2000 : 500;
+                        me.targetOpacity = me.targetOpacity > 0 ? 0 : 0.5;
+                    }
+                }
+            });
+        }
+    }
     static async openScratchCard({
         npc = "resources/img/character/mall_npc_01.png",
         scene = App.scene.mallInterior,
@@ -8295,7 +8681,7 @@ class Activities {
             setTimeout(() => App.pet.playSound('resources/sounds/cheer_success.ogg', true));
             petMain.setState('cheering_with_icon');
             petClerk.setState('cheering');
-        } else {
+    } else {
             setTimeout(() => App.pet.playSound('resources/sounds/task_fail_01.ogg', true));
             petMain.setState('uncomfortable');
             petClerk.setState('mild_uncomfortable');

@@ -349,7 +349,7 @@ class PetDefinition {
         },
         item: { 'rattle': 1 },
         accessory: {},
-        harvests: {}, seeds: {}, misc: {},
+        harvests: {}, seeds: {}, fish: {}, ingredients: {}, misc: {},
     }
     accessories = [];
     traits = [];
@@ -870,7 +870,7 @@ class PetDefinition {
 
             for(let i = 0; i < 9999; i++){
                 const randomTrait = randomFromArray(traitKeys);
-                
+
                 const traitDefinition = App.definitions.traits[randomTrait];
                 if(traitDefinition.noRandomDevelopment) continue;
 

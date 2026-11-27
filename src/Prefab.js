@@ -179,5 +179,54 @@ const Prefab = {
             x, y, z,
             ...rest
         });
+    },
+    revealer({
+       object,
+       z = App.constants.ACTIVE_PET_Z + 1,
+       ...rest
+    } = {}) {
+        const shineObject = new Object2d({
+            parent: App.currentSceneObject,
+            depthMode: Object2d.DEPTH_MODE.none,
+            img: 'resources/img/misc/light_rays_03.png',
+            x: '50%',
+            y: '50%',
+            rotation: 0,
+            composite: 'screen',
+            scale: 0,
+            targetScale: 1,
+            onDraw: (me) => {
+                me.rotation += 0.05 * App.deltaTime;
+                me.scale = lerp(me.scale, me.targetScale, 0.002 * App.deltaTime);
+                if(me.targetScale <= 0 && me.scale <= 0) {
+                    me.removeObject();
+                }
+            },
+            z,
+            ...rest
+        })
+
+        if (object) {
+            object.parent = shineObject;
+            object.depthMode = Object2d.DEPTH_MODE.none;
+            object.z = shineObject.z + 0.1;
+            object.opacity = 0;
+            object.targetOpacity = 1;
+            const targetScale = object.scale;
+            object.scale = object.scale * 3;
+            object.floatValue = 0;
+            object.onDraw = (me) => {
+                object.floatValue += 0.005 * App.deltaTime;
+                me.additionalX = Math.sin(object.floatValue);
+                me.additionalY = Math.cos(object.floatValue * 2);
+                me.opacity = lerp(me.opacity, me.targetOpacity, 0.0065 * App.deltaTime);
+                me.scale = lerp(me.scale, targetScale, 0.004 * App.deltaTime);
+            }
+        }
+
+        return () => {
+            shineObject.targetScale = -1;
+            object.targetOpacity = 0;
+        };
     }
 }
