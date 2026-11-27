@@ -1,11 +1,26 @@
 class Activities {
     static async goFishing(onEndCallback){
+        const FISHING_SCENE = App.scene.fishing_deck;
         App.closeAllDisplays();
-        App.setScene(App.scene.fishing_deck);
+        App.setScene(FISHING_SCENE);
         App.pet.triggerScriptedState('idle', App.INF, false, true);
         App.pet.stopMove();
         App.pet.x = '50%';
         App.pet.y = '40%';
+
+        const bgSound = App.playAdvancedSound({
+            src: 'resources/sounds/sea_waves_01.mp3',
+            loop: true,
+            volume: 0.25,
+        })
+        let bgMusic;
+        setTimeout(() => {
+            if(App.currentScene !== FISHING_SCENE) return;
+            bgMusic = App.playAdvancedSound({
+                src: 'resources/sounds/fishing_bm_01.mp3',
+                volume: 0.4,
+            })
+        }, random(App.constants.ONE_SECOND * 10, App.constants.ONE_SECOND * 60))
 
         const OBTAINABLE_FISH_POOL = App.definitions.pools.allObtainableFish();
 
@@ -31,7 +46,7 @@ class Activities {
             // time until catch window appears
             nextCatchWindowTime =
                 App.time +
-                random(App.constants.ONE_SECOND * 2, App.constants.ONE_SECOND * 20);
+                random(App.constants.ONE_SECOND * 2, App.constants.ONE_SECOND * 16);
             catchWindowDuration = random(750, 3000); // time to react
             fishHealth = random(8, 15); // taps needed
             currentFishDef = randomFromArray(OBTAINABLE_FISH_POOL);  // change fish type
@@ -43,11 +58,21 @@ class Activities {
             hookLineObject.targetPosition.x = App.mouse.x;
             hookLineObject.bendOffset = App.mouse.x > App.drawer.bounds.width / 2 ? 200 : -200;
             generateNextCatchWindow();
+            App.playAdvancedSound({
+                src: 'resources/sounds/fishing_rod_cast_01.mp3',
+                volume: 0.15,
+            });
         }
         const retractHook = () => {
             hookLineObject.targetPosition.y = App.pet.y;
             hookLineObject.targetPosition.x = parent.x;
             nextCatchWindowTime = -1;
+            App.playAdvancedSound({
+                src: 'resources/sounds/fishing_rod_cast_01.mp3',
+                volume: 0.15,
+                playbackRate: 2,
+                preservesPitch: false,
+            });
         }
 
         const handleClick = () => {
@@ -56,6 +81,12 @@ class Activities {
                 nextCatchWindowTime = App.time + 500;
                 catchWindowDuration = 500;
                 hookLineObject.bendOffset += 50;
+                App.playAdvancedSound({
+                    src: 'resources/sounds/fishing_rod_cast_01.mp3',
+                    volume: 0.15,
+                    playbackRate: 6 + Math.random(),
+                });
+
                 if(fishHealth > 0) return;
                 App.pet.setState('cheering');
 
@@ -77,10 +108,10 @@ class Activities {
                 const isNewFish = App.handlers.add_fish_to_collection(currentFishDef.name);
                 Missions.done(Missions.TYPES.catch_fish);
                 App.save();
-                const { state, onclick } = App.getGameplayControlsState();
+                const { state, onclick, triggerFeedback } = App.getGameplayControlsState();
                 App.toggleGameplayControls(false);
                 setTimeout(() => {
-                    App.toggleGameplayControls(state, onclick);
+                    App.toggleGameplayControls(state, onclick, triggerFeedback);
                     App.pet.setState('idle');
                     closeRevealer?.();
 
@@ -111,7 +142,7 @@ class Activities {
             if(isCasted) retractHook()
             else castHook();
         }
-        App.toggleGameplayControls(false, handleClick);
+        App.toggleGameplayControls(false, handleClick, false);
 
         const parent = new Object2d({
             parent: App.currentSceneObject,
@@ -120,6 +151,8 @@ class Activities {
             onEndCallback?.();
             parent?.removeObject();
             closeBtn?.remove();
+            bgSound?.stop(1);
+            bgMusic?.stop();
         }
 
         const closeBtn = UI.create({
@@ -276,7 +309,17 @@ class Activities {
             targetOpacity: 0,
             onLateDraw: (me) => {
                 if(!isHookCast()) me.opacity = 0;
-                me.targetOpacity = isDuringCatchingWindow() ? 1 : 0;
+
+                const isDuringCatchWindow = isDuringCatchingWindow();
+                if(isDuringCatchWindow && me.targetOpacity === 0) {
+                    App.playAdvancedSound({
+                        src: 'resources/sounds/shock.ogg',
+                        volume: 0.45,
+                        playbackRate: 1.2,
+                        preservesPitch: false,
+                    });
+                }
+                me.targetOpacity = isDuringCatchWindow ? 1 : 0;
                 if(nextCatchWindowTime === -1) me.targetOpacity = 0;
 
                 const speed = me.targetOpacity > 0 ? 0.001 : 0.01;
@@ -304,6 +347,13 @@ class Activities {
                     for(let i = 0; i < 5; i++){
                         me.spawnBubble({ xOffset: getRandomOffset(), yOffset: getRandomOffset() });
                     }
+                    App.playAdvancedSound({
+                        src: 'resources/sounds/fishing_rod_cast_01.mp3',
+                        volume: 0.15,
+                        playbackRate: 4,
+                        preservesPitch: false,
+                    });
+                    App.vibrate(10);
                 }
             }
         })
