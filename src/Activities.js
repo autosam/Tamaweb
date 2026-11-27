@@ -14,7 +14,7 @@ class Activities {
             volume: 0.25,
         })
         let bgMusic;
-        setTimeout(() => {
+        const bgMusicTimer = setTimeout(() => {
             if(App.currentScene !== FISHING_SCENE) return;
             bgMusic = App.playAdvancedSound({
                 src: 'resources/sounds/fishing_bm_01.mp3',
@@ -153,6 +153,7 @@ class Activities {
             closeBtn?.remove();
             bgSound?.stop(1);
             bgMusic?.stop();
+            clearTimeout(bgMusicTimer);
         }
 
         const closeBtn = UI.create({
