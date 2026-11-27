@@ -1031,7 +1031,7 @@ App.definitions = (() => {
                 isNew: false,
             },
             "spookandy": {
-                recipe: ["ingredient:sugar", "ingredient:flour", "plant:watermelon"],
+                recipe: ["ingredient:sugar", "plant:peach", "plant:watermelon"],
                 sprite: 17,
                 hunger_replenish: 2,
                 fun_replenish: 1,
