@@ -173,6 +173,7 @@ class Activities {
 
         // fishing rod
         new Object2d({
+            parent,
             img: 'resources/img/misc/fishing_rod.png',
             x: 0, y: 0, z: App.constants.ACTIVE_PET_Z + 1,
             onDraw: (me) => {
